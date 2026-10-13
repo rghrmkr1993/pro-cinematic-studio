@@ -1,0 +1,388 @@
+id: layout.aligned_split
+family: layout
+group: graphics
+level: B
+aliases: [aligned split, half and half, face from two halves, body from two people, spatial cut, composite frame, spatial rhyme, exquisite corpse]
+what: the frame is assembled along straight seams from parts of different shots, aligned so that together they form one object — a face from two people, a body from two dancers, day and night of one view, one strike from two sports; a "match cut", only in space rather than in time
+frames: |
+  1. Selection: two or three shots with the subject or lines in the same place and at the same shot size — the same angle and camera height,
+     the face or body centered, the horizon at the same height; or takes from one static camera at different times.
+  2. Seam: a straight line through the object itself — a vertical exactly at the center (0.50 in 6 of 6 "halves"), a horizontal
+     at 0.46–0.50 (top/bottom) or on the thirds (0.34 and 0.68 — three bands of a face). No gap (17 of 20 split
+     examples), once — a thin line ≈1 % of the frame. The seam isn't hidden: the brightness step across it is 7–60 levels
+     (median ≈24 versus 3–25 inside a whole frame); unity is held by geometry — contours, the face axis, the eye line,
+     the horizon continue across the seam (profile correlation at the seam 0.23–0.83, median ≈0.55, versus −0.23…0.07
+     for deliberately mismatched parts).
+  3. Life of the parts: the parts change independently — one half stays, the other is replaced (a change on only one
+     side of the seam), the camera moves the same way in both parts (motion correlation between halves 0.80–0.98) or is static.
+  4. Rhythm: a pair holds 0.35–1.7 s (typically 0.5–0.8 s, on the beat) and is hard-cut to the next pair; one
+     half is replaced every 0.5 s; "boiling" face bands reshuffle every 1–3 frames (40–210 ms); the whole
+     construction 1.2–5.6 s.
+  5. Entry and exit: a cut straight into the split frame (most), a seam sweep across the whole frame in ≈2 s or
+     replacing the object with rectangular pieces in ≈0.5 s; exit — to the full frame of one of the parts.
+variants:
+  - two halves — one subject: the left half of one person and the right half of another (or of one person in two places, times, costumes) along the axis of the body or face; in motion — both takes shot with identical camera moves
+  - pairs in a series: two athletes, buildings or objects split in half, a strike or a gesture continues across the seam; a new pair every 0.56–1.7 s
+  - top/bottom: the top half of one shot and the bottom half of another — the subject's head stays the same while jerseys with different numbers change every 0.5 s; a statue above a launch pad "takes off"; a hand holding a can above seated legs
+  - face bands: three horizontal bands (1/3 of the height each) from different takes and shot sizes of one person, drifting and now aligning, now diverging; or 2–6 strips 15–40 % of the face width reshuffled every 1–3 frames
+  - face flow: vertical strips gradually replace one face with another over 2–3 s
+  - time along the seam: a static camera, different takes — columns with different people, a rectangle of daytime sky on a night view, a horizontal seam creeps from bottom to top over 1.9 s and turns night into day (≈1.9 % of the height per frame @25 fps, linear)
+  - piecewise replacement: one object (a car in profile) is replaced by the same kind of object from another shot in 3–4 rectangles over ≈0.5 s
+  - grid on one background: 3×3 cells with one subject in different looks on an identical white background — without gaps it reads as one wall (borderline with layout.frame_division)
+status: code
+fallback: |
+  You need shots with a matching subject position and shot size — search the source footage for pairs by face, pose and horizon
+  (find_split_pairs); transform fixes an inexact match (shift ≤ 5 % of the frame, scale ±8 %, rotation ≤ 3°).
+  "Time along the seam" needs a tripod — without one, stabilize the takes on the background (stabilize + alignment on static
+  points) and put the seam on a vertical of the scene (a column, a person). No second take — generate the second half
+  from the first frame (same angle, a different subject or time) with the user's consent; as a last resort — a mirrored
+  half of the same shot (fx.kaleidoscope, mirror) or a time offset of the same shot.
+params:
+  layout: half_v (vertical 0.50) | half_h (horizontal 0.46–0.50) | bands_3 (0.34 and 0.68) | strips (2–6 strips 15–40 % of the face width) | time_columns (seams along the scene's verticals) | patch (rectangles 15–45 % of the width) | grid_3x3
+  gutter: 0 px; a thin line ≤ 1 % is acceptable (then it is already bordering on layout.split_screen)
+  align: face or body axis on the seam ±3 % of the width, eye line and horizon ±3 % of the height, scale ±8 %, roll ≤ 3° (≈, visual)
+  seam_step: the brightness step across the seam doesn't have to disappear (7–60 levels); align the geometry, and the color only if an "almost seamless" image is intended
+  motion: both parts with the same camera move (correlation ≥ 0.8) or both static; different movements on the two sides of the seam — only as a deliberate device
+  pair_hold: 0.35–1.7 s (9–43 frames @25 fps), typically 0.5–0.8 s; pair change — a hard cut on the beat
+  half_swap: one half replaced every 0.5 s (½ beat at 120 BPM), the other half continuous
+  strip_shuffle: 1–3 frames (40–210 ms) per strip reshuffle
+  seam_sweep: the seam crosses 90 % of the frame in 1.5–2 s linearly (≈1.9 %/frame @25 fps)
+  patch_swap: 3–4 rectangles over 8–12 frames (≈0.5 s)
+  duration: 1.2–5.6 s per construction
+when: duality and kinship — one person out of two, "me and my double", generations in the same uniform, you here and there; music video and fan edit (the faces of two characters in one), fashion lookbook (a grid of looks, halves of outfits), sport (two sports — one movement, legends' numbers on one back), travel (half the frame city, half the frame sea, the same pose), "day and night" of one view, product "old — new"; a series of pairs — on a verse or a build, on the beat; seam sweep — on a section change; 1–2 constructions per video
+avoid: a "roughly" matching alignment — an axis or eye-line offset of more than 5 % reads as an editing mistake; different camera height and lens (the perspective breaks at the seam); a seam across the eyes without intent; strips narrower than 6 % of the width on a phone; more than 6 strips — it is already a mosaic; holding a static split longer than 2 s without changes; different camera moves on the two sides of the seam without intent — the frame "tears"
+sfx: pair change — a click or a hit on the beat; half swap — a short tick; strip reshuffle — dry clicks or a glitch stutter; seam sweep — the ambience of one side smoothly turns into the ambience of the other, following the seam; if both halves are talking — keep one voice
+genres: {fanedit: signature, fashion: signature, teaser: allowed, viral: allowed, ugc: allowed, sport: allowed, travel: allowed, product: allowed, drama: allowed, clips: allowed, motivation: allowed, epic: allowed, explainer: allowed, phonk: allowed, calm: allowed}
+detect: |
+  Own check (ed_motion doesn't do it): search each frame for straight discontinuities — for each vertical (horizontal) the share of its length
+  where the local step is > 6 levels and 2 times larger than the neighbors'; a line ≥ 0.3 of the length in ≥ 60 % of frames at 0.50, 0.46–0.50
+  or 0.34/0.68 is a candidate. Signs of the move: (1) there is no solid-color band wider than 1 % along the seam; (2) the parts change
+  independently — frame pairs where the difference is > 12 on only one side of the seam, cuts and camera moves differ between the sides;
+  (3) the object crosses the seam: the face or body center within ±10 % of the seam, the eye line at the same height on both sides
+  ±3 %, brightness profiles at the seam correlate ≥ 0.2 (typically 0.45–0.85), while the brightness step across the seam is 7–60 levels; (4) "time along the seam" —
+  static background edges match (correlation > 0.8), while the brightness and color of the sides differ (day/night).
+  Differs from layout.frame_division: there the parts don't have to form one object (a mosaic of different scenes, wallpaper of copies,
+  three different people butted together); here the seam runs through the object and alignment is the point. From layout.split_screen: there is a border
+  or a 0.6–6 % gap and the windows live separately. From cut.match: there the match is in time (a cut), here it is in the space
+  of one frame. From trans.wipe: a wipe crosses the whole frame in ≤ 1 s and hides behind an object, while a split holds. From
+  fx.duplicate: there clones are placed by a mask in a whole picture without straight seams. From trans.morph: there it is a smooth deformation.
+engine: |
+  aligned_split(clips=[a, b, ...], layout='half_v'|'half_h'|'bands_3'|'strips'|'time_columns'|'patch'|'grid_3x3',
+              seams=[0.5] | [0.34, 0.68], align=track(face|person|horizon), tol_pos=0.03, tol_scale=0.08, tol_rot=3,
+              gutter=0, swap=None|{side: 'a'|'b', every: '1/2'}, shuffle_every=None|1..3 (frames),
+              seam_sweep=None|{from: 0.95, to: 0.05, dur: 1.9, ease: 'linear'}, patch=None|{tiles: 4, dur: 0.5}, t=[t0, t1])
+  — first reframe/transform each part to a common axis (face, body, horizon), then cut along the seams and assemble;
+  pair search: find_split_pairs(clips, by='face'|'pose'|'horizon'|'static_bg', tol_pos=0.04, top_k=10);
+  series: aligned_split_chain(pairs, per_pair='1/2 bar'|'1 beat', cut='hard'); changes — beat_sync(grid='1/4');
+  + sfx('click'|'impact', at=pair_change) + sfx('whoosh', at=swap) when a half is swapped.
+gen_hint: "two shots for a seamless half-and-half composite: <subject A> and <subject B> filmed with an identical locked-off camera, same height, lens and framing, the face exactly centered at the same size, eyes at the same height, matching background, so the left half of one and the right half of the other form one face"
+commands: ["a face from two halves: me and my brother, seam in the center", "half the frame day, half night — the seam moves up over 2 seconds", "join pairs of athletes in halves, a new pair on every bar", "a face from three bands of different takes on the chorus"]
+related: [layout.frame_division, layout.split_screen, cut.match, trans.wipe, fx.duplicate, trans.morph, cut.vector_match]
+evidence: {examples: 22, sources: 18, measured: "own search for straight seams (share of the line with a step), independence of the sides (frame difference on each side of the seam), profile correlation at the seam, phase correlation of the halves' motion, timing from the cuts: seams at 0.50 (6 of 6 halves), 0.46–0.50 (top/bottom), 0.34/0.68 (bands); gap 0 in 17 of 20 split examples; step across the seam 7–60 levels; profile correlation at the seam 0.23–0.83 (median ≈0.55) for aligned parts versus −0.23…0.07 for deliberately different ones; the halves' motion correlates at 0.80–0.98; pair 0.35–1.7 s, half swap 0.5 s, strips 40–210 ms, seam sweep 1.9 s; 2 examples without a visible seam (a camera orbit, fast background changes behind a static face)", confidence: medium}
+---
+id: layout.frame_division
+family: layout
+group: graphics
+level: B
+aliases: [seamless split screen, borderless split, frame division, shot mosaic, cubist face, face mosaic, seamless split, patchwork frame]
+what: the frame is divided into halves, strips or rectangles from different takes with no borders or gaps — the parts butt up against each other and add up to one "almost seamless" picture — two people in one bed, a face from pieces of different takes, a stadium with a player pasted in
+frames: |
+  1. Division: 2–4 large zones (halves, thirds, a horizontal strip) or a mosaic of 6–40 rectangles;
+     there is no divider strip between the zones — the edge of one take runs straight into another.
+  2. The join is masked by composition: the seam follows a natural line (the edge of a bed, a wall, a door frame, a field
+     line), and the lines of the scene — horizon, floor, face axis, body contour — continue across the seam with an error of a few
+     percent. The eye first sees one picture, then notices the "glitch".
+  3. Life of the zones: each zone plays its own take — its own pace, its own time (day / night, different people in the same
+     bed), and a face mosaic moves out of sync: the mouth talks in one rectangle, the eyes blink
+     in another. On the beats the zones rearrange: rectangles change size, disappear, appear one by one.
+  4. Assembly and breakup: the parts slide together into a whole frame (two halves of a bed close up) or a whole frame
+     cracks into a grid that fills with copies — up to a "wallpaper" of 50–200 tiny tiles.
+variants:
+  - seamless halves: two or three scenes side by side as one (neighboring beds, two people face to face, a third in the distance)
+  - strip insert: a horizontal strip 15–35 % of the height — from another take (mouth, hands, jewelry), the rest from the original
+  - face mosaic: eyes, mouths and cheeks from different takes of one face in rectangles, the grid offset
+  - irregular rectangles: a stadium, a crowd, the sky and a player — rectangles of different sizes butted together
+  - repeat grid: the same shot in 3×4–10×20 tiles, the tiles slightly out of sync in time — a wallpaper pattern
+  - closing up: two halves slide together into a whole scene or the frame cracks into parts
+status: code
+fallback: joins with continuing lines need takes from one position (a tripod) — search the source footage for series shot with the same camera setup; if the camera differs — align the zones by the horizon and the face axis (reframe + transform) and put the seam on a contrasting line of the scene; without suitable takes — a mosaic grid from any close-ups (it doesn't hide the seam and doesn't need a match)
+params:
+  regions: 2–4 large zones or 6–40 rectangles; wallpaper grid 3×4…10×20 tiles
+  gutter: 0 px — no gap; hard edge, feather 0–1 px
+  seam: along a natural line of the scene; lines across the seam match with an error ≤ 2–4 % of frame height
+  strip: strip insert 15–35 % of the height, across the center of the face (eyes or mouth) or along the line of the hands
+  mosaic: rectangles 8–30 % of the frame width, the grid offset by ½ cell between rows; takes offset 2–10 frames from each other
+  rhythm: zones rearrange on every beat or ½ beat (0.25–0.5 s at 120 BPM); tiles appear one by one — 1–3 frames per tile
+  merge: halves close up over 8–15 frames (0.3–0.6 s), ease inOutCubic
+  duration: 1.5–5 s per construction (38–125 frames @25 fps)
+when: parallel lives (two people at the same time, day and night in one room), a portrait from many takes — emotions, performance, beauty and fashion, sport (player + crowd + sky), products or flavors side by side, a hook frame you want to study; rearrangements — on the beats, closing up — on a downbeat; 1–3 times per video
+avoid: different color and exposure between zones when an "almost seamless" image is intended (the seam shows immediately); a seam cutting the face across the eyes without intent; tiles too small on a phone (under 6 % of the width they don't read); a random mosaic without rhythm — turns into noise; a split with borders — that is a different move (layout.split_screen)
+sfx: a click or tick as each tile appears; on a grid rearrangement — a short glitch or whoosh; on the halves closing up — a dull thud or a rustle of fabric; face mosaic — voices or sounds offset in time, like an echo
+genres: {fashion: signature, fanedit: allowed, viral: allowed, product: allowed, sport: allowed, teaser: allowed, drama: allowed, clips: allowed, ugc: allowed, explainer: allowed, motivation: allowed, phonk: allowed}
+detect: |
+  Own check: long straight discontinuities (vertical or horizontal) along 30–100 % of a frame side, across which
+  texture, color or time change abruptly, but without a solid-color strip (otherwise it is a split with a border).
+  Time: the zones on both sides of the seam change independently — high frame diff in one, ≈0 in the other; blinks,
+  lip movements and steps don't coincide.
+  ed_motion: the global estimate has a low share of inliers and high nonrigid with no real parallax;
+  cuts inside one zone while the other stays unchanged.
+  Differs from layout.split_screen: there a border or a 1–4 % gap separates the windows. From gfx.collage: there the cutouts follow the
+  contour rather than being rectangles. From layout.windowbox: there it is a window on a solid field, here the whole frame is filled.
+  From fx.kaleidoscope: there it is the mirror symmetry of one image. From layout.aligned_split: there the seam runs through
+  one object and matching geometry on both sides is the point of the device; here the pieces don't have to add up to one whole.
+engine: |
+  frame_division(layout='halves'|'thirds'|'strip'|'mosaic'|'grid'|'free', regions=[{clip, rect=[x,y,w,h], src_offset, t_offset}],
+                 gutter=0, align='horizon'|'face_axis'|None, reshuffle_on='beat', reveal='one_by_one', reveal_step=2)
+  — rect in fractions of the frame; align lines up the scene's lines across the seam (reframe + transform of each zone);
+  face mosaic: face_mesh(clip) → tiles over the eyes and mouth from different takes, t_offset 2–10 frames;
+  closing up: transform(shift=[[−0.5,0],[0,0]]) for the left zone and mirrored for the right, dur=0.5, ease='inOutCubic';
+  + sfx('click', at=each_tile) + sfx('whoosh', at=rearrange).
+gen_hint: seamless split composition with no borders, the frame divided into <two halves | horizontal strips | a mosaic of rectangles> from different takes of <subject>, lines of the scene continue across the seams, overhead view, consistent lighting
+commands: ["two beds side by side without a border: me by day and me by night", "a face from pieces of different takes on the chorus", "paste a strip with the smile from another take into #4", "the frame cracks into a grid of copies on the drop"]
+related: [layout.split_screen, layout.windowbox, gfx.collage, fx.kaleidoscope, mask.double_exposure]
+evidence: {examples: 26, sources: 17, measured: "visual review only of all examples in the section at 5 moments of the animation (scripted frame capture blocked by browser permissions); the number of zones and the sizes of strips and tiles are approximate (≈) estimates from frames; the timing of rearrangements was not measured", confidence: medium}
+---
+id: layout.screen_in_screen
+family: layout
+group: graphics
+level: B
+aliases: [screen within the frame, screen in shot, video on a TV, picture on a screen, TV in the frame, phone in hand playing video, monitor insert, corner-pin screen, screen replacement]
+what: a screen glows inside the scene — a TV, a monitor, a phone, a laptop — and shows another video; "media within media", the subject watches or films, archive footage or a broadcast in the room
+frames: |
+  1. The screen is a bright quadrilateral inside the frame: 3–45 % of the area (a small TV in a dark cabin ≈ 3–5 %,
+     a phone in hand ≈ 5–10 %, a monitor or wall-mounted TV ≈ 20–45 %); the screen shows a different image.
+  2. The screen is 1.6–11 times brighter than its surroundings (up to ×40 in total darkness): the room is dark, the screen is the main light source,
+     a bluish glow falls on the viewer's face.
+  3. The camera is static (5 of 8 — jitter ≤ 0.2 %) while the screen content is alive: variability inside the screen is 5–70 times higher
+     than outside; on a phone — swipes and scrolling with a finger.
+  4. The screen faces the camera (centered, a frame within the frame) or is angled in perspective; old TVs have rounded corners,
+     lines, a murky picture, a slight blue or green tint.
+  5. Delivery: a static shot of 1–4 s; a fast push-in into the screen ×1.5 over 0.2 s (5 frames) centered on the screen; a whip
+     pan to a hanging TV and a hold; the subject looks at the screen — a cut to the content full-frame.
+variants:
+  - TV in a dark room — the subject watches, the face in the glow
+  - a small screen in a huge dark space — the screen 3–5 % of the frame, loneliness
+  - phone in hand — messaging, scrolling, a video call; over the shoulder
+  - a phone filming the scene — the same scene live on its screen
+  - a wall screen in a bar or a hall — a broadcast for everyone, handheld camera
+  - push-in into the screen — the camera "dives" into the TV, then the content full-frame
+status: hybrid
+fallback: search the source footage for shots with screens (detect) and replace the content — corner-pin to the 4 corners of the screen with tracking, + glow and glare; if there is no shot — generate a TV, a monitor or a phone in the right setting with a green or black screen (with consent), then insert the needed clip
+params:
+  screen_area: 3–45 % of the frame (phone 5–10 %, TV 15–45 %)
+  screen_luma: ×1.6–11 relative to the surroundings; content −10…−20 % contrast, ±5 % blue for an old TV
+  insert: corner-pin to 4 track points, feather 1 px, glass glare 5–10 % screen, glow on the viewer's face (+10–20 % brightness on the side facing the screen)
+  crt_look: corner rounding 6–10 % of the screen height, scanlines at 30–50 % contrast with a 2–3 px pitch, barrel 2–4 %, blur 0.5–1 px
+  hold: 1–4 s of a static shot
+  push_in: fast ×1.5 over 0.2 s (5 frames) or slow ×2–3 over 2–4 s, centered on the screen center; then a cut to the content full-frame
+  phone_ui: status bar and buttons — only our own neutral ones, no third-party logos
+when: exposition "the subject watches the news or a broadcast", a memory or archive footage on an old TV, messaging and social media on a phone, a reaction to what was seen, a transition from reality into the video (push-in into the screen); "screen → reaction → screen" editing carries the story in explainer and UGC videos
+avoid: recognizable third-party interfaces and logos on the screen; an insert without perspective, tracking and glare (looks pasted on); a screen too small without a push-in when the content matters; a screen overexposed into a white blob
+sfx: sound from the screen (muffled, band-limited like from a TV speaker), a remote click or a tap on the screen, room noise; on the push-in into the screen — a short whoosh or static
+genres: {explainer: allowed, ugc: allowed, drama: allowed, teaser: allowed, fanedit: allowed, clips: allowed, viral: allowed, calm: allowed, product: allowed}
+detect: |
+  A bright quadrilateral in the frame (straight edges, 4 corners, often in perspective) brighter than the surroundings ≥ ×1.6, area 3–45 %;
+  with a static camera the temporal variability inside it is 5–70 times higher than outside (ed_motion: no events,
+  overlay-mask high outside the screen); sometimes the glow on the viewer's face changes with the content.
+  Differences: a window (layout.windowbox) — the picture sits on a solid field, not inside a filmed scene; a mirror — a reflection
+  of the same scene; a full-frame interface — the screen fills the whole frame with no surrounding room; the screen's view (pov.screen) —
+  the camera looks FROM the screen at a person.
+engine: |
+  screen_detect(shot) → quad[4] + track(corners)
+  screen_insert(shot, clip, quad=track(screen_corners), feather=1, glare=0.08, glow=0.15, spill_on='face', crt=True|False,
+                crt_params={round=0.08, scanlines=0.4, barrel=0.03})
+  push-in into the screen: transform(scale=[1, 1.5], center=quad_center, t=[t0, t0+0.2], ease='inCubic') + cut(at=t0+0.2) → clip full-frame
+  (or transition('nest', quad=track(screen)) for a smooth entry)
+gen_hint: a dark room lit only by an old CRT television showing <scene>, a person watching in silhouette, blue screen glow on their face, rounded screen corners, slight scanlines, static camera, cinematic; variant - close over-the-shoulder shot of a phone in hand showing <content>
+commands: ["put my clip into the TV on #3", "push into the screen and then the video full-frame", "find shots with a phone in hand in the source footage and replace the screen", "show the archive video on an old TV in a dark room"]
+related: [layout.windowbox, pov.screen, trans.screen, zoom.crash, glitch.vhs]
+evidence: {examples: 8, sources: 8, measured: "screen 3–45 % of the frame (visually and by a luminance mask); brighter than the surroundings ×1.6–11 (up to ×40); with a static camera (5 of 8, jitter ≤ 0.17 %) variability inside the screen 2–81 versus 0.5–1.8 outside; push-in into the screen ×1.49 over 0.2 s centered at 0.5/0.5; handheld camera at the wall screen jitter 0.6 %", confidence: medium}
+---
+id: layout.screen_life
+family: layout
+group: graphics
+level: B
+aliases: [screenlife, screen life, desktop film, screen-based film, full-frame interface, screen recording, UI shot, stream overlay, full-frame UI]
+what: the whole frame is a device screen (a desktop, a browser, a messenger, a feed, a phone camera, a stream with chat, a terminal), and the story is told through actions in the interface — taps, the cursor, pop-up windows, scrolling and typing
+frames: |
+  1. Frame: the interface fills 100 % of the frame, the device body isn't visible; at the top a system bar or a browser header
+     4–10 % of the height; buttons, lists, windows with a close button, a system font. A clean screen capture is flat and sharp
+     (static camera, jitter < 0.05 % of the frame); a filmed screen — a macro of keys with a shallow depth of field, or a
+     terminal: green monospace text on black (frame brightness < 10).
+  2. Action: windows and notifications pop up in a cascade every 0.1–0.3 s, each 5–14 % of the area, offset in a
+     staircase; the feed scrolls in jerks of 0.4–0.5 s at 35–50 % of the frame per second (1.3–2 % per frame);
+     a finger tap or the cursor presses a button; text is typed letter by letter; a large action-confirmation banner
+     slides across on top.
+  3. Camera over the interface: a digital zoom-in to the active element ×1.7 over 1.5 s on an S-curve, shifting toward it (center
+     in a corner of the screen); a device change — the browser window crumples and turns into a phone screen.
+  4. Hybrids: a cut-out author (chroma key) over a scrolling feed, at the bottom to one side; a stream layout — a webcam window
+     ≈60 % of the width on the left, a chat column ≈20 % on the right, a game window ≈30 % bottom right, entering it — a jerk transition
+     of 3 frames from a full-screen game; a phone camera interface with a face-detection frame.
+variants:
+  - messages and notifications: messages and windows pour down in a cascade, a comic pile-up
+  - window collage: a picture assembles from dozens of pop-up windows, each showing its own part
+  - desktop → phone: the story runs through a browser, search and profiles, the window turns into a mobile screen
+  - feed and author: scrolling a list or a feed, with a cut-out host reacting on top
+  - stream overlay: webcam, chat and game window in a branded frame
+  - phone camera: a camera interface with a face frame and buttons over the scene being filmed
+  - terminal: command lines are typed on a black screen, then fade out
+  - filmed screen: a macro of a keyboard and a finger, then a cut to the clean interface
+status: code
+fallback: |
+  footage — the user's screen recordings (the real interface of their product or phone);
+  code — neutral interface templates (no third-party logos or brand colors) are rendered to PNG and filled with
+  the user's clips, images and text; generation is no good for large interface text (the letters
+  get distorted) — only for backgrounds and macro shots of a "filmed screen"
+params:
+  coverage: interface 100 % of the frame; system bar 4–10 % of the height; key text no smaller than 3–4 % of frame height in vertical video
+  popup: a new window every 0.1–0.3 s (3–8 frames @25 fps), 5–14 % of the area, cascade offset 3–6 % in x and y; appears with outBack over 3–5 frames
+  scroll: 35–50 %/s (1.3–2 % of the frame per frame) in jerks of 0.4–0.5 s, a stop with a 2–3-frame bounce
+  zoom_to_element: ×1.5–2 over 1–1.6 s, inOutCubic, centered on the element (can be near the frame edge)
+  typing: 8–15 characters/s ≈, cursor blinks at 2 Hz; terminal — monospace, green on black
+  cutout_host: cut-out host 35–45 % of frame height in a bottom corner
+  stream_layout: webcam 55–65 % of the width, chat 18–22 %, game window 25–35 % ≈
+  shot_length: 2–6 s per screen fragment (50–150 frames @25 fps); one interface per scene
+when: a hook in viral and UGC videos — messages, notifications, "I'm buried in messages"; explainer and product videos — a demo of an app, a service, a search; storytelling through chats and a browser (screenlife drama, a thriller teaser); a reaction or a stream — the host over the feed; a meme collage of windows; place notifications and taps on the beats of the track
+avoid: recognizable third-party interfaces, logos, real usernames and personal data in the frame (rights and privacy); small unreadable text; more than 5 new windows per second without a narrative payoff; a static screen longer than 4 s with no action; mixing three or more different interfaces in one scene
+sfx: system sounds — a short "ping" or click for each window and notification (on the beat), mouse clicks, keyboard clatter while typing, a whoosh on an app switch, an "error" sound on a comic cascade, typing ticks in the terminal
+genres: {explainer: signature, ugc: allowed, viral: allowed, product: allowed, drama: allowed, teaser: allowed, clips: allowed, fanedit: allowed, motivation: allowed}
+detect: |
+  ed_motion: static camera (jitter ≤ 0.05 %, up to 0.3 % for a filmed screen); scrolling — vertical SHIFT 1.3–2 %/frame
+  in jerks of 0.4–0.5 s; digital zoom-in ×1.5–2 with nonrigid < 0.08 (a flat picture); fast window changes produce false cuts.
+  Own check: frame changes happen in rectangular areas of 5–14 % of the area with straight edges (new windows);
+  bright frames (brightness 140–215, low saturation) or a black terminal (< 10); sharp pixel text, a system bar.
+  Differs from layout.screen_in_screen: there the screen is visible inside the scene with a bezel and a room around; here the frame is the screen.
+  Differs from gfx.floating_ui: there the windows hang in a live scene next to the subject.
+  Differs from pov.screen: there the camera looks out of the screen at a person through a mirrored interface.
+engine: |
+  new primitive ui_frame(template='chat'|'feed'|'desktop'|'browser'|'phone_camera'|'stream'|'terminal', theme='neutral',
+    slots={video: clip, image: [...], text: [...]}, status_bar=True, safe_zone='tiktok') — renders an HTML template to PNG + inserts clips into the slots
+  new primitive popup_cascade(items=[image|text], every=0.2, offset=[0.04, 0.04], scale_in='outBack', dur_in=0.15, max_visible=8, beat_sync=True)
+  new primitive cursor_path(points=[[x,y,t]...], clicks=[t...], style='arrow'|'finger', ripple=True)
+  scrolling: transform(shift=[[0,0],[0,-0.2]], t=[t0, t0+0.45], ease='outCubic') over a tall render of the feed, repeated in jerks
+  typing: text(content, anim='typewriter', cps=12, cursor_blink=2)
+  zoom to element: transform(scale=[1, 1.7], center=element_xy, t=[t0, t0+1.5], ease='inOutCubic')
+  host: mask(method='selfie') + composite(layers=[ui_frame, person], pos='bottom_left', height=0.4)
+  sound: sfx('click', at=each_window, align='attack') (+ a new sfx kind 'ping')
+gen_hint: full-frame screen recording of a generic, unbranded <phone chat | desktop browser | social feed> interface, notifications and windows popping up one after another in a cascade, cursor clicks and smooth scrolling, clean flat UI, crisp readable large text
+commands: ["tell this story as a chat on a phone screen", "make notifications pour down in a cascade on the beats in the hook", "make a stream layout: me in the camera window, chat on the right", "zoom in on the button in screen recording #3, then a click"]
+related: [layout.screen_in_screen, gfx.floating_ui, gfx.touch_gesture, pov.screen, trans.screen, layout.windowbox]
+evidence: {examples: 10, sources: 10, measured: "static camera in 9 of 10 (jitter 0.01–0.05 %, filmed screen 0.26 %); windows every 0.1–0.3 s, 5–14 % of the area; scrolling 1.3–2 %/frame in jerks of 0.36–0.48 s; zoom to element ×1.7 over 1.56 s, S-curve centered in a corner; entry into the stream layout with a 3-frame jerk; terminal — brightness 3.6; window collage — a change every ≈0.2 s", confidence: medium}
+---
+id: layout.split_screen
+family: layout
+group: graphics
+level: B
+aliases: [split screen, split, divided screen, screen in half, double screen, multi-panel, polyscreen, panels, multiscreen]
+what: the screen is divided by a thin line or gap into 2–6 windows, each with its own shot, all running at the same time — parallel action, a comparison, a phone call, different times; windows can slide in, rearrange and rotate the border
+frames: |
+  1. Division: 2 windows butted against a line — vertically 50/50 (most often) or top/bottom 50/50; 3 windows — a wide strip
+     at the bottom + two halves on top, or three columns 0.31/0.67; 4–6 windows in dynamic montages.
+  2. Divider: a line of 0.6–1.8 % of the frame — black (almost 0) or white; in the "designer" variant thick white gaps
+     ≈6 % of the width and solid color fields at the edges. Without a line it is already layout.frame_division.
+  3. The window contents are independent: their own cameras, their own cuts, often a different grade (warm versus cool:
+     mean RGB 83/45/22 versus 109/115/116), the motion in the windows isn't coordinated (correlation −0.3…0.35).
+     Glances and movements are directed toward each other across the line (a call, an argument, a chase).
+  4. The windows appear: right from the cut; the third window — by a cut after ≈1.2 s; in dynamic versions windows slide in and push each
+     other, rearranging in 0.2–0.4 s (≈8 % of the width per frame), a new window every 1–1.5 s.
+  5. Holds 1.2–7.5 s; exit — a cut to one window full-frame or the windows "collapsing".
+variants:
+  - vertical halves: two people in different places at the same time (a call, messaging, an argument), a 0.8 % white or black line
+  - top/bottom: one couple in two times or places — different grades, a thin dark line of 0.6–1.2 %
+  - L layout: a wide shot across the full width at the bottom, two halves with the subjects on top; the third window appears with a cut
+  - window carousel: 1 → 2 → 3 → 4 columns, windows slide in from the side and push their neighbors, black gaps ≈1 %, cut to the beat
+  - rotating border: the line appears horizontally and rotates at ≈30°/s, the windows are "re-cut" diagonally, with a color shift
+  - central strip: a vertical strip with the subject and color fields on the sides behind thick white gaps — a designer music video
+  - splitting: one frame is divided by glowing seams into 2–4 versions of the subject ("parallel worlds")
+status: code
+fallback: if there is no parallel shot — windows from one source with a time offset (the same shot +0.5–2 s), a mirrored copy, a different shot size from a 4K crop of the same shot, or generation of a second shot with consent
+params:
+  layout: 2v (50/50 vertical) | 2h (top/bottom) | L3 (wide at the bottom + 2 on top) | 3v (columns) | grid (4–6) | diag (angle, rotation) | strip (center + fields)
+  gutter: "0.6–1.8 % of the frame (1 % typical), color #000 or #fff; designer — 5–6 % white"
+  panel_reframe: each window — reframe on the face or object in its own aspect ratio (half of 16:9 = 8:9)
+  enter: cut | slide (0.2–0.4 s, ease outCubic) | wipe along the line; a new window every 1–1.5 s in dynamic versions
+  diag_rotation: 0–30°/s (rotating border), angle 0–75°
+  hold: 1.2–7.5 s per layout; 2–4 s typical
+  sync: events in the windows (a gesture, a line, a hit) — on the same beat; layout change — on a downbeat
+when: a phone conversation and messaging, parallel action (a chase, waiting, preparation), "before and after", comparing products or options, a reaction next to the content (UGC), two eras or two moods of one couple, a music video finale with a multi-screen; dynamic carousel — the build before the drop; no longer than 8 s per layout
+avoid: vertical 9:16 format with a vertical division — the windows are too narrow (split top/bottom instead); small faces and text in 4+ windows on a phone; windows with no connection in meaning; too much motion in all windows at once — the eye doesn't know where to look; different window brightness without intent
+sfx: each window with its own sound, but keep only one loud; a window appearing — a short whoosh or click; in a carousel — a hit on each rearrangement; in a call — voices with a telephone filter, taking turns
+genres: {viral: allowed, ugc: signature, product: allowed, explainer: allowed, teaser: allowed, fanedit: allowed, clips: allowed, drama: allowed, sport: allowed, fashion: allowed, travel: allowed, epic: allowed, phonk: allowed}
+detect: |
+  Stable straight seams across the whole frame (or across half of it) at 0.5, 0.31/0.67 or at an angle: a thin solid
+  strip of 0.6–6 % (brightness <25 or >225, spread along the line <6) or an abrupt content break at the same coordinate
+  in all frames. The two sides of the seam have different grades, motion and cuts (window motion correlation −0.3…0.35).
+  ed_motion: "cuts" only on layout changes, a large overlay-mask (static seams), no global events or
+  uncoordinated ones. Rotating border — a line whose angle changes by 1–2.5° per frame.
+  Differs from layout.frame_division: there is no line or gap there, the join is masked by composition.
+  From layout.windowbox: one window on a field. From mask.double_exposure: the shots are blended by transparency, not divided.
+engine: |
+  split_screen(layout='2v'|'2h'|'L3'|'3v'|'grid'|'diag'|'strip', panels=[clipA, clipB, ...], gutter=0.01,
+               gutter_color='#000', reframe=track(face), enter='cut'|'slide', enter_dur=0.3, diag_angle=[0, 75],
+               diag_speed=30, t=[t0, t1])
+  — each window: reframe(aspect=panel, target=track(face)); slide — transform(shift) of neighboring windows, ease='outCubic';
+  layout changes — on a downbeat: beat_sync(event='layout_change', grid='1/1'); exit — cut to a window full-frame.
+gen_hint: split-screen composition, the frame divided by a thin black line into <two halves | top and bottom | three panels>, each panel shows <subject A> and <subject B> in different locations at the same moment, matching eyelines across the divider, cinematic color contrast between panels
+commands: ["50/50 split screen on the call in #3", "top/bottom: the past warm, the present cool", "window carousel on the build before the drop", "before and after in halves with a thin white line"]
+related: [layout.frame_division, layout.windowbox, mask.double_exposure, cut.quick, fx.kaleidoscope, frame.two_shot]
+evidence: {examples: 8, sources: 8, measured: "dividers 0.6–1.8 % (white 0.8 %, black 1–1.8 %), designer ones 5.9 %; division at 0.50 (vertical — 3, horizontal — 2), 0.31/0.67 in three columns; L layout — the third window by a cut after 1.2 s; carousel — windows shift ≈1/3 of the width in 0.2 s, a new window every 1–1.5 s; rotating border 0→74° over ≈3.3 s (≈20–30°/s); different grades in the windows; window motion correlation −0.32…0.35; duration 1.2–7.5 s", confidence: high}
+---
+id: layout.windowbox
+family: layout
+group: graphics
+level: B
+aliases: [windowbox, windowboxing, window on black, window on white, framed shot, window picture, passe-partout, framed clip, boxed frame, photo on a white background]
+what: the shot doesn't fill the whole screen but sits as a window on a solid field (black or white) — lots of empty space around, a feeling of a photograph, an archive, a screen or a private moment
+frames: |
+  1. Field: black (#000–#0e1116) or white (#eef4f5–#fff), solid on all four edges, the same throughout the episode.
+  2. One window in the center: 9–45 % of the frame area (typically 20–24 %), center 0.5 ± 0.05; aspect — native to the footage
+     or a crop: vertical 0.63–0.76, square 1.0, 4:3, wide 1.75.
+  3. Appearance: the window "pops out" from a point — 3 % → 21 % of the area in 0.24 s (6 frames @25 fps) — or floats in from the side
+     in 0.4–0.6 s; exit — a fade of 0.2–0.3 s or sliding off past the edge.
+  4. Rhythm: on every beat or cut the crop and height of the window change (every 0.14–0.6 s), the width holds;
+     sometimes one shot full-screen (100 %) as a hit, then a window again.
+  5. Several windows: diptych — 2 windows of ≈ 11 % each with a gap of ≈ 10 % of the width; collage — 6–17 fragments (eyes, lips)
+     cover 53–64 % of the field and rearrange every 0.1–0.6 s.
+  6. Styling: a hard edge, rounded corners, a thin "picture" frame, a torn paper edge
+     or an instant photo with a white border and a wide bottom margin.
+variants:
+  - dark field: a window on black — intimate, "a screen in the dark", archive
+  - light field: a photo on white — an album, a lookbook, memories
+  - jumping window: the crop and height of the window change on the beats
+  - window collage: pieces of a face or a scene laid out on the field and rearranging
+  - photo stack: photos of one subject from different years change every 0.14–0.3 s with a ±3–8° rotation
+  - instant photos: cards with a white border slide in and out, one at a time or in pairs
+status: code
+fallback: any material works; if the source is low-resolution, the window actually helps — a 0.3–0.5 scale hides the softness; a collage of face fragments needs a face mask (mediapipe face) — that is already hybrid
+params:
+  canvas: "#000000, #0e1116, #ffffff or #eef4f5 — one per episode"
+  scale: window area 9–45 % (linear scale 0.3–0.67), typically 0.45–0.5 of the width
+  aspect: native | 0.7 | 1.0 | 1.33 | 1.75
+  position: center [0.5, 0.5] ± 0.05; diptych — centers 0.33 and 0.67, gap 0.08–0.1 W
+  corners: 0 | 3–6 % of the window height
+  border: none | a dark brown frame 1–1.5 % H | a white photo border 4 % with a ×3 bottom margin | torn edge
+  pop_in: 0.24 s (6 frames), outCubic; slide-in from the side 0.4–0.6 s; fade 0.2–0.3 s
+  rhythm: crop and window height change on every beat (0.14–0.6 s)
+  collage: 6–17 cells, coverage 0.5–0.65, rearranged on the beat
+  photo_stack: a new photo every 0.14–0.3 s, rotation ±3–8°, scale 0.25–0.8
+  vertical_safety: in a 9:16 output the window ≥ 20 % of the area, otherwise it doesn't read on a phone
+when: memories, archive and "found" footage, vertical video inside a horizontal video, a photo album of one subject, an intimate quiet moment, messaging and a screen, a music video intro; the "small window → full screen" contrast on the drop
+avoid: details that must read on a phone (a window smaller than 20 % of the area); changing the field color within an episode; text and stickers over the window; a window in a dynamic action scene for no reason; a border whose color clashes with the shot
+sfx: a shutter click for each new photo, a paper rustle as a card slides in, an interface "ding" for messages; for quiet moments — only room tone
+genres: {fanedit: signature, fashion: allowed, teaser: allowed, clips: allowed, ugc: allowed, viral: allowed, calm: allowed, drama: allowed, explainer: allowed, travel: allowed}
+detect: |
+  A ring along the frame edge is solid (black ≤ 15 or white ≥ 238) in all frames, the content is a compact rectangle
+  (or several) with straight edges and margins on all four sides; area 9–70 %. ed_motion: bars on the top,
+  bottom, left and right at once > 0.05 (for a white field the bars aren't caught — an own check on the color of the frame border is needed);
+  changes in window geometry coincide with cuts or beats.
+  Differences: letterbox — bars only at the top/bottom (or on the sides), the picture touches two edges; split screen —
+  panels fill the frame without a field; screen in screen — a device inside the scene; vignette — a soft darkening, not a rectangle.
+engine: |
+  windowbox(clip, canvas='#000', scale=0.47, aspect='native', center=[0.5, 0.5], corner=0.04, border=None|'frame'|'instant'|'torn')
+  appearance: windowbox(scale=[0, 0.47], t=[t0, t0+0.24], ease='outCubic'); rhythm: windowbox(crop='beat_random', min_area=0.15, max_area=0.4, at=beats)
+  collage: layout_grid(clips|face_parts, cells=9, cover=0.6, gutter=0.02, canvas='#000', reshuffle_on='beat')
+  photo stack: photo_stack(images, every=0.2, rotate=6, canvas='#fff', border='instant') + sfx('click', at=each)
+gen_hint: a small framed video window floating in the center of a pure black canvas, wide empty negative space all around, rounded corners, minimal editorial layout; alternatively instant photos with white borders laid on a white tabletop
+commands: ["put the vertical video as a small window in the center on black", "photos of the subject one at a time on a white background to the beat", "a collage of face pieces on black on #4", "a small window, and full screen on the drop"]
+related: [fx.letterbox, layout.split_screen, layout.screen_in_screen, gfx.collage]
+evidence: {examples: 13, sources: "8 + 5 (distinct within each subsection)", measured: "window 9–45 % of the area on black (typically 20–24 %), on white 13–68 %; aspect ratios 0.63–1.75; appearance 3→21 % in 0.24 s; crop change every 0.14–0.6 s; collage 6–17 windows, coverage 53–64 %; diptych 2×11 %; photo stack — a new photo every 0.14–0.3 s", confidence: high}

@@ -1,0 +1,201 @@
+id: arc.horizontal
+family: arc
+group: camera
+level: B
+aliases: [horizontal arc, arc around the subject, half orbit, circular tracking shot, arc shot, 180-degree arc]
+what: "a sideways arc around the subject at a fixed radius: the background sweeps past while the subject holds the middle of the frame — anything from a slow, tender half-circle to a fast arc in an action beat"
+frames: |
+  1. The subject (or a couple, an object) is centered across the frame width (x 0.45–0.55), the camera at the same height or lower.
+  2. The camera travels sideways along a 45–180° arc (≈, most often 60–120°), always looking at the subject: the background
+     slides the opposite way by 40–140 % of the frame width over the shot (≈1.5–2.5 % of the width per frame @25 fps), the
+     foreground rushes past even faster — strong parallax; the perspective turns give a visible roll of 10–50° with a low camera.
+  3. Speed: a slow arc ≈20–40°/s, 2–4 s — reveals the subject and the space; a fast "whip" arc of 90°+ in
+     0.5–1 s with motion blur — a hit, a turn, a burst.
+  4. Often combined with a push-in (×1.1–1.5) or an occlusion: a column, people or a dark foreground "wipe" the frame
+     for 1–3 frames — a cut is hidden under it.
+  5. End: the subject now faces the camera with the other side, a new background behind; hold 0.5–1 s or cut on the motion.
+variants:
+  - slow orbit around the subject: a person standing under an archway, by a window, in a field — a ≈90° arc in 2.3 s, the background slides by 140 % of the width
+  - table orbit: the camera circles people seated at a table, people in the foreground cover the frame and give hidden cuts
+  - whip arc: 60–90° in 0.5–1 s with motion blur around a face or a punch; often a black-and-white music-video style
+  - low sports arc: the camera at turf level circles players in motion, roll up to 60° on the turn
+  - aerial arc: a drone circles a moving subject (a surfer, a car) while pushing in and descending, a 120° turn in 3 s
+  - cut arc: 20–25 different subjects (motorcycles, people) for 3–4 frames each, the angle moves from cut to cut front → profile → back → front, a full circle in 3–4 s
+  - from behind to the face: starts on the back of the head or the back, a ≈150–180° arc in 1.8–3 s (≈60–90°/s) comes round to a frontal view and slows down, often with a ×1.2 push-in (slow version — 5–6 s with a ×1.8 zoom); the reverse move — from the face to the back in ≈2.7 s, the subject "walks off" into the world
+status: footage
+fallback: "code: a fake arc up to 10–15° — subject mask + background shifted one way and the subject slightly the other way (2.5D) + 2–4° roll; cut arc — pick shots of different subjects from the source footage with the angle advancing step by step and cut 3–4 frames per beat; a full orbit — generation with consent (image-to-video \"camera orbits around\") or a search of the source footage for shots where the background flows sideways while the subject stays centered"
+params:
+  angle: 45–180° (≈), typically 60–120°
+  speed: slow 20–40°/s (2–4 s); fast 90°+ in 0.5–1 s with motion blur
+  bg_shift: background 40–140 % of the width per shot, ≈1.5–2.5 % of the width per frame @25 fps
+  subject: x 0.45–0.55, size constant or growing (push-in ×1.1–1.5)
+  height: at the subject's level or lower (a low arc strengthens the roll and the scale)
+  occlusion: optional — the foreground covers the frame for 1–3 frames, cut on the occlusion
+  ease: inOutQuad for slow; outCubic for whip
+  cut_arc: cut version — 3–4 frames per angle, 20–25 angles per circle, switch on 1/8 or 1/16
+when: revealing the subject and the place (intro, first appearance), a romantic or emotional peak, "going around" a dinner table or a group of friends, a turn in action and sports, a product orbit; cut arc — dynamic cutting on the beat; 1–2 orbits per video
+avoid: shaky source; an arc whose center drifts off the subject (the axis is lost); an orbit against a featureless background — the motion doesn't read; a 2.5D fake beyond 15° (the mask edges tear); whip arcs back to back — causes motion sickness
+sfx: slow — a rising pad or swell; whip — a whoosh with Doppler at peak speed; orbit in a noisy location — pan the sound to follow the movement
+genres: {epic: signature, fashion: signature, sport: allowed, drama: allowed, travel: allowed, product: allowed, teaser: allowed, motivation: allowed, fanedit: allowed, phonk: allowed, viral: allowed, clips: allowed, calm: allowed}
+detect: |
+  ed_motion: a long SHIFT of 40–140 % of the frame in one direction over 1–4 s while the subject stays centered (local
+  subject motion against the global one), nonrigid 0.3–0.8 (strong parallax); often ROTATE 10–60° from the perspective
+  and ZOOM-IN ×1.1–1.5 at the same time. Whip arc — the same in 0.5–1 s with motion blur (min sharpness ×0.1–0.5).
+  Cut arc — cuts every 3–4 frames, each with a new subject at the same size and position in the frame,
+  the angle changes monotonically.
+  Differs from truck.lateral: there the camera moves in a straight line and the subject leaves the center. From pan.basic: there is no parallax,
+  background and subject shift together. From orbit.turntable: there the object rotates and the background stands still. From arc.vertical: the camera goes
+  over the top or underneath, not sideways.
+engine: |
+  Real orbit — pick by detect; speeding up a whip arc — speed(curve=[[0, 1], [0.5, 2.5], [1, 1]], interp='flow')
+  + blur(kind='directional', amount∝speed).
+  Fake: mask('mediapipe_person') → parallax_orbit(angle=12, push=1.15, layers=2, t=[t0, t0+2.5], ease='inOutQuad');
+  cut arc: cut_arc(clips=[...], per_clip=0.14, order='by_yaw', subject_lock=track(object)) — new primitive:
+  sorts shots of different subjects by camera angle (by pose/orientation) and cuts on the beat.
+gen_hint: smooth arc shot, the camera orbits <subject> horizontally around 90 degrees at constant distance, subject stays centered while the background slides behind with strong parallax, <slow and cinematic | fast whip arc with motion blur>
+commands: ["90° orbit around the subject in #3", "whip arc around the face on the hit", "cut arc from all the motorcycles, 3 frames per beat", "circle the dinner table with the camera, with occlusions"]
+related: [arc.orbit, arc.vertical, orbit.turntable, truck.lateral, drone.fpv, time.bullet_time, dolly.float]
+evidence: {examples: 8, sources: 8, measured: "slow arc: background 139 % of the width in 2.34 s (≈2.5 %/frame) with the subject centered, visible roll 47°; table orbit 13 s with foreground occlusions (dark frames every ≈0.4 s); whip arcs — image rotation 64–84° in 0.9–1.4 s; aerial arc — 124° turn in 3.2 s with a push-in; cut arc — 25 subjects at 140 ms each (≈3.5 frames @25 fps), a circle in ≈3.5 s; arc angle — visual estimate", confidence: medium}
+---
+id: arc.orbit
+family: arc
+group: camera
+level: B
+aliases: [orbit shot, 360 orbit, 360-degree shot, full orbit, circle shot, circular orbit, circling camera, carousel around the subject, ring dolly shot, drone orbit, circling drone shot]
+what: the camera travels a full circle around the subject (270–360° and more) in one continuous move — the subject stays in the center of the frame while the world behind spins all the way round; back → face → back, "the whole world around one person" and a view from every side
+frames: |
+  1. Start: most often from the back or the back of the head (3 of 5 true orbits) — no face yet, the background already flows sideways.
+  2. Orbit at a constant speed: cinematic — one revolution in ≈7 s (≈50°/s), dance and action — in 3–3.5 s
+     (≈110–120°/s). The subject stays near the center (face x 0.35–0.65), shot size constant ±10 % (face 28–34 % of frame height)
+     or "breathing" along an ellipse: tight on the back of the head from behind and a wide shot from the front (the face changes ×2–2.5).
+  3. The background at the frame edges flows in one direction for the whole revolution (≈40 % of the width per second at a 7 s revolution) and over the circle
+     changes completely: lights → greenery → wall → windows → lights again. A shallow depth of field turns it into a stream of bokeh.
+  4. The face reads for only ≈1/3 of the revolution (frontal ±60°): a face detector sees it for ≈2.3 s of 7 — yaw goes from −0.9 through 0
+     to +0.9, the frontal view falls at the middle of the circle (3.4–3.8 s), the rest of the time — profile and the back of the head.
+  5. End: the same angle as at the start (360° loop), or arriving on the face and stopping; low wide-angle orbits
+     enter and exit with a whip blur of 2–3 frames.
+variants:
+  - steady 360° orbit at shoulder height: a person with a phone at night, one revolution in 7 s, the shot size doesn't change (1 of 9)
+  - spiral (elliptical): the camera moves in to the back of the head and pulls back to a wide shot in front, 1.5 revolutions in 10 s; a person sitting in an armchair on a rug in a black void (1 of 9)
+  - low wide-angle: the camera at knee height circles a standing subject ≈300° in ≈5.4 s, facades and the street bend around, whip-blur entry and exit (1 of 9)
+  - fast action orbit: low around a motorcycle in smoke ≈270° in ≈2.2 s (≈120°/s) (1 of 9)
+  - handheld dance orbit: the operator circles a dancer in a black void, frontal view every ≈3.3 s, 3.5 revolutions in 12.8 s, the shot size jumps (1 of 9)
+  - orbit without camera movement: the camera stands still while a frozen figure — an acrobat on a pole, a rider on a horse, a person smoking, a pair of dancers — slowly rotates under top light in a black void, ≈45–70°/s; with no reference points the shot reads as an orbit (4 of 9)
+status: footage
+fallback: |
+  1) search the source footage by detect: the cycle "back of the head → face → back of the head" with the subject standing in the center and the background flowing
+     in one direction; long gimbal and drone takes (point-orbit mode) often contain such pieces;
+  2) the "orbit in a void" trick: a subject or object on a black or plain background — a turn on a rotating platform (orbit.turntable)
+     is indistinguishable from an orbit; for a product — a 3D model from a photo and a render of a revolution;
+  3) fake in code — only a short arc up to ±12–15° (mask + 2.5D parallax), a full circle can't be done in code;
+  4) generation with the user's consent from gen_hint: 5 s give ≈180–270°, a full revolution — two generations cut together on the back of the head
+params:
+  revolution: cinematic 6.5–7.5 s per revolution (≈50°/s, ≈2°/frame @25 fps); dance and action 3–3.5 s (≈110–120°/s, ≈4.5°/frame); angle 270–360°, sometimes 1.5–3.5 revolutions
+  speed_curve: constant (linear) for the whole revolution; acceleration and deceleration ≤0.5 s (≤12 frames @25 fps) at the ends; handheld and wide-angle — whip entry and exit of 2–3 frames
+  subject: face or figure x 0.35–0.65, near the center or in the upper third; shot size MCU–CU, face 25–35 % of frame height, constant ±10 %; spiral — ×2–2.5 (closer from behind)
+  height: shoulder level or slightly above — cinematic; knee height with a wide angle — energy; from above looking down — on a seated subject
+  background: flows in one direction for the whole revolution, ≈40 % of the width per second at a 7 s revolution; shallow depth of field, the background is bokeh
+  face_window: the face reads for ≈1/3 of the revolution (frontal ±60°) — ≈2.3 s at a 7 s revolution; place a line, a glance, an emotional peak in this window
+  start_end: start from behind — the face is revealed in the middle; for a loop, start and end on the same angle (frame match)
+  loop_bars: revolution = 4 bars (120 BPM → 8 s ≈ 45°/s; 100 BPM → 9.6 s ≈ 38°/s) or 2 bars for fast ones
+  duration: a whole revolution 6–8 s (150–200 frames @25 fps); in a montage — 2–3 s, half a circle; examples 2.2–12.8 s
+  void_spin: in a void — the subject turns on a platform at ≈45–70°/s, the camera stands still, top light, subject centered, background without detail
+when: |
+  a climax or a "moment at the center of the world": the subject is alone while the world spins around — loneliness in a night city, resolve,
+  falling in love, triumph; presenting a subject, a look, a car or a product from all sides (intro, an artist's entrance, a fashion look);
+  an instrumental break, a bridge or the first bars of a chorus — one revolution per 4 bars; dance and performance — fast handheld circles on the
+  downbeats; the ending — a 360° loop that makes the video loop seamlessly. One full orbit per video, in a music video — up to two.
+avoid: |
+  jerky or drifting speed — the revolution looks like an operator's mistake; the subject wanders around the frame or changes shot size at random;
+  the crew, the camera's shadow, the tracks are visible; a revolution longer than 8–10 s with nothing happening — causes motion sickness; a line that lands on the
+  back of the head (the face is visible for only a third of the circle); a bare background without detail in an open space — the orbit doesn't read; two orbits
+  in a row; over fast cutting — the revolution doesn't have time to register
+sfx: |
+  a continuous pad, sweep or "swirl" for the whole revolution, building toward the frontal view; background lights passing — soft whoosh sounds around the circle;
+  fast orbits — a whistle with Doppler on each revolution; 360° loop — the same sound across the seam so the cycle doesn't click
+genres: {fashion: signature, epic: allowed, drama: allowed, motivation: allowed, teaser: allowed, product: allowed, sport: allowed, fanedit: allowed, viral: allowed, phonk: allowed, travel: allowed, calm: allowed}
+detect: |
+  ed_motion barely builds a global model here — a large subject stands still, the background flows: nonrigid 0.3–0.8, false ROTATE,
+  jitter p90 2–10 %; that is already a hint. Three checks on frames every 0.1–0.2 s decide it:
+  1) the background in strips along the frame edges (phase correlation, width 0.3) flows in one direction for ≥4 s straight (≥70 % of pairs with the same
+     sign), the subject in the center barely shifts;
+  2) face detector (YuNet): "no face → face, yaw from −0.9 through 0 to +0.9 → no face" repeats with the revolution period,
+     yaw moves the same way on every pass; face size constant ±10 % or smoothly "breathing" (spiral);
+  3) the background changes completely over a revolution and by the end returns to its initial look (histogram comparison of the first and last
+     frames) — a full circle and a ready-made loop.
+  Orbit without camera movement: in a void checks 1–3 don't work — look at the floor: the floor texture is static (frame difference
+  ≈0.4 versus 7–8 on the figure) → the subject is rotating, the camera stands still.
+  Differences: arc.horizontal — a 45–180° arc, the face passes once and doesn't return to the back of the head; orbit.turntable — the subject
+  rotates in front of a static background with detail; rig.spin_lock — the angle on the subject doesn't change, the face stays in frame all the time;
+  pan.round_table — the camera stands in the center and looks outward, there is no anchor; time.bullet_time — the subject is frozen in action,
+  objects hang in the air around; trans.arc — during the orbit the world changes through an occlusion.
+engine: |
+  Real orbit: find_shot(kind='orbit') by detect → facing_track(clip, target=track(person)) — new primitive: a timeline
+  of the subject's facing (frontal / profile / back of the head from face yaw and pose); place the line and the peak in the frontal window.
+  To music: speed(rate=T_revolution / T_4bars, interp='flow'), tolerance ±20 %; loop — find_loop_point(clip, match='frame')
+  (new primitive: two frames with the same angle and background) + loop(mode='cycle'); transition — cut on the back of the head (see trans.arc).
+  Orbit in a void: mask(method='hf_remove_background') → generate_3d(image) → turntable_render(model, deg_per_s=50,
+  elevation=10°, bg='solid') — a revolution in 7 s; or a real turn of the subject on a platform in front of a static camera.
+  Fake short arc: parallax_orbit(angle=12, push=1.1, layers=2) — no more than ±15°.
+  Generation: generate_video(prompt=gen_hint, dur=5) ×2, cut on the back of the head (the angles join by yaw).
+  + sfx('swell', at=t0) + sfx('whoosh', at=frontal, align='peak').
+gen_hint: smooth 360-degree orbit shot, the camera circles <subject> at <eye level | low angle> in one continuous move at constant speed, the subject stays centered and still while the background rotates fully behind them (<night city lights | black studio void>), starts behind the subject, reveals the face halfway, returns behind the subject, shallow depth of field, cinematic, no cuts
+commands: ["360 orbit around the subject on the instrumental break", "find circular orbits in the source footage and loop the best one over 4 bars", "a loop from an orbit around the artist at the end", "show the look from all sides with an orbit", "spin the product on a black background like a camera orbit"]
+related: [arc.horizontal, arc.vertical, orbit.turntable, rig.spin_lock, pan.round_table, time.bullet_time, trans.arc, trans.spin, loop.end]
+evidence: {examples: 9, sources: "≈6", measured: "two steady orbits — a revolution in ≈7 s (≈51°/s) by the face detector: back of the head at 0–2 s, frontal at 3.4–3.8 s, back of the head again at ≈7 s; the face is visible ≈2.3 s of 7 (yaw −0.9…+0.9), face size 28–34 % of frame height for the steady one and ×2–2.5 for the spiral one; the background at the edges flows in one direction — median 37–44 % of the width per second, 70–75 % of pairs with the same sign; dance — frontal every ≈3.3 s (≈110°/s); action ≈270° in 2.2 s and wide-angle ≈300° in 5.4 s — visual estimate; orbit in a void: the floor is static (frame difference 0.4–0.5 versus 7–8 on the figure), the figures turn at ≈48–70°/s", confidence: medium}
+---
+id: arc.vertical
+family: arc
+group: camera
+level: B
+aliases: [vertical arc, arc over the top, over-the-top shot, camera flip over the subject, flip shot, wheel, top-down arc, arc from above, 360 vertical loop]
+what: the camera travels along an arc in the vertical plane around the subject — from eye level up through a straight top-down view, sometimes further "over the head" so the world turns upside down; a striking change of viewpoint on a single object
+frames: |
+  1. Start: eye level or a low angle, the subject centered, the horizon visible (at the top of the frame).
+  2. Rise: the camera goes up and tilts down at the same time — the background "drifts" down the frame by ≈ 1–2 % of the height per frame
+     @25 fps, the ground comes closer (scale grows ×1.5–5 over 1.2–2 s), the horizon leaves past the top edge; the subject stays centered.
+  3. Apex: a straight top-down view — the subject is compressed into a silhouette seen from above, no horizon; the movement is fastest here:
+     5–10 % of the frame per frame (the whole frame "rolls through" in 0.4–0.8 s), often with an accumulated roll of 10–20°.
+  4. Past the apex (flip variant): the horizon appears at the BOTTOM edge, the sky is below — the world upside down; or the camera
+     comes down on the other side to eye level (a full 180° arc).
+  5. Length: a fast arc 1.7–4 s, a slow one up to ≈ 7 s; a full 360° loop (camera on a swing or a suspended rig) ≈ 3 s.
+  The reverse move (from above down to eye level) — a "landing" on the subject: reveals the face and the surroundings.
+variants:
+  - rise over the top — from eye level to the top-down view, ≈ 90°
+  - flip over the head — past the apex, horizon at the bottom, the world upside down, ≈ 180°
+  - descent from above to the face — from the top-down view to eye level (revealing the subject), often with a 6–12° rotation
+  - bottom to top — from a low angle beneath the subject, past the side, to the top-down view, slowly (≈ 6–7 s)
+  - 360° loop — the camera and the subject rotate together (a swing, a suspended rig), ground → subject → sky → ground
+  - drone over an object — a car on a road: from a view along the road to straight overhead and beyond
+status: footage
+fallback: from 360° video the arc is done precisely in code (reframing by pitch angle −0…−180° while keeping the subject centered); from regular video you can only fake a short "flip" — a fast tilt with blur and a 180° rotation at the apex where the frame is smeared; otherwise search the source footage for drone and crane shots, or generation with consent
+params:
+  arc_angle: 90° (rise to the top-down view), 180° (over the head), 360° (loop)
+  duration: 1.7–4 s (42–100 frames @25 fps), slow up to 7 s; loop ≈ 3 s
+  speed_profile: slow at the ends, fastest at the apex (5–10 % of the frame per frame versus 1–2 % at the ends), ease inOutCubic
+  scale_change: ×1.5–5 when approaching the ground or the object (the top-down view is closer)
+  roll: accumulated roll 6–20° — natural for a drone or a suspended rig; 0° — on a crane
+  subject: keep centered ±0.1; a contrasting figure or a car on a uniform background (water, asphalt) reads best
+  motion_blur: at the apex a smear of 1–3 % of the frame; can hide a cut
+  reframe_360: pitch [0 → −90 → −180], yaw fixed, fov 90–110°, roll optional
+when: an intro opening, introducing a subject or a car, a transition between parts (at the apex, in the blur — a cut to a new scene), the climax of a dance or a stunt, travel and drone sequences; flip — on the drop or for "the world turned upside down"; no more than 1–2 times per video
+avoid: a shaky or jerky path (gives away a handheld imitation); the subject leaves the center; a crooked horizon at the start and end (the flip reads as a mistake); calm explainer videos; two vertical arcs in a row
+sfx: a long whoosh or riser on the rise, peak at the apex; for the flip — a reverse whoosh and a hit at the moment the horizon appears at the bottom; loop — wind, whistle
+genres: {travel: allowed, epic: allowed, viral: allowed, fanedit: allowed, sport: allowed, teaser: allowed, fashion: allowed, motivation: allowed, phonk: allowed}
+detect: |
+  ed_motion: a long continuous vertical SHIFT (content moves UP or DOWN) of 60–190 % of the frame over 1.7–4 s:
+  1–2 %/frame at the ends and a peak of 5–10 %/frame at the apex, together with ZOOM ×1.5–5 centered on the subject and an accumulated ROTATE
+  of 6–20°; high nonrigid (real camera and parallax). Visually: the horizon leaves past the top edge, then a straight
+  top-down view, sometimes the horizon comes back from below (sky at the bottom); the subject stays near the center all the time.
+  Differences: tilt — the camera rotates in place, the subject leaves the frame, no parallax; crane rise — the angle
+  changes by less than 90°, no straight top-down view; roll — the image rotates around the center without a change of angle;
+  horizontal arc — the background runs sideways, the horizon stays in place.
+engine: |
+  360 video: reframe_360(pitch=[0, -90, -180], yaw=track(subject), roll=[0, 12], fov=100, t=[t0, t0+3], ease='inOutCubic')
+  fake flip (regular video): transform(shift=[[0, 0], [0, -0.6]], rotate=[0, 180], t=[t0, t0+0.6], ease='inOutCubic', motion_blur=0.5)
+    + blur(kind='directional', amount∝speed) + cut(at=apex) into a shot filmed from above
+  + sfx('whoosh', at=t0, align='attack') + sfx('impact', at=apex)
+gen_hint: smooth drone camera arcing vertically over <subject>, starting at eye level, rising over the top into a perfect top-down view and continuing past it until the horizon appears upside down at the bottom of the frame, subject stays centered, one continuous move, cinematic
+commands: ["vertical arc over the subject on the drop", "do a camera flip over the head on #4", "descent from above to the face in the intro", "make an arc from the horizon to the top-down view from the 360 video"]
+related: [angle.overhead, angle.birds_eye, crane.pedestal, drone.fpv, tilt.basic, orbit.turntable]
+evidence: {examples: 6, sources: 6, measured: "vertical shift 60–190 % of the frame over 1.7–4 s (slow arc — 72 % over 6.8 s); peak 5–10 %/frame at the apex versus 1–2 %/frame at the ends; scale ×1.5–5.1 when approaching the ground; accumulated roll 6–20°; flip past the apex in 3 of 6 (the horizon appears at the bottom), 360° loop — ≈ 3 s", confidence: medium}

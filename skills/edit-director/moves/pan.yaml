@@ -1,0 +1,292 @@
+id: pan.basic
+family: pan
+group: camera
+level: A
+aliases: [pan, horizontal pan, panning, camera rotation, follow pan, reveal pan]
+what: the camera stays in place and rotates horizontally — it follows a moving subject, shifts the view from one character to another, or reveals the space
+frames: |
+  1. Start: a static frame of 0.3–1 s (or already in motion if we are following a subject).
+  2. Acceleration 0.2–0.5 s → the move → deceleration 0.4–1 s. The vertical barely changes (< 10 % of the frame), the horizon is level,
+     the scale is constant (±5 %), there is almost no parallax — only the viewing direction changes.
+  3. Speed: a survey pan at a steady 30–45 % of the frame width per second; a follow pan at 50–70 %/s, the subject stays in the 0.35–0.65 zone
+     of the frame (the pan can speed up after it from 15 to 120 %/s); a transfer or a reveal — an S-curve peaking in the middle at up to 100–210 %/s
+     with a soft landing.
+  4. Landing: a hold of 0.5–1 s on the new subject; amplitude per move 70–155 % of the frame width, duration 1.5–4 s.
+variants:
+  - follow: tracks a walking, driving or falling character at a steady speed
+  - transfer: from one character to another or to a reaction, without a cut
+  - reveal: from a detail or a character to the overall view, the location, an unexpected object
+  - with a foreground: the subject rushes past, the pan continues, and a pole or a tree enters the frame — a natural wipe
+  - survey: slowly across a landscape or a row of people
+status: footage
+fallback: |
+  code: a crop pan across a wide frame — from 4K to 1080 you can travel up to 100 % of the output frame width, from horizontal 16:9
+  to vertical 9:16 — up to 215 %; across a panoramic photo or a 360 frame — without limits. Beyond that — search for a real
+  pan in the source footage (detect) or generation via gen_hint with the user's consent.
+params:
+  speed: survey 30–45 %/s; follow 50–70 %/s (after the subject 15–120 %/s); transfer and reveal peak 100–210 %/s
+  amplitude: 70–155 % of the frame width per move (≈40–90° with a normal lens)
+  duration: 1.5–4 s (38–100 frames @25 fps)
+  ease: survey and follow — linear with short acceleration and deceleration; transfer and reveal — inOutCubic or outCubic with a long landing
+  hold: before the move 0.3–1 s, after it — from 0.5–1 s
+  subject_zone: when following, the subject at 0.35–0.65 of the frame width, more room ahead in the direction of movement
+  judder: without motion blur no faster than ≈4 % of the frame per frame @25 fps (≈100 %/s); faster — directional blur, or the pan turns into a jerk
+when: |
+  travel and intros — revealing the place; sport and action — following the subject; dialogue and reaction without a cut — a transfer
+  from character to character; before the drop — a reveal under the rise, landing on the downbeat. Neighboring pans in the edit —
+  in the same direction or with a meaningful change of direction.
+avoid: a fast pass over a small detail without motion blur (the image stutters); a pan that arrives nowhere (landing on emptiness); mixing a pan with a zoom and a tilt for no purpose; opposite directions in neighboring shots for no reason; a crop pan on 1080p with less than 20 % margin
+sfx: usually no effects; on a fast reveal — a soft whoosh at the peak; when following — the sound of the subject itself (a pass-by, footsteps); the landing can get a musical accent
+genres: {travel: signature, calm: allowed, epic: allowed, drama: allowed, sport: allowed, product: allowed, explainer: allowed, teaser: allowed, clips: allowed, fashion: allowed, ugc: allowed, motivation: allowed, viral: allowed}
+detect: |
+  ed_motion: horizontal SHIFT of 50–160 % of the frame over 1–4 s in one direction; vertical shift < 10 %; ZOOM within ±5 %;
+  ROTATE < 2°; nonrigid < 0.2 (rotation in place); low jitter. Speed profile: an S-curve (transfer, reveal) or a plateau
+  (follow). On fast sections with a step of 3–4 frames ed_motion reports false cuts — check with a step of 1.
+  Difference from trucking (sideways tracking): there is parallax — the near moves faster than the far, nonrigid > 0.3.
+  Difference from a whip pan: shorter than 0.5 s, peak above 15–20 % of the frame per frame, the whole frame is blurred.
+  Difference from pan.round_table: the camera is in the center of a circle of people, faces of the same shot size replace one another.
+engine: |
+  Real shot: cut(at) at the start of the acceleration and after the landing (hold ≥ 0.5 s); speed(rate=1.2–2) for a dragging survey pan.
+  Code: transform(shift=[[x0, 0], [x1, 0]], t=[t0, t0+D], ease='inOutCubic'|'linear') over a crop of a wide frame,
+  |x1 − x0| ≤ the available margin; + blur(kind='directional', amount∝speed) at speeds above 4 % of the frame per frame.
+  Follow in vertical format: reframe(aspect='9:16', target=track(person)) with 0.3–0.5 s smoothing.
+gen_hint: smooth horizontal camera pan from <subject A> to <subject B>, tripod-mounted camera rotating in place, steady speed with a soft landing, no dolly movement, natural motion blur
+commands: ["a smooth pan across the landscape at the start", "follow the car with a pan in #4", "a pan from the subject to the friend's reaction instead of a cut", "make a left-to-right pan over 3 seconds from wide #2"]
+related: [pan.round_trip, pan.whip, pan.round_table, tilt.basic, truck.lateral, drone.aerial]
+evidence: {examples: 6, sources: 6, measured: "amplitude 75–155 % of the frame width over 1.5–2.8 s; survey pans at a steady 30–46 %/s; follow 50–66 %/s (accelerating from 14 to 120 %/s after a passing car); reveal — peak 6.9–15 %/frame at 14 fps (≈100–210 %/s), ease-out landing 1–1.5 s; vertical < 6 %, zoom ±4 %, nonrigid 0.01–0.02; 2 of 6 are round trips, counted in pan.round_trip", confidence: high}
+---
+id: pan.round_table
+family: pan
+group: camera
+level: C
+aliases: [circular pan from the center, camera at the center of the table, pan around the circle, round table pan, inside-out 360, center spin, 360 pan]
+what: the camera stands in the center of a circle of people (a table, a car interior, a room) and rotates in place, showing each person in turn — smoothly around the circle or in snaps from face to face
+frames: |
+  The camera is at table or seated eye level, often right on the tabletop; people sit in a circle at the same distance,
+  so each one appears in the frame at the same shot size (close-up to medium) and looks toward the center, that is, into the camera.
+  Two modes:
+  1. Continuous: even rotation without stops — 18–25 % of the frame width per second in a cramped car interior
+     (≈20°/s, a full circle in 10–15 s) or 75–135 %/s in a crowd and at a party (≈50–90°/s).
+  2. Stop-and-snap: a hold on a person for 0.6–6 s (usually 1–2 s) → a 0.3–0.8 s snap with motion blur (peak 15–21 % of the frame
+     per frame) → the next person; for two people sitting opposite each other — a 180° turn in ≈0.6–0.8 s.
+  Objects on the circle itself (plates, glasses, cutlery) stay still in the frame while the whole world behind them drifts —
+  a sign that the camera is riding on a rotating stand. Coverage — from 180° to a full circle and more.
+variants:
+  - dialogue across a table: two people opposite each other, a 180° snap between lines
+  - circle of friends: a hold on each person with a line to camera, snaps in one direction
+  - car interior: slow rotation past the driver and passengers, night lights in the windows
+  - party or dance floor: fast continuous rotation from low down, people pass right up close
+  - view from below: the camera on the floor looks up, rotating around a circle of standing models — the image also rotates by 40–90°
+  - camera and objects on the same circle: the table turns between cuts, the same dishes in front of every guest
+status: footage
+fallback: |
+  1) 360 camera: a virtual pan over an equirectangular frame (reframe360) — gives both the continuous and the stop-and-snap variant;
+  2) faking from separate close-ups of each person: a chain of whip transitions strictly in one direction, one person per beat;
+  3) generation with the user's consent via gen_hint
+params:
+  continuous_speed: 18–25 %/s (≈15–25°/s) calm; 75–135 %/s (≈50–90°/s) energetic
+  hold: 0.6–6 s per person, typically 1–2 s (25–50 frames @25 fps) or 1–2 bars
+  whip: 0.3–0.8 s (8–20 frames @25 fps), peak 15–21 % of the frame per frame, directional blur
+  coverage: 180° (two people opposite each other) — 360°+ (the whole circle); the direction of rotation does not change
+  framing: each person in the center of the frame, close-up or medium shot, the same camera height
+  tilt_up_roll: with the camera looking up, the image rotates by 40–90° per revolution
+when: |
+  introducing the participants (a podcast with guests, a team, a family dinner, friends in a car); a "circle of reactions" to
+  news — everyone reacts in turn; tension at a negotiating table; party energy. In an edit to music —
+  the snap on the downbeat, a hold of 1–2 bars. Once per video, it is a noticeable stylistic move.
+avoid: people not in a circle or at different distances (the shot size jumps); a long line from one person (the camera moves away); a continuous circle longer than 4 s with no face in the frame; faking with snaps in different directions (breaks the feeling of a single rotation); too long a lens — the snaps cause motion sickness
+sfx: a whoosh on each snap, on the beat; in the continuous variant — no effect or a barely audible pass-by; a light click or hit when the camera stops on a face
+genres: {viral: allowed, ugc: allowed, drama: allowed, product: allowed, fashion: allowed, travel: allowed, explainer: allowed, clips: allowed, fanedit: allowed, teaser: allowed, calm: allowed}
+detect: |
+  ed_motion: a long one-directional horizontal SHIFT totaling 150–700 % of the frame, nonrigid < 0.2 (pure rotation in place);
+  in stop-and-snap — static sections (no events for 0.6–6 s) alternate with short SHIFTs of 15–21 %/frame, where ed_motion often
+  reports false "cuts"; with the camera tilted up, a ROTATE of 40–90° comes alongside.
+  Visually: faces in the center of the frame in turn at the same shot size, everyone looks toward the center; objects on the table are still in the frame.
+  Difference from pan.basic: an ordinary pan follows a moving subject or a landscape; here the people sit and the camera spins among them.
+  Difference from an orbit (arc): an orbit has one subject in the center and background parallax; here the camera stays in place and people replace one another.
+  Difference from cuts with whip transitions: in the real move the continuous background between people is visible in the blur.
+engine: |
+  Real shot: cut(at) at the boundaries of the holds; speed(rate=1.5–3) on a long continuous revolution; snaps — beat_sync(event='whip_mid', grid='1/2').
+  360 source: reframe360(yaw=[0, 72, 144, 216, 288, 360], pitch=0..+15, fov=75, t=holds+snaps, ease='inOutCubic')
+    — for the continuous variant ease='linear', 20–90°/s.
+  Faking: a sequence of close-ups + transition(kind='whip', dur=0.35, params={direction:'left', blur:'directional'})
+    between each, one direction for the whole chain; hold of 1–2 bars; sfx('whoosh', at=middle of the snap).
+gen_hint: camera placed at the center of a round table, rotating in place and panning from face to face of <N people> sitting around it, each person looks into the lens as the camera passes, eye level, objects on the table stay fixed in the foreground
+commands: ["circular pan across the guests at the table", "make a circle of reactions from #3–#7 with snaps in one direction", "from the 360 video — a slow revolution around the car interior", "one person per beat, a snap between them"]
+related: [pan.basic, pan.whip, orbit.turntable, rig.spin_lock, arc.orbit]
+evidence: {examples: 7, sources: 7, measured: "continuous rotation 25 %/s in a car interior and 74–134 %/s in a crowd and from below; stop-and-snap: holds 0.6–6 s, snaps 0.3–0.8 s peaking at up to 21 %/frame; a 180° turn in 0.77 s; when looking up, the image rotates by 60–86° over 1.7–1.9 s; nonrigid 0.01–0.15; 3 more examples of the same type were found in the neighboring subsection", confidence: high}
+---
+id: pan.round_trip
+family: pan
+group: camera
+level: B
+aliases: [there-and-back pan, return pan, pan swing, glance away and back, double take pan, round-trip pan, yo-yo]
+what: "a glance away and back: after a short look at something beside the subject, the camera settles on its exact first framing again"
+frames: |
+  1. Starting frame: the subject, 0.2–1 s.
+  2. Move away: a turn of 25–75 % of the frame width over 0.44–2 s along an S-curve (acceleration, peak, deceleration).
+  3. Pause at the far end: 0.24–1.3 s (up to 5 s in the slow version) — there is a second character, a detail, the "backstage" of the set
+     or the same subject in another place (the double trick).
+  4. Return: the same amplitude in the opposite direction and the same curve; the final frame matches the starting one to within
+     0–3 % of the width (sometimes perfectly — the return is made by reversing the move away).
+  Fast version: peak ≈12 % of the frame per frame (≈300 %/s) with strong motion blur, the whole cycle 1.1–1.3 s. Slow: 30–80 %/s, cycle 4–6 s;
+  sometimes a triple move center → left → right → center.
+variants:
+  - fast "double take": move away and return of 0.44 s each, a 6-frame pause, motion blur during the move
+  - slow theatrical: the camera moves off to the edge of the set, sees the backstage, returns to the subject
+  - double trick: the same subject again at the far end
+  - there-and-back transfer: from the subject to the other person with a long pause and back with a snap
+  - subject-led: the subject turns around and the pan follows them back (the return is inexact)
+status: footage
+fallback: |
+  code: on a wide or 4K frame — a crop pan there and back (up to 100 % of the output frame width from 4K, up to 215 % from 16:9 to 9:16);
+  the return can be built by reversing the move away; faking in the edit — shot A → whip transition → shot B (pause) → reverse whip → continuation of A;
+  otherwise generation via gen_hint
+params:
+  amplitude: 25–75 % of the frame width (with whip moves up to 100–150 %); move away = return to within ±3 %
+  stroke: fast 0.4–0.5 s (10–12 frames @25 fps) with a peak of 10–12 %/frame; slow 0.8–2 s (20–50 frames) with a peak of 3–6 %/frame
+  hold_far: 0.24–1.3 s (6–32 frames), for transfers up to 5 s
+  hold_start_end: 0.2–1 s
+  ease: inOutCubic on each move, mirrored
+  blur: directional blur at speeds above 4 % of the frame per frame
+  beat: move away on a beat, return on the next beat or a bar later
+when: a comedic "double take" and reaction; showing a detail and returning to the subject; a device of the "deliberately staged" frame with symmetry and a theatrical set; the double trick in a music video; no more than 1–2 times per video
+avoid: different amplitudes for the move away and the return (looks like a camera operator's mistake); a pause longer than 2 s in the fast version (the return reads as a new pan); a fast move without motion blur at 25 fps; on top of handheld shake
+sfx: in the fast version — a short whoosh on each move, in comedy — a sound accent on the pause; in the slow one — no effects, under the music
+genres: {viral: allowed, ugc: allowed, fanedit: allowed, clips: allowed, fashion: allowed, teaser: allowed, explainer: allowed, drama: allowed, calm: allowed}
+detect: |
+  ed_motion: two horizontal SHIFTs of opposite sign and similar magnitude (absolute value of the sum < 5 % of the frame), with a pause
+  of 0.2–5 s without events between them; the first and last frames almost match (phase correlation shift < 3 %); on fast moves
+  with a step of 3–4 frames — false cuts and a sharpness drop to ×0.25–0.35.
+  Difference from a there-and-back whip pan: there each move takes 0.1–0.3 s, the frame is fully blurred, often with a cut at the far end.
+  Difference from zoom.in_out: there the scale changes, not the viewing direction.
+engine: |
+  Code: transform(shift=[[0,0],[A,0],[A,0],[0,0]], t=[t0, t0+D, t0+D+H, t0+2D+H], ease=['inOutCubic','hold','inOutCubic'])
+  over a crop of a wide frame; A=0.25–0.75 of the width, D=0.44 s (fast) or 1–2 s (slow), H=0.24–1.3 s;
+  + blur(kind='directional') on moves faster than 4 %/frame; the return may be done as reverse() of the first half.
+  Edit-based faking: cut → transition(kind='whip', dur=0.2) → shot B (H) → transition(kind='whip', dur=0.2, params={direction:'reverse'}) → shot A.
+  + sfx('whoosh', at=middle of each move)
+gen_hint: camera pans from <subject> to <second subject or detail> beside them, pauses for a beat, then pans back to exactly the original framing, symmetrical deliberate movement, locked-off tripod
+commands: ["round-trip pan to the reaction in #3", "do a double take: pan to the dog and come back to the subject", "a round-trip pan over two beats", "slowly show the edge of the set and come back to the host"]
+related: [pan.basic, pan.whip, zoom.in_out, time.boomerang]
+evidence: {examples: 5, sources: 5, measured: "3 examples from its own subsection + 2 from the main one: fast — move away of 71 % over 0.44 s (peak 11.8 %/frame), pause 0.24 s, identical return (shift 0 %, the frames match); slow — 27–73 % over 0.84–2.1 s, pauses 0.8–5 s, return accurate to 1.3–2.9 %; triple move +27/−58/+27 %; in 1 example the subject-led return is inexact (35 %)", confidence: medium}
+---
+id: pan.whip
+family: pan
+group: camera
+level: B
+aliases: [whip pan, swish pan, flash pan, snap pan, sideways camera snap]
+what: a lightning-fast sideways turn of the camera within one scene — the frame breaks into horizontal motion blur and half a second later settles on another subject in the same space
+frames: |
+  1. Hold on subject A 0.4–2 s; sometimes the camera already starts drifting in the direction of the whip (3–7 % of the frame width per frame).
+  2. Acceleration over 2–4 frames: 6 → 16 → 24 % of the frame width per frame (@20 fps), sharpness drops to ×0.3.
+  3. Core of 3–7 frames (0.15–0.5 s): solid horizontal motion blur, sharpness ×0.02–0.3 of the static frame, the gradient
+     ratio Gy/Gx grows 1.5–3 times. In 4 of 7 examples a dark or plain zone passes through the core — a wall,
+     darkness, the floor.
+  4. Landing over 3–6 frames: the speed drops 22 → 15 → 5 → 1 %/frame, subject B slides in from the opposite side
+     and settles in the center ±0.15; no bounce, sometimes a slight creep into place.
+  The whole whip takes 0.4–0.84 s (10–21 frames @25 fps). The light and the space stay the same — it is one take: the whip connects two
+  points of the scene in real time.
+variants:
+  - ping-pong: whips back and forth between two people (a dialogue, a duet, a conductor and a musician) every 1.4–2.5 s — details in pan.whip_back
+  - to the observer: from the action on stage to the person watching from a doorway or the audience
+  - into depth: from a nearby group to a distant figure at the end of the hall — the whip also changes the shot size to a wide shot
+  - behind the scenes: from the speakers to the prompter, a monitor or the film crew — breaks the illusion, a comedic move
+  - after something fast: a pan following cars or a player at up to 18 %/frame, moderate motion blur (sharpness ×0.77), 1.1 s
+  - through darkness: the core passes over black, a different person on the way out — a borderline case with a hidden cut
+status: code
+fallback: |
+  Code: a digital whip within one wide or 4K shot that contains both A and B — crop ×1.6–2.5 on A, a fast move of the
+  crop to B with directional blur. A real whip in the source footage looks better — search by the detect signature.
+  A and B in different places — that is already trans.whip. Generation — with the user's consent.
+params:
+  duration: 0.4–0.84 s in total (10–21 frames @25 fps); blur core 0.15–0.5 s (4–12 frames @25 fps)
+  peak_speed: on acceleration and landing 16–24 % of the frame width per frame @20 fps; in the core ≈25–50 % (from the blur length)
+  travel: ≈1–3 frame widths
+  ease: inExpo 2–4 frames → outExpo 3–6 frames, no bounce
+  blur: directional horizontal, sharpness ×0.02–0.3; blur length ≈20–50 % of the frame width
+  hold_a: 0.4–2 s
+  hold_b: from 1 s; in a ping-pong the next whip comes after 1.4–2.5 s
+  landing: subject B in the center ±0.15
+  digital_scale: crop ×1.6–2.5 for a digital whip (needs resolution headroom)
+when: |
+  Connect two people, or an action and a reaction, in one space without a cut: a dialogue, a musical call-and-response,
+  a strike — the team's reaction, "who sees this". Put the whip on a drum fill or the snare; a ping-pong — on a
+  rhythmic passage. Outside a series — no more often than once every 10–15 s.
+avoid: calm genres; landing off the subject; whips in different directions in a row with no spatial logic; large text in the frame (the blur reads as a defect); A and B from different places — then it is trans.whip; more than 6–8 whips in a row — causes motion sickness
+sfx: a whoosh or swish over the whole whip, peaking in the middle of the core; on the landing — a hit or a fill that coincides with the drums
+genres: {fanedit: allowed, viral: allowed, ugc: allowed, travel: allowed, sport: allowed, phonk: allowed, clips: allowed, teaser: allowed, drama: allowed, explainer: allowed, calm: forbidden}
+detect: |
+  ed_motion: SHIFT along X accelerating to 16–24 %/frame, then 2–7 pairs are marked as "cuts" (tracking loses points
+  in the blur), after that a SHIFT in the same direction decaying 22 → 1 %/frame; the light and palette before and after the blur are the same.
+  Own measurement: 3–7 consecutive frames with sharpness ×0.02–0.3; Gy/Gx grows 1.5–3 times relative to the static part of the same
+  shot (horizontal blur; in tilt.whip it falls).
+  Difference from trans.whip: there the histogram and the location change across the blur. From an ordinary pan: all frames are readable,
+  ≤ 8 %/frame. From truck.lateral: near and far move at different speeds, the blur does not cover the whole frame.
+  From zoom.crash: the blur is radial, there is a ZOOM.
+engine: |
+  code: whip_reframe(a=track(person_A), b=track(person_B), dur=0.45, scale=1.6–2.5, ease='inOutExpo',
+  blur='directional') = transform(scale=[S, S], center=[A, B], t=[t0, t0+0.45], ease='inOutExpo')
+  + blur(kind='directional', angle=0, amount∝speed) + sfx('whoosh', at=t0+0.22, align='peak'); land on the beat.
+  footage: find a whip via detect and do not cut inside it; ping-pong — a chain of whip_reframe(A→B→A…) every ½–1 bar.
+gen_hint: fast whip pan inside one room from <subject A> to <subject B>, the camera snaps sideways with heavy horizontal motion blur for a few frames, then stops sharply on <subject B>, one continuous take
+commands: ["whip pan from the speaker to the listener at 0:12", "whip the camera from the drummer to the conductor and back in the chorus", "whip pan inside wide shot #3 from the left character to the right one", "snap pan to the reaction on the drop"]
+related: [trans.whip, pan.whip_back, tilt.whip, truck.lateral, zoom.crash]
+evidence: {examples: 7, sources: 7, measured: "the whole whip 0.4–0.84 s, core 3–7 frames (0.15–0.5 s); acceleration and landing 16–24 %/frame @20 fps; sharpness in the core ×0.02–0.3, Gy/Gx grows ×1.5–3; all 7 are horizontal; a dark or plain zone in the core in 4 of 7; 1 example — a ping-pong of 5–6 whips in 10 s; 1 — a fast pan following cars without full motion blur", confidence: high}
+---
+id: pan.whip_back
+family: pan
+group: camera
+level: B
+aliases: [whip back, whip and return, there-and-back whip pan, double whip pan, snap and return, ping-pong pan, double take pan]
+what: a pair or a series of whip pans in opposite directions — the camera snaps to B, holds briefly and returns to A with the same whip, or darts between faces
+frames: |
+  1. Hold on A: 0.3–0.6 s in a fast series, 1–2 s before a single pair.
+  2. Whip there: 0.25–0.5 s (6–12 frames @25 fps), a core of 2–4 frames of solid horizontal motion blur (sharpness
+     ×0.05–0.3); at the edges of the whip the speed is 10–23 % of the frame width per frame.
+  3. Hold on B: 0.3–0.5 s — a comedic pause ("there's nothing there", a reaction), up to 1–2 s in a regular delivery.
+  4. Whip back: mirrors the first in duration (±2 frames) and has the same blur, landing on A; variations — on A
+     at a different shot size or on a new subject C on the other side.
+  Cycle A → B → A — 1.2–2 s. Scanning: 4–5 whips in 3 s alternating sides, pauses of 6–15 frames.
+variants:
+  - double take: A points to the side → whip there → empty or absurd → whip back to A (comedy)
+  - swap: while the camera "looked away", something changed with A — the look, the person, an object
+  - closer return: the whip back lands on the same character in a close-up (the cut is hidden in the blur)
+  - crowd scan: short whips across the faces of a choir or an audience in different directions every 0.5–0.7 s
+  - alternating scenes: each whip changes the scene, the direction is opposite each time — a rhythmic cut-up montage
+status: code
+fallback: |
+  Code: two digital whips in opposite directions within one wide or 4K shot (crop ×1.6–2.5 on A and B)
+  or a pair of trans.whip transitions between clips with alternating direction. Real whips from the source footage are better —
+  search by the detect signature. Generation — with the user's consent.
+params:
+  whip: 0.25–0.5 s per whip (6–12 frames @25 fps), blur core 2–4 frames
+  edge_speed: 10–23 % of the frame width per frame on acceleration and landing
+  hold_b: 0.3–0.5 s (comedy), 1–2 s (regular delivery)
+  whip_back: mirrors the first, duration ±2 frames, the same blur
+  cycle: A → B → A over 1.2–2 s
+  scan: 4–5 whips in 3 s, pauses of 6–15 frames, sides alternate
+  ease: inExpo → outExpo on each whip
+  sync: whip there — on a beat, the return — on the next beat or an off-beat
+when: |
+  A comedic "double take" and swap, a call-and-response between two characters or instruments, scanning faces in a crowd,
+  a fast rhythmic edit of several scenes. Hook and drop — one cycle on downbeats; a series — no more than 3 cycles
+  in a row, beyond that it causes motion sickness.
+avoid: different speeds and lengths for the whips there and back — the rhythm breaks; more than 3 cycles in a row; a calm tone; a completely meaningless B when it isn't meant as a joke; different exposure on A and B with no darkened zone between them
+sfx: a paired swish-swish (the return whip — the same whoosh or its reverse); on an empty B — a comedic "bonk" or silence; landings on the beat
+genres: {viral: allowed, ugc: allowed, fanedit: allowed, phonk: allowed, travel: allowed, clips: allowed, teaser: allowed, calm: forbidden}
+detect: |
+  ed_motion: two SHIFT events along X of opposite sign, 0.3–2 s apart, each with 1–3 pairs of
+  "cuts" in the core; the first and last stable frames are similar (back to A) or the palette is the same.
+  Own measurement: 2–4 consecutive frames with sharpness ×0.05–0.3 on each whip, Gy/Gx grows 1.5–3 times.
+  Scanning: 3+ whips with alternating sign and pauses of 6–15 frames.
+  Difference from a single pan.whip: one whip without a return. From zoom.in_out: there it is scale, not a shift.
+engine: |
+  code: whip_reframe(a=A, b=B, dur=0.3, scale=1.6–2.5, ease='inOutExpo', blur='directional') → hold(0.3–0.5 s)
+  → whip_reframe(a=B, b=A, dur=0.3, ...); the whip there — on a beat, back — on the next beat.
+  Between clips: transition(kind='whip', params={dir:'right'}) … transition(kind='whip', params={dir:'left'}).
+  Scanning: a chain of whip_reframe over track(face) alternating sides every 0.5–0.7 s.
+gen_hint: fast whip pan from <subject A> to <subject B>, a brief beat, then an equally fast whip back to <subject A>, heavy horizontal motion blur on both whips, comedic double-take timing, one continuous take
+commands: ["whip pan there and back on the line in #4", "a double take with a camera whip on the drop", "run whips across the faces in the choir during the chorus", "whip right and come back — and the character already has a different look"]
+related: [pan.whip, trans.whip, zoom.in_out, tilt.whip]
+evidence: {examples: 5, sources: 5, measured: "whip 0.25–0.5 s, core 2–4 frames, sharpness ×0.05–0.3; speed at the edges 10–23 %/frame; 2 examples — a classic return A→B→A (pause on B 0.32 s and 1 s, cycle 1.2–2 s), 1 — a return to the same character closer, 1 — a face scan (5 whips in 3 s, pauses of 6–15 frames), 1 — alternating scenes with cuts in the blur", confidence: medium}

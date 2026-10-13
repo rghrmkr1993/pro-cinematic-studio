@@ -1,0 +1,346 @@
+id: glitch.datamosh
+family: glitch
+group: effect
+level: C
+aliases: [datamosh, datamoshing, mosh, data moshing, i-frame removal, p-frame bloom, compression melt, pixel melt]
+what: a codec melt — the picture does not refresh at the cut or loops one motion, and the pixels of the old frame flow in 8–16 px blocks along the motion of the new one; scenes bleed into each other without a clean join
+frames: |
+  Melt transition (the main variant):
+  1. Setup: a clean shot A; the incoming shot B has noticeable motion (a dance, a step, a drive-by or a camera turn).
+  2. The cut is invisible: in place of B the frame of A holds, but its pixels already move with B's motion — B's silhouettes
+     emerge "made" of A's texture and color; the static areas of B still show A.
+  3. Only some of the blocks refresh each frame: B's color sprouts in patches, saturation rises by 10–20 %.
+     The middle of the transition (50 % by histogram) — after 0.3–0.6 s (8–15 frames @25 fps), an almost clean B — after 1.1–1.5 s.
+  4. Tail: remnants of A (a face, clothes) hang on as a "ghost" for another 0.5–1 s and smear until B's motion drags them away.
+  Bloom (repeating one motion frame): the same vector is applied 10–30 frames in a row — the texture flows
+  in streaks in the direction of motion; on a push-in the streaks spread as rays from the center, on a camera tilt they stretch into vertical
+  "icicles". The frame structure becomes streaky: coherence rises from 0.1–0.2 to 0.35–0.8 over 0.5–1.5 s.
+  Grid: rectangular 16×16 and 8×8 px blocks of the source (≈2–3.5 % of the width at 400–640 px), staircasing along the edges
+  of moving objects, isolated black or gray squares in place of lost blocks.
+variants:
+  - melt transition: a cut without a keyframe, B grows through A over 1–1.5 s
+  - bloom: repeating one motion frame — pixels flow in a streak for 0.4–1.5 s; on a zoom — radial rays, on a tilt — vertical drips
+  - continuous mosh: the whole 2–7 s segment without refresh — the background is frozen from the previous scene, a new object moves across it (game, concert, dance footage)
+  - light mosh within a shot: individual background blocks stick, hands and clothes leave blocky trails, the scene still reads
+  - scene cascade: an intro montage where 5–8 scenes in a row flow into each other without a single clean cut
+  - stuck block: a gray or black 16–32 px rectangle sits on a face or object for 1–2 s while the rest drifts
+  - with posterization or duotone: the mosh over a hard color scheme, the blocks become flat patches
+status: code
+fallback: if the incoming shot has little motion — add a digital zoom-in or pan to it (transform) so the vectors have something to drag; if there is no suitable pair — find a shot with strong continuous motion in the source footage or generate one (with consent)
+params:
+  mode: transition (keyframe dropped at the cut) | bloom (repeating a motion frame) | continuous (the whole segment without refresh)
+  melt: 1–1.5 s (25–38 frames @25 fps); 50 % after 0.3–0.6 s
+  bloom_repeats: 10–30 repeats (0.4–1.2 s), typically 15
+  continuous: 2–4 s in a regular video, up to 7 s in an experimental one
+  block: 16 px at a working resolution of 480–720 px (≈2–3.5 % of the width); at 1080p — a 32 px block or processing at ×0.5 with an upscale
+  refresh: 1–5 % of blocks per frame get a new picture, by the end of the transition the share rises to 100 %
+  holes: 0–2 % of blocks black or gray for 0.3–1 s (optional)
+  motion_in: in the incoming shot a shift of at least 1–2 % of the frame per frame, otherwise the melt stands still
+  saturation: +10–20 % during the melt (happens by itself, no need to boost it)
+  codec: mpeg4 without B-frames, a huge GOP, scene detection off; a keyframe only at the cut point
+when: a transition on the drop or on a change of section in the track; a "trip", disorientation, a breakdown; linking two dance or sport moves; a music video intro and title sequence; no more than one mosh per 8 bars, continuous mosh — up to 2–4 s in a row
+avoid: a static incoming shot (the picture just freezes and looks like a corrupted file); a talking head and an important line; faces that must be recognizable; a product, a logo, text; a calm and trusting tone; several moshes in a row — the effect turns into a defect
+sfx: a digital crackle or a "data crunch" at the start of the melt; during the melt — a bitcrush or a filter on the music; put the cut on a downbeat and let the melt run on to the next one
+genres: {fanedit: signature, phonk: allowed, viral: allowed, teaser: allowed, fashion: allowed, sport: allowed, drama: allowed, calm: forbidden, explainer: forbidden, product: forbidden, travel: forbidden, clips: forbidden}
+detect: |
+  ed_motion: a scene change without a cut (cuts at none in 12 of 13 clips), while the histogram distance to the first shot
+  grows smoothly over 0.5–2 s; many events with conf low and nonrigid > 0.4, ECC fallbacks, false rotations of 5–25° and shifts.
+  Visually and with custom code: rectangular 8–16 px blocks with sharp edges and staircasing along edges; a moving silhouette filled
+  with the texture and color of the previous frame; static areas "stuck"; smeared streaks along the motion (structure coherence
+  0.35–0.8 vs the usual 0.1–0.3); isolated black squares.
+  Unlike fx.glitch: a glitch is a burst of 1–6 frames with line shifts and RGB splitting, then a clean picture; a mosh lasts
+  0.5 s or longer and follows the motion. Unlike a dissolve and echo: there it is a semi-transparent blend, here each block is opaque —
+  either old or new. Unlike fx.slit_scan: there time is offset by coordinate in an even band, not in blocks along the motion.
+engine: |
+  datamosh(mode='transition', at=t_cut, dur=1.2, block=16, refresh=[0.02, 1.0], ease='inQuad', method='codec')
+    codec: A+B → mpeg4 (-bf 0, -g 9999, scene detection off, -force_key_frames t_cut) → drop the keyframes
+    after the first one (-bsf:v noise=drop='key*gt(n,0)') → decode and convert back to h264
+  datamosh(mode='bloom', at=t, repeats=15, block=16) — repeating the packet of one P-frame (PyAV) or one flow field
+  method='flow' (no codec): a block-wise 16 px optical flow of B carries the previous output frame; the share of refreshed
+    blocks grows along inQuad from 0.02 to 1 over dur; holes — random blocks set to black
+  + transform(scale=[1, 1.08]) on B if it has little motion; + sfx('glitch', at=t_cut, align='attack')
+gen_hint: datamosh transition, pixels of the previous shot smear and melt along the movement of <subject> in the next shot, blocky 16px compression artifacts, colors bleeding between scenes, streaks flowing in the direction of motion, no clean cut
+commands: ["datamosh transition between #3 and #4 on the drop", "melt the dance into the next scene with a mosh", "bloom mosh at 0:12 for half a second", "a light datamosh over the whole second verse"]
+related: [fx.glitch, time.echo_trail, fx.slit_scan, glitch.vhs, trans.dissolve]
+evidence: {examples: 14, sources: 13, measured: "source blocks of 8–16 px (black squares of 13–17 and 7–8 px at 480 px); 2 transitions: 50 % by histogram after 0.3–0.55 s, an almost clean new shot after 1.1–1.5 s, saturation +18 %; bloom: streak coherence rises from 0.10 to 0.40 over 1.1 s; the cut detector stays silent in 12 of 13 clips; the whole clip of 1.3–7.4 s is under the mosh in 8 of 13; one example is a duplicate of another", confidence: high}
+---
+id: glitch.film_damage
+family: glitch
+group: effect
+level: B
+aliases: [film damage, damaged film, film burn, light leak, film flare, dust and scratches, gate weave, frame jitter, frame slip, slipped frame, film flicker, film tail, run-out]
+what: imitation of damaged motion-picture film — light leaks and burns, flicker, dust and scratches, a slipped frame with the frame line and sprocket holes; works as the texture of an episode and as a transition
+frames: |
+  Base (for the whole episode): a frame gate with rounded corners and a black border of 3.5–4 % at the edges, a warm shift
+  (R/B 1.5–2), brightness flicker of 2–8 units from frame to frame, dust — dark specks and hairs over 0.1–2 % of the area,
+  new every frame, gate weave of 0.2–0.6 %.
+  Events:
+  1. Light leak: an orange-red patch drifts in from the edge over 0.1–0.2 s, floods 50–100 % of the frame (R/B 3–6), holds
+     for 0.2–0.5 s and goes away; often two waves per second, with a cut after the second.
+  2. Burn at the start: 1 frame of dark blue, 2–3 frames of almost white (brightness 85 %+), then the image develops
+     out of shadow over ≈0.5 s, with sprocket holes and a ginger glow still visible along the edge.
+  3. Slipped frame: the picture is shifted vertically by a third of the height — the frame line and parts of two adjacent
+     frames are visible; it holds for 1.5–2.5 s, snaps back into place for 0.5–0.75 s and slips again; along the left edge a bright
+     strip of sprocket holes 4–28 % of the frame wide flares up.
+  4. Doubling: for ≈0.5 s the same frame, larger (≈×1.5), shows through over the frame, like a print-through of an adjacent frame.
+  5. Film tail: black frames with dust, a single pink flash, then darkness.
+variants:
+  - light-leak transition: an orange burst of 0.3–0.5 s hides the cut
+  - burn at the start: blue → white → developing image; the start of the video or a scene
+  - slipped frame: the frame line and sprocket holes, 1.5–3 s
+  - old title card: flicker, dust, a light-leak halo on the letters, and doubling
+  - tinted newsreel: the tint wanders between turquoise and brown every 0.3–0.6 s, 10–16 frames per second
+  - film tail: black frames with dust and a flash at the end
+status: code
+fallback: a procedural texture works for dust, flicker, weave and slipping; realistic light leaks and burns are better taken from the user's overlay library (blend mode "screen") or generated as a separate clip on a black background (with consent)
+params:
+  gate: a black border of 3–4 % at the edges, corner rounding of 3–6 % of the height
+  weave: jitter of 0.2–0.6 % of the frame, a new offset every frame
+  flicker: brightness ±3–8 % from frame to frame
+  dust: 0.1–2 % of the area — 1–4 px specks and hairs, new every frame; a scratch — a vertical 1–2 px line for 4–20 frames
+  leak: orange or red (R/B 3–6), fade-in 0.1–0.2 s (3–5 frames @25 fps), hold 0.2–0.5 s (5–12 frames), fade-out 0.1–0.2 s; 1–2 waves
+  burn: 1 frame of blue + 2–3 frames of white, developing over 0.5 s (12 frames @25 fps)
+  slip: a shift of 30–35 % of the height with a frame line of 1–2 % of the height; hold for 1.5–2.5 s; sprocket holes along the edge 4–28 % of the width
+  ghost: a copy of the frame ×1.4–1.6 at 30–50 % opacity for 0.5 s
+  tint_drift: a change of tint every 0.3–0.6 s (b* 4–14)
+  fps: optionally 10–20 frames per second (step_print hold=2)
+when: intro and outro (burn, film tail), a transition between scenes or episodes (light leak), a memory, archive, "found footage", a retro music video; place the light leak on a downbeat or in a pause of the track; the base — over the whole episode, no more than one event per 4–8 bars
+avoid: mixing with digital artifacts without intent (the eras clash); a burn over a face during a line; light leaks on every cut; screens and interfaces in the frame; a product where accurate color matters
+sfx: projector crackle and whir, clicks and the rustle of dust; on a light leak — a soft whistle or an inhale; on a burn — a mechanical click; on the film tail — the flap of the end of the reel
+genres: {travel: signature, fashion: allowed, teaser: allowed, drama: allowed, fanedit: allowed, calm: allowed, ugc: allowed, motivation: allowed, clips: allowed, viral: allowed, epic: allowed}
+detect: |
+  ed_motion: warm rgb_med (R higher than B by 1.5–2×), flash frames on light leaks, bars ≈0.035–0.042 on all sides (rounded border),
+  "cuts" inside a light leak; jitter of 0.2–0.6 % with a static camera — weave; on a slip — jitter 8 %+ and fail.
+  With custom code: R/B 3–6 with brightness rising by 20–50 units — a light leak; a share of small dark specks of 0.1–2 % (7×7 median filter, threshold 40)
+  that changes every frame — dust; a strong horizontal edge across the full width at 30–35 % of the height holding for seconds — a slipped
+  frame; a bright strip along the left edge 4–28 % of the width — sprocket holes; brightness jumping by 2–8 units frame to frame — flicker.
+  Unlike glitch.vhs: tape has horizontal noise bands, line jitter and smeared color; film has specks, hairs, light leaks and sprocket holes.
+  Unlike cut.flash: a flash is a flat white or colored frame; a light leak is a gradient patch that drifts in from the edge.
+engine: |
+  film_damage(t=[t0, t1], gate=True, weave=0.004, flicker=0.05, dust=0.01, scratches=1, tint=[1.12, 1.0, 0.82], fps=None)
+  light_leak(at=t, dur=0.5, color='orange', side='right', peak=0.9, waves=2, blend='screen') — a gradient patch, fade-in inQuad, fade-out outQuad
+  film_burn(at=t, frames=[('blue', 1), ('white', 3)], reveal=0.5) — a burn transition at the start of a shot
+  gate_slip(at=t, dur=2.0, offset=0.33, frameline=0.015, perfs='left')
+  ghost(at=t, dur=0.5, scale=1.5, alpha=0.4)
+  + sfx('projector', t=[t0, t1], gain=-18) + sfx('click', at=t) on the burn and the slip
+gen_hint: old 16mm film footage of <subject>, orange light leaks and film burn flaring from the edge, dust and hair, scratches, flicker, rounded gate corners, the frame slips to show the frame line and sprocket holes
+commands: ["light-leak transition between #3 and #4", "make the flashback look like old film with dust and flicker", "a film burn at the start of the video", "the frame slips at 0:30 for two seconds"]
+related: [glitch.tv_noise, glitch.vhs, fx.glitch, look.film, scene.archival, cut.flash, time.step_print]
+evidence: {examples: 5, sources: 5, measured: "light leak: R/B 3.1–6.2, fade-in 0.1–0.2 s, 2 waves within 1 s (0.4 s and 0.2 s), then a cut; burn: 1 frame of blue, 2 frames of white (brightness 217), developing over 0.5 s (34 → 168); slip: the frame line at 33–35 % of the height holds for 1.5–2.5 s, the normal frame 0.75 s; sprocket holes 4–28 % of the width; dust up to 2 % of the area; weave 0.2–0.6 %; tint b* 4–14 changing every 0.3 s; border 3.5–4 %; 2 examples from the section + 3 film examples from a neighboring section", confidence: medium}
+---
+id: glitch.pixel_sort
+family: glitch
+group: effect
+level: B
+aliases: [pixel sort, pixel sorting, pixelsort, brightness sort, luma sort, hue sort, glitch art, dripping pixels, sort streaks]
+what: pixel sort — inside the bright (or dark) areas of the frame the pixels of each column or row are re-sorted by brightness, and the picture "drips" in straight gradient streaks; a glitch-art accent on a hit or the texture of an episode
+frames: |
+  1. A clean shot of 0.3–2 s — or a hit on the beat straight away.
+  2. Entry (1–3 frames): the mask threshold drops, and streaks sprout from the bright areas (sky, lights, highlights, skin, white
+     clothes); the sorted area goes 0 → 20–60 % of the frame.
+  3. Life: each streak is a continuous segment of a column 5–35 % of the height long (up to 60 %), within it brightness
+     rises monotonically from dark to light in one direction, the ends are cut sharply at the mask boundary; all streaks
+     are strictly parallel to one axis; the colors come from the same column (it is a permutation, no new colors). When recomputed
+     every frame the streaks "boil" along with the video, when updated every other frame they jerk in steps.
+  4. Exit: the threshold returns over 6–12 frames, or the effect breaks off into a clean frame on the next beat.
+variants:
+  - "bright drips: areas brighter than 0.55–0.75 are sorted — the light \"melts\" and drips down"
+  - "dark drips: areas darker than 0.2–0.35 — the shadows and the silhouette flow, the light stays"
+  - "midtones: a 0.2–0.8 band — the most readable variant, highlights and deep shadows stay intact"
+  - "along edges: segments between object edges — short streaks inside a shape, the face and figure stay recognizable"
+  - "random segments: lengths of 2–25 % of the line, 30–60 % of the segments are sorted — a coarse \"noisy\" texture"
+  - "full sort: the whole column — abstract gradients, the frame does not read; only 1–3 frames as the peak of a transition"
+  - "horizontal or at a 30–60° angle — \"wind\", speed; vertical upward — \"burning\""
+  - "by hue or saturation — rainbow streaks, an acid aesthetic"
+  - "with a mask: only the background is sorted (the subject stays clean) or only the subject — it \"melts\""
+  - "wave: the sort zone rolls across the frame from top to bottom over 0.5–1 s"
+  - "transition: A crumbles into streaks up to a full sort at the seam, B reassembles"
+  - "on a pixel-art grid: sorting on a 160–320 px canvas and upscaling without smoothing — streaks one art-pixel wide, a gradient in palette steps (this is how the streaks appear in pixel-art videos, see fx.pixel_art)"
+status: code
+fallback: it needs a frame with texture in the sorted area — lights, foliage against the sky, highlights, fabric, water; on a smooth sky or a flat wall the sort is barely visible — switch to the edge mask, to a full sort for 1–3 frames, or take a shot with lights and highlights from the source footage
+params:
+  axis: "y down (default — it \"drips\") | y up | x left or right | an angle of 30–60° (rotate the canvas with a ×1.42 margin, sort the columns, rotate back)"
+  key: "luminance Y (BT.709) by default | hue | saturation | channel R, G or B"
+  mask: "bright — lo 0.55–0.75 (140–190 out of 255), hi 1.0 | dark — lo 0.03 (leave pure black and the letterbox bars alone), hi 0.2–0.35 | band — 0.2–0.3 … 0.7–0.8 | edges — segments between edges (1.5 px blur, edge-detector thresholds 50 and 150 at the working resolution) | random — lengths of 2–25 % of the line, 30–60 % of the segments are sorted | full"
+  band_len: "minimum 1 % of the line (do not sort shorter ones — you get crumbs), maximum 60 % (cut longer ones); typical streaks are 5–35 % of the height — 100–670 px at 1920"
+  order: "asc — dark → light along the axis direction (default) | desc"
+  coverage: "accent 15–40 % of the frame area, episode texture 20–60 %, transition peak 70–100 % for 1–3 frames"
+  pulse: "on the beat, threshold lo 0.95 → 0.6 over 2 frames (outExpo) and back to 0.95 over 8–12 frames @25 fps / 10–15 @30 fps (inQuad); the whole pulse 10–14 frames @25 fps / 12–17 @30 fps (0.4–0.56 s)"
+  sweep: "wave — the edge of the sort zone travels from the top to the bottom of the frame over 12–25 frames @25 fps / 15–30 @30 fps (inOutQuad)"
+  update: "live — recompute every frame | hold2 — every other frame (12.5 / 15 updates per second, stepped) | freeze — one sorted frame holds for 3–6 frames (a sticking effect)"
+  jitter: "per-column threshold ±0.03–0.05 (a new seed per frame), so that the edge of the zone is not a straight line"
+  resolution: "preview — a working 540 px on the short side (≈ 0.08 s per frame on one core), final render — full resolution (≈ 0.4 s per frame @1080×1920); upscaling bicubic (soft streaks) or nearest (on the grid)"
+  protect: "exclude the face with a mask in speech and portrait shots; exclude the letterbox bars and burned-in titles from the mask"
+  duration: "accent 4–14 frames @25 fps / 5–17 @30 fps (0.16–0.56 s); texture 1–4 s; transition 8–12 frames @25 fps / 10–15 @30 fps with a peak of 1–3 frames"
+when: |
+  A hit on the snare or bass in the drop (a 0.4–0.56 s pulse); breakdown and bridge — a 1–4 s texture on a sustained synth or
+  vocal; intro and title — the name "melts" (sorting only within the text mask); a transition between parts of the track; themes of "malfunction",
+  "memory decay", the digital world. By part: hook — one pulse on the first downbeat or a "melting" title; build —
+  not needed (or a wave under the riser that ends on the drop); drop — pulses on the snare once every 1–2 bars in stretches
+  of up to 4 bars; outro — the last shot disintegrating over 1–2 s. In motivation — only in a pause between phrases on a hit, not
+  on the face. Limits: no more than 1 pulse per bar and 4 bars in a row, texture no longer than 4 s and no more than 2 times per
+  30 s; within one video — one direction and one mask.
+avoid: a face during a line and the subject's recognizability (except for a deliberate "disintegration"); text, prices, subtitles under the sort (draw text separately on top of the effect); a product where shape and label matter; smooth flat frames without texture — the effect is not visible; the whole video — it turns into a filter; a pulse on every beat for longer than 2 bars; together with datamosh and glitch bursts within the same second — a mess; calm, explainer, product and UGC videos
+sfx: a digital "crunch" or click (sfx.glitch) on the attack of the pulse; during the pulse — a bitcrush of the music (8 bit, 11–16 kHz); the "dripping" — a downward pitch sweep of −12 semitones over 150–300 ms (like a tape stop) on the entry of the texture; a transition — a short noise sweep on the seam
+genres: {fanedit: allowed, phonk: allowed, viral: allowed, fashion: allowed, teaser: allowed, drama: allowed, sport: allowed, motivation: allowed, epic: forbidden, calm: forbidden, product: forbidden, travel: forbidden, clips: forbidden, explainer: forbidden, ugc: forbidden}
+detect: |
+  ed_motion: it has no signature of its own — no global motion, no flash or black frames; with coverage above 50 %
+  of the frame — 1–2 false "cuts" at the entry and exit of a pulse, ECC fallbacks and nonrigid above normal; with updates
+  every other frame every second pair of frames shows almost no difference (diff < 0.6), but holds are not flagged (that needs 3+ identical
+  frames) — only a freeze sticking for 3–6 frames produces them.
+  Custom check (verified on synthetic renders): a permutation test against the nearest clean frame k−1 after
+  alignment by global motion (the same similarity transform that ed_motion computes). A vertical sort permutes
+  pixels only within columns, so the value-sorted columns of frames k and k−1 almost coincide, while the
+  rows do not: E_rows / E_cols ≥ 2 (1–15 on synthetic renders, median ≈ 3.7), for an ordinary frame change, a zoom and a blur
+  0.6–1.2; without alignment a camera tilt also gives 1.9–2.8. A horizontal sort — the inverse ratio ≤ 0.5 (a pan looks
+  the same — SHIFT events = 0 are required). Auxiliary: the share of "streaky" 32×32 tiles (|d/dx| / |d/dy| ≥ 3
+  among textured ones) for a midtone sort is 20–34 % vs 0–14 % for clean frames of the same video; with low
+  coverage the cue is weak. Visually: the streaks are strictly parallel, each one a smooth dark → light gradient with
+  sharp ends at the mask boundary, the colors taken from the same column.
+  Unlike fx.glitch (line smear): there one pixel is repeated to the edge — a streak of a single color, only
+  horizontal, together with band shifts and RGB splitting in a burst of 1–8 frames. Unlike glitch.datamosh: there blocks of
+  8–16 px are dragged along the motion vectors of the new shot, a moving shot is required. Unlike fx.slit_scan: the rows have different
+  times, shapes bend smoothly, the texture inside stays intact. Unlike blur (time.motion_blur): averaging compresses contrast and
+  changes the set of column values (ratio ≈ 1), whereas a sort keeps the minimum and maximum. Unlike fx.pixel_art: there
+  a square grid and a reduced palette, the "drips" are blocks falling on the grid as a logo assembles; gradient streaks
+  one art-pixel wide in a pixel-art video are this move on a canvas. Unlike fx.refraction (ribbed
+  glass): periodic bands 2–2.5 % of the width with pieces of the picture, no gradient. Unlike glitch.vhs and glitch.tv_noise:
+  there noisy lines, ripple and snow, not gradients.
+engine: |
+  pixel_sort(t=[t0, t1], axis='y', dir='down'|'up'|'left'|'right', angle=None|35, key='luma'|'hue'|'sat'|'r'|'g'|'b',
+             mask='bright'|'dark'|'band'|'edges'|'random'|'full', lo=0.62, hi=1.0, min_len=0.01, max_len=0.6,
+             random_len=[0.02, 0.25], edges={blur:1.5, lo:50, hi:150}, order='asc', jitter=0.04, update='live'|'hold2'|'freeze',
+             work_res=540, upscale='bicubic'|'nearest', protect=mask('face')|None, region=None|mask('mediapipe_person', invert=True),
+             exclude_bars=True, keys={lo: [[0, 0.95], [0.08, 0.6], [0.48, 0.95]]}, ease=['outExpo', 'inQuad'], seed)
+    — new primitive: Y per BT.709 → segment mask → segment id = cumsum(boundaries) along the axis → one np.lexsort((key, id))
+    per frame → RGB pixels are permuted within the segments, untouched outside the mask (the set of column values is preserved).
+  transition(kind='pixel_sort', dur=0.44, params={out:4, peak:2, in:5, mask:'band', axis:'y'}) — a new transition kind:
+    on A threshold lo 0.95 → 0 (full sort), the cut at the peak, on B lo 0 → 0.95.
+  Pixel art: pixelate(size=0.008*H) → pixel_sort(work_res=canvas, upscale='nearest') → palette_quantize(colors=12).
+  bitcrush(music, t=[t0, t0 + 0.4], bits=8, sr=11025, mix=0.6) — new: a bitcrush of the track during the pulse.
+  + sfx('glitch', at=t0, align='attack') + beat_sync(event='pixel_sort', grid='1 bar').
+gen_hint: "pixel sorting glitch art on <subject>: the bright areas melt into long straight vertical streaks of sorted pixels flowing downward, smooth dark-to-light gradients with hard ends, the rest of the image intact, high contrast night lights"
+commands: ["pixel sort on the drop for half a second", "let the sky drip down with a pixel sort for the whole bridge", "sort only the background, keep the subject clean", "a pixel-sort transition between #6 and #7", "a horizontal sort on the shadows every second bar", "the title in the intro melts with a pixel sort"]
+related: [fx.glitch, glitch.datamosh, glitch.vhs, glitch.tv_noise, glitch.film_damage, fx.pixel_art, fx.slit_scan, fx.mosaic, time.motion_blur, fx.refraction, fx.rgb_split, sfx.glitch]
+evidence: {examples: 0, sources: 0, measured: "edit culture: parameters from editing practice; verify with a demo render", confidence: medium}
+---
+id: glitch.tv_noise
+family: glitch
+group: effect
+level: B
+aliases: [tv noise, tv static, analog noise, TV interference, television interference, snow, static, bad signal, analog interference, signal loss, vertical roll, crt, CRT screen, scanlines]
+what: a picture like on an old CRT television with a weak signal — scanlines and a cold screen as the base, and on top — snow, line ripple, vertical roll, loss of sync and "channel switching"
+frames: |
+  Base (for the whole shot): visible scan lines — 70–170 lines per frame height (period 0.6–1.4 % of the height),
+  a cold balance (the blue channel 1.3–1.9 times higher than red), high saturation, sometimes a subpixel grid
+  and the rounded corners of a picture tube.
+  Events on top of the base:
+  1. Snow: grainy mono noise over 30–100 % of the frame, with the image showing through it; 0.5–1 s.
+  2. Line ripple: the lines bend in a sine wave (a "herringbone"), amplitude 1–3 % of the width; as the signal breaks down the ripple grows
+     for 1–3 s until the image turns into colored bands.
+  3. Vertical roll: the frame slides vertically — for 0.2 s a split at 45–50 % of the height with a black blanking bar holds,
+     then the picture "locks" within 0.5 s with a slight overshoot of about 3 % of the height.
+  4. Loss of sync: bands of the frame tear sideways, the image bends in a wave, colored fringes spread.
+  5. Channel switch: 3 frames (0.12 s) — an outline negative, a horizontal smear, the color bars of a test
+     pattern — and back to the scene.
+  6. Dropouts: white horizontal streaks 2–20 % of the width long, changing every frame.
+variants:
+  - CRT screen without glitches: only scanlines, glow, a cold shift and rounding — "a picture on a TV"
+  - re-filmed screen: moiré and a subpixel grid over a face, as if the camera were looking at a TV
+  - weak signal: snow and line dropouts, the image now emerges, now sinks into the noise
+  - signal breakdown: line ripple builds over 1–3 s until the picture completely falls apart
+  - roll with frame lock: a split in the middle of the frame, then the picture settles into place within 0.5 s
+  - channel switch: 2–4 frames of a test pattern, noise or an unrelated picture between two shots
+  - scan-line graphics: a face or figure drawn with offset scan lines, in flashes of 2–3 frames among clean ones
+status: code
+params:
+  scanlines: 70–170 lines per frame height (at 1080p — a period of 6–15 px), dark share of a line 30–50 %; typically 120
+  tint: blue ×1.3–1.9 relative to red, saturation +10–30 %
+  snow: 30–100 % of the area, bright mono noise, new every frame; 0.5–1 s (12–25 frames @25 fps)
+  line_wobble: a sine across lines, amplitude 1–3 % of the width, period 4–10 lines, the phase runs downward
+  roll: hold a split at 45–50 % of the height for 0.2 s (5 frames), settle within 0.5 s (12–14 frames) with a ±3 % overshoot
+  tear: 3–8 bands shifted by ±5–20 % of the width for 1–4 frames
+  channel_switch: 2–4 frames (0.08–0.16 s) of insert — a color-bar test pattern, a negative, a smear
+  dropouts: 5–20 white streaks per frame, 2–20 % of the width long
+  chroma_bleed: colored fringes to the right by 0.5–1.5 % of the width
+when: a "screen within a screen", memories and archive, the TV era, a "channel switch" transition, horror and tense moments (snow, roll), the intro and outro of a music video; the base — over the whole episode, events — no more than one per 4–8 bars
+avoid: small product details and text (scanlines and snow eat them up); snow without an image for longer than 1 s; harsh snow in calm and children's videos; mixing with digital glitch for no reason — the eras clash
+sfx: static noise under the snow; mains hum and the thin whine of the horizontal scan under the CRT base; a click on the channel switch; a "wavering" sound tone during the roll
+genres: {fanedit: allowed, teaser: allowed, drama: allowed, phonk: allowed, viral: allowed, fashion: allowed, clips: allowed, ugc: allowed, explainer: allowed, calm: forbidden}
+detect: |
+  ed_motion: with the base only — no events, cuts at none, rgb_med with blue noticeably higher than red; with events — "cuts" on adjacent
+  frames, ECC and fail, jitter up to 4 %, strobe flips.
+  With custom code: a peak in the spectrum of the vertical brightness profile with a period of 0.6–1.4 % of the height (peak 13–25 times above the median) — scanlines;
+  the share of high-frequency mono noise — snow; a vertical shift of the frame relative to its neighbors by 40–50 % with a dark band inside — roll.
+  Unlike fx.glitch: there rectangular blocks and evenly shifted bands, without sinusoidal ripple, snow or scan lines.
+  Unlike glitch.vhs: tape has a tracking noise band at the bottom edge, line jitter and smeared color, not snow over the whole frame.
+engine: |
+  crt(scanlines=120, dark=0.4, tint=[0.85, 1.0, 1.35], curvature=0.05, glow=0.3, mask='aperture'|None) — the base for the whole shot
+  tv_noise(t, kind='snow'|'wobble'|'roll'|'tear'|'dropouts', amount, dur) — events on top of the base:
+    snow — mono noise with alpha 0.3–0.9; wobble — x += A·sin(2π·y/P + φ(t)), A=1–3 % W;
+    roll — a shift along Y with a blanking bar, settling with ease='outBack' within 0.5 s; tear — shifted bands
+  transition(kind='channel_switch', dur=0.12, params={frames: ['bars', 'negative', 'smear']})
+  + sfx('static', at=t) under the snow; sfx('click') on the channel switch
+gen_hint: footage shown on an old CRT television with a weak signal, visible scanlines, cold blue tint, static snow, wavy horizontal line interference, vertical roll with a black blanking bar, analog TV noise
+commands: ["make the whole flashback look like an old TV", "snow and interference on the transition to #5", "a vertical roll at 0:20, then the picture locks", "a channel switch between #2 and #3"]
+related: [fx.glitch, glitch.vhs, glitch.film_damage, glitch.datamosh, look.vhs, fx.color_shift]
+evidence: {examples: 21, sources: 20, measured: "scanlines: 165 and 73 lines per frame height (spectral peak 13–25 times above the median); blue channel ×1.3–1.9 relative to red in 6 examples; roll: a split at 47 % of the height for 0.2 s, settling within 0.56 s with a +3.5 % overshoot; channel switch — 3 frames @25 fps; the signal breakdown builds over 2.6 s; 5 examples from the section are digital glitch or film (covered in neighboring cards)", confidence: medium}
+---
+id: glitch.vhs
+family: glitch
+group: effect
+level: B
+aliases: [vhs, videotape, tape recording, camcorder, camcorder look, home video, tape look, tracking error, head switching noise, noise band]
+what: a picture "from a tape and a consumer camcorder" — a soft image with bleeding color, a skewed balance, a noise band at the edge of the frame and tracking glitches, a 4:3 frame, abrupt handheld zooms
+frames: |
+  Base (for the whole episode):
+  1. Softness: an effective width of 300–360 pixels — luma edges are blurred over 0.35–0.45 % of the frame width,
+     color bleeds more than luma (chroma edges 1.5 times wider, chroma detail 2–4 times poorer).
+  2. Color: a warm cast (R/B 1.4–1.6) or a green one, blown-out sky and windows, lifted shadows, red "bleeds".
+  3. Frame: often 4:3 inside a wide frame — black side bars of 9–12 % of the width on the left and right.
+  4. Shooting: handheld, shake of 1–7 % of the frame, an abrupt zoom-button zoom ×1.5–2.3 over 0.25–1 s, whip pans, flares.
+  Events:
+  5. Noise band: at the top or bottom edge a band of colored vertical streaks 3–12 % of the height, growing in over 0.25 s
+     and jittering horizontally.
+  6. Tracking glitch: for 0.3–0.6 s the lines slide sideways in waves, the image tears into bands, 1–2-frame white flashes,
+     false colors, then the picture straightens out.
+variants:
+  - clean camcorder: softness, color cast, shake and abrupt zoom — no interference
+  - black-and-white night recording: monochrome, heavy noise, blown-out spots of light
+  - re-filmed from a screen: vertical colored stripes and screen moiré over the frame
+  - tracking glitch on a transition: 0.3–0.6 s of waves and flashes between scenes
+  - noise band at the edge: grows and jitters for 0.25–1 s
+  - on-screen markers: date, time or a play icon in a monospaced font in the corner of the frame
+status: code
+params:
+  softness: downscale to 320–360 pixels across and back up (effectively 240–330 lines); at 1080p — a horizontal blur of 5–8 px
+  chroma: blur the color horizontally 2–4 times more than the luma; shift the color to the right by 0–1 % of the width
+  color: R/B 1.4–1.6 (warm) or G +10–15 % (green); red saturation +15–25 %; clip the highlights, lift the shadows by 5–10 %
+  noise: luma noise 2–4 %, chroma noise 3–6 %, new every frame
+  pillarbox: 4:3 inside 16:9 — side bars of 12.5 % of the width each (9–12 % in the examples)
+  band: 3–12 % of the height at the bottom (classic) or top edge, horizontal jitter ±1–3 % of the width, growing in over 0.25 s
+  tracking: 0.3–0.6 s (8–15 frames @25 fps) — a wave shift of lines by ±5–20 % of the width, 1–2 white frames, false color
+  handheld: shake of 1–3 % of the frame; zoom-button zoom ×1.5–2.3 over 0.25–1 s, with no smoothing at the start
+  osd: date and time in the bottom corner, a monospaced font, 4–5 % of the frame height, white with a shadow
+when: a memory, childhood, "home video", behind the scenes, found footage, skateboarding and street culture, a retro 90s music video; a tracking glitch — as a transition or a hit on a fill in the track; the base — on the whole episode, not on a single shot
+avoid: an expensive product and accurate color; small text and interfaces (they blur); mixing with film dust and light leaks in one shot without intent; tracking glitches more often than once every 4–8 bars; overly clean stabilized footage — the filter looks like a sticker
+sfx: tape hiss and hum under the whole episode, the click of a record or play button at the start, "chewed-tape" sound and crackle on a tracking glitch, mono and a high-frequency roll-off on the music
+genres: {fanedit: signature, phonk: allowed, viral: allowed, ugc: allowed, fashion: allowed, teaser: allowed, clips: allowed, drama: allowed, sport: allowed, motivation: allowed}
+detect: |
+  ed_motion: a noticeable rgb_med cast (R higher than B by 1.4–1.6× or G higher than R and B), bars left/right ≈0.09–0.12 (4:3), zooms ×1.5–2.3 over
+  0.25–1 s with nonrigid < 0.25 (zoom-button zoom), jitter 1–7 %, on a tracking glitch — a cascade of "cuts", ECC and fail.
+  With custom code: luma edge half-width ≥0.35 % of the frame width, chroma edges 1.5 times wider than luma edges; a band of lines with
+  colored vertical streaks at the top or bottom edge, 3–12 % of the height; wavy horizontal line shifts during a glitch.
+  Unlike glitch.tv_noise: there scanlines over the whole frame, snow and roll, a sharper picture; here softness, bleeding color and
+  a band at the edge. Unlike glitch.film_damage: film has dust, hairs, light leaks and a rounded border. Unlike fx.glitch: no
+  rectangular blocks or evenly shifted bands.
+engine: |
+  vhs(softness=340, chroma_blur=3, chroma_shift=0.005, tint='warm'|'green', sat_red=1.2, noise=0.03, lift=0.06,
+      band={'edge': 'bottom', 'h': 0.04, 'jitter': 0.02}, pillarbox='4:3', osd=None|'date')
+  tracking_error(at=t, dur=0.45, amp=0.12, white_frames=1) — line waves x += A·sin(2π·y/P + φ(t)) and noise bands
+  + destabilize(profile='handheld') with an amplitude of 1–3 %; transform(scale=[1, 1.8], t=[t0, t0+0.5], ease='linear') for a zoom-button zoom
+  + sfx('tape_hiss', t=[t0, t1], gain=-24), sfx('click', at=t0)
+gen_hint: 1990s home video camcorder footage of <subject>, soft blurry VHS tape image, bleeding colors, warm color cast, blown highlights, tracking noise band at the bottom edge, shaky handheld with fast zoom, 4:3 frame
+commands: ["make the whole flashback look like a tape recording", "a tracking glitch between #4 and #5", "a VHS filter with the date in the corner on the intro", "home video with a 4:3 frame on the second verse"]
+related: [glitch.tv_noise, glitch.film_damage, fx.glitch, look.film, scene.archival, handheld.shaky, zoom.crash]
+evidence: {examples: 7, sources: 6, measured: "luma edges 2.3 px at a width of 600 (0.38 %), chroma edges 3.5 px, chroma detail ×0.24 relative to luma; R/B 1.42–1.63 in 3 examples, a green cast in 1, B&W in 2; side bars of 9.3 % on the left and right; zooms ×1.7 over 5 frames, ×2.3 over 1.05 s, ×2.05 over 2.2 s; shake 1–7 %; the top band grows from 0 to ≈11 % of the height in 0.25 s; tracking glitch ≈0.5 s with a white flash; 2 examples are re-filmed screens", confidence: medium}

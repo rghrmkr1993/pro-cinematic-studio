@@ -1,0 +1,379 @@
+id: frame.central
+family: frame
+group: angle
+level: A
+aliases: [center framing, centered composition, central composition, subject in the center, symmetrical shot, symmetrical composition, one-point perspective, on-axis shot]
+what: composition on the central axis — the subject exactly in the middle, the surroundings mirror-symmetric, the horizon level; a "statement" frame that stops the eye
+frames: |
+  1. The frame is built on a vertical axis that coincides with the center (0.485–0.515 of the width): windows, doors, arches,
+     columns, road edges or cars repeat in mirror image on the left and right.
+  2. The subject stands on the axis — face or figure in the center (x 0.49–0.54), usually frontal, looking into the lens or
+     straight ahead; horizontals and verticals are level (0°), no roll at all.
+  3. The camera is static (5 of 8) or moves strictly along the axis — a push-in ×1.2 over 1.4 s behind a subject walking away, a forward
+     tracking move toward the vanishing point (scaling center 0.49–0.50); everything that moves spreads symmetrically left and right.
+  4. Held for 2.5–4 s (60–100 frames @25 fps): almost nothing changes within the shot except the subject's facial expressions or rhythmic
+     action — the frame works as a pause and a statement.
+variants:
+  - a single frontal subject on the axis, looking into the lens, static camera (3 of 8)
+  - a silhouette or figure in a symmetrical opening — a window, an arch, a halo behind the head (2 of 8)
+  - movement along the axis — the subject walks away down a central corridor, the camera follows; a drive along a road with the vanishing point in the center (2 of 8)
+  - a group or "triptych" — several people gathered around the axis, the outermost figures balance the frame (2 of 8)
+  - the subject in the center against a non-symmetrical background — only the figure holds the center (1 of 8)
+status: code
+fallback: in code — only centering the subject with a crop by track(face|person) and leveling the horizon; real symmetry of the surroundings (architecture, openings, a road) — search the source footage for such shots via detect, otherwise generation with consent; mirroring half of the frame is already an effect, not composition
+params:
+  subject_x: center of the face or figure at 0.48–0.52 of the width (tolerance ±0.03); 0.42–0.46 reads as a mistake — either strictly center or thirds
+  symmetry: mirror correlation of gradients about the 0.5 axis ≥ 0.5 and above the control (frame shifted by 25 %) by at least 0.2; axis 0.485–0.515
+  horizon: horizontals and verticals level, roll ≤1–2°
+  eye_line: 0.27–0.51 of the height depending on the shot size
+  camera: static or movement strictly along the axis (zoom center 0.49–0.51); jitter ≤0.1 % for the "clean" version
+  duration: 2.5–4 s (60–100 frames @25 fps); in fast cutting with the subject centered on every cut — 0.4–1 s per shot
+  crop: to move the subject from x0 to the center without losing the format you need S ≥ 1 / (1 − 2·|x0 − 0.5|); when converting 16:9 → 9:16, centering is free for x0 0.16–0.84
+when: intro and title frame (symmetry holds on-screen text above or below the subject), a statement frame on the drop or at the end, confrontation and ritual, the subject's power and status, a "doll-like" stylized presentation; a calm anchor frame between chaotic ones; in fast cutting — keep the face in the center on every cut so the eye doesn't jump; a road or corridor with the vanishing point in the center — a setup for a push-in or an infinite zoom
+avoid: handheld reportage and chases — looks staged; a scene with no axis where symmetry would have to be forced; near-center (0.42–0.46) — looks like a miss; a tilted horizon; more than 3–4 static symmetrical frames in a row — monotonous
+sfx: no SFX on its own — support it with a pause, a sustained note or silence; if the frame comes in on a downbeat — one impact on the cut
+genres: {fashion: signature, product: signature, teaser: allowed, epic: allowed, fanedit: allowed, drama: allowed, calm: allowed, travel: allowed, motivation: allowed, explainer: allowed, ugc: allowed}
+detect: |
+  composition check on frames every 0.5 s: (a) center of the face or figure box at 0.47–0.53 of the width in ≥70 % of frames;
+  or (b) mirror symmetry — correlation of the blurred gradient map with its reflection about x=0.5
+  ≥0.5, best axis 0.485–0.515, gain over the same frame shifted by 25 % ≥0.2; color symmetry (a*/b* channels of the L*a*b* space) ≥0.65;
+  long horizontals and verticals with a tilt ≤2°. ed_motion: "no significant global motion" or ZOOM-IN centered at
+  0.49–0.51 (movement along the axis). Differences: rule of thirds — subject at 0.30–0.38 / 0.62–0.70; mirror or
+  kaleidoscope effect — symmetry almost perfect (r ≥0.98, pixel for pixel); Dutch angle — roll ≥5°.
+engine: |
+  composition(clip) → {subject_x, sym_r, axis, tilt, vp} — new analysis; label 'central' per the detect rules.
+  Synthesis: reframe(aspect, target=track(face|person)) placing the subject at [0.5, eye_line] (S per the crop formula)
+  + transform(rotate=[-tilt, -tilt]) to level the horizon + stabilize(strength=1) against drift.
+  Centered cutting: align_subject(clips, target=track(face), point=[0.5, 0.4], scale_match=True) — on every cut
+  the face is at the same point on screen. Intro: text(content, style, anim, t, safe_zone='tiktok') on the axis above or below the subject.
+gen_hint: perfectly symmetrical one-point composition, <subject> standing exactly in the center of the frame facing the camera, mirrored architecture on both sides, level horizon, static locked-off camera, stylized deadpan look
+commands: ["put the subject dead center in #3", "symmetrical frame for the ending", "keep the face centered on every cut in the chorus", "find symmetrical shots for the intro"]
+related: [shot.close_up, zoom.infinite, angle.dutch, fx.kaleidoscope, cut.match, frame.tableau]
+evidence: {examples: 8, sources: 8, measured: "in 6 of 8 the symmetry axis is at 0.485–0.515 and the correlation with the reflection is 0.56–0.95 versus 0–0.57 for the same frame shifted by 25 %; in 2 the background is not symmetrical, but the face or group is centered (x 0.46–0.49); a single subject's face at x 0.49–0.54; 5 of 8 — static (jitter ≤0.05 %), 2 — movement along the axis (push-in ×1.22 over 1.4 s, tracking move ×8 over 1 s centered at 0.49–0.50), 1 — handheld static; in the strictly symmetrical ones horizontals are at 0°", confidence: high}
+---
+id: frame.interview
+family: frame
+group: angle
+level: A
+aliases: [interview, soundbite, talking head, sit-down interview, answering off camera, off-axis interview]
+what: a person answers an unseen interviewer — the gaze goes past the lens toward the interviewer, the face sits on a third with looking room in the direction of the gaze; the backbone of documentary and explainer editing
+frames: |
+  1. Establishing shot (optional): a wide shot of the subject in their space — the figure ≈25 % of the height in the center, often symmetrical and with
+     backlight from a window; opens the interview block.
+  2. Answer: a medium close-up or medium shot, face 25–35 % of the frame height, eyes at 30–40 % of the height. The face on a third
+     (x 0.30–0.40 or 0.60–0.70), empty space 55–65 % of the width — on the side the subject is looking.
+  3. Gaze: 10–30° past the lens — at the interviewer sitting next to the camera; the subject does not look into the lens.
+  4. Camera: tripod (jitter ≤0.3 %) — or handheld in a documentary manner, with a push-in ×1.4–1.5 over ≈1 s on
+     a strong phrase.
+  5. Graphics: a title with the name or topic in the lower third; in the TV variant — a band 15–20 % of the height.
+  6. In the edit: soundbite 3–10 s, illustrative cutaways over the voice; jumps within an answer are covered by a push-in or
+     a cutaway.
+variants:
+  - documentary: handheld camera, natural light, face on a third, push-in ×1.47 over 1.1 s on an emotional moment
+  - studio or talk show: tripod, two guests on a sofa (faces at 0.25–0.45 and 0.50–0.70 of the width) or a single medium close-up, a graphics band at the bottom, the gaze at the host off screen
+  - environmental wide: the person in the center of a symmetrical, characteristic space, sets the tone of the block
+  - profile or three-quarter: the subject has turned away — laughing, remembering; a microphone in the foreground
+status: footage
+fallback: |
+  Needs a shot where the person talks while looking past the lens. In code: reframe to a third with looking room in the gaze direction, a lower-third
+  title, a documentary push-in by cropping. If the person looks into the lens, it is address.direct and must not be substituted.
+  Generation — via gen_hint with the user's consent.
+params:
+  duration: soundbite 3–10 s (75–250 frames @25 fps), cutaways 1–3 s (≈)
+  face: 25–35 % of the frame height; establishing wide — the figure ≈25 % of the height
+  position: face center x 0.30–0.40 or 0.60–0.70, looking room 55–65 % of the width in the gaze direction, eyes at 0.30–0.40 of the height
+  gaze: 10–30° past the lens toward the interviewer
+  camera: tripod (jitter ≤0.3 %/frame) or handheld; push-in ×1.4–1.5 over 0.8–1.2 s (20–30 frames)
+  lower_third: name or topic in the bottom 15–20 % of the height, entrance 6–10 frames, hold 3–4 s (≈)
+  two_shot: guests at 0.25–0.45 and 0.50–0.70 of the width, both looking the same way off screen
+when: |
+  Explainer and documentary videos, UGC testimonials, product videos with an expert: the soundbite is the backbone of the story, and
+  cutaways are laid over it. The establishing wide goes at the start of the block; the push-in goes on the key phrase. A cutaway every 3–8 s so
+  the soundbite doesn't lull the viewer. In music videos and teasers — a short quote insert of 1–2 s.
+avoid: |
+  A gaze into the lens is addressing the viewer, a different move. Face in the center or looking room on the wrong side (looking at the edge
+  of the frame). A soundbite longer than 10–15 s without cutaways. Visible jumps within an answer with nothing covering them. One subject looking in different
+  directions within one block.
+sfx: |
+  Clean voice (lav mic), room tone under it at −25…−30 dB, music ducked under the voice by −12…−18 dB. On the push-in —
+  no effects. On a change of subject — 0.2–0.3 s of silence or a soft musical "breath".
+genres: {explainer: signature, ugc: allowed, product: allowed, drama: allowed, sport: allowed, motivation: allowed, teaser: allowed, calm: allowed, clips: allowed}
+detect: |
+  ed_motion: tripod (jitter ≤0.3 %, 4 of 6) or handheld camera; sometimes ZOOM-IN ×1.4–1.5 over ≈1 s — a documentary
+  push-in; in the TV variant a static graphics band gives overlay-mask 0.2–0.45.
+  Visually: one face 25–35 % of the height on a third, gaze past the lens toward the larger empty area, the mouth moves almost all
+  the time (soundbite), the background is the subject's environment or a studio.
+  Difference from address.direct: the gaze is not into the lens. From look.news: there the reporter looks into the lens, with on-air banners and
+  a news ticker. From shot.close_up: an interview is the shot size plus a sideways gaze, speech and looking room in the gaze direction.
+engine: |
+  footage: find_shot(speaking=True, gaze='off_axis', faces=1, face_h=[0.25, 0.35]) → soundbite.
+  framing: reframe(aspect, target=track(face), thirds='against_gaze', headroom=0.30) — face on a third, looking room in the gaze direction.
+  push-in: transform(scale=[1, 1.45], center=track(face), t=[t_key-0.5, t_key+0.5], ease='inOutQuad')
+           + destabilize(profile='handheld') with a small amplitude.
+  title: text(content=name or topic, style='lower_third', anim='slide_in 8fr', t=[t0+0.5, t0+4]).
+  editing: duck(music, under=voice) by −15 dB + cutaways over the voice every 3–8 s, cuts on pauses in speech.
+gen_hint: documentary sit-down interview, <person> answers an interviewer sitting just off camera to the right, eyes slightly off-lens, medium close-up placed on the left third with empty space on the right, soft natural window light, shallow depth of field, tripod, background shows their environment
+commands: ["subject's soundbite: face on a third, looking room in the gaze direction", "handheld push-in on the key phrase", "name title in the lower third on #3", "establishing wide shot before the interview"]
+related: [address.direct, look.news, shot.close_up, cut.jump, frame.central]
+evidence: {examples: 6, sources: 4, measured: "tripod in 4 of 6 (jitter 0.07–0.27 %), documentary push-in ×1.47 over 1.1 s (1), slight push-in ×1.07 (1); single shots — face on a third with 55–65 % looking room in the gaze direction (3 of 6), environmental wides in the center (2), TV two-shot (1); gaze past the lens in all single shots; graphics band 15–20 % of the height in the TV ones; sizes and positions — estimated from a grid (≈)", confidence: medium}
+---
+id: frame.over_shoulder
+family: frame
+group: angle
+level: A
+aliases: [over-the-shoulder shot, OTS, over the shoulder, from behind the shoulder, dirty single, dirty shot, shot reverse shot]
+what: over-the-shoulder shot — the subject in focus is filmed from behind the other person; that person's blurred back of the head and shoulder cover a third of the frame on one side, and the subject looks toward them; the basis of shot/reverse-shot dialogue and a way to show what a character sees without taking them out of the frame
+frames: |
+  1. Foreground: the back of the head, a shoulder, a profile or the arm of a pair of glasses of the near character at the side edge — 25–52 %
+     of the frame width (typically ≈30 %) and 55–100 % of the height of the lower part of the frame. It is heavily blurred (sharpness below
+     8 % of the sharp zone) and usually darker than the rest of the frame — a silhouette against the light; less often a light shirt or skin.
+  2. The subject is in focus on the opposite third: face center x 0.66–0.68 with the shoulder on the left, 0.20–0.42 with the shoulder
+     on the right; face 18–31 % of the frame height (medium close-up or medium shot), eye line 0.26–0.35 from the top. The face
+     is turned toward the foreground — at the other person, past the lens.
+  3. The camera is at the near character's shoulder height; if the far one is lower (lying, sitting, in water), the camera looks down over the shoulder.
+  4. The camera is static or drifts handheld (jitter 0.03–0.4 %, shifts of up to 10 % of the frame over 0.5–1 s), occasionally
+     a slow push-in ×1.07 over 0.7 s.
+  5. Length 1.5–3 s. In a dialogue it is followed by the mirror shot: shoulder and face swap sides.
+  Over the shoulder onto an object: a map, a screen, a newspaper in focus, while the character's head, glasses or shoulder is a blurred frame at the side.
+variants:
+  - shot/reverse-shot dialogue — the other person in focus, the near one's back of the head and shoulder blurred at the side (2 of 7; in one the shoulder is almost out of frame and the shot reads as a regular medium close-up)
+  - over the shoulder onto an object — a map, a screen, a newspaper; the object is sharp, the character's head or glasses are a dark frame (3 of 7)
+  - over the shoulder looking down — the near one stands, the far one lies or swims; the gaze goes down (1 of 7)
+  - over the shoulder onto a figure in the environment — the far one walks toward the camera, the near one is a silhouette at the side (1 of 7)
+status: footage
+fallback: a dirty shot in code — if there is a wide two-person shot where the near one has their back to the camera, crop on the far one's face with the edge of the near one's back (crop headroom ×1.5–2); otherwise hybrid — mask the near one's silhouette from a neighboring shot (or a dark shoulder shape), blur it by 3–5 % of the width and place it on the side opposite the face, across 25–35 % of the width; if the characters were filmed separately and the fake is noticeable — generate an over-the-shoulder shot with consent
+params:
+  fg_width: 25–52 % of the frame width, typically 30–35 %
+  fg_blur: sharpness ≤8 % of the sharp zone; when faking — Gaussian blur of 3–5 % of the frame width
+  fg_luma: usually darker than the rest of the frame (silhouette), less often lighter (shirt, skin)
+  face: 18–31 % of the frame height; center x 0.62–0.70 with the shoulder on the left or 0.20–0.42 with the shoulder on the right; eyes 0.26–0.35 from the top
+  gaze: toward the foreground, past the lens
+  duration: 1.5–3 s (38–75 frames @25 fps); in a dialogue — per line
+  camera: static or handheld drift ≤0.4 %; optionally a push-in ×1.05–1.1 over 0.7–1.5 s
+  pair_rule: mirror pair — shoulder and face swap sides, the shot size is the same, do not cross the 180° line
+when: shot/reverse-shot dialogue — alternating two over-the-shoulder shots on every change of speaker; a bridge from the wide two-person shot to the close-ups; showing what a character reads or sees (a screen, a map, a letter) while keeping them in the frame — softer than a pure point-of-view shot; tension, surveillance, eavesdropping — the shoulder covers 40–50 % of the frame. 1–2 pairs per scene, then close-ups without the shoulder
+avoid: a monologue and addressing the camera — the shoulder gets in the way; mixed-up sides in a pair (both shoulders on the left) — the axis breaks and the viewer confuses who is where; a sharp foreground — pulls attention away; a shoulder taking more than half the frame for no reason; different shot sizes in a mirror pair — one speaker unintentionally seems more important
+sfx: the voice of the one in focus — closer and drier; the voice from behind the shoulder — slightly quieter and with more room sound; on the transitions between mirror shots — no hits, the line comes in 0.2–0.5 s before the cut
+genres: {drama: signature, teaser: allowed, calm: allowed, explainer: allowed, product: allowed, ugc: allowed, sport: allowed, motivation: allowed, viral: allowed, fanedit: allowed}
+detect: |
+  1) a blurred mass at the side edge: blocks with sharpness <8 % of the sharp zone extend from the edge across 25–52 % of the width
+     in ≥55 % of the rows of the bottom 85 % of the frame (6 of 7 examples); usually darker than the rest of the frame;
+  2) a face (YuNet, threshold 0.7) on the opposite third, 18–31 % of the frame height, turned toward the mass;
+  3) without a face — a sharp object (screen, paper, map) opposite a mass shaped like a head, a shoulder, the arm of a pair of glasses;
+  4) ed_motion: static or drift ≤0.4 %.
+  Differences: frame.two_shot — both faces are sharp and readable; shot.medium_close_up — there is no mass at the edge;
+  pov.first_person — the camera is "the eyes", there is no shoulder or head in the frame; a frame of leaves, bars, a door
+  opening — the mass does not look like a head and shoulders, and the subject's gaze does not go toward it.
+engine: |
+  classify_shot(clip, by='composition') → 'over_shoulder' with features 1+2 (or 1+3); side of the mass → fg_side.
+  Dialogue: dialogue_cut(clips, by='speaker', overlap=0.3) — a new primitive: alternates pairs with fg_side 'L'/'R' on each change
+  of speaker, the line's audio comes in before the cut by overlap seconds.
+  Dirty shot from a wide: shot_crop(size='MCU', target=track(face), lead_room=0.1, include='edge:person_near', max_scale=2).
+  Faking: mask(method='mediapipe_person') of the near one from a neighboring shot → blur(kind='gaussian', amount=0.04) →
+  composite(layers=[frame, silhouette], blend='normal'), the silhouette across 30 % of the width on the side opposite the face.
+gen_hint: over-the-shoulder shot, the back of <person A>'s head and shoulder blurred in the left foreground covering a third of the frame, <person B> in sharp focus on the right third looking at them, medium close-up, shallow depth of field, eye level, static camera
+commands: ["build a shot/reverse-shot dialogue from #2 and #5", "make a dirty over-the-shoulder shot from wide #3", "insert an over-the-shoulder shot onto the phone screen", "find over-the-shoulder shots in the source footage"]
+related: [frame.two_shot, shot.medium_close_up, shot.close_up, pov.first_person, pov.screen, angle.profile]
+evidence: {examples: 7, sources: 7, measured: "blurred mass at the edge in 6 of 7: 25–52 % of the width (median 0.29–0.40), 54–100 % of the rows, sharpness <8 % of the sharp zone; darker than the rest of the frame in 4 of 6; the far one's face 18–31 % of the height on the opposite third (x 0.66–0.68 or 0.20–0.42); 3 of 7 — over the shoulder onto an object; jitter 0.03–0.41 %, push-in ×1.07 over 0.7 s in one; clips 1.55–3.2 s", confidence: high}
+---
+id: frame.tableau
+family: frame
+group: angle
+level: B
+aliases: [painting-like shot, living picture, tableau vivant, tableau staging, staged mise-en-scène, painterly composition, postcard shot]
+what: a still, carefully built frame like a painting — the camera stands still, people pose or barely move within a deliberate composition and palette, and the frame is viewed like a canvas
+frames: |
+  1. The camera is locked off: jitter ≤0.1 % of the frame, no zoom, no pan. The shot is held longer than its neighbors — in the edit
+     usually 2–6 s (≈), so that the viewer has time to take in the frame.
+  2. Almost no movement inside: 2–14 % of pixels change per frame (median ≈5 %). Small details are alive — a fan, a gesture, wind,
+     a blink, extras in the background; the main figures pose.
+  3. The composition is constructed: a frontal, flat staging with even geometry (lines deviate from horizontal and
+     vertical by ≤2°) — or one strong diagonal of ≈20° across the whole frame. Figures are spread across planes: at the front
+     edge cropped heads and shoulders, in the middle the main characters, at the back the set with a central symbol.
+  4. The palette is controlled: the three main colors cover 60–78 % of the area; the costumes rhyme with the background (pastel,
+     monochrome, one accent color).
+  5. Filling — from a crowd across the whole frame to a single person framed by the set with a large empty area.
+variants:
+  - crowd canvas: 15+ figures in layers across the whole frame, edges cropped, the symbol of the scene in the center
+  - poster group: 3–6 people at full height (70–80 % of the frame height) frozen around an object or a car
+  - figure in a set: one person takes up 10–25 % of the area, the rest is a precise background and emptiness; often in a side third
+  - diagonal: a row of identical figures recedes diagonally into depth, one detail in the foreground is alive
+  - living portrait: a motionless face in the center, while blurred extras move behind it
+status: footage
+fallback: |
+  1) search the source footage: tripod shots with little internal movement, even geometry and a unified palette;
+  2) enhancement in code on any calm shot: stabilization to zero, leveling the horizon and reframing for
+     balance, reducing the palette to 2–3 colors, slightly slowing the "life" in the frame, optionally — letterbox bars;
+  3) generation via gen_hint with the user's consent.
+params:
+  duration: in the edit 2–6 s (50–150 frames @25 fps) (≈); measured excerpts 0.8–2.3 s without a single camera shift
+  camera: locked off, jitter ≤0.1 %/frame; at most a barely noticeable push-in ≤×1.05 over the whole shot is allowed (≈)
+  inner_motion: 2–14 % of pixels change per frame (median ≈5 %), mean brightness difference 0.8–5 levels
+  geometry: lines ≤2° from horizontal and vertical (frontal scene) or one diagonal of ≈20° across the whole frame
+  palette: top 3 colors — 60–78 % of the area; saturation from monochrome to pastel
+  figures: crowd of 15+ | group of 3–6 at full height | one figure taking 10–25 % of the area | central portrait
+  angle: eye level or slightly below, no roll
+  symmetry: not required — strict mirror symmetry only in some tableaux; balance of masses and clean edges matter more
+when: |
+  An illustrative pause: an intro to set the world and the tone; a cutaway between chapters; a final postcard frame; a "living
+  cover" for the track; in fashion — a group poster for a collection. Place it on a long note, the intro or the outro, where the music
+  "stands still". 1–3 times per video, each from 2 s; the neighboring shots should move, so the contrast works.
+avoid: |
+  Fast cutting — there is no time to take in the frame (minimum 2 s). Handheld camera and zooms. Random composition and clutter
+  at the edges. The drop and action moments — a tableau slows the rhythm. A viral hook: the first 1–2 s must move.
+sfx: |
+  Silence or room tone, music without drums. One "live" sound from the scene (a fan, wind, a shutter click) emphasizes
+  the stillness. A soft hit or gong as the shot comes in, if the tableau opens a chapter.
+genres: {fashion: signature, calm: signature, teaser: allowed, drama: allowed, epic: allowed, product: allowed, travel: allowed, fanedit: allowed, clips: forbidden}
+detect: |
+  ed_motion: no events, jitter ≤0.1 % (6 of 6), no cuts and no flashes over the whole shot.
+  Own checks: share of changing pixels ≤0.15 per frame; the scene's lines are level (median deviation ≤2°) or there is one
+  strong diagonal; top 3 colors ≥0.6 of the area; person detector — ≥3 people, or one person ≤25 % of the area surrounded by
+  set dressing; shot ≥2 s.
+  Difference from frame.central: a tableau does not have to be symmetrical (mirror correlation is high in only 1 of 6).
+  From time.freeze: in a tableau small details are alive (2–14 % of pixels change), in a freeze frame — 0. From an ordinary static shot:
+  a tableau stands out through staging — the figures pose, the palette is unified, the frame edges are clean.
+engine: |
+  footage: find_shot(camera='locked', inner_motion_max=0.15, line_dev_max=2 | diagonal=True, palette3_min=0.6,
+           persons='>=3 | single_small') → cut(at), duration 2–6 s.
+  enhancement: stabilize(strength=1.0) + reframe(aspect, target='balance', level_horizon=True)
+               + color(params={hue_consolidate: 3, sat: ±10 %}) + letterbox(ratio=2.0) optionally
+               + speed(rate=0.6–0.8, interp='flow') — "slow down the life" in the frame; entrance fade(from='black', dur=0.3).
+gen_hint: carefully staged tableau shot, <group of people / a single figure> posed almost motionless within <set>, locked-off camera, frontal planar composition with a level horizon, figures layered in foreground, middle ground and background, restrained palette of <two or three colors>, painterly, only tiny movements such as <a fan, a breeze>
+commands: ["a painting-like shot for 3 seconds at the start", "make #7 a tableau: stabilize, level the horizon and unify the palette", "a final postcard frame on the outro", "between chapters insert a living picture with no camera movement"]
+related: [frame.central, time.freeze, time.cinemagraph, shot.wide, shot.video_portrait]
+evidence: {examples: 6, sources: 6, measured: "camera locked off in all 6 (jitter 0.07–0.09 %); 2–14 % of pixels change per frame (median ≈5 %); lines level (≤2°) in 4 of 6, a diagonal of ≈21° in 2; top 3 colors 59–78 % of the area; mirror correlation of the edges high in only 1 of 6 (0.37 versus 0.07–0.12); filling — crowd, groups, one figure in a set, central portrait; shot length in the edit — an estimate (≈)", confidence: medium}
+---
+id: frame.two_shot
+family: frame
+group: angle
+level: A
+aliases: [two-shot, two in frame, pair shot, 50/50, two shot side by side, duet in frame]
+what: two people in one frame — side by side facing the camera, facing each other, or one closer and the other in depth; the characters' relationship, distance and inequality are visible without a cut
+frames: |
+  1. Exactly two faces in the frame, both readable (the detector finds two faces in most frames).
+  2. Three layouts, distinguishable by the numbers:
+     (a) side by side facing the camera — faces almost equal (size ratio 1.01–1.10), eyes at the same height (difference
+     ≤0.04 of the height), the pair in the center (midpoint between the faces x 0.48–0.51), 0.16–0.42 of the frame width between the faces;
+     faces 27–44 % of the height — a tight chest-up two-shot;
+     (b) facing each other — two profiles: the left one's nose is shifted right (+0.16…+0.25 of the box width), the right one's — left
+     (−0.17…−0.18); 0.30–0.59 of the width between the faces, faces 10–15 % of the height — a medium or wide "50/50";
+     (c) in depth — one closer, the other farther: face size ratio 1.3–2.8, the eye lines differ
+     by 0.1–0.4 of the height; the near one at the edge (x 0.17 or 0.73–0.81), the far one on the opposite third.
+  3. The camera is static (8 of 10, jitter ≤0.25 %), less often a slow pull-out ×0.93–0.96 over 0.5–1 s.
+  4. Length 1.6–5.3 s — as long as the exchange of lines, the shared reaction or the coming together lasts.
+variants:
+  - side by side facing the camera — the two look into the lens or in the same direction, synchronized gestures and reactions (3 of 10)
+  - face to face — two profiles at conversation distance or coming together up to a kiss (3 of 10)
+  - in depth — the near one large at the edge, the far one smaller on the other third; scale contrast ×1.4–2.8, up to a double of the same character (3 of 10)
+  - at different heights — one stands, the other sits, a landscape around them; faces 7–9 % of the height (1 of 10)
+status: footage
+fallback: the two-shot is cut in code from a wider frame that contains both (a window around the two faces with margin, lossless up to ×1.3 from 1080p and ×2 from 4K); if the characters were filmed separately — a hybrid composite (masks of both on a shared background, faces at the same height ±10 %, matching light) or an honest split screen; otherwise generation of a two-shot with consent
+params:
+  faces: 2 faces, both sharp (detector, threshold 0.6)
+  size_ratio: side by side and face to face 1.0–1.15; in depth 1.3–2.8
+  eye_delta: side by side ≤0.05 of the frame height; in depth 0.1–0.4
+  separation: side by side 0.16–0.42 of the width; face to face 0.30–0.60; in depth 0.22–0.71
+  face_h: tight two-shot 27–44 % of the height; medium and wide 7–15 %
+  pair_center: midpoint of the pair x 0.47–0.55 (in depth up to 0.64)
+  duration: 2–5 s (50–125 frames @25 fps), typically 3 s
+  camera: static; optionally a slow pull-out ×0.93–0.96 over 0.5–1 s
+  crop: window = box around the two faces + 0.5 of a face width on the sides and above, eyes at 0.33–0.45 of the height; limit ×1.3 (1080p) and ×2 (4K)
+when: showing the characters' relationship and distance — closeness (heads together), confrontation (profiles face to face), inequality (one in depth or lower); the start of a dialogue before the shot/reverse shot and a return to the two-shot at the end of the scene to show the blocking again; a shared reaction of the two to an event; the climax of coming together — a kiss, a hug, a handshake in one shot without a cut; duets in music videos, two hosts, collab videos, a couple in a fan edit
+avoid: when one character matters more — a two-shot makes them equal; faces smaller than 7–8 % of the height — emotions don't read, it is already a wide shot; a whole conversation in one two-shot in a dynamic genre — monotonous; faces overlapping each other; one of the two accidentally out of focus
+sfx: both voices in the same perspective and room; in a comedic reaction — a shared sound for the synchronized gesture; as they come together — quieter music, closer breathing
+genres: {drama: signature, fanedit: signature, ugc: allowed, viral: allowed, fashion: allowed, calm: allowed, teaser: allowed, explainer: allowed, motivation: allowed, sport: allowed, product: allowed}
+detect: |
+  YuNet (threshold 0.6) on frames every 0.5 s: exactly two faces in ≥60 % of frames, both ≥7 % of the frame height.
+  Subtype by the numbers: size ratio ≤1.15 and eye-line difference ≤0.05 → "side by side"; plus opposite signs
+  of the nose offset (left +, right −, |offset| ≥0.15) → "face to face"; ratio ≥1.3 → "in depth".
+  ed_motion: usually static.
+  Differences: frame.over_shoulder — only one face is sharp, the second person is a blurred mass of the back of the head at the edge;
+  group shot — three or more faces; split screen — a seam between the halves and independent movement of the halves;
+  angle.profile — one face.
+engine: |
+  classify_shot(clip, by='faces') → 'two_shot', subtype='side'|'facing'|'depth' (detect rules).
+  Crop from a wide: shot_crop(size='two', targets=[track(face:1), track(face:2)], margin=0.5, eye_line=0.4, max_scale=2) —
+  new parameter targets: a window around the box of the two faces.
+  From two singles: mask(method='mediapipe_person') for each → composite(layers=[background, A@x0.3, B@x0.7], blend='normal'),
+  faces at the same height ±10 %; the honest alternative — split_screen(layout='2v').
+  Scene structure: two_shot (2–3 s) → frame.over_shoulder pairs → close-ups → two_shot again at the end.
+gen_hint: two-shot of <person A> and <person B> <standing side by side facing the camera | facing each other in profile>, both faces in sharp focus, balanced composition with the pair centered, medium shot, eye level, static camera
+commands: ["start the dialogue with a two-shot", "cut a two-shot out of wide #4", "find shots in the source footage where the two characters are together", "put the people from #2 and #3 together in one frame"]
+related: [frame.over_shoulder, angle.profile, shot.medium_close_up, shot.wide, frame.central, layout.split_screen]
+evidence: {examples: 10, sources: 10, measured: "two faces found in all 10 clips; \"side by side\": ratio 1.01–1.10, eye difference ≤0.04, pair midpoint 0.48–0.51, distance 0.16–0.42, faces 27–44 %; \"face to face\": nose +0.16…+0.24 / −0.17…−0.18, distance 0.30–0.59, faces 10–15 %; \"in depth\": ratio 1.28–2.83, eye difference 0.1–0.4; 8 of 10 — static ≤0.25 %, 2 — pull-out ×0.93–0.96; clips 1.6–5.3 s", confidence: high}
+---
+id: frame.voyeur
+family: frame
+group: angle
+level: B
+aliases: [peeping, surveillance, observer's gaze, voyeuristic shot, peeping shot, stakeout POV, hidden camera, through a scope or binoculars]
+what: a peeping shot — the subject doesn't know they are being watched; we see them from afar through a gap, a window, a fence, a scope or binoculars, and most of the frame is covered by a dark obstruction
+frames: |
+  1. Position: the camera is far away (long lens) or behind an obstruction; the subject is small — 2–20 % of the frame height (in a scope after
+     the search — up to 35–45 %), doesn't look into the lens, busy with their own business.
+  2. Obstruction: 27–65 % of the frame is permanently dark (median ≈42 %) — out-of-focus bars, a car's pillar and frame, a door
+     leaf, blinds, a gap; or an optical mask — a scope circle with a crosshair (∅ 0.9–1.0 of the height), two overlapping
+     binocular circles (∅ ≈0.75 of the height), a small slit window (≈35–40 % of the area) in black.
+  3. Movement: stakeout — the camera is static (jitter ≤0.17 %); optics — handheld "tracking" of the target: a pan of ≈20 % of the frame
+     per second, shake 0.9–1.7 %, a search with a tilt (first it misses, then the target is found and held in the crosshair),
+     adjustments with short zoom-ins ×1.04.
+  4. Action: the subject walks, talks, sits; random people pass between them and the camera and block the view;
+     climax — the subject "feels" the gaze and turns around.
+  5. Shot length 2–5 s.
+variants:
+  - stakeout from a car or a window: a dark frame and pillar cover half of the frame, the subject is seen through the glass across the street
+  - through an obstruction: out-of-focus bars, foliage or blinds in the foreground, the face in a gap (≈20 % of the height)
+  - scope: a circular mask with a crosshair, bars of 11–12 % at the top and bottom, a tilt search up to a full frame over ≈2 s, then tracking
+  - binoculars: two circles side by side, a distant target ≈2 % of the width, a smooth pan following it
+  - slit or peephole: a small window in black, the subjects approach the camera and grow from 15 to 35 % of the height
+  - the peeper: we show the observer themselves — half of a face (≈45 % of the height) peeks out from behind a door jamb, 60–65 % of the frame is a blank wall
+status: code
+fallback: |
+  Best of all — a real long-lens shot or one from behind an obstruction (search the source footage via detect). In code: any wide
+  shot where the person doesn't look into the camera → a "long-lens" crop + handheld drift + an optical mask (scope, binoculars,
+  slit) or an out-of-focus obstruction on top (a drawn or generated overlay: bars, blinds, a car frame) + darkening.
+  The subject must not look into the lens; if they look into the camera, the move breaks. Generation — via gen_hint with the user's consent.
+params:
+  duration: 2–5 s (50–125 frames @25 fps)
+  subject_size: 2–20 % of the frame height (stakeout, binoculars, slit); after the search in a scope — 35–45 %
+  occlusion: 27–65 % of the frame permanently dark (median ≈42 %); the edge of the obstruction is soft (sharpness 0.2–0.3 of the center)
+  scope_mask: circle ∅ 0.9–1.0 H, crosshair 1–2 px, bars 11–12 % at the top and bottom
+  binocular_mask: two circles ∅ ≈0.75 H, overlap ≈10–15 % of the circle width (≈), bars 8–14 %
+  slot_mask: window ≈0.48 W × 0.77 H, softened edges
+  camera: stakeout — static (≤0.17 %/frame); optics — shake 0.9–1.7 %, pan ≈20 % of the frame/s, search tilt up to 100 % of the frame over ≈2 s
+  zoom: adjustment in steps of ×1.04 over 5–6 frames (≈)
+  grade: darker and more muted than the neighboring shots — median brightness 17–60 of 255, lower saturation
+when: |
+  Tension and surveillance: a thriller, a detective story, "someone is watching you", a teaser with a threat; before a reveal — a switch to the
+  observer's point of view. Comedic and in UGC: "spying on a friend", "watching the cat steal food". Place it in a quiet part of the track;
+  the climax "the subject turns around" — on the drop or a hit. 1–2 times per video.
+avoid: |
+  The subject looks into the camera — that is already an address to the viewer or pov.object. Too close and too clean — the distance disappears. A scope aimed at
+  people in light, kids' and product videos reads as a threat — replace it with binoculars or a slit; a scope only in an
+  obvious game or fiction. Binoculars and scopes longer than 5 s get tiresome.
+sfx: |
+  Dead silence, the observer's breathing, the scene's sound distant and muted (no highs — "through glass"); mechanical clicks of the optics
+  on adjustments, a camera shutter in photo surveillance; a sharp accent at the moment the subject turns around.
+genres: {drama: signature, teaser: signature, fanedit: allowed, viral: allowed, ugc: allowed, epic: allowed}
+detect: |
+  ed_motion: stakeout — no events, jitter ≤0.17 %; optics — a long SHIFT (a pan of 70 % of the frame over 3.4 s or a tilt of
+  108 % over 1.9 s), jitter 0.9–1.7 %; bars 8–27 % at the edges.
+  Own checks: the share of pixels that are dark in ≥90 % of frames is 0.27–0.65; a circular mask (circle ∅ ≥0.7 H, crosshair —
+  two thin dark lines through the center) or two circles side by side (binoculars); out-of-focus stripes in the foreground —
+  an obstruction; the subject is small (≤20 % of the height) and doesn't look into the lens.
+  Difference from pov.object: there the subject is right up close and looks into the lens; here they are far away and don't know about the camera.
+  From pov.first_person: there the character's head moves and their hands are visible; here the camera hides and barely moves or
+  tracks the target through optics. From fx.letterbox and lens.vignette: here the mask is motivated by an object (scope, binoculars, slit).
+engine: |
+  optics: mask_overlay(shape='scope'|'binocular'|'slot'|'peephole', size=0.95H, feather=6px, crosshair=True, bars=0.12)
+          + transform(scale=[1.6, 1.65], center=track(person), t=whole shot) — a "long lens" by cropping
+          + destabilize(profile='handheld') with an amplitude of ≈1 % + color(params={exposure: -0.5EV, sat: -20 %}).
+  target search: transform(shift=[[0, -0.6], [0, 0]], t=[t0, t0+1.9], ease='outCubic') + 2–3 scale steps of ×1.04.
+  obstruction: fg_frame(shape='bars'|'blinds'|'leaves'|'door_edge'|'car_frame', coverage=0.45, blur=20px, luma=0.1,
+               source='draw'|'generate') + vignette(0.5).
+  sound: muffle(cutoff_hz=1500) on the scene sound + sfx('click', at=each adjustment, gain=-12dB).
+gen_hint: voyeuristic long-lens shot from a hidden position, <subject> unaware of being watched, seen far away through <a gap in a fence / a parked car window / half-closed blinds>, dark out-of-focus foreground covering half of the frame, slight handheld drift, muted desaturated colors, telephoto compression
+commands: ["make #4 look like he is being watched from a car", "scope mask on #2 with a target search", "binoculars: follow the subject with a pan for 3 seconds", "before the drop — peeking from behind a door"]
+related: [pov.object, pov.first_person, pov.dialogue, lens.vignette, fx.letterbox, focus.shallow, fx.night_vision]
+evidence: {examples: 7, sources: 7, measured: "permanently dark share of the frame 0.27–0.65 in 6 of 7 (median 0.42); stakeout static in 4 of 7 (jitter 0.05–0.17 %); optics with handheld tracking — pan of 70 % over 3.4 s, tilt of 108 % over 1.9 s, shake 0.9–1.7 %; bars 11–14 % with the scope and binoculars; subject size 2–20 % of the height — estimated from a grid (≈); 1 of 7 — the peeper themselves behind a door jamb", confidence: medium}

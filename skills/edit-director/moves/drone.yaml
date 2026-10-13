@@ -1,0 +1,173 @@
+id: drone.aerial
+family: drone
+group: camera
+level: B
+aliases: [aerial shot, drone shot, aerial footage, filming from the air, drone view, helicopter shot, flyover, terrain flyover, drone reveal, dronie, drone pull-back, establishing aerial]
+what: filming from the air — a drone or helicopter flies smoothly high above a city, nature or a road — reveals the place, follows a car or a boat, flies away from the subject or dives toward them; the main establishing shot and a link between locations
+frames: |
+  1. Altitude and angle: the camera is tens to hundreds of meters above the ground (≈), looking down at ≈20–60° — the
+     horizon in the top 5–40 % of the frame (≈2/3 of examples) — or steeper, down to straight down, with no horizon
+     (≈1/3). No faces, people are dots up to 5 % of the frame height, a car is 10–30 % of the width; the frame is
+     filled with large-scale environment — roofs, fields, roads, water, lights.
+  2. Smooth movement, as on a gimbal: jitter ≤0.3 % of the frame (26 of 33). Flying forward — the picture grows evenly
+     ×1.2–1.4 per second (≈×1.007–1.014 per frame @25 fps); pulling back — it shrinks ×0.6–0.9 per second; sideways or
+     diagonal drift 3–27 % of the frame per second (0.1–1.1 % per frame); a slow turn — up to 5–6°/s. High shots have
+     weak parallax (nonrigid 0.03–0.28), low flyovers over the ground and past objects — 0.3–0.65.
+  3. One event inside the shot: the foreground moves away and the view opens up, the camera finds a car or a figure,
+     rises from the object, dives toward a target. Curve: reveal and pull-back have a fast start and a long deceleration
+     (half the distance in the first 20–30 % of the time), the descent accelerates, flyover and drift are even.
+  4. Shot length 1.4–7 s, median ≈3 s (75 frames @25 fps); in a montage sequence — 0.2–0.6 s each.
+  5. Light: night (lights, neon) in 10 of 33 and sunset or low sun in ≈6 more; in daytime — haze at the horizon.
+variants:
+  - forward flyover: over a lake, along a ridge, along a road through rocks, low over a plain — ×1.2–1.4/s for 2–6 s (fast — ×2.4/s), often tilting down at the end, where a tiny figure or car appears (4 of 33)
+  - reveal from behind the foreground: tree crowns, a hanging scoreboard, an awning leave the frame in 0.6–1.5 s (×2.2 in 0.7 s or a shift of 28 % of the frame per second), then 2–3 s of slow hovering over the revealed view (3 of 33)
+  - pull-back (dronie): the camera flies back and up away from a house, a cliff, a huge object or the subject — the object shrinks, new space slides in from below (a beach, the sea, a field); ×0.21–0.34 over 3.2–3.4 s, often under a title (4 of 33)
+  - vehicle tracking: a car or boat from behind and above or at ≈45° — the object stays put in frame, the background flows ≈21 % of the frame per second; a "pulls ahead" variant — the car shrinks from ≈1/3 to ≈1/9 of the width in 4 s (3 of 33)
+  - descent and dive to a target: from height down onto a car in a night crowd (×2.5 over 5.3 s, accelerating), spiraling down to a road (a 118° turn in 3.4 s) and on into a chase, whirling into a street canyon (−165° in 2.9 s, peak ≈90°/s); fast dives border on drone.fpv (3 of 33)
+  - hover and drift: a night city, neon, an intersection from above — almost static (≤1 % of the frame per second) or a slow turn of 5.5°/s over 7 s; often a cut or a dissolve between two such views (6 of 33)
+  - through the clouds: a climb from a top-down view into the clouds or a descent through a gap in the clouds — the white or misty fill hides a cut into another world (a scene above the clouds, a desert below the clouds) (3 of 33)
+  - flying into a building: a flight toward the facade and a sharp push-in with motion blur into a window — a cut to the interior (2 of 33)
+  - straight down from above: rising over a night block with a searchlight spot (×0.8 in 2 s) or a pass along a bridge at 22 % of the frame per second (2 of 33, see angle.birds_eye)
+  - bird flight: the camera flies within a flock of birds or is mounted on a bird above a roof, roll up to 28° (2 of 33)
+  - montage sequence: 14 different aerial views of one city in 4.9 s, 0.2–0.6 s each (1 of 33)
+status: footage
+fallback: |
+  1) search the source footage by detect (drone telemetry in the metadata — altitude and gimbal tilt — settles it at once);
+  2) code imitation of a high shot — honest, because parallax from above is weak (nonrigid ≤0.25): a 4K frame or a photo
+     from a roof, a mountain or an airplane window → a slow push or drift over the still frame, pull-back — reverse scale;
+     low flyover — 2–3 depth layers (parallax_layers), convincing up to ≈10 % foreground displacement; reveal — a dark
+     foreground moves down out of frame;
+  3) generation with the user's consent from gen_hint (4–5 s) — for the reveal, the pull-back from the subject and car tracking
+params:
+  altitude: ≈30–500 m; looking down 20–60° with the horizon in the top 5–40 % of the frame, or 60–90° with no horizon
+  duration: 2–5 s in the edit (examples 1.4–7 s, median ≈3 s = 75 frames @25 fps); sequence — 0.2–0.6 s per shot (5–15 frames)
+  forward: ×1.2–1.4 per second (≈×1.007–1.014 per frame @25 fps), fast flyover up to ×2.4/s; ease linear
+  pull_back: ×0.6–0.9 per second, ×0.2–0.8 per shot; ease outCubic (half the distance in the first 20–30 % of the time) or linear
+  descent: ×1.2–1.3 per second, accelerating (inCubic); spiral dive 35–57°/s, peak ≈90°/s
+  drift: 3–27 % of the frame per second (0.1–1.1 %/frame @25 fps); hover ≤1 %/s; turn ≤6°/s
+  reveal: the foreground leaves in 0.6–1.5 s (15–38 frames @25 fps), then 2–3 s of hovering over the view
+  smooth: jitter ≤0.3 % of the frame, roll ≤±6° (except dives and bird flight)
+  subject: people ≤5 % of the frame height; a car 10–30 % of the width; the tracked object stays put in frame ±10 %
+  light: night, sunset, golden hour — preferred; in daytime — haze, the top third softer in contrast
+  imitation: from 4K — push ×1.15–1.3 over 3–5 s, drift ≤0.3 %/frame; pull-back — scale 1.6 → 1.0 over 3 s; depth layers — foreground shift ≤10 % of the frame
+  vertical: 9:16 — a window on the object (car, figure, tower), horizon on the upper third; don't crop a pure landscape, look for a vertical drone shot
+when: |
+  opening of a video or chapter — "where are we" in 3–4 s, before the wide and medium shots; reveal — the chorus entry
+  or the drop, a teaser intro; a transition between cities and locations (two aerials in the same direction butted
+  together or through a cloud); ending — a pull-back from the subject, up and back, under a title; road and chase —
+  tracking a car from above; a night city from above — a breather and a backdrop for text; a montage sequence of aerial
+  views — the hook of a travel video. No more than 2–3 aerials per minute, no more than two in a row, with a
+  ground-level shot between them.
+avoid: |
+  moments where a line of dialogue and facial emotion matter; three aerials in a row with no "ground" (the subject and
+  scale get lost); fast cutting over a slow flyover — under 1.5 s the view doesn't read (except a deliberate sequence);
+  a shaky drone and a tilted horizon for no reason; speed-up above ×3 — cars and people give it away; reverse on shots
+  with walking people, cars, water; a vertical crop of a wide landscape; adjacent aerials with different haze and color
+  temperature without matching; imitating a low flyover by shifting a flat picture (without depth layers the fake shows)
+sfx: |
+  wind and airflow over the whole shot, a distant hum of the city or nature; reveal — a riser into the moment the view
+  opens and a hit or a bass beat on it; pull-back at the end — a long swell fading out; dive and spiral — a rising
+  whistle, a whoosh and a hit on reaching the target; through the clouds — white noise with wind, breaking off at the
+  cut; helicopter rotor noise — only as a device (surveillance, searchlight)
+genres: {travel: signature, epic: signature, calm: signature, motivation: allowed, teaser: allowed, sport: allowed, product: allowed, drama: allowed, explainer: allowed, fashion: allowed, viral: allowed, clips: allowed, fanedit: allowed, phonk: allowed}
+detect: |
+  Cues on frames every 0.5 s (3 of 5 needed; drone telemetry — altitude > 20 m — settles it at once):
+  1) no faces, people ≤5 % of the frame height, cars ≤30 % of the width; 2) horizon in the top 5–40 % of the frame or none;
+  3) the frame is filled with large-scale environment — roofs, fields, roads, water, city lights; 4) ed_motion: smooth
+  movement with no shake — jitter ≤0.3 % and one of: ZOOM-IN ×1.2–1.4/s (flyover), ZOOM-OUT ×0.6–0.9/s (pull-back),
+  SHIFT 3–27 %/s (drift, tracking), ROTATE ≤6°/s (turn) or "no significant global motion" (hover); nonrigid ≤0.28 for
+  high shots, 0.3–0.65 for low ones; 5) night or sunset — in about half the cases.
+  Variants by curve: reveal — in the first 0.6–1.5 s a sharp growth or shift with high nonrigid (the foreground leaves),
+  then drift; pull-back — ZOOM-OUT ease-out; descent — ZOOM-IN ease-in centered on a car or figure; tracking — the object
+  stays put in frame, the background flows; sequence — cuts every 0.2–0.6 s between different aerial views.
+  Distinctions: drone.fpv — low and fast (2–5 % of the frame per frame), rolls ±15–50°, barrel distortion;
+  angle.birds_eye — strictly straight down, static or rising; angle.overhead_tracking — straight down with a lead object;
+  shot.extreme_wide — camera on the ground, horizon closer to the middle, static; crane.telescopic — height up to ≈10 m,
+  interior or crowd; time.hyperlapse — people, cars and clouds jerk, brightness flickers; arc.horizontal (aerial arc) —
+  the subject in the center, the background rotates around them.
+engine: |
+  Search: classify_shot(clip, by='aerial') — detect cues (3 of 5) or telemetry; the variant — by the ed_motion curve.
+  Placement: intro — scene_funnel(order=['aerial', 'EWS', 'WS', 'MS']), aerial 3–4 s; transition — cut at the end of the
+  movement + match(on='motion') with the next same-direction aerial; ending — pull-back 3–4 s + fade(to='black', dur=1).
+  Rhythm: cut on a downbeat; in dynamic genres speed(rate=1.3–2, interp='blend'); reverse() — only if there are no
+  moving people, cars or water (local motion check).
+  Sequence: cut every 0.25–0.5 s (½ beat at 120 BPM) across 8–14 different aerials in the same direction.
+  High-shot imitation from 4K: transform(scale=[1.0, 1.25], center=[0.5, 0.45], t=[t0, t0+4], ease='linear')
+  + transform(shift=[[0, 0], [-0.04, 0]], t=[t0, t0+4], ease='linear'); pull-back — transform(scale=[1.6, 1.0], t=[t0, t0+3],
+  ease='outCubic') (+ outpaint the edges if the image runs out); low flyover — parallax_layers(depth_map, layers=3, push=1.2).
+  Reveal in code: occluder_pass(tone='dark', dir='btt', dur=0.6) + transform(scale=[1.1, 1.0], ease='outCubic').
+  Through the clouds: cut on the whitest cloud frame (find_cover_frame) or transition('dip', dur=0.5, params={color: 'white'})
+  + blur(kind='zoom') + sfx('whoosh', at=seam, align='peak').
+  Generation: generate_video(prompt=gen_hint, dur=5).
+gen_hint: cinematic aerial drone shot high above <location>, smooth gimbal-stabilized <slow forward flyover | rising over the treetops to reveal the valley | pulling back and up away from <subject> | following <car or boat> from behind and above | slow orbit over the city lights>, horizon near the top of the frame, tiny people and cars, <golden hour | night city lights>, wide lens, no shake
+commands: ["open the video with a drone flyover above the city", "find all the drone shots in the source footage and put a reveal on the drop", "at the end, a drone pull-back from the subject, up and back, under a title", "turn the 4K photo from the mountain into a slow 4-second drone flyover", "quick cuts of aerial views, half a beat each, on the intro"]
+related: [drone.fpv, angle.birds_eye, angle.overhead_tracking, shot.extreme_wide, crane.telescopic, crane.pedestal, arc.horizontal, time.hyperlapse, pass.through, trans.hidden_cut, trans.zoom, cut.vector_match]
+evidence: {examples: 33, sources: 28, measured: "all 28 sources in the section; shots 1.4–7 s (median ≈3 s); jitter ≤0.3 % in 26 of 33; forward flyover ×1.21–1.41/s (fast ×2.4/s), pull-back ×0.21–0.34 over 3.2–3.4 s (2 of 3 with a fast start — half the distance in 21 % of the time, one even), descent ×2.46 over 5.25 s, accelerating, spiral dives 118° in 3.4 s and −165° in 2.9 s, drift and tracking 3–27 % of the frame per second, hover ≤1 %/s; nonrigid 0.03–0.28 for high shots, 0.32–0.63 for low ones; night in 10 of 33; sequence — 14 views of 0.2–0.6 s each; altitude and tilt angle are visual estimates", confidence: high}
+---
+id: drone.fpv
+family: drone
+group: camera
+level: B
+aliases: [FPV, FPV drone, FPV fly-through, racing drone, drone fly-through, drone flight, first-person drone]
+what: a rapid flight of a light drone right next to surfaces — banking into turns, diving along walls and flipping over, in a single 3–10 second take
+frames: |
+  1. Starts already at speed: the camera is 0.5–2 m from the ground, a wall or a roof, a wide lens with barrel
+     distortion (curved horizon), nearby objects rush past the frame edges with motion blur — the edges are 1.5–4 times
+     softer than the center.
+  2. Turn: in a turn the frame rolls over (banking) by 15–50° in 0.5–1 s and comes back;
+     in dynamic takes the roll is continuous, p90 speed 27–150°/s (1–6° per frame).
+  3. Peak element (one per take): a dive down a facade turning into a straight top-down view, a climb up a wall
+     revealing a panorama over the roof edge, an orbit around an object with a 120–180° flip in 1–2.5 s
+     or a pass skimming past a car or a person. Frame shift at the peak 2–5 % per frame.
+  4. Landing: speed drops, the horizon levels out in 0.5–1 s, the frame settles on the subject (a person
+     at the end of an alley, an athlete in a square, a car in smoke) or opens up a wide shot. The whole take has no cuts.
+variants:
+  - low straight skim: 0.5–1 m above a field, road or alley, level horizon (roll < 10°), forward ×1.5–2 per second, the lower half of the frame is solid streaks of motion blur
+  - chase: stays 1–3 m from a car, motorbike or runner, the roll swings ±35° following the subject's turns, at the end it breaks away into a wide shot
+  - facade: approach to a building, roll and dive down the wall or a climb up the wall revealing the city, ending on a top-down view
+  - acrobatic orbit: a banked turn around a landmark with a flip over the roof (up to 150° of roll), coming out on a frontal shot of the object
+status: footage
+fallback: |
+  1) search the source footage: drone and action shots with the signature from detect;
+  2) code imitation from a wide or 4K shot from a drone, a car or handheld on the move: constant push + rocking roll + fine
+     vibration + radial blur + barrel distortion — convincing for 1.5–3 s, without real parallax;
+  3) generation with the user's consent from gen_hint (4–5 s), the best option for dives and flips
+params:
+  shot_length: 2–6 s in the edit (source takes 2.9–9.5 s); typically 3–4 s = 75–100 frames @25 fps
+  altitude: ≈0.5–2 m from the surface, passing ≈1 m from objects
+  roll: banked turns ±15–50°, flip 120–180° in 1–2.5 s; roll rate 25–150°/s, on a straight < 10°/s
+  forward_rate: ×1.5–2 of apparent scale per second along the heading (≈×1.02–1.03 per frame @25 fps)
+  pan_tilt_rate: 2–5 % of the frame per frame in turns and dives
+  lens: wide 120–150° ≈, barrel distortion visible on the horizon; edges 1.5–4 times softer than the center
+  fake_fpv: push ×1.3–1.8 per take, linear; sinusoidal roll ±8–15° with a period of 1.5–2.5 s; vibration 0.2–0.4 % of the frame at 12–20 Hz; zoom_blur 0.3–0.5; barrel k ≈ −0.15…−0.2
+  crop_margin: roll ±10° needs a crop margin of ×1.3, ±20° — ×1.55 (16:9 and 9:16); below 4K the roll imitation turns mushy
+when: |
+  hook and intro (the first 1–3 s — a dynamic "entry" into the location); a transition between locations via a dive
+  or a flight through an opening; the build before the drop with acceleration, on the drop — a cut at the peak of the
+  roll; revealing the subject at the end of the flight.
+  No more than 2–3 FPV shots per 30 s; cut adjacent FPV shots by matching the direction of roll or movement.
+avoid: a calm, luxury or conversational tone (a smooth drone shot is needed there); dialogue over it; several flips in a row and a take longer than 8 s with no event (causes motion sickness); text near the frame edges during a roll; a vertical 9:16 crop from 16:9 FPV — the barrel distortion breaks at the edges; imitation on 1080p with a roll beyond ±10°
+sfx: continuous airflow or wind over the whole flight; a short whoosh on every close pass by an object; a riser before the panorama opens up; a hit or a bass accent on landing on the subject
+genres: {travel: signature, sport: signature, epic: allowed, viral: allowed, product: allowed, phonk: allowed, teaser: allowed, clips: allowed, motivation: allowed, calm: forbidden}
+detect: |
+  ed_motion: a single take of 3+ s with no real cuts; ROTATE events of 20–150° peaking at 3–7°/frame; SHIFT 20–80 % of
+  the frame in turns; alternating ZOOM-IN and ZOOM-OUT with nonrigid 0.25–0.8 (real parallax, not a zoom).
+  Caution: at a step of 3–4 frames a fast roll produces false "cuts" — recheck with a step of 1.
+  Skimming variant: few events, but a steady forward expansion and strong blur in the lower half of the frame.
+  Visually: curved horizon, roll, nearby surfaces, a top-down view mid-take.
+  Difference from drone.aerial: that one is slow (< 0.5 % of the frame per frame), high, with a level horizon (roll < 3°).
+  Difference from handheld: a handheld camera has a vertical "walking" bob at 1.5–2.5 Hz at eye level, no banked turns.
+  Difference from a car-mounted camera: the horizon is tied to the car, no free dives or flips.
+engine: |
+  Real shot: cut(at) on the event + optionally speed(curve=[[0,1],[0.5,1.4],[0.8,0.6],[1,1]], interp='blend');
+  the join of two FPV shots — at the peak of the roll, match(on='motion').
+  Imitation (fake_fpv) on a wide or 4K shot, D = 2–3 s:
+    transform(scale=[1.35, 1.75], center=[0.5, 0.45], t=[0, D], ease='linear')
+    + transform(rotate=[-12, 12], t=[0, D/2], ease='inOutCubic') + transform(rotate=[12, 0], t=[D/2, D], ease='inOutCubic')
+    + shake(amp=0.3 % of the frame, freq=15, axes='xy') + shake(amp=0.4°, freq=8, axes='rot')
+    + blur(kind='zoom', amount=0.4, center=[0.5, 0.45]) + lens_distort(k=-0.18, zoom_comp=True) + vignette(0.15)
+  Generation: generate_video from gen_hint, 4–5 s, then treat it as a real shot.
+gen_hint: FPV drone shot, fast first-person flight a meter above <terrain or street>, banking turns that tilt the horizon, dives down the facade of <building> into a top-down view, wide fisheye lens, motion blur on the edges, ends by revealing <subject>
+commands: ["open the video with an FPV flight over the city", "make a fake FPV from drone shot #3 with roll on the turns", "an FPV pass down the alley on the build, cut on the drop matched by roll", "generate a 4-second FPV dive along the tower"]
+related: [drone.aerial, time.speed_ramp, roll.whip, lens.fisheye, track.follow, pass.through]
+evidence: {examples: 7, sources: 7, measured: "takes 2.9–9.5 s with no cuts (false ed_motion cuts at a step of 3–4 checked frame by frame); roll up to ±35–50° in chases and dives, a 146° flip in 2.4 s; p90 roll rate 27–148°/s in dynamic takes, 6–9°/s in skimming ones; shift p90 2–5 % of the frame per frame; forward expansion ×8.4 in 3.4 s in an alley; nonrigid 0.25–0.8; edges 1.5–4 times softer than the center; barrel distortion visible in 5 of 7", confidence: high}

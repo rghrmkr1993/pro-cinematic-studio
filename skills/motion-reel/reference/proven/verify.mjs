@@ -1,0 +1,21 @@
+// node verify.mjs -> determinism (2nd render, MD5 compare), loudness, true peak, a/v duration, loop seam
+import { spawnSync, execFileSync } from 'node:child_process';
+import { createHash } from 'node:crypto';
+import { readFileSync } from 'node:fs';
+const md5 = (f) => createHash('md5').update(readFileSync(f)).digest('hex');
+const run = (c, a) => spawnSync(c, a, { encoding: 'utf8' });
+const r = spawnSync('node', ['render.mjs', '--out', 'out/silent2.mp4'], { stdio: ['ignore', 'ignore', 'inherit'] });
+if (r.status) process.exit(1);
+const h1 = md5('out/silent.mp4'), h2 = md5('out/silent2.mp4');
+console.log(`determinism: ${h1} vs ${h2} -> ${h1 === h2 ? 'IDENTICAL' : 'DIFFERENT'}`);
+const e = run('ffmpeg', ['-hide_banner', '-i', 'out/final.mp4', '-af', 'ebur128=peak=true', '-f', 'null', '-']).stderr;
+const sum = e.slice(e.lastIndexOf('Summary:'));
+const I = +/I:\s+(-?[\d.]+) LUFS/.exec(sum)[1], TP = +/Peak:\s+(-?[\d.]+) dBFS/.exec(sum)[1];
+console.log(`loudness: I=${I} LUFS (target -14 +/-1: ${Math.abs(I + 14) <= 1 ? 'OK' : 'FAIL'}), true peak=${TP} dBTP (<= -1: ${TP <= -1 ? 'OK' : 'FAIL'})`);
+const d = (s) => +run('ffprobe', ['-v', 'error', '-select_streams', s, '-show_entries', 'stream=duration', '-of', 'csv=p=0', 'out/final.mp4']).stdout.trim();
+const dv = d('v:0'), da = d('a:0');
+console.log(`duration: video ${dv}s audio ${da}s diff ${(dv - da).toFixed(3)}s (${Math.abs(dv - da) < 0.05 ? 'OK' : 'FAIL'})`);
+const ps = run('ffmpeg', ['-hide_banner', '-i', 'out/_last.png', '-i', 'out/_first.png', '-lavfi', 'psnr', '-f', 'null', '-']).stderr.match(/average:(\S+)/);
+console.log('loop seam PSNR last->first:', ps ? ps[1] : 'n/a', 'dB');
+console.log(run('ffprobe', ['-v', 'error', '-show_entries', 'stream=codec_name,width,height,r_frame_rate,sample_rate,channels', '-of', 'compact', 'out/final.mp4']).stdout.trim());
+if (h1 !== h2 || Math.abs(I + 14) > 1 || TP > -1 || Math.abs(dv - da) >= 0.05) process.exit(1);

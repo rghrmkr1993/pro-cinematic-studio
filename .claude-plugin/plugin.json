@@ -1,0 +1,10 @@
+{
+  "name": "pro-cinematic-studio",
+  "version": "1.0.0",
+  "description": "AI film studio: a 14-person crew and 70 skills that take a brief through script, shots, voice, music, edit, grade and delivery on Higgsfield and ElevenLabs.",
+  "author": {
+    "name": "Raghuram K Ravi"
+  },
+  "license": "Proprietary (owner licensed); third-party components under their own licenses, see THIRD_PARTY.md",
+  "keywords": ["cinematic", "video", "higgsfield", "seedance", "film", "editing", "ai-video"]
+}

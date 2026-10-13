@@ -1,0 +1,232 @@
+id: product.bottle_hero
+family: product
+group: aesthetics
+level: B
+aliases: [bottle hero shot, beverage hero shot, bottle in its flavor world, flacon on ingredients, ingredient bed, flavor world, drink packshot, bottle ad shot]
+what: a bottle or a flacon stands strictly in the center, label to the camera, and the whole background is its flavor or ingredient (apples, peaches, honeycomb, leaves) in one color; flavors change via falling or sliding ingredients, the ending is a lineup of flavors in stripes
+frames: |
+  1. Frame: the camera is frontal, at label height, static or with a barely noticeable push-in. The bottle is centered
+     (x ≈ 0.5) and takes ≈70–90 % of the frame height in a horizontal format (≈12–15 % of the width), the label
+     reads in full. The background is filled edge to edge with one ingredient: a scatter of green apples, peaches, honeycomb,
+     branches with leaves; the background color matches the color of the flavor's label — the frame is almost monochrome and very
+     saturated, the light is soft studio light, with a highlight on the glass.
+  2. Flavor change: ingredients of the new flavor fly or roll across the frame in front of the lens with motion blur
+     (≈0.2–0.4 s), or the ingredient bed slides sideways and reveals a plain background — and the bottle is already
+     on the new background. The bottle stays in place during the change.
+  3. Live variant: a hand brings the bottle into a "natural" scene (apple-tree branches in front of a green background),
+     leaves it hanging among the leaves and withdraws; the leaves sway.
+  4. Ending: a lineup frame — 2–4 horizontal stripes of equal height, each with the texture of its flavor
+     (peaches / apples / honeycomb), or a row of bottles; holds for 1–2 s under a logo or a slogan.
+variants:
+  - ingredient bed: the bottle lies or stands in a scatter of fruit, shot from above or frontally
+  - ingredient wipe: fruit falls or rolls in front of the lens with motion blur and changes the flavor
+  - bed slide: the background texture slides away sideways or upward, revealing a plain background or the next flavor beneath
+  - hand in frame: the bottle is brought in and left among branches, flowers, honeycomb
+  - from above in a graphic frame: the bottle on a round tray in the center, around it a rope net, rings, a pattern; a light sway or rotation of the frame
+  - flavor lineup: horizontal texture stripes one above another or a row of bottles at the end
+status: footage
+fallback: if the user only has a photo or a video of the product — cut out the bottle (remove_background) and place it on generated ingredient plates with the user's consent (a scatter of fruit from above, honeycomb, branches on a green background), adding a shadow and a highlight; the ingredient wipe — generate a short shot of "fruit falling in front of the camera" or use sprites with motion blur done in code; code assembles the stripe lineup from the plates by itself
+params:
+  product_size: 70–90 % of the height of a 16:9 frame (≈12–15 % of the width), center x 0.48–0.52; for 9:16 — 45–60 % of the height
+  framing: frontal, the camera at label height; from above — the product in the center of a circle or a frame ≈50 % of the width in diameter
+  background: one ingredient across the whole frame; high saturation, 70–90 % of the area one hue matching the label
+  camera: static or a slow push-in ×1.03–1.1 over the shot; rotation of the frame from above ≤5°/s
+  shot: 1–2.5 s per flavor (25–60 frames @25 fps); lineup — 1–2 s
+  swap: ingredient wipe 5–10 frames (0.2–0.4 s) with motion blur; bed slide 8–12 frames, ease inOutCubic
+  lineup: 2–4 stripes of equal height (25–50 % each), a straight seam, no feather
+  light: a soft key from above and the side, a backlit highlight along the edge of the glass, a light shadow under the product
+when: product ads and posts — presenting a lineup of flavors or variants, a cover hook in the first 1–2 s, a packshot at the end under a slogan or a logo; a flavor change — on every beat or bar; ideally 3–5 flavors in 6–12 s
+avoid: a bottle off center or a turned label — the shot stops being a "hero"; a background of a different color than the label; a busy background of mixed ingredients; the bottle moving when the background changes (the anchor is lost); a cutout without a shadow and a highlight — it looks pasted on; for alcohol — platform and age restrictions, no drinking scenes
+sfx: on the ingredient wipe — the rustle and thud of falling fruit, a whoosh; on a flavor change — a click or a hit on the beat; on the final lineup — a glass clink, the sound of a bottle opening or of pouring
+genres: {product: signature, teaser: allowed, viral: allowed, fashion: allowed, ugc: allowed, clips: allowed, calm: allowed, explainer: allowed}
+detect: |
+  Visually: one product strictly in the center, the label frontal, the background a uniform repeating texture
+  (identical fruit, honeycomb, leaves) of one color family across the whole frame; the background changes while the product
+  stays still; a final frame made of horizontal texture stripes.
+  Own check: the central vertical band of 10–15 % of the width is stable between background changes (high
+  correlation), while the surroundings change hue in a jump; high background saturation, the dominant hue covers
+  70 %+ of the area; a lineup frame has 2–4 horizontal zones with different mean hues and sharp boundaries.
+  ed_motion: almost no global events (static or a slow ZOOM-IN ≤×1.1), on the wipes — short spikes
+  in frame diff and a drop in sharpness for 5–10 frames without a global shift.
+  Difference from product.* "on a turntable": here the product does not rotate. From mask.bg_replace: the background is not a location
+  but a one-color world of the ingredient.
+engine: |
+  footage: find a shot of the product centered on a uniform background in the source footage (detect) and cut it by flavor.
+  hybrid/generation: mask(method='hf_remove_background', target='bottle') → composite([plate_i, product, shadow(offset=[0,0.01], blur=0.02), glint(edge='right')])
+  + transform(scale=[1, 1.05], ease='linear') on each shot;
+  change: object_rain(sprites=ingredient_i+1, dir='down'|'ltr', count=12–20, dur=0.3, motion_blur=0.6) over a cut at its midpoint,
+  or transition(kind='wipe(linear)', dur=0.4, params={dir:'up'}) for a bed slide;
+  ending: split_screen(layout='rows3', plates=[p1, p2, p3]) + text(slogan) for 1.5 s.
+gen_hint: product hero shot of a <bottle> standing perfectly centered with its label facing the camera, the whole background filled edge to edge with <green apples | ripe peaches | honeycomb>, matching the label color, soft studio light, glossy highlights on the glass, frontal locked-off camera, high saturation commercial look
+commands: ["make a flavor ad: the bottle in apples, then in peaches, then in honeycomb", "put the product in the center on an ingredient background", "change the flavor with falling fruit on every beat", "ending — a flavor lineup in stripes and a slogan"]
+related: [mask.bg_replace, orbit.turntable, frame.central, trans.wipe, layout.split_screen]
+evidence: {examples: 5, sources: 2, measured: "only a visual review of all 5 examples of the section at 14 moments of the animation (scripted frame capture was blocked by browser permissions); product size and change durations are \"≈\" estimates from the frames", confidence: medium}
+---
+id: product.car
+family: product
+group: aesthetics
+level: B
+aliases: [car commercial, car ad, car product shot, car reveal, studio car shoot, motion-control orbit]
+what: a studio "portrait" of a car — a dark hall with a huge softbox above the car, a camera on a robotic arm glides in an arc from a headlight, a door handle or a running light to the whole car; signature lighting, body lines, details
+frames: |
+  1. Dark studio: walls and floor almost black (30–70 % of pixels darker than 30 of 255), above the car a large glowing
+     panel whose reflection lays a white line along the roof and the sides; a muted palette (saturation 21–38).
+  2. Detail: a headlight, light-bar taillights, a flush door handle, a mirror, the steering wheel and the screen — glowing running lights as the main accent.
+  3. Orbit reveal: in one continuous move the camera pulls back and circles in an arc — scale ×0.06–0.36 over 2.2–3.3 s,
+     roll and rotation 12–46°, an almost even speed (half the path at 0.4–0.6 of the time); at the end the whole car,
+     in three-quarter view or head-on in the center.
+  4. Reverse move: a push-in ×1.5 with a 22° arc from the wide view to the grille or the lights.
+  5. Feature: the handle extends and lights up, a hand pulls it; interior — a move along the dashboard to the steering wheel (≈90 % of the frame width over 3 s),
+     blue ambient lighting in the dark.
+  6. Packshot: the car in three-quarter view from above or from the front, static for 1–2 s, the lights on.
+variants:
+  - reveal from the headlight: a pull-out ×0.3 with a 46° arc from the headlight to a head-on view
+  - reveal from the side: from the handle or a body line to the mirror and the whole side, ×0.06 over 3.3 s
+  - push-in to the lights: from three-quarter view to the grille and the light bar, ×1.5 over 1.4 s
+  - light signature: glowing taillights and running lights in close-up, then a cut to a wide shot
+  - door feature: an extending illuminated handle, a hand enters after ≈0.6 s
+  - interior: a move along the dashboard to the steering wheel in blue darkness
+status: footage
+fallback: "from photos of the car — generation of short orbits (image-to-video: \"a camera on a robotic arm slowly circles the car in a dark studio\") with consent; in code — a digital pull-out with rotation over a 4K frame (up to ×0.5 and 10°), a \"running highlight\" — a bright gradient band over the body mask, a dark vignette and a muted palette"
+params:
+  shot: 1.5–3.5 s per orbit, 0.8–1.5 s per detail, 1–2 s per packshot
+  reveal: scale ×0.06–0.36 over 2.2–3.3 s (push-in — ×1.5 over 1.4 s), arc 12–46°, an almost linear speed with soft ends
+  look: a dark hall (frame brightness 35–75 of 255, up to 140 with light-colored body panels), saturation 20–40, bright running lights and the softbox reflection line
+  details: a headlight, light-bar taillights, a handle, a mirror, a wheel rim, the steering wheel; lights on
+  camera: no shake (jitter <0.5 % of the frame), a smooth robotic arm; a handheld camera — only in the interior
+  sequence: 5–8 details and orbits → a wide packshot; cuts on the beats, the reveal on the drop
+when: car ads and presentations, car blogs and test-drive videos (as inserts), a teaser for a new model, fan edits about cars; the orbit reveal — on the drop or on the entry of the voice; details with lights — on the build; the packshot — the ending with a logo
+avoid: chaotic daytime backgrounds instead of a studio without intent; shake in an orbit; a dirty body and reflections of the film crew; cuts that are too fast on orbits (<1.5 s — the arc does not read); blown-out white body panels; a color grade that changes the body color
+sfx: a low hum and the "breathing" of the engine, a soft whoosh on an orbit, a click and a small electric motor on the extending handle, a deep bass hit when the lights switch on and on the packshot
+genres: {product: signature, teaser: allowed, epic: allowed, phonk: allowed, fanedit: allowed, calm: allowed, motivation: allowed, viral: allowed}
+detect: |
+  A car or part of it in a dark studio: 30–70 % of the frame darker than 30 of 255, a white reflection band at the top, bright lights;
+  low saturation (20–40), except for the cabin's ambient lighting.
+  ed_motion: a long smooth ZOOM-OUT ×0.06–0.36 over 2.2–3.3 s together with ROTATE 12–46° and SHIFT 24–124 % of the width
+  (an orbit from a robotic arm), nonrigid 0.19–0.38; or ZOOM-IN ×1.5 with ROTATE ≈22°. No shake (jitter ≤0.5 %).
+  Difference from orbit.turntable: there the car spins on a platform and the camera is static. From drone.fpv: there it is a street and speed.
+engine: |
+  product_sequence(subject=track(object:car), shots=['light_detail', 'reveal_arc', 'function', 'interior', 'packshot'])
+  — orbit over a 4K frame: transform(scale=[2, 1], rotate=[-10, 0], shift=[[0.15, 0], [0, 0]], center=track(object:car),
+    t=[0, 2.5], ease='inOutQuad');
+  — running highlight: light_sweep(mask=hf_remove_background, angle=20, width=0.08, dur=0.8) — a new primitive;
+  — look: color(params: sat=0.7, blacks=-10) + vignette(0.35); cuts on the beats, the reveal on the drop.
+gen_hint: studio car commercial, <car model> in a dark black studio under a huge overhead softbox, glossy reflections tracing the body lines, headlights and light bars glowing, a robotic-arm camera slowly arcs and pulls back from a close-up of the headlight to reveal the whole car, smooth motion-control move, no people
+commands: ["build a studio car video: lights, orbit, packshot", "an orbit from the headlight to a wide shot in #2 on the drop", "add a running highlight over the body in #5", "interior — a move along the dashboard to the steering wheel before the ending"]
+related: [product.hero, orbit.turntable, product.shoes, product.bottle_hero, zoom.out, light.hard, arc.orbit]
+evidence: {examples: 6, sources: 1, measured: "orbits: ×0.30 over 2.7 s with a 46° turn, ×0.36 over 2.2 s with 21.5°, ×0.056 over 3.2 s with 12–20°; push-in ×1.56 over 1.4 s with 22°; interior move 89 % of the width over 3 s; dark pixels 30–70 %, saturation 21–38 (cabin — 114); jitter 0.06–0.66 % (3.3 % for one handheld)", confidence: low}
+---
+id: product.hero
+family: product
+group: aesthetics
+level: C
+aliases: [product hero shot, hero product, product shoot, product shot, packshot, product reveal, product beauty shot]
+what: shots where the product is the hero — a macro detail, a full reveal, a feature in action, the product in hand or in its own "world", a final packshot; a clean background, a slow camera, light tracing the contour
+frames: |
+  A typical layout of a product video — 6–12 shots of 0.8–3 s each:
+  1. Teaser detail: a macro of the texture or a recognizable part (a headlight, stitching, a cap, a handle) — the product fills 60–100 % of the frame,
+     often a dark background and a single light line along the edge.
+  2. Reveal: a slow pull-out or an arc from the detail to the whole — scale ×0.3–0.7 over 1.3–2.7 s, rotation up to 45°,
+     at the end the product in the center.
+  3. Feature: a mechanism works in the frame (a handle extends and lights up, a cap comes off, a sole bends);
+     a hand enters 0.3–0.7 s after the start of the shot.
+  4. In hand or in use: the product held out to the camera (it is sharp, the person behind is soft) or in use (shoes walking,
+     the camera at the ground).
+  5. In its own world: the product among what it is made of or what it relates to (a bottle among apples, an object through
+     a sports net) — a saturated palette, the product 10–15 % of the width but strictly in the center.
+  6. Packshot: centered, static or a slow push-in ×1.05–1.1, 2–3 s, room for a logo and a call to action; sometimes a graphic
+     showcase — a cut-out product on black with kinetic text around it.
+variants:
+  - reveal from a detail: a dark studio, a light strip above, a pull-out with an arc from a headlight or the logo to the whole object
+  - feature close-up: a mechanism in action + a hand, a neutral gray or dark background, a click sound
+  - product in hand: held out to the camera, low key, the face out of focus
+  - product in its world: surroundings of ingredients or the context of use, a bright saturated background
+  - in use: shoes walking toward the camera at the ground, clothes in motion, a drink being poured
+  - graphic showcase: a cut-out product spins on black inside a ring or a cloud of typography
+  - frame within a frame: the product in the center through a framing object (a net, an opening, glass), from above
+status: footage
+fallback: "from a single product photo: cut out the background (hf_remove_background) and build a showcase in code — a colored or dark background, rotation, push-in, text; the reveal — a digital pull-out over a 4K packshot; the surroundings of the \"world\" and the feature in action — generation from the product photo with consent (Higgsfield product presets)"
+params:
+  shots: 6–12 shots per 15–30 s; each 0.8–3 s, packshot 2–3 s
+  product_share: macro 60–100 % of the frame; packshot 30–60 % of the height, center ±5 %; "world" 10–15 % of the width, but in the center
+  camera: static or slow — push-in ×1.05–1.1 per shot, reveal ×0.3–0.7 over 1.3–2.7 s, arc up to 45°, inOutCubic; jitter <0.3 % of the frame
+  background: dark seamless (brightness 30–75 of 255), neutral gray or white (saturation ≈0), or a saturated "world"
+  light: backlight and key light along the contour, highlights on gloss; no blown-out areas on the logo
+  hands: enter 0.3–0.7 s after the start of the shot, leave before the cut
+  cut_points: shot changes on the beat; the reveal ends on a downbeat; the packshot — on the last hit of the track
+when: product ads and launches, product overviews and unboxings (as cutaways), a product card for a marketplace, a product teaser; the detail — on the build, the reveal — on the drop, the packshot with the logo — at the end; the feature — when you need to explain what the product is for
+avoid: a busy background and stray objects; the product off center in the packshot; a shaky handheld camera in the premium segment; cuts shorter than 0.5 s on the packshot — viewers have no time to read the product; dust, fingerprints, a cropped logo; a color grade that changes the real color of the product
+sfx: a soft whoosh on the reveal; textured clicks and rustles on the feature (a cap, a handle, a lace) in close-up; a bass hit or a "chime" on the packshot; in macro — quiet ASMR foley
+genres: {product: signature, teaser: allowed, ugc: allowed, fashion: allowed, explainer: allowed, viral: allowed, epic: allowed, calm: allowed, sport: allowed, phonk: allowed}
+detect: |
+  One sharp, well-lit object in the center of the frame (±5 %), the background plain or blurred (little texture away
+  from the object); background saturation ≈0 (gray) or background brightness 30–75 (a dark studio), less often a saturated "world".
+  ed_motion: static or slow even moves — ZOOM-OUT ×0.3–0.7 over 1.3–2.7 s with ROTATE up to 45° (a reveal),
+  push-ins ×1.05–1.1, nonrigid 0.3–0.4 (a real camera around the object), jitter ≤0.3 %.
+  Signs: macro with a shallow depth of field, a hand enters the frame toward the object, a logo and text toward the end.
+  Difference from orbit.turntable: that is a single device — rotation on a platform; here it is the whole grammar of product shots.
+  From a UGC review: there a handheld camera, an apartment background, the product off center.
+engine: |
+  product_sequence(subject=track(object:<product>), shots=['detail', 'reveal', 'function', 'in_hand', 'world', 'packshot'],
+                   per_shot=[0.8, 3], cut='beats')
+  — reveal: transform(scale=[2.5, 1], center=track(object), rotate=[-10, 0], t=[0, 2], ease='inOutCubic') over a 4K packshot;
+  — packshot: transform(scale=[1, 1.08], t=whole shot, ease='linear') + text(logo/CTA, safe_zone='tiktok');
+  — showcase: mask(method='hf_remove_background') + composite(background: solid|gradient) + transform(rotate) + kinetic_text;
+  — "world" and feature without source footage — generation from the product photo (product presets), with consent.
+gen_hint: premium product commercial shot of <product>, centered on a seamless <dark / neutral grey> background, soft rim light tracing its contours, slow camera pull-back from a macro detail to the full product, shallow depth of field, clean reflections, no clutter
+commands: ["build a product layout: detail, reveal, feature, packshot", "reveal the product from a macro in #3 on the drop", "a packshot at the end for 2.5 seconds with the logo", "put the product in its world — generate a background of ingredients"]
+related: [orbit.turntable, product.car, product.shoes, product.bottle_hero, focus.shallow, shot.extreme_close_up, zoom.out, light.hard]
+evidence: {examples: 8, sources: 7, measured: "reveal ×0.30 over 2.7 s with a 46° turn and ×0.68 over 1.35 s; push-ins ×1.07–1.1; static in 3 of 8, jitter 0.03–0.23 % of the frame; dark background (brightness 33–73) in 3, neutral gray (saturation 0–6) in 2, a saturated \"world\" (saturation 147) in 1; a hand enters the frame in 3 of 8; the product centered in all packshots", confidence: medium}
+---
+id: product.shoes
+family: product
+group: aesthetics
+level: B
+aliases: [sneaker commercial, footwear ad, sneakers in frame, close-up footsteps, ground-level camera, feet shot, hero sneaker, sneaker spin]
+what: footwear as the hero — a camera right at the ground follows walking feet, a sneaker in hand in close-up, a cut-out pair spins in jerks on a colored background; the rhythm of the steps and the sole are the main accent
+frames: |
+  1. Steps at the ground: the camera at a height of 5–20 cm, the feet walk toward the camera or along it, in frame from the ankle down,
+     the sole and the side in close-up; the background — a night city with bokeh, a corridor with symmetrical lights or a running track.
+     A slow push-in ×1.04–1.7 over 1.2–1.3 s or a side tracking move (a shift of ≈35 % of the width over 1.35 s) with a roll of up to 18°.
+  2. A step as a cut: as the foot lands — a change of pair or location, the leg movement continues in the next shot.
+  3. In hand: the sneaker held out to the camera in profile, sharp, the owner's face behind in soft focus; static 1–1.5 s.
+  4. Into the depth: a push-in into the opening of the sneaker through darkness (×1.7 over 1.2 s) — the exit into the next scene through a similar round shape.
+  5. Graphic showcase: a cut-out sneaker with a thick outline spins in jerks (hand-drawn animation on twos,
+     ≈12 distinct phases per second), the background flickers between 2 colors every 2–4 frames, around it — a ring of kinetic typography.
+variants:
+  - steps toward the camera at the ground: a night city or a symmetrical corridor, the feet of several people, push-in ×1.7
+  - side tracking: the camera moves next to the foot, a slight roll of 7–18°, the track's lane lines as dynamics
+  - pair change on a step: every step — a new model or location, a cut on floor contact
+  - sneaker in hand: the profile in close-up, the owner behind out of focus
+  - sticker spin: a cut-out pair on an alternating colored background, jerky rotation, a ring of words
+  - retro ad: illuminated shoe elements in the dark with star-shaped glint rays and a caption on top
+status: footage
+fallback: "steps at the ground — find any walking shot in the source footage and crop the bottom of the frame from 4K (reframe on the feet), add a slow push-in; the sticker spin is made in code from 6–12 photos of the pair or from a turnaround video: hf_remove_background + outline + alternating background + step_print(hold=2); missing shots with feet — generation with consent"
+params:
+  camera_height: 5–20 cm above the floor, the horizon in the top third, the footwear in the bottom half
+  push: ×1.04–1.7 over 1.2–1.3 s on steps; tracking ≈25–35 % of the width per second; roll up to 18°
+  shot: 1.2–2 s for steps, 1–1.5 s in hand, 1.5–4 s for the sticker spin
+  cut_on_step: a cut on floor contact — on a beat of the track
+  sticker: outline 2–4 % of the width, background alternates every 2–4 frames, rotation on twos (≈12 phases/s), 20–30° per phase
+  look: night with bokeh or a clean "technical" corridor; saturated color accents on the sole
+when: footwear ads and launches, a lookbook, unboxings and try-on videos (as cutaways), sports and street edits; steps — on the rhythm (every step = a beat), the sticker spin — on the drop and as a social media showcase, in hand — on a line about the product
+avoid: footwear out of focus or cut off in the middle; dirt if the product is new; feet not landing on the rhythm of the track; a sticker spin without a clean mask (the background edges show); changing pairs too often (<0.5 s — the model does not read)
+sfx: footsteps and sole squeaks close up, in sync with the contact; a click or a "pop" on every phase of the sticker spin; a bass hit on a pair change
+genres: {product: signature, fashion: signature, sport: allowed, ugc: allowed, viral: allowed, fanedit: allowed, teaser: allowed, clips: allowed, phonk: allowed, motivation: allowed}
+detect: |
+  Bottom part of the frame: feet and soles in close-up, the camera at the floor (horizon and background in the top third, fine floor detail),
+  rhythmic leg movement with a step period of 0.4–0.6 s.
+  ed_motion: a slow ZOOM-IN ×1.04–1.7 over 1.2–1.3 s without shake (jitter ≤0.4 %) or a SHIFT of ≈35 % with ROTATE 7–18°.
+  Sticker spin: a cut-out object with an outline on a plain background, holds of 2 frames (≈12 phases/s), the background changes color in a jump,
+  ROTATE 13–28° in jerks; ed_motion sees "cuts" at the background changes.
+  Difference from track.follow: there the whole person is in the frame. From product.hero: the same language, but steps at the ground and the sticker spin are footwear-specific.
+engine: |
+  product_sequence(subject=track(object:shoe), shots=['ground_walk', 'step_cut', 'in_hand', 'sticker_spin', 'packshot'], cut='beats')
+  — ground_walk: reframe(aspect, target=track(object:shoe)) + transform(scale=[1, 1.3], t=whole shot, ease='linear');
+  — step_cut: cut(at=floor contact) with beat_sync(event='step', grid='1/4');
+  — sticker_spin: mask(method='hf_remove_background') + outline(px=0.03W) + bg_cycle(colors=[accent, white], every=2 frames)
+    + step_print(hold=2) + kinetic_text(ring) — outline and bg_cycle are new primitives.
+gen_hint: ground-level sneaker shot, camera 10 cm above the floor, <person> walks toward the camera in <sneakers> through a symmetrical lit corridor at night, shallow depth of field, soles and side profile in sharp focus, slow push-in, cinematic commercial look
+commands: ["steps at the ground on every beat at the start", "change the sneakers on every step in #2–#5", "a sticker spin of the pair on the drop with a ring of text", "the sneaker in hand in close-up before the ending"]
+related: [product.hero, product.car, product.bottle_hero, orbit.turntable, track.follow, time.step_print, angle.ground]
+evidence: {examples: 9, sources: 6, measured: "push-ins on steps ×1.04–1.69 over 1.2–1.3 s (jitter 0.2–0.34 %); tracking 35 % of the width over 1.35 s with an 18° roll over 2 s; a push-in into the opening ×1.7 over 1.2 s with an exit through a round shape; sticker spin — phases held for 2 frames each, rotation 13–28° per phase, the background alternates; camera at the ground in 4 of 9, in hand — 2, graphics — 2, retro glints — 1", confidence: medium}

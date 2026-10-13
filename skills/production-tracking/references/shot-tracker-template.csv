@@ -1,0 +1,3 @@
+shot_id,sequence,scene,status,takes,credits_est,credits_actual,model,seed,resolution,seconds,owner,approval,approved_by,approved_date,due_date,defect_tag,last_frame_file,notes
+S01-SC01-SH001,S01,SC01,planned,0,300,0,,,720p,8,prompt-engineer,pending,,,2026-11-01,,,Master shot of the location
+S01-SC01-SH002,S01,SC01,planned,0,300,0,,,720p,8,prompt-engineer,pending,,,2026-11-01,,,Single of lead character

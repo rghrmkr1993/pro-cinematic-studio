@@ -1,0 +1,50 @@
+id: orbit.turntable
+family: orbit
+group: camera
+level: B
+aliases: [turntable, rotating podium, rotating platform, spinner, turnaround, 360 product spin, platform rotation]
+what: the camera is static while the subject or object slowly turns on a platform in front of it — a view from all sides against a static background
+frames: |
+  The frame is static (camera shake < 0.3 % of the frame), the background is even: a dark, plain or colored backdrop.
+  The subject stands in the center and takes up 40–80 % of the frame height; the platform rotates at a constant speed,
+  so the silhouette rhythmically changes width: front view wide → profile narrow → back wide.
+  The light stays put, and as the subject turns, highlights and colored rim-light streaks run across the surface — this is the main
+  "effect" of the move. Speed 25–35°/s for portraits and couples (half a turn in 5–8 s), ≈100°/s for a fast full
+  turn (360° in ≈3.5 s); a sharp final turn from front view → profile can take 0.5 s.
+variants:
+  - portrait or bust: from three-quarters through front view to profile, 90–135° per take, the light gradually turns into rim light
+  - full turn of a figure or object: 360° without stopping in 3–4 s, loops seamlessly
+  - couple back to back: the platform slowly brings one, then the other to the front (≈25°/s)
+  - group in silhouette: several people on the platform against a bright plain background pass in front of each other
+  - scan effect: a head turn with short inserts of a grid or a schematic for 1–2 frames
+status: footage
+fallback: |
+  1) search the source footage (detect) — it is often there in product and fashion shoots;
+  2) an object: a series of photos taken in a circle → frame-by-frame animation (step_print) with dissolves; or a model from photos (generate_3d) and a render of the turn;
+  3) generation with the user's consent via gen_hint; a 3D turn cannot be faked in code, only a small 2.5D turn of ±10–15° using a mask
+params:
+  speed: 25–35°/s portrait and couple; 90–110°/s fast full turn; up to ≈180°/s a short final turn
+  turn_per_shot: 90–360°; a full turn in 3–4 s (fast) or 10–14 s (slow)
+  camera: static, shake < 0.3 % of the frame; height at chest level or slightly below
+  framing: the object in the center, 40–80 % of the frame height; a plain background, dark or colored
+  light: a static key + 1–2 rim lights (often of different colors) — highlights sweep across the object
+  loop: 360° is cut into a seamless loop; one turn = 2 or 4 bars
+when: showing a product or a look from all sides, the climax or final showcase of a product video, introducing a character, a cutaway in a fashion or music video; a slow turn — under a calm instrumental break, a fast one — over four beats
+avoid: the object "wanders" off center (an uneven platform); a cluttered background; speeds above 150°/s at 25 fps — the turn strobes; a turn longer than 10 s with no change of light or event; even flat light — the point of the move is lost
+sfx: a soft continuous swoosh or tone over the turn; in a product video — a quiet mechanical start; an accent on the moment the object comes to face the camera
+genres: {product: signature, fashion: signature, teaser: allowed, calm: allowed, explainer: allowed, viral: allowed, drama: allowed}
+detect: |
+  ed_motion: the camera is static — no global events, shake < 0.3, but the frame difference is high in the object area
+  (local motion). On an even background without texture ed_motion gets confused and reports false ZOOM/ROTATE with nonrigid > 0.6 —
+  then check with a mask: the background is static, the silhouette width oscillates with a period of half a turn, highlights run across the object.
+  Unlike an orbit (arc): in an orbit the camera moves and the background shifts with parallax; here the background stays put.
+  Unlike rig.spin_lock: there the subject is static in the frame and the background spins.
+engine: |
+  Real footage: cut(at) on the front view; speed(rate) so that the turn fits 2 or 4 bars; a full turn — loop(mode='cycle').
+  Photo series: step_print(hold=2) over the frames of the circular set + transition(kind='dissolve', dur=0.04).
+  Model: generate_3d(image) → turntable_render(model, deg_per_s=35, elevation=10°, light='rim', bg='solid').
+  Small turn using a mask: mask(method='hf_remove_background') + transform(scale=[1, 0.96], shift=±2 %) on the object — no more than ±15°.
+gen_hint: <subject or product> slowly rotating on a turntable in front of a locked-off camera, centered, plain dark or solid color backdrop, colored rim lights sweeping across the surface as it turns, smooth constant speed, full 360 turn
+commands: ["show the product turning on a platform at the end", "loop the turn in #4 over four bars", "make a turntable from the product photos", "a slow turn of the couple back to back during the instrumental break"]
+related: [pan.round_table, rig.spin_lock, arc.orbit, product.hero]
+evidence: {examples: 5, sources: 5, measured: "camera static in 5 of 5 (on a textured background ed_motion reports no events, shake 0.09–0.28); speed ≈24°/s (180° in 7.5 s), ≈35°/s (135° in 3.9 s), ≈100°/s (360° in 3.5 s), a final turn of 90° in ≈0.5 s; plain or dark background in 5 of 5; colored rim light in 3 of 5", confidence: medium}

@@ -1,0 +1,100 @@
+id: loop.end
+family: loop
+group: editing
+level: C
+aliases: [infinite loop, loop ending, looped ending, seamless loop, perfect loop, looped video, loopable video]
+what: the video or a fragment is looped — the last frame flows seamlessly into the first, and the picture goes round and round with no visible beginning or end; the loop is built with a recursive zoom-in, a pass through a repeating space, a procession or a process that ends where it began
+frames: |
+  1. Anchor: the first frame is a stable composition that is easy to "find" again: a window-object in the center (a
+     screen, a box, a mouth, an eye, a window, a balcony), a row of identical objects, a column of walking people,
+     symmetrical architecture.
+  2. Even movement over the whole cycle, one operation with no acceleration or deceleration at the cycle boundary: a
+     zoom-in toward the center of the nested copy at a log-constant rate of ×1.6–3.0 per second (curve 0.2/0.4/0.6/0.8 —
+     in 8 of 9 recursive ones); a pan of 24–41 % of the width per second; a fly-through along an enfilade; a procession
+     step; a stop-motion process.
+  3. Return: by the end of the cycle — 0.66–3.95 s in 16 of 19 closed loops, median ≈2.2 s (55 frames @25 fps) — the
+     frame comes back to its initial state: the nested copy has grown to fill the frame (×1.4–25 per cycle, typically
+     ×3–8); the next repeat has taken the place of the first (a shift of exactly one step, 37–43 % of the width); each
+     walker has taken the place of the one in front; the process has restored the initial scene.
+  4. Seam: the difference between the last and the first frame is no larger than the clip's usual frame-to-frame
+     difference — in 20 of 25 no seam is visible. If there is no exact match, the seam is hidden: a flash or a
+     brightness jump for 1 frame, zoom motion blur, a cut on a matching shape (a change of window style within the
+     same opening).
+  5. One file holds 1–5 cycles in a row; long processes — 5.6–12.7 s per cycle.
+variants:
+  - recursive zoom-in (7 of 25): an object in frame holds a scaled-down copy of the scene — a box with the same door, a phone screen with the same top-down view, a mouth, a pupil, a window in a window, a balcony with the house, an engraving; zoom-in ×1.7–3 per second until they match (in detail — zoom.infinite, fx.recursion)
+  - spiral recursion (2): the same zoom-in plus constant rotation — a tea set on a little table on a saucer (×13 and −220° in 3 s, ≈73°/s); a hand-drawn road twisted into a spiral (×1.37 in 0.66 s, ≈9°/s)
+  - fly-through a repeating space (3): an enfilade of arches (one span in 0.77 s, repeats ×3.4–4), a mountain ridge, a corridor of arches with acceleration and a flash at the seam (×7.8 in 1.24 s); see dolly.infinite
+  - pan along a row of identical objects (2): a row of skulls, patches of sunset light from windows on a wall — a shift of exactly one repeat step per cycle
+  - procession (2): a column of identically dressed people walks along a wall or up the stairs, each one takes the place of the one in front during the cycle; 6–9 frames per cycle
+  - a process that returns to the start (2): a stop-motion scene with a figurine whose face is erased and redrawn (12.7 s); a hand takes a box from a shelf, the box opens into the same picture
+  - portal loop (1): a manhole in the asphalt opens, the camera tilts into it by 1.7 frame heights and sees the same facade
+  - edit loop (1): top-down shots of one car on different roads, 1–2 frames each with radial blur, the car stays in the center; the last shot matches the first
+  - locked rotation (1): a drifting car seen from above stays still in the center, the rectangular frame spins around it (68° in 2.25 s) — rig.locked_on in a loop
+  - not closed (4): pieces of a long chain of nested scales in 3D (apple → little table → pastry → guitar → plant) and rooms with copies of the character — within a piece the seam is visible, the chain closes at the end of the whole work
+  - speech loop (edit culture, not in the examples): the last line of the video breaks off so that the first line completes it
+status: code
+fallback: |
+  Looping the ending of any video — in code: find the frame in the last 1–1.5 s closest to the first, trim there, cover
+  the remaining seam with a 4–8 frame dissolve or a morph, cut the music to a whole number of bars. Constructed loops
+  need material: a row of identical objects, a procession, repeating architecture — search the source footage (find the
+  period by matching against the first frame); recursive zoom-in — hybrid (track the screen or object + nest the same
+  frame, as in fx.recursion); 3D chains of scales and impossible nestings — generation with the user's consent.
+params:
+  cycle: 0.66–3.95 s (16–99 frames @25 fps) in 16 of 19 closed loops with known duration, median ≈2.2 s (55 frames); processes 5.6–12.7 s; 1–5 cycles per file
+  seam: |
+    |last − first| ≤ 1.6× the median of adjacent frame-to-frame differences or ≤ their maximum (stop-motion animation) —
+    no seam (20 of 25); 2.9–3.8× and above the maximum — a visible jump (4 chain pieces); 3.2× with a flash at the seam
+  zoom_loop: log-constant rate ×1.6–3.0 per second (×1.02–1.045 per frame @25 fps); per cycle ×1.4–25, typically ×3–8 = the ratio of the nested copy's size to the frame; the center is fixed (0.44–0.53 in x; a copy on the floor — 0.91 in y)
+  spiral: constant rotation in one direction, 9–73°/s (the tea set ≈220° per cycle)
+  pan_loop: 24–41 % of the width per second; shift per cycle = the repeat step, 37–43 % of the width
+  flythrough: one repeat of the space in 0.77–1.8 s; adjacent repeats ×3.4–7.8
+  procession: static camera; 6–9 frames per cycle; each person's step = the distance to the one in front
+  ease: no ease-in/out at the cycle boundary; the exception is an acceleration where the seam is hidden in a 1-frame flash
+  hidden_seam: flash/brightness jump 1 frame, zoom motion blur 2–3 frames or a dissolve of 4–8 frames (≈)
+  audio: the loop length is a whole number of bars (1 bar at 120 BPM = 2.0 s = 50 frames @25 fps), music with no fade-out at the end, an audio crossfade of 20–50 ms at the seam
+when: |
+  The ending of a short video: the last 0.5–2 s lead into the first frame, the autoplay repeat starts unnoticed —
+  people watch the video a second time round (viral, UGC, fan edit, clips). A standalone "hypnotic" 2–4 s loop: a
+  product teaser, a cover, a background for text, an intro screen. Inside a long video — one infinite zoom-in or
+  fly-through as a transition between topics (then it is zoom.infinite or dolly.infinite). Cutting to music: a loop of
+  1–2 bars, the first frame on a downbeat. In speech genres — a speech loop: the last line is completed by the first.
+avoid: |
+  An ending that must carry a call to action, an answer or a logo — a loop erases the end: keep the call to action on a
+  banner the whole time, or don't loop. A jump in brightness, color or shot size at the seam, a music fade-out, an audio
+  click. The camera slows down before the end of the cycle — the viewer sees the restart. A cycle shorter than 0.6 s
+  flickers; longer than 8–10 s with no events — people leave. The same loop more than 2–3 times inside a long edit
+  looks like a frozen GIF. Drama with a resolution: a loop cancels the ending.
+sfx: |
+  The music is cut at a bar boundary: the tail of the last bar runs into the downbeat of the first, a 20–50 ms
+  crossfade, no fade-out. Recursive zoom-in — a continuous drone or a riser that "never reaches the top" (an endlessly
+  rising tone illusion), with no hit at the seam. Procession and pan — a steady rhythm of footsteps or a pulse that divides the cycle
+  evenly. If the seam is hidden in a flash — a short hit or a click on that frame.
+genres: {viral: signature, fanedit: allowed, ugc: allowed, clips: allowed, teaser: allowed, product: allowed, fashion: allowed, travel: allowed, calm: allowed, phonk: allowed, motivation: allowed, sport: allowed, explainer: allowed}
+detect: |
+  Seam: mean |last − first| (grayscale, 160 px) ≤ the maximum of the clip's adjacent differences (or ≤1.6× the median)
+  — the video is closed; the frame in the second half closest to the first (difference ≤ the median of adjacent ones)
+  gives the period if there are several cycles. ed_motion: recursive zoom-in — a single ZOOM-IN event over the whole
+  clip, curve ≈[0, 0.2, 0.4, 0.6, 0.8, 1.0], the center stays put (path within 0.03), no cuts, the accumulated factor =
+  the ratio of the copy to the frame; spiral — plus a ROTATE of the same length; pan loop — a single SHIFT with constant
+  %/frame and a total equal to the repeat step; fly-through — ZOOM-IN with nonrigid ≥0.3; procession — "no significant
+  global motion" and a seamless join. Visually: the frame contains a scaled-down copy of the same frame (template search
+  for the frame scaled down S times near the zoom center).
+  Distinctions: time.boomerang — the motion goes forward and then mirrored backward; time.cinemagraph — one zone moves,
+  the rest is still; zoom.infinite and dolly.infinite — the movement itself inside an edit, not required to close;
+  fx.recursion — a recursive picture (a loop through a screen is a variant of it).
+engine: |
+  loop ending: loop_close(target=first_frame, search=[T−1.5, T], method='match', max_diff='p90') — trim at the
+               frame closest to the first; if the residual > p90 → transition(kind='dissolve', dur=0.16–0.32)
+               or transition(kind='morph', dur=0.24) at the seam.
+  audio: audio_loop(music, bars=round(T/bar), xfade_ms=30) — the video length is fitted to a whole number of bars,
+         the first frame on a downbeat.
+  period from material: period_detect(clip, signal='diff_to_first', min_s=0.5) → trim(k·P) — procession, row, fly-through.
+  recursive: chain_zoom(clips=[clip]*k, per_link=P, rate=ln(S)/P, seam='nest(quad=track(screen|object))',
+             center=[cx, cy]) + loop_close; spiral — + transform(rotate=[0, 220], t=[0, P], ease='linear').
+  pan loop: transform(shift=[[0, 0], [−step, 0]], t=[0, P], ease='linear'), step from period_detect(signal='autocorr_x').
+  check: qa_seam(max_ratio=1.6) — a report on the seam in picture and sound.
+gen_hint: seamless perfect loop video, the camera zooms in at a perfectly constant speed toward <object> that contains a smaller copy of the very same scene; when the copy fills the frame it is identical to the first frame, no cuts, no change of speed, loopable, <style>
+commands: ["make the ending loop — so the last frame flows into the first", "loop this piece over two bars", "infinite loop: zoom into the phone screen showing the same scene", "find the moment where the frame matches the first one and trim there", "check whether the seam is visible at the loop point"]
+related: [zoom.infinite, fx.recursion, dolly.infinite, time.boomerang, time.cinemagraph, rig.locked_on, trans.portal, cut.match, anim.radial_loop, fx.duplicate]
+evidence: {examples: 25, sources: 19, measured: "frame-to-frame differences over all frames of each clip (grayscale, 160 px): the last→first join within the usual differences in 20 of 25 (0.03–1.63× the median; for stop-motion animation 2.5× with an adjacent maximum of 3.8×), a visible jump in 4 chain pieces (2.9–3.8×), a seam hidden in a flash in 1 (3.2×); cycles 0.66–3.95 s in 16 of 19 closed loops, median ≈2.2 s, processes 5.6–12.7 s; ed_motion: recursive and spiral zoom-ins ×1.37–25 per cycle at ×1.6–3.0/s, a linear curve in 8 of 9, center 0.44–0.53; spiral ×12.9 and −211° in 2.88 s; pans 24–41 %/s with a shift of 37–43 % per cycle; enfilade period 11 frames (0.77 s), the loop through a screen — 52 frames (3.64 s, ×18)", confidence: high}

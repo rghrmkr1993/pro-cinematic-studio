@@ -1,0 +1,696 @@
+id: angle.birds_eye
+family: angle
+group: angle
+level: A
+aliases: [bird's-eye view, bird's-eye shot, high overhead, drone overhead, drone top-down, rooftop view]
+what: a view straight down from a great height — people and cars turn into dots with shadows, the ground into a map or a pattern; the hero dissolves in the scale, the viewer watches with detachment
+frames: |
+  1. Height: from a rooftop (≈15–20 m) up to hundreds of meters; the camera points straight or almost straight down (−70…−90°),
+     no horizon and no sky.
+  2. Scale: a person together with their shadow is 5–22 % of the frame height, without the shadow ≈3–11 %; cars 2–8 %. The frame rests on
+     a pattern — parking rows, road interchanges, the paving of a square, a field; with a low sun the shadows are longer than the figures and
+     become the pattern themselves.
+  3. Camera: static in 4 of 8 (jitter ≤0.03 %). In 3 of 8 it rises steadily: ×0.64 over 3.84 s, ×0.85 over 1.7 s,
+     ×0.90 over 0.96 s — ≈×0.89–0.91 of scale per second, the curve is a straight line. From such a height a rise has almost no
+     parallax (nonrigid 0.08–0.3) and looks like a smooth zoom-out.
+  4. Length 2.6–5.2 s — longer than the neighboring shots: the viewer needs time to read the map.
+  5. Transition variant: the camera is above the clouds, a cloud floods the frame with white for 0.7–1 s, and out of the white comes the scene on the ground.
+variants:
+  - pattern without a hero — a parking lot, interchanges, a glowing city; the camera is static or rises (3 of 8)
+  - figures on a huge surface — one to three people or a stream of pedestrians on a square, a field, a crosswalk; long shadows (3 of 8)
+  - an event below — a car, a flash, a crash in a night city as a glowing dot; the camera slowly rises (1 of 8)
+  - descent through the clouds — above the clouds → white fill → ground: a transition between scales (1 of 8)
+status: footage
+fallback: look in the source footage for drone shots with the gimbal at ≤ −70° and an altitude from 20 m (SRT/XMP telemetry), and for footage shot from rooftops and bridges; a rise or a descent on such a shot is imitated in code almost losslessly (there is no parallax) — a digital zoom with crop headroom; no such shot — generate a high-altitude view with the user's consent
+params:
+  pitch: −70…−90°, altitude from 15–20 m; lower and closer — angle.overhead
+  subject: a person ≤11 % of the frame height (with shadow ≤22 %); cars 2–8 %; the hero no larger than 1/10 of the frame
+  duration: 2.5–5 s (63–125 frames @25 fps), typically 3.5 s; in fast cutting no shorter than 1.5 s
+  camera: static or a steady rise ×0.88–0.92 per second (≈−0.4 % of scale per frame), a descent — mirrored
+  rise_imitation: transform scale 1.25 → 1.0 over 2–4 s, linear in the logarithm of the scale, center — the main figure or the center of the pattern
+  cloud_transition: white fill 0.7–1 s (18–25 frames), entry keyed to the brightness of the cloud, exit — a cut or a dissolve out of white
+  vertical: 9:16 from 16:9 — a window around the main figure, the figure on a third; a pure pattern is cropped at the center
+when: opening a video or an episode — "where are we" in 3–4 s; a transition between locations and scales (through the clouds, a rise → cut to the ground); the hero's loneliness and lostness — a small figure on a huge square; the ending — the camera rises and leaves the hero behind; a breathing pause between dense scenes; in travel — roads, beaches, fields as graphics. 1–2 times per video, a third time is already a cliché
+avoid: moments that need the hero's emotion or line; a source without resolution headroom — people turn into pixels, especially in 9:16; a shaky or tilted drone shot without stabilization; fast cutting over a long high-altitude view — the map has no time to be read; a series of similar drone shots in a row
+sfx: air, wind, a distant city hum; on the rise — a long swell or pad; the transition through the clouds — a whoosh with white noise that cuts off on the exit into the scene; on the downbeat of the scale change — a low hit
+genres: {travel: signature, epic: signature, calm: allowed, motivation: allowed, sport: allowed, drama: allowed, teaser: allowed, fanedit: allowed, product: allowed, explainer: allowed, phonk: allowed, viral: allowed}
+detect: |
+  Features on frames every 0.5 s (3 of 5 needed; drone telemetry — altitude >20 m and gimbal ≤ −70° — decides at once):
+  1) no sky and no horizon;
+  2) the face detector finds nothing, people and cars are small blobs ≤11 % of the frame height (without shadow);
+  3) the frame is filled with a repeating pattern (road markings, rows, paving, a field, treetops); if the pattern has straight lines
+     (share of segments at one vanishing point ≥0.6), they are parallel — the vanishing point is farther than 10 frame heights (26–59 in the examples);
+  4) long shadows of figures on the same plane;
+  5) ed_motion: static, or a steady ZOOM-OUT ×0.85–0.92 per second with nonrigid ≤0.3 (a rise), or a slow SHIFT
+     ≤2 % of the frame per frame.
+  Differences: angle.overhead — closer, the hero 25–90 % of the frame, interiors, faces are readable; oblique aerial footage
+  (drone.aerial) — the horizon is visible, the camera flies forward; shot.extreme_wide — the figure is just as small, but the camera is at
+  ground level or at an angle, the horizon and the sky are in the frame.
+engine: |
+  classify_shot(clip, by='angle') → angle='birds_eye' (detect features, 3 of 5).
+  Rise from a static shot: transform(scale=[1.25, 1.0], center=[0.5, 0.5]|track(person), t=[t0, t0+3], ease='linear');
+  descent — scale=[1.0, 1.25]. Transition through the clouds: transition('dip', dur=0.8, params={color: 'white'}) with an overlaid
+  cloud shot (if there is one) + sfx('whoosh', at=t0, align='peak').
+  Vertical: reframe('9:16', target=track(person)) — the figure on a third; if resolution is lost, do not crop but take another shot.
+gen_hint: extreme high bird's-eye view from a drone hundreds of meters above <location>, camera pointing straight down, tiny figures casting long shadows, map-like geometric pattern of <roads/parking rows/fields>, slow steady vertical ascent, no horizon
+commands: ["open the video with a bird's-eye view", "find top-down drone shots in the source footage", "do a slow rise on #2", "through-the-clouds transition between #4 and #5"]
+related: [angle.overhead, angle.overhead_tracking, shot.extreme_wide, drone.aerial, drone.fpv, zoom.out]
+evidence: {examples: 8, sources: 8, measured: "4 of 8 — static (jitter ≤0.03 %); 3 — a steady rise ×0.64/3.84 s, ×0.85/1.7 s, ×0.90/0.96 s (≈×0.89–0.91 per second), nonrigid 0.08–0.3; 1 — a transition through a white fill by a cloud; figures 9–11 % of the frame height without shadow, 5–22 % with shadow; no faces in any of them; straight lines on the ground are parallel (vanishing point 26–59 frame heights); shots 2.6–5.2 s", confidence: high}
+---
+id: angle.dutch
+family: angle
+group: angle
+level: A
+aliases: [dutch angle, dutch tilt, canted angle, oblique angle, tilted horizon]
+what: a shot filmed with the camera rolled 10–35° — the horizon and verticals are visibly tilted; the world is "off-kilter", the viewer feels anxiety, madness or pressure
+frames: |
+  1. The frame is tilted from the very start: all verticals (doors, poles, shop windows) and the horizon are rotated
+     to one side by 10–35°, more often 15–30°; any direction — clockwise or counterclockwise.
+  2. The roll holds for the whole shot (in 5 of 8 examples within ±3–4°); meanwhile the camera can pan,
+     slowly push in ×1.1–1.5 over 1–2 s or shake handheld — the roll stays.
+  3. Often combined with a wide lens right up to the face and a low camera position — the distortion strengthens the effect.
+  4. A shot lasts 1–4.5 s (25–110 frames @25 fps); in a dialogue each line is 2.7–3.6 s, and the characters are tilted to
+     opposite sides (+29…36° and −33…36°); within a shot the roll sometimes slowly turns further by 7–28° over 2–3.5 s.
+variants:
+  - static tilt for the whole shot — a lone hero or an interior, 17–21°, the camera is static (2 of 8)
+  - tilt in motion — a pan across a crowd, a push-in down a street, a handheld camera; a roll of 10–33° holds (4 of 8)
+  - dialogue "with opposite rolls": the speakers are tilted to opposite sides, cuts every 2.7–3.6 s (1 of 8)
+  - rolling tilt: the tilt passes through a level horizon to the other side, −25° → +26° over 2.4 s (1 of 8) — bordering on a camera rotation
+status: code
+fallback: a camera roll around the optical axis is a pure image rotation, so code reproduces it exactly; the price is a crop S = cos θ + (W/H)·sin θ (16:9 at 10° ×1.29, 15° ×1.43, 20° ×1.55, 30° ×1.76); if the resolution is not enough — paint in the corners with outpaint instead of cropping, or take a smaller angle
+params:
+  angle: 10–35°, typically 15–25°; below 8° it reads as a camera operator's mistake
+  direction: clockwise or counterclockwise; in a series and in a dialogue — alternate the sides or increase the angle along with the tension
+  hold: constant roll for the whole shot (drift ≤±4°); a change of more than 15° within a shot is already a camera rotation
+  center: rotate around the hero's face (track(face)) so that it stays in place
+  crop: S = cos θ + (W/H)·sin θ for W ≥ H (for 9:16 — (H/W)·sin θ + cos θ); from 4K lossless up to ~30°
+  duration: 1–4.5 s (25–110 frames @25 fps); as an accent in fast cutting 0.5–1 s
+  entry: a cut from a level shot; optionally a "turn-in" 0 → θ over 0.3 s (8 frames, outCubic) on a beat
+when: anxiety, madness, intoxication, a villain, a conflict in a dialogue, chaos and a fight, disorientation after a shock; in music videos — boldness and drive (a night street, neon); in comedy — an "off-kilter" moment; one or two tilted shots on the drop as an accent. A series of tilted shots — with alternating sides or a growing angle
+avoid: calm, luxury and explainer videos; a tilt of 2–7° — looks like a horizon tilted by mistake; every shot in a row at the same angle to the same side — the effect wears off; a crop of ×1.5+ from 1080p without outpaint — mush; shots where the verticals already converge from shooting from below — the result is a mess
+sfx: a dissonant stinger, a low drone, a detuned pad; on the "turn-in" — a short whoosh; in comedy — a slide whistle or a "boing"
+genres: {phonk: signature, drama: allowed, fanedit: allowed, viral: allowed, teaser: allowed, sport: allowed, fashion: allowed, epic: allowed, clips: allowed, calm: forbidden, explainer: forbidden, travel: forbidden}
+detect: |
+  Roll on frames every 0.25–0.5 s: the dominant gradient orientation modulo 90° (weighted mean of
+  exp(4iφ), confidence ≥0.15) — |θ| ≥ 8°, stable within ±4° for at least 1 s. Line check (Hough): all long
+  verticals in the frame lean to one side by ≈θ. On faces the eye line usually leans the same way (the head can
+  add ±10°). ed_motion: no ROTATE events, or they are under 15° per shot (static roll).
+  Differences: shooting from below or above — the verticals converge (on the left and on the right they lean in opposite directions), mean roll ≈0;
+  camera rotation (roll) — ROTATE ≥15° within the shot; hand shake — |θ| < 5° and it changes from frame to frame;
+  in nature without straight lines the estimate is unreliable (confidence < 0.15) — check by the horizon line or with a VLM.
+engine: |
+  horizon_tilt(clip) → θ, conf — new analysis (4φ orientation + Hough verticals), label 'dutch' when |θ| ≥ 8°.
+  Synthesis: transform(rotate=[θ, θ], scale=[S, S], center=track(face)|[0.5, 0.5], t=whole shot), S = cos θ + (W/H)·sin θ;
+  without a crop — outpaint the corners before rotating. Dialogue: θ = +20° for one character, −20° for the other.
+  Accent on a beat: transform(rotate=[0, θ], t=[beat, beat+0.3], ease='outCubic') + sfx('whoosh', at=beat).
+gen_hint: dutch angle shot, camera rolled about 20 degrees to one side, tilted horizon and slanted verticals, <subject> in <setting>, wide lens close to the subject, tense uneasy atmosphere, steady camera
+commands: ["dutch angle on #5", "tilt the shot 20° on the drop", "in the dialogue, tilt the characters to opposite sides", "make the madness scene with a tilted horizon"]
+related: [roll.camera, frame.central, angle.low, handheld.shaky, trans.spin]
+evidence: {examples: 8, sources: 8, measured: "roll 10.5–33° (shot medians 10.5, 13, 17.5, 18, 21, 28, 33°), in 5 of 8 it holds within ±3–4° for the whole shot; 3 counterclockwise, 4 clockwise; dialogue — characters +29…36° and −33…36°, turn within a shot 7–28° over 1.8–3.6 s; 1 rolling tilt −25° → +26° over 2.4 s (up to 2.8°/frame); shot length 0.9–4.7 s; the roll estimator is accurate to ±0.5° on synthetic data", confidence: high}
+---
+id: angle.ground
+family: angle
+group: angle
+level: A
+aliases: [ground level shot, ground shot, low ground angle, camera on the ground, floor-level shot, feet shot, ground-level view]
+what: the camera right at the ground (10–60 cm) looks almost horizontally — the floor or the ground at the bottom of the frame, shoes, feet, a ball, wheels in focus; the world from floor level
+frames: |
+  1. The camera is 10–60 cm above the floor, the axis almost horizontal (not tipped up): the horizon is level (roll ≤2° in 5 of 8),
+     the bottom 20–45 % of the frame is floor, grass, asphalt or steps in strong perspective.
+  2. Focus is on the line of contact with the ground (a band at 40–85 % of the frame height); the floor nearest the lens is soft —
+     the sharpness of the bottom tenth of the frame is 0.25–0.55 of the peak in 7 of 8.
+  3. The main thing is what is at the ground: shoes, legs up to the knees or the waist, a ball, a lying person, wheels; people further away are seen
+     small and full-length, faces are almost never in the frame.
+  4. The camera is static (4 of 8, jitter ≤0.22 %) or follows handheld near the ground (jitter 2–5.6 %); 1–5.3 s (25–133 frames @25 fps).
+variants:
+  - shoes and feet in close-up — standing, shifting from foot to foot, walking on a carpet or steps (3 of 8)
+  - footwork near the camera — dance, ball tricks, a walk along the top of a bar counter (3 of 8)
+  - a lying hero — the face on the grass level with the lens, the feet of a crowd in the distance (1 of 8)
+  - a road at the level of the road surface — the markings converge to a point, cars rush past the lens (1 of 8)
+status: footage
+fallback: the camera cannot be lowered in code — cropping the feet out of a regular shot gives a view from above, not from the ground; look for low shots in the source footage by detect, otherwise generation with consent
+params:
+  height: 0.1–0.6 m above the ground
+  pitch: 0 ± 10° — almost horizontal; steeper upward is already a shot "from under the feet"
+  ground_area: the bottom 20–45 % of the frame
+  focus: sharp at the point of contact (a band at 0.4–0.85 of the height), the near edge of the floor soft (≤0.55 of peak sharpness)
+  subject: shoes 10–40 % of the frame height (≈), legs up to the knees or the waist; faces — only of people lying down
+  camera: static or a low tracking move following the feet; jitter up to 0.25 % (tripod) or 2–6 % (handheld)
+  duration: 1–5 s (25–125 frames @25 fps)
+  horizon: level, roll ≤2–3°
+when: introducing the hero "feet first" before cutting to the face; arrivals and departures (steps toward a goal), dance and footwork, ball sports, shoe and clothing ads; a child's or an "animal" perspective; a defeated hero on the ground; road and speed — a car rushes over the lens; a transition — a foot steps on the lens or blocks the frame
+avoid: when faces and emotions matter; more than 2–3 such shots in a row — the viewer loses the scene; a dirty floor and litter by the lens; strong wide-angle barrel distortion at the feet — looks comical (unless intended)
+sfx: footsteps loud and close (foley), squeaking soles, ball hits, crunching gravel or grass; as a car passes — a low rumble and a whoosh; on a jump or a stomp — an impact at the moment of ground contact
+genres: {product: signature, fashion: allowed, sport: allowed, travel: allowed, ugc: allowed, viral: allowed, drama: allowed, teaser: allowed, phonk: allowed}
+detect: |
+  No faces (or one lying face near the bottom third); pose (mediapipe): ankles and knees in the band 0.4–0.95 of the height,
+  hips at the top edge or out of frame; the bottom 20–45 % is a uniform floor surface with texture that goes soft at the edge
+  (sharpness of the bottom band ≤0.55 of the peak), sharpness peak in the band 0.4–0.85; roll ≤3°. ed_motion: static
+  (jitter ≤0.25 %) or a handheld tracking move 2–6 %. Differences: a shot "from under the feet" (worm's eye) — the axis tipped up ≥45°,
+  sky or ceiling fills the frame, verticals converge upward; low angle (angle.low) — the camera is below the eyes but above
+  the ground, faces are seen from below; feet filmed from above — the tops of the shoes are visible with the floor behind them; pov.animal — the same height,
+  but with a 3–3.8 Hz trotting bounce and people talking into the lens.
+engine: |
+  footage: find_shot(height='ground', pitch='level', subject='feet'|'ball'|'vehicle'|'lying_person') → cut(at).
+  "Feet to face": cut(ground 1–2 s) → cut(shot.medium_close_up of the same hero) on a downbeat.
+  Transition: a step blocks the lens → transition(kind='wipe(shape=foot)', dur=0.12) or match(on='motion') with the next shot.
+  sfx('impact', at=ground contact, gain=-8 dB) on jumps and stomps.
+gen_hint: ground-level shot, camera resting about 20 cm above the <floor / street / grass> and pointing almost straight ahead, <sneakers / feet / a ball> in sharp focus at the point where they touch the ground, blurry ground in the immediate foreground, level horizon, shallow depth of field
+commands: ["show the hero from the feet, then the face", "floor-level shot of the footsteps before the drop", "find low shots of shoes for the ad", "a car rushes over the camera at ground level"]
+related: [angle.low, angle.worms_eye, angle.water_level, pov.animal, track.follow, shot.extreme_close_up]
+evidence: {examples: 8, sources: 8, measured: "feet, shoes or a ball are the main subject in 6 of 8, a lying person in 1, a road in 1; sharpness peak in the band 0.4–0.8 of the height in 6 of 8 (in one more 0.8–0.9), the bottom band 0.25–0.55 of the peak in 7 of 8 (0.98 on steps); roll ≤2° in 5 of 8 (3.7–10.7° in the rest); static in 4 of 8 (jitter 0.06–0.22 %), handheld 2.1–5.6 %; shots 1–5.3 s; camera height — a visual estimate ≈0.1–0.6 m", confidence: high}
+---
+id: angle.high
+family: angle
+group: angle
+level: A
+aliases: [high angle, high-angle shot, downward shot, view from above, looking down on the hero]
+what: the camera is above the hero's eyes and looks down at 15–75° — the hero is smaller and "below" the viewer, with the floor or the ground behind instead of the horizon; an angle of vulnerability, submission or overview
+frames: |
+  1. The camera is 0.5–3 m above the hero's eyes (a stepladder, a balcony, stairs, a crane), the axis tilted down ≈15–75°;
+     there is no horizon and no sky in any of the 8 examples — the background behind the hero is floor, ground, asphalt, a table or the crowd itself.
+  2. The hero often looks up straight into the lens (4 of 8): the face frontal, head and shoulders larger, the body narrowing toward the bottom;
+     in medium and wide shots the eye line drops to 0.5–0.65 of the frame height (at eye level usually 0.3–0.45).
+  3. The camera is still (7 of 8, jitter 0.05–0.21 %); within the shot only the hero's action changes. 1.2–4 s (30–100 frames @25 fps).
+  4. Any scale — from a close-up of a face from above (the face 83 % of the height) to a crowd as a texture (faces ≈5 % of the height):
+     the higher the viewpoint, the smaller the people and the more of the surface around them is visible.
+variants:
+  - looking up into the lens — the hero in a crowd, by a car or over a table raises the eyes to the camera (4 of 8)
+  - from behind and above — the top of the head and shoulders, a passage or a door ahead (1 of 8)
+  - steeply down (≈60–75°) — two people on a bench, a lying person; the border with the overhead view (2 of 8)
+  - an overview of a mass — a crowd or an army as a texture right up to the top edge of the frame (1 of 8)
+status: footage
+fallback: the angle cannot be changed in code — the pose, the background and the perspective give away the camera position; a weak imitation of "slightly from above" for flat scenes — keystone distortion up to 5–8 % with a crop; otherwise search for high-angle shots in the source footage by detect, or generation with consent
+params:
+  pitch: −15…−75° (typically −25…−50°); steeper than −75° — angle.overhead, from a height of tens of meters — angle.birds_eye
+  camera_height: 0.5–3 m above the hero's eyes
+  horizon: not in the frame; if visible — at the very top edge (above 0.1 of the height)
+  sky_top: share of sky or of a bright smooth ceiling in the top 35 % of the frame ≈0
+  gaze: optionally up into the lens; eyes at 0.5–0.65 of the height in medium and wide shots
+  camera: static, jitter ≤0.25 %
+  duration: 1.2–4 s (30–100 frames @25 fps)
+  scale: the face from ≈5 % (a crowd) to 80+ % (a close-up from above)
+when: vulnerability, defeat, loneliness, submission — "looked down on"; a hero who is addressed from above; an overview of a place or a crowd before going down to the hero (establishing) and a "fly-away" at the end; a power struggle — film the strong one from below, the weak one from above, and alternate on the lines; comedic "smallness"; a layout on a table or a board at an angle. 1–2 times per scene
+avoid: the hero's triumph and moments of strength — the angle diminishes; a product that should look powerful (angle.low is better); a wide-angle lens right up to the face from above — a "light-bulb" head and short legs, comical; a high angle in every shot — the point of the contrast is lost
+sfx: no SFX; quieter and more distant — the general ambience, room echo, voices from below; when the camera rises — wind or air
+genres: {drama: signature, epic: allowed, travel: allowed, sport: allowed, teaser: allowed, ugc: allowed, explainer: allowed, product: allowed, calm: allowed, fanedit: allowed, motivation: allowed, viral: allowed}
+detect: |
+  Frames every 0.5 s: (1) no sky and no horizon — the share of "sky" (smooth blue or bright neutral pixels) in the top
+  35 % ≈0 and no long horizontal in the top 0.9 of the frame; (2) the surface the hero stands on is visible behind the hero — floor, ground,
+  a table (VLM question "is the camera looking down at the person?"); (3) frontal faces with an upward gaze, eye line at 0.5–0.65 in medium
+  and wide shots, the body foreshortened; (4) with straight walls the verticals converge below the frame (57–72 % of intersections in the examples with
+  architecture; on crowds and faces the feature is unstable). ed_motion: static. Differences: angle.overhead — straight down, no walls,
+  no floor perspective, the frame reads like a diagram; angle.low — sky or ceiling at the top, verticals converge upward; eye level —
+  horizon at 0.3–0.6 of the height, verticals parallel; drone.aerial — a height of tens of meters, usually with a horizon.
+engine: |
+  classify_angle(clip) → 'high' — new analysis: sky_top < 0.02 and no horizon + (VLM "camera above") + (opt.) the vanishing
+  point of the verticals below the frame; confidence is higher if in the neighboring shot the same hero is filmed at eye level.
+  Weak imitation: keystone(amount=0.06, axis='y', narrow='bottom') + transform(scale=[1.08, 1.08]) — a new keystone primitive.
+  Power scene: cut alternation angle.low (the strong one) ↔ angle.high (the weak one) on every line.
+gen_hint: high-angle shot looking down at <subject> from about two meters above at a 40-degree tilt, the subject looks up into the lens, the floor visible all around, no horizon or sky, static camera, small and vulnerable feeling
+commands: ["show the hero from above — he is weak in this scene", "dialogue: the boss from below, the subordinate from above", "open the scene with a high angle on the crowd", "find shots filmed looking down"]
+related: [angle.low, angle.overhead, angle.birds_eye, frame.central, drone.aerial]
+evidence: {examples: 8, sources: 8, measured: "no horizon and no sky in 8 of 8 (share of \"sky\" at the top 0 in 6, in 2 — 0.08–0.16 from bright objects); static in 7 of 8 (jitter 0.05–0.21 %), handheld 0.95 % in 1; frontal upward gaze into the lens in 4 of 8, eyes at 0.5–0.64 of the height in medium and wide shots; faces from 5 to 83 % of the height; verticals below the frame in 57–72 % of intersections where there are walls, on crowds and faces the feature is noisy (28–64 %); tilt angle — a visual estimate ≈15–75°; shots 1.2–4.1 s", confidence: medium}
+---
+id: angle.low
+family: angle
+group: angle
+level: A
+aliases: [low angle, low-angle shot, upward shot, looking up at the hero, hero shot, power shot]
+what: the camera is below the hero's eyes and looks up at 10–45° — the hero towers over the viewer against the sky, a ceiling or stage lights; an angle of power, threat, triumph and monumentality
+frames: |
+  1. The camera at waist or knee height or near the floor (≈0.2–1.2 m), the axis tipped up ≈10–45°; the top third of the frame is sky,
+     a ceiling with lamps, stage lights or treetops (8 of 8 visually), the horizon low or out of frame.
+  2. The hero's head at the top edge: eye line at 0.13–0.33 of the height (median 0.28; in a high angle 0.5–0.64),
+     chin, neck and nostrils visible; the body widens toward the bottom, legs and hands near the lens are larger than the head.
+  3. Verticals — walls, doors, tree trunks, skyscrapers — converge upward (66–76 % of intersections above the frame in 5 of 8);
+     often a roll of 17–34° is added to the angle (4 of 8), with a wide-angle lens — barrel distortion, the body stretched.
+  4. The camera is static (5 of 8, jitter ≤0.12 %) or breathes handheld (0.3–0.7 %); the hero may lean toward the camera and straighten up,
+     looming. 1.2–5 s (30–125 frames @25 fps).
+variants:
+  - the hero against the sky — standing or sitting, looking into the distance or up, the sky fills almost the whole top half, static (2 of 8)
+  - from below with a 17–34° roll — a figure at the edge of a skyscraper roof, getting out of a car under pine trees, a musician under stage lights (3 of 8)
+  - wide angle from the floor — a person looms over the camera and straightens up, a dance over the lens, the body stretched (2 of 8)
+  - a face from below in close-up — chin and nostrils, light above the head, smoke (1 of 8)
+status: footage
+fallback: a real low angle cannot be made in code — the pose, the background and the perspective give away the camera position; a weak imitation of "slightly from below" — a keystone narrowing the top by up to 5–8 % plus a crop, stronger — a roll as in angle.dutch; otherwise search for low-angle shots in the source footage by detect, or generation with consent
+params:
+  pitch: +10…+45° up (typically +15…+35°); steeper than +60° with the camera at the ground — angle.worms_eye
+  camera_height: 0.2–1.2 m — below the hero's waist or chest
+  eye_line: 0.13–0.33 of the frame height (typically 0.25–0.3) in medium and wide shots
+  top_band: sky, ceiling, stage lights or treetops in the top 35 % of the frame; "sky" share 0.15–0.9 outdoors
+  verticals: converge upward — the vanishing point above the frame
+  roll: optionally 15–35° (a low dutch angle)
+  lens: wide ≈14–24 mm equivalent for exaggeration; normal — for "clean" power without distortion
+  camera: static (jitter ≤0.15 %) or a light handheld up to 0.7 %
+  duration: 1.2–5 s (30–125 frames @25 fps)
+when: strength, power, a villain's threat, triumph and victory, "the hero's entrance" on the drop; a product as a monument — a car, sneakers, a bottle, a building; an athlete before the start or after a record; a performer on stage; the grandeur of architecture and forest; in rap and phonk videos — boldness and drive; in a power struggle — the strong one from below, the weak one from above (angle.high), alternating on the lines
+avoid: scenes of vulnerability and pity (the angle elevates); a close-up from below with a wide-angle lens — a double chin and nostrils, unflattering unless intended; a low ceiling with ugly lamps; every shot from below — the contrast and the meaning are lost
+sfx: on the entrance — a low sub hit or a bass drop, the hum of wind outdoors, a booming echo indoors; in a rap video — the beat drop exactly on the cut
+genres: {epic: signature, phonk: signature, motivation: signature, sport: allowed, product: allowed, fashion: allowed, viral: allowed, fanedit: allowed, teaser: allowed, drama: allowed, travel: allowed, clips: allowed, ugc: allowed}
+detect: |
+  Frames every 0.5 s: (1) the top third is sky, a ceiling, lamps or treetops: the share of "sky" (smooth blue or bright
+  neutral pixels) in the top 35 % ≥0.15 outdoors (≈0 in a high angle); indoors — a ceiling or stage lights (VLM);
+  (2) the face at the top edge: eye line ≤0.33 of the height in medium and wide shots, chin and nostrils visible;
+  for people looking ahead (nose − eyes)/interpupillary distance ≤0.5 (0.54–0.62 at eye level); (3) verticals converge above the frame;
+  (4) often a roll of 15–35° — then also label angle.dutch. ed_motion: static or handheld up to 0.7 %.
+  Differences: angle.worms_eye — the camera at the ground looks almost straight up, the figure above the lens; angle.ground — the camera
+  is low but the axis is horizontal, floor at the bottom; angle.high — no sky, eyes below the middle, verticals converge downward;
+  eye level — horizon at 0.3–0.6 of the height, verticals parallel.
+engine: |
+  classify_angle(clip) → 'low' — new analysis: sky_top ≥ 0.15 (or a ceiling per VLM) + eye_line ≤ 0.33 + the vanishing point
+  of the verticals above the frame; with |roll| ≥ 8° add the label 'dutch'.
+  Weak imitation: keystone(amount=0.06, axis='y', narrow='top') + transform(scale=[1.08, 1.08]).
+  Hero's entrance: cut(at=drop) to the low angle + sfx('sub_drop', at=drop); optionally transform(rotate=[0, 15],
+  t=[drop, drop+0.3], ease='outCubic') — a turn into a low dutch angle.
+gen_hint: low-angle shot from waist height looking up about 30 degrees at <subject> against <the sky / ceiling lights>, the subject towers over the camera, verticals converge upward, wide lens, static camera, powerful heroic feel
+commands: ["show the hero from below on the drop", "make the product monumental — a shot from below", "in the argument, film the boss from below and his subordinate from above", "find shots filmed from below against the sky"]
+related: [angle.high, angle.worms_eye, angle.dutch, angle.ground, angle.trunk, frame.central]
+evidence: {examples: 8, sources: 8, measured: "sky, ceiling, stage lights or treetops at the top in 8 of 8 visually (share of \"sky\" in the top 35 % 0.16–0.92 in 5 of 8, in a high angle 0 in 6 of 8); eyes at 0.13–0.33 of the height (median 0.28) versus 0.5–0.64 from above; (nose − eyes)/interpupillary 0.47–0.48 for people looking ahead versus 0.56–0.62; verticals above the frame in 66–76 % of intersections in 5 of 8; roll 17–34° in 4 of 8; static in 5 of 8 (jitter ≤0.12 %), handheld 0.3–0.7 %; wide-angle barrel distortion in 3 of 8; shots 1.2–5 s", confidence: high}
+---
+id: angle.overhead
+family: angle
+group: angle
+level: A
+aliases: [overhead shot, top-down shot, top shot, overhead view, shot from above, looking straight down, straight-down angle, 90° down]
+what: a view from directly above — the camera above the hero or the scene looks straight down; there is no horizon, the floor or the ground lies in the plane of the frame, and the scene reads as a diagram, a pattern or a map
+frames: |
+  1. Angle: the camera axis points straight down (−75…−90°). No sky, no horizon, no back wall; a single plane
+     (floor, ground, bed, table, crowd) fills the whole frame. The lines on it do not converge — markings, tiles,
+     the edges of a bed stay parallel (vanishing point farther than 15 frame heights). If the walls of a well
+     or a room are visible from above, their edges converge toward the center of the frame.
+  2. Hero: lying — whole, the body ≈25–90 % of the long side of the frame; standing — the top of the head and shoulders, the body
+     foreshortened, no legs visible. The face is visible only if the hero lies on their back or looks up into the lens
+     (then the face is 23–27 % of the frame height, centered). Faces often "lie": in 6 of 9 clips with faces the face roll
+     is greater than 45° (on the side ±90°, upside down 180°).
+  3. Composition: center or a strong 30–60° diagonal; a bed, a sink, a table, tiles are aligned with the frame edges;
+     hard low light gives long shadows — the only hint of the objects' height.
+  4. Camera: static in 15 of 20 (jitter ≤0.15 % of the frame), shot 1.5–3.5 s. Moves: rotation around the lens
+     axis at 22°/s (50° over 2.24 s, almost even); a rise ×0.71 over 2.5 s (even, ≈×0.87/s); a descent ×1.33
+     over 2.4 s with acceleration; a slow drift of 5–6 % of the frame/s; a handheld camera over a crowd with turns and cuts.
+variants:
+  - a body on a surface — lying on a bed, a floor, the ground; a fall backward onto a bed landing in the center (5 of 20)
+  - a crowd or choreography as a pattern — heads, lying bodies, dancers fill the frame; the camera is static, rises or descends (4 of 20)
+  - a table from above — hands at work, a layout of objects, food on a tray; objects aligned with the frame edges (4 of 20; very close — angle.overhead_close)
+  - looking up into the lens — the hero below looks into the camera through a ring, a net or a stairwell; the body foreshortened (2 of 20)
+  - a well — the walls of a room or a shaft converge to the center, a small hero at the bottom (2 of 20)
+  - a scale model from a height — vehicles, people, a crosswalk with markings; long shadows (2 of 20; higher — angle.birds_eye)
+  - flight — the hero between the camera and the distant ground, a sense of height (1 of 20)
+  - spin — a constant rotation of 15–25°/s around the center (1 of 20, 1 more — a chaotic handheld over a crowd)
+status: footage
+fallback: look in the source footage — a drone with the gimbal at −90° (gimbal pitch ≤ −80° in the SRT/XMP telemetry), handheld or tripod footage over a table, a bed, a floor; a real overhead view cannot be made in code, but a static overhead shot can be brought to life in code (a spin, a slow "descent"); if there is no such shot — generate an overhead view with the user's consent
+params:
+  pitch: −75…−90° (straight down); at −30…−75° it is already a high angle (angle.high)
+  duration: 1.5–3.5 s (38–88 frames @25 fps), typically 2.5 s; as an accent in fast cutting from 0.8 s (20 frames)
+  camera: static (15 of 20) | spin 15–25°/s, linear | rise ≈×0.87/s or descent ≈×1.1–1.25/s, 1.5–2.5 s
+  subject: a lying hero ≈25–90 % of the long side of the frame; a face looking up 23–27 % of the height; heads in a crowd 8–19 % of the height
+  composition: center (x, y 0.45–0.55) or a 30–60° diagonal; straight edges of objects parallel to the frame edges ±3°
+  rotation_freedom: an overhead shot can be rotated by 90/180° or mirrored — there is no horizon (not allowed if there is text in the frame)
+  spin_crop: rotation by θ without exposed corners — S = cosθ + (W/H)·sinθ (for 16×9 10° → ×1.29, 20° → ×1.55); a full turn 16×9 → 16×9 — ×2.04; 16×9 → 9×16 — a window with a height ≤0.87 of the source height
+  vertical: 9:16 from 16:9 is cropped without losing meaning, centered on the hero
+when: the scene's "rock bottom" — the hero lies after a fall, a fight, exhaustion, alone or drained (a transition to reflection); opening an episode or entering a verse — a pattern of a crowd, a dance, a street for 1–2 s; a process from above — hands, a table, cooking, assembly as a series of shots of the same length (1–2 bars); the ending — the camera rises and leaves the hero below; a chapter divider and a shape-match transition between two overhead shots. 1–3 times per minute; a series of 3–5 overhead shots — as a separate block
+avoid: lines and emotions that need the eyes (faces do not read from above, except when looking into the lens); scenes where height matters — the overhead view flattens it; a cluttered floor (from above all of it is visible and reads as noise); a spin longer than 3–4 s or faster than 45°/s — causes motion sickness; rotating or mirroring a shot with text and logos; "almost overhead" with an edge of the horizon in a corner — looks like a mistake — either strictly overhead or a clear high angle
+sfx: the angle itself needs no sound; a fall onto a bed or a floor — a dull thud on contact; a spin — a low drone or a long sweep over the whole rotation; a camera rise — air or a swell; a table from above — close-up foley of the action
+genres: {drama: signature, fashion: signature, calm: allowed, travel: allowed, product: allowed, explainer: allowed, ugc: allowed, motivation: allowed, sport: allowed, epic: allowed, teaser: allowed, fanedit: allowed, viral: allowed, clips: allowed}
+detect: |
+  Features on frames every 0.5 s (3 of 5 needed; drone telemetry with the gimbal at ≤ −80° decides at once):
+  1) no sky and no horizon in any frame of the shot;
+  2) a single plane over ≥70 % of the frame; long segments on it are parallel — the RANSAC vanishing point is farther than 10 frame
+     heights (15–200 in the examples), and the edges of walls, if visible, converge toward the center of the frame (±0.1 of the height);
+  3) faces (YuNet at rotations 0/90/180/270°, threshold 0.75): roll |roll| > 45° in a noticeable share of detections
+     (55 % in the examples, 7 % for eye-level shots), or a single frontal face in the center with a foreshortened body; for standing people only
+     the tops of heads and shoulders are visible;
+  4) long shadows lie on the same plane next to the objects, like silhouettes;
+  5) ed_motion: static; or ROTATE around the center without a horizon at 15–25°/s with nonrigid < 0.15; or ZOOM ×1.1–1.4
+     over 1.5–2.5 s with nonrigid 0.2–0.35 (rise/descent); a shift over a flat floor — nonrigid < 0.1.
+  Differences: angle.high — a wall, the horizon or a floor receding toward the top of the frame with converging lines is visible, faces upright;
+  angle.birds_eye — a height of tens of meters, people smaller than 5 % of the frame height, a map of the terrain;
+  angle.overhead_close — distance up to 1 m, an object or hands over 30–100 % of the frame; angle.worms_eye — the camera from below,
+  sky and verticals converging upward.
+engine: |
+  classify_shot(clip, by='angle') → angle='overhead' by the detect features (3 of 5).
+  Orientation: transform(rotate=[90k, 90k]) or mirror(axis='x') — align the hero's axis or the direction of movement
+  with the neighboring shot (there is no horizon, the rotation goes unnoticed; do not apply with text in the frame).
+  Bring a static overhead shot to life: transform(rotate=[0, 40], scale=[S, S], center=[0.5, 0.5], t=[t0, t0+2], ease='linear'),
+  S = cosθmax + (W/H)·sinθmax; or transform(scale=[1, 1.15], t=whole shot, ease='inQuad') — a "descent".
+  Vertical: reframe('9:16', target=track(person)). Cut: cut on a downbeat; in a series of overhead shots —
+  the same length (1–2 bars) and match(on='shape') between neighbors.
+gen_hint: <subject> lying on <surface>, seen from directly above like a flat lay — lens perpendicular to the ground, graphic layout parallel to the frame edges, long hard shadows, no sky or horizon in view; locked-off camera, optionally a slow clockwise spin
+commands: ["insert an overhead shot at the start of the second verse", "find all overhead shots in the source footage", "do a slow spin on #6 — it is shot from above", "rotate #3 so that the hero lies diagonally"]
+related: [angle.birds_eye, angle.overhead_close, angle.overhead_tracking, angle.high, angle.worms_eye, frame.central, zoom.slow]
+evidence: {examples: 20, sources: 14, measured: "15 of 20 — static (jitter ≤0.15 %); spin 50° over 2.24 s (22°/s, nonrigid 0.08); rise ×0.71 over 2.5 s and descent ×1.33 over 2.4 s (nonrigid 0.29); drift 5.7 %/s; faces found in 9 clips, roll >45° in 27 of 49 detections (8 of 112 for eye-level two-shots); floor lines parallel (vanishing point 15–200 frame heights), the walls of the well converge to the center; shots 1.4–10.4 s, more often 1.5–3.5 s", confidence: high}
+---
+id: angle.overhead_close
+family: angle
+group: angle
+level: A
+aliases: [flat lay, tabletop shot, map view of the table]
+what: "a close-up framed like a map of the work surface, lens pointing straight down from arm's length: everything lies flat and reads as a diagram; the standard insert for step-by-step, hands-on content"
+frames: |
+  1. The camera is straight above the surface at ≈0.3–1 m (30–100 cm of a table, a board, fabric, a box in the frame). There is no horizon
+     and no depth; the surface is parallel to the sensor and therefore sharp almost entirely — the sharp zone is 0.46–0.66
+     of the frame area in 6 of 7 (lower only on a smooth plain background).
+  2. Subject: an object, food or hands fill ≈40–100 % of the frame. The composition is symmetry (two pairs of hands converge
+     to the center) or a 30–45° diagonal; straight edges of objects are parallel to the frame edges.
+  3. Action: hands enter from the edge of the frame (in 4 of 6 clips with hands — from the bottom or the side, in 2 — from the top) and perform
+     one simple action — put down, pick up, open, rearrange, add. A face from above occurs only with a
+     lying hero: filling the frame (≈70 % of the height), looking into the lens (1 of 7).
+  4. The camera is static (5 of 7, jitter ≤0.07 % of the frame); sometimes at the start a short tilt toward the object — a shift of 19 %
+     of the frame over 0.45 s — or a light "breathing" ×0.89 → ×1.13 over 1.2 s.
+  5. Length: a single insert 1.2–3 s; a series of overhead inserts — 0.5–0.56 s each (every 7–8 frames at 14 fps),
+     a cut on every change of object.
+variants:
+  - hands at work — loading, opening a box, placing a piece on a board (3 of 7)
+  - symmetrical meeting — two pairs of hands or gloves converge from opposite sides in the center of the frame (1 of 7)
+  - food from above — a dish on a diagonal, a fork or a spoon adds an ingredient (1 of 7)
+  - a face from above — a lying hero looks up into the lens, the face fills the frame (1 of 7)
+  - a series of inserts — 3–4 different objects from above at 0.5 s each, one color palette, symmetry (1 of 7)
+status: footage
+fallback: look in the source footage for overhead footage of a table (a phone above a table, a boom-arm tripod, a recipe rig); a flat lay can be assembled in code from photos of objects — cut out the background and lay them out on a flat backdrop with a soft shadow — with the camera pointing straight down there is no perspective, and the composite looks genuine; live hand action — only from the source footage or by generation with consent
+params:
+  distance: ≈0.3–1 m above the surface (30–100 cm in the frame)
+  fill: object or hands 40–100 % of the frame
+  composition: centered symmetry or a 30–45° diagonal; edges of objects parallel to the frame ±3°
+  hands: enter from the bottom or the side, one action per insert
+  duration: single 1.2–3 s (30–75 frames @25 fps), typically 2 s; in a series 0.5–0.7 s (12–18 frames)
+  camera: static; optionally a tilt-in of 0.4–0.5 s at the start or a "breathing" ×0.9–1.1 over 1–1.5 s
+  sharp_area: 0.45–0.65 of the area with a textured background
+  orientation: can be rotated by 90/180° or mirrored — there is no horizon (except shots with text on the objects)
+  vertical: 9:16 from 16:9 — a window centered on the object; recipes and unboxings are better shot from above vertically from the start
+when: recipes, how-tos, unboxings — each action as a separate overhead insert; a product video — a flat-lay opening or "what's in the box"; the hero's preparation (getting ready, tools, bets on the table) — a series of 0.5 s inserts on the beats before the drop or an action scene; a symmetrical meeting of hands — a start, a deal, a hit before the drop; a transition between scenes via the table. Series — 3–6 inserts in a row, then always a wide shot
+avoid: moments that need the hero's emotion (there is no face from above); a cluttered table, a dirty backdrop, a shadow from the phone or the operator's hand; glare on gloss and on packaging film; a static insert longer than 3 s without action; rotating or mirroring a shot with text on the objects; different color palettes and camera heights within one series
+sfx: close, dry foley of the action — a click, an object knocking on the table, rustling paper, pouring; in a series of inserts — a short click or tick on every on-beat cut, a light whoosh on the change of object
+genres: {product: signature, explainer: signature, ugc: signature, viral: allowed, clips: allowed, teaser: allowed, fashion: allowed, calm: allowed, drama: allowed, fanedit: allowed, sport: allowed}
+detect: |
+  1) no horizon and no vanishing points: the surface is parallel to the frame, the edges of the table and the objects do not converge;
+  2) shot size: one object or hands over 40–100 % of the frame; hands (skin) enter from the frame edges, more often from the bottom;
+  3) the sharp zone is 0.45–0.65 of the area with a textured background — the whole plane is in focus (in a regular close-up
+     at an angle the background is blurred, sharp zone ≤0.45);
+  4) usually no faces; if there is one — it fills the frame, looking into the lens, the hero is lying down;
+  5) ed_motion: static (jitter ≤0.1 %), sometimes a short SHIFT of 15–20 % of the frame over 0.45 s at the start;
+     for a series of inserts — cuts every 0.5–0.6 s.
+  Differences: angle.overhead — a wide or medium view from above, the whole hero on a floor, a bed, the ground;
+  a close-up insert at an angle (shot.close_up) — the depth of the table is visible, the background goes into blur;
+  angle.birds_eye — a height of tens of meters.
+engine: |
+  classify_shot(clip, by='angle') → angle='overhead', size='close' (detect 1–3).
+  Series of overhead inserts: cut on every beat (0.25–0.5 s at 120 BPM) + sfx('click', at=cut, align='attack');
+  orientation: transform(rotate=[90k, 90k]) or mirror(axis='x') — make the hands enter from the same edge throughout the series.
+  Flat lay from photos: mask(method='hf_remove_background') for each object → composite(layers=[backdrop, objects],
+  blend='normal', shadow={offset: 0.02, blur: 0.03, opacity: 0.35}) → transform(scale=[1, 1.08], t=shot, ease='linear').
+  Vertical: reframe('9:16', target=object:<object>).
+gen_hint: top-down overhead close-up of hands <doing action> on a <surface>, camera pointing straight down from half a meter, flat lay composition with objects aligned to the frame edges, even soft light, everything in focus, static camera
+commands: ["make a series of overhead inserts on every beat before the drop", "find overhead shots of the table in the source footage", "build a flat lay from the product photos for the opening", "rotate the inserts so that the hands enter from the bottom"]
+related: [angle.overhead, shot.close_up, shot.extreme_close_up, cut.quick, angle.birds_eye]
+evidence: {examples: 7, sources: 7, measured: "5 of 7 — static (jitter ≤0.07 %), 1 — a tilt-in of 19 % over 0.45 s, 1 — breathing ×0.89→×1.13 over 1.2 s; sharp zone 0.46–0.66 in 6 of 7 (0.24 on a smooth background); a series of inserts — cuts every 7–8 frames at 14.3 fps (0.5–0.56 s); hands from the bottom or the side in 4 of 6, from the top in 2; a face from above ≈70 % of the height in 1 clip; clips 1.25–3 s", confidence: high}
+---
+id: angle.overhead_tracking
+family: angle
+group: angle
+level: B
+aliases: [top-down tracking, top-down follow, overhead tracking shot, overhead pass, overhead follow, tracking over the tables]
+what: the camera, pointing straight down, travels with the hero, a car or along a row of objects — the floor or the ground flows under the frame, the subject stays in the center; movement across a "map" that instantly shows the layout of the space
+frames: |
+  1. The angle as in angle.overhead: straight down, no horizon; the subject is seen from above — the top of the head and shoulders, the roof
+     of a car, a stretcher, train cars.
+  2. Movement parallel to the ground: the subject stays in the central third of the frame, the background moves toward it.
+     Background speed: a pedestrian — 15–25 % of the frame width per second (0.6–1 % per frame @25 fps); a pass along a row
+     of tables or a work line — 24–32 %/s, the steadiest (speed spread 0.13–0.15), with acceleration over the first
+     second (9 → 30 %/s); a car or a train — 100–145 %/s.
+  3. Follow turn: when the subject turns, the camera turns with it — its heading in the frame
+     stays constant while the world rotates: 19–40°/s, up to 40–125° per shot (3 of 9).
+  4. Parallax: over a flat floor or ground almost none (nonrigid 0.03–0.06); over furniture, people,
+     structures — 0.17–0.30. Gimbal or hand jitter 0.3–1.6 % of the frame.
+  5. Length: 2.4–11.3 s — these are single-take passes; in fast cutting 1–2 s are taken from them.
+variants:
+  - following a pedestrian — over roofless rooms, a corridor, a hall; the hero walks through the space (3 of 9)
+  - transport from above — a train in a canyon, a car, a stretcher; on turns the camera rotates to follow (3 of 9)
+  - a pass along a row — over a workbench, a line, gaming tables; the background flows at a constant speed (2 of 9)
+  - hovering over a flow — the camera is almost still (6.9 %/s), a crowd or a structure flows beneath it (1 of 9)
+status: footage
+fallback: imitation in code — (a) a pass — a constant crop shift across a large overhead frame (4K, a panorama, stitched drone frames) — over a flat surface there is no parallax, the fake is invisible; (b) following — a crop that tracks the hero across a static overhead wide shot with ×1.5–2 headroom; (c) follow turn — the crop window rotates along the subject's heading; a pass over furniture and people looks flat in code — look for a real tracking shot in the source footage or generate with consent
+params:
+  speed: pedestrian 15–25 % of the frame width/s (0.6–1 %/frame @25 fps); row 24–32 %/s; transport 100–150 %/s
+  ease: acceleration 0.5–1 s (12–25 frames), then a constant speed (spread ≤0.2 for passes)
+  subject: in the central third of the frame, deviation ≤10 % of the frame per shot (≈)
+  rotation: 19–40°/s when the subject turns; the subject's heading in the frame is constant
+  duration: 2.5–11 s (63–275 frames @25 fps), typically 4 s; a piece in fast cutting 1–2 s
+  parallax: flat surface — nonrigid ≤0.06 (a code fake is invisible); furniture and people — 0.17–0.30
+  crop_follow: crop headroom ×1.5–2 over a static overhead frame (lossless from 4K to 1080)
+when: showing a space through the hero's movement — an apartment, a corridor, a maze (the overhead view gives the layout); a chase, a road, a train — transport from above with a follow turn; production, a kitchen, a table — "the process as a flow"; opening titles over a pass; a long walk-through shot in a music video where the hero walks through the rooms of a set. As a long shot — once per video; in dynamic cutting — a 1–2 s piece on a downbeat
+avoid: jerks and a floating speed — a pass must flow evenly; the subject leaving the central third; a low height over people without stabilization — together with turns it causes motion sickness; a follow turn faster than 45°/s; faking a pass over furniture and a crowd with a simple shift — the flat picture gives away the missing parallax
+sfx: the hero's footsteps and foley closer than usual; a pass — an even ambience and a soft hum of movement; transport — a building pass-by and rattling; follow turn — a short sweep on the turn
+genres: {drama: allowed, teaser: allowed, epic: allowed, travel: allowed, sport: allowed, phonk: allowed, fashion: allowed, fanedit: allowed, product: allowed, explainer: allowed, calm: allowed, clips: allowed}
+detect: |
+  ed_motion: a long SHIFT in one direction — ≥50 % of the frame per shot — at a steady speed (spread 0.13–0.45);
+  nonrigid ≤0.06 over flat ground, 0.15–0.30 indoors; ROTATE 19–40°/s when the subject turns.
+  The subject (a person or car detector, or the most stable track) stays in the central third while the background moves away.
+  Overhead-view features — as in angle.overhead: no sky, floor lines parallel, people seen as the tops of heads.
+  Differences: angle.overhead with a spin — rotation without a shift and without a leading subject; truck.lateral and track.follow —
+  the camera at human height, the horizon, walls and verticals visible; drone.fpv — an oblique forward view with a horizon.
+engine: |
+  classify_shot(clip, by='angle+motion') → 'overhead_tracking'.
+  Pass in code: transform(shift=[[0, 0], [−v·D, 0]], scale=[S, S], t=[t0, t0+D], ease='linear'), v = 0.15–0.32 of the frame/s,
+  S ≥ 1 + v·D (headroom for the whole path), the first 0.5–1 s — acceleration (ease='inQuad' on that segment).
+  Following in code: reframe(aspect, target=track(person), smooth=0.4) over a static overhead wide shot (headroom ×1.5–2).
+  Follow turn: track_follow(target=track(object), lock='heading', max_rot=40, smooth=0.5) — a new primitive:
+  the crop window keeps the subject in the center and rotates along its heading (deg/s limited by max_rot).
+gen_hint: <subject> <walks through roofless rooms / drives along a road>, filmed from straight above by a camera that travels with it at a constant speed — the subject stays in the middle of the frame while the ground slides underneath, map-like view, no horizon
+commands: ["do an overhead pass over #3 from left to right", "follow the hero from above across wide shot #5", "turn the camera with the car on the turn", "find overhead drone passes in the source footage"]
+related: [angle.overhead, angle.birds_eye, track.follow, track.subject, truck.lateral, drone.fpv]
+evidence: {examples: 9, sources: 8, measured: "pass along a table 32 %/s (acceleration 9 → 30 %/s over 1 s, spread 0.13, nonrigid 0.04); pedestrians 15–17 %/s, gaming tables 24 %/s, train 144 %/s, car ≈100 %/s; follow turn −44° over 2.3 s, +39° over 0.96 s, −74° over 2.24 s; nonrigid 0.03–0.06 over flat ground, 0.17–0.30 in interiors; jitter 0.3–1.6 %; shots 1.7–11.3 s", confidence: high}
+---
+id: angle.profile
+family: angle
+group: angle
+level: A
+aliases: [profile shot, side profile, profile, in profile, side view, side angle, profile silhouette]
+what: the hero filmed strictly from the side — the face reads as the line of forehead, nose, lips and chin; the gaze leaves the frame, the hero seems absorbed in thought and the frame graphic; good for silhouettes, rides, contemplation and models
+frames: |
+  1. Head turned 70–90° relative to the camera: one eye visible, the nose protrudes past the cheek outline. In the face detector (YuNet)
+     the inter-eye distance is 0.01–0.20 of the box width (0.45–0.51 for a frontal face), the nose is offset from the midpoint of the eyes
+     by 0.15–0.28 of the box width in the direction of the gaze.
+  2. Shot size: the face 30–66 % of the frame height — a medium close-up or a close-up; in one example a huge profile in the
+     foreground (60–66 %) and a full-length person in the depth (face 10 %).
+  3. Composition: the head is often almost centered — x 0.35–0.60; 0.35–0.56 of the frame width in front of the face, that is
+     less than the classic "lead room"; large lead room (0.75) — when the thing the hero is looking at
+     is in the frame.
+  4. The background is simple and contrasts with the profile line — a wall, a solid color, the sky (5 of 8); 2 of 8 — a silhouette against
+     the light or a strobe, the face almost without detail.
+  5. The camera is static (7 of 8, jitter ≤0.5 % of the frame); one clip — pulsing light and small scale jolts
+     ×1.14–1.19 over 3 frames. Length 1.3–3.8 s.
+variants:
+  - strict profile on a graphic background — a wall, a color, the sky; often a silhouette against the light (4 of 8)
+  - near-profile close-up — a 3/4 profile with wind in the hair or a gesture near the mouth (2 of 8)
+  - a profile in the foreground and a figure in the depth — two layers, the hero looks at the distant one (1 of 8)
+  - profile with a turn — the hero sits in a car in profile and turns to the camera with a smile (1 of 8)
+status: footage
+fallback: the face cannot be turned in code — look in the source footage for side shots (rides, conversations, portraits); a medium close-up profile can be cut out in code from a wider side shot (a crop on the head with lead room in the gaze direction); a mirror flip changes the gaze direction — this way two profiles can be turned to face each other (if there is no text and no asymmetric features in the frame); no such shot — generate a profile with consent
+params:
+  yaw: 70–90° (inter-eye/box width ≤0.2, nose offset ≥0.15); 45–65° — already 3/4
+  face_h: 30–66 % of the frame height, typically 35–55 %
+  face_x: 0.35–0.60; 0.35–0.56 of the frame width in front of the face; if the object of the gaze is in the frame — up to 0.75
+  background: plain or contrasting with the outline; silhouette — the background ≈40+ brightness units brighter than the face
+  duration: 1.5–4 s (38–100 frames @25 fps), typically 2.5 s
+  camera: static (jitter ≤0.5 %), optionally a slow push-in ×1.05–1.15 over the shot
+  mirror: a horizontal flip changes the gaze direction — for a "face to face" cut and for matching eyelines
+when: introducing the hero "halfway" — the profile conceals, the hero is closed off and pensive; a pause before a decision, a gaze into the future or out of a window (a ride, a road); in music videos — a graphic silhouette on the downbeats, a strobe; a fashion portrait — the cheekbone line, the hairstyle, earrings; a dialogue without shot/reverse shot — two profiles facing each other across a cut (one looks right, the other left); a "profile → turn to camera" hook in the first 1–2 s
+avoid: emotions that read only through the eyes and frontal facial expression; two profiles in a row looking the same way if they are meant to be talking to each other; a profile on a busy background — the outline gets lost; a strong wide-angle lens up close — the nose and the chin get distorted; mirroring a shot with text, a logo or an asymmetric feature of the hero
+sfx: the angle itself needs no sound; in contemplation — quieter music, breathing and room tone; a silhouette under a strobe — each flash on a beat (a click or a hi-hat); a turn to the camera — a short sweep or an accent at the moment of eye contact
+genres: {fashion: signature, drama: signature, calm: allowed, motivation: allowed, teaser: allowed, fanedit: allowed, viral: allowed, phonk: allowed, sport: allowed, travel: allowed, epic: allowed}
+detect: |
+  YuNet (threshold 0.6, frames every 0.5 s): inter-eye distance ≤0.2 of the box width and nose offset from the eye midpoint
+  ≥0.15 of the width → profile (0.01–0.20 and 0.16–0.28 in the examples); the sign of the offset is the gaze direction.
+  0.25–0.44 — 3/4 profile; ≥0.45 with an offset <0.05 — frontal.
+  If the detector finds no face but there is a head (a silhouette, a helmet, the back of the head with the nose on the outline) — an outline check:
+  a profile silhouette has the nose and the chin protruding on one side (2 of 8 examples — only this way).
+  ed_motion: usually static.
+  Differences: frame.over_shoulder — a blurred back of a head at the edge, the far person looks toward the camera in 3/4; frame.two_shot in profile —
+  two faces facing each other in one frame; shot.close_up — the face frontal or 3/4.
+engine: |
+  classify_shot(clip, by='face') → orientation='profile', facing='left'|'right' (by the sign of the nose offset).
+  Crop from a side shot: shot_crop(size='MCU', target=track(face), face_h=0.45, lead_room=0.1 toward the gaze, max_scale=2).
+  Matching eyelines in the edit: if two profiles stand next to each other and are meant to face "each other", but facing is the same —
+  mirror(axis='x') on the second one (no text in the frame); before a cut to the object of the gaze — the object must end up
+  on the side of the frame the profile was looking toward.
+gen_hint: strict side profile of <subject> looking to the <left/right>, one eye visible, forehead-nose-lips-chin line against a plain contrasting background, rim light outlining the profile, medium close-up, static camera
+commands: ["put the hero's profile before the cut to the road", "flip #4 so that the characters look at each other", "find profile shots in the source footage", "a profile silhouette on every downbeat in the chorus"]
+related: [shot.close_up, shot.medium_close_up, frame.over_shoulder, frame.two_shot, light.silhouette]
+evidence: {examples: 8, sources: 8, measured: "YuNet found a face in 6 of 8: strict profile — inter-eye 0.01–0.20 of the box width, nose offset 0.16–0.28; 3/4 — 0.26–0.44; frontal (background) — 0.45–0.51; face 30–66 % of the height; x 0.35–0.60, 0.35–0.56 of the width in front of the face (0.75 with the object of the gaze in the frame); 7 of 8 — static ≤0.5 %; 2 silhouettes without detection; clips 1.3–3.8 s", confidence: high}
+---
+id: angle.trunk
+family: angle
+group: angle
+level: B
+aliases: [trunk shot, view from the trunk, looking out of the trunk, up from a box, up from a pit, box POV, unboxing POV]
+what: a view from below, from inside a trunk, a box or a pit — the lid rises out of blackness, 1–5 people loom over the lens and look straight inside, a dark frame of the opening around the edges; an angle of threat, conspiracy or the "what's inside" reveal
+frames: |
+  1. Start in blackness (4 of 8): the lid rises — a dark band moves up, light floods the frame in 0.48–0.72 s
+     (12–18 frames @25 fps; a slow dramatic opening — up to ≈6 s).
+  2. The frame looks up from below at ≈30–70°: 1–5 people stand and lean over the lens, faces 15–55 % of the height (typically ≈25 %),
+     looking straight down into the lens (frontal in 6 of 8), behind the heads the sky (10–60 % of the top band in 6 of 8) or a ceiling.
+  3. Frame of the opening: the edge of the lid — a dark band at the top (5–25 % of the height), the sill or the bumper at the bottom (10–20 %), sometimes walls at the sides.
+  4. The camera is still (6 of 8, jitter 0.02–0.3 %); people talk, take out or put in something, reach toward the lens,
+     swing; 1.6–8.8 s, typically 3–5 s (75–125 frames @25 fps).
+  5. Ending (opt.): the lid comes down — the dark band grows from top to bottom in ≈0.5 s, then blackness — a ready cut point (1 of 8).
+variants:
+  - classic — the lid opens out of blackness, two or three people lean in and look inside, sky behind the heads (4 of 8)
+  - a group over the contents — 4–5 people bent over, the opening framed by the dark walls of a box (1 of 8)
+  - action into the opening — they take out a weapon or an item, swing right at the camera, slam the lid shut into blackness (2 of 8)
+  - a dark pit or a basement — two faces look down out of the darkness, no sky (1 of 8)
+status: footage
+fallback: 'hybrid — a shot where people look down into the lens (a phone at the bottom of a box, a trunk or in the grass), plus a drawn frame of the opening and an animated lid: an opening out of blackness 0.5–0.7 s and a closing into blackness; without a shot from below — generation with consent'
+params:
+  open: out of blackness in 0.48–0.72 s (12–18 frames @25 fps), ease-out; a slow opening up to 6 s
+  pitch: +30…+70° up
+  frame: lid edge at the top 5–25 % of the height; sill or bumper at the bottom 10–20 %; optionally side walls
+  faces: 1–5 faces of 15–55 % of the height each (typically ≈25 %), gaze down into the lens, eyes at 0.23–0.52 of the height
+  sky: 10–60 % of the top band — sky behind the heads (or a ceiling)
+  camera: static, jitter ≤0.3 %
+  duration: 1.6–8.8 s, typically 3–5 s (75–125 frames @25 fps)
+  close: lid down ≈0.5 s (12 frames), blackness 0.2–0.5 s, then a cut
+when: the "what's inside" reveal — a captive, cargo, a find, a gift; a gangster or crime comedy, a conspiracy over a trunk; a product unboxing through the eyes of the box (the box opens, the buyer's face above); the start of a scene out of blackness and the end — a lid slammed shut into blackness as a transition; once per video
+avoid: when people have no reason to look inside — it reads as a gimmick; longer than 6–8 s without action; without the frame of the opening and the opening itself — just an ordinary low angle; repeating the device in the same video
+sfx: a latch click, the creak or hiss of the lid struts, muffled sound inside and a sudden "opening up" of the street, voices from above; on closing — a dull slam exactly on the black frame, then 0.3–0.5 s of silence
+genres: {product: allowed, ugc: allowed, fanedit: allowed, phonk: allowed, drama: allowed, teaser: allowed, viral: allowed, clips: allowed}
+detect: |
+  ed_motion: black frames at the start and the mean brightness rising to a plateau over 12–18 frames @25 fps — a dark band moves
+  up (the lid edge); sometimes black frames at the end. Dark frame bands at the top 5–25 % and/or at the bottom 10–20 % of the height,
+  holding for the whole shot; static (jitter ≤0.3 %). Face detector: 1–5 frontal faces in a row, gaze down into the lens; above them
+  sky (share of "sky" in the top 35 % 0.1–0.6) or a ceiling. Differences: angle.low — no frame of an opening and no opening, people look
+  past the lens; pov.object — the camera inside a fridge, a cupboard or a bag, the angle closer to horizontal, out-of-focus
+  items at the edges; angle.worms_eye — the camera at the ground looks straight up without a frame.
+engine: |
+  footage: find_shot(angle='low', gaze='lens', frame_bands=True, open_from_black=True) → cut(at).
+  Imitation (hybrid): lid_reveal(t0, dur=0.6, edge='top', ease='outCubic', rim=0.15, lid_strip=0.12) — a new primitive:
+  a black lid mask rises and stops as a narrow band at the top, a constant sill at the bottom;
+  + sfx('click', at=t0) + muffle(cutoff_hz=800 → off, t=[t0, t0+0.6]).
+  Closing: lid_close(t1, dur=0.5) → fade(to='black', dur=0) held for 0.3 s → cut to the next scene + sfx('impact', at=t1+0.5).
+gen_hint: trunk shot from inside a car trunk, camera lying on the trunk floor looking up, the lid swings open to a bright sky, <two or three people> lean over and look straight down into the lens, the dark edge of the lid at the top and the bumper at the bottom of the frame, wide lens, static camera
+commands: ["trunk view: the lid opens, everyone looks inside", "an unboxing through the eyes of the box for the product", "end the scene — the lid slams shut into blackness", "find shots filmed from inside looking up"]
+related: [angle.low, pov.object, angle.worms_eye, trans.fade, light.silhouette]
+evidence: {examples: 8, sources: 8, measured: "start from blackness in 4 of 8, opening in 0.48–0.72 s (one slow, 5.9 s); closing into blackness in 0.48 s in 1 of 8; 1–5 faces, 15–55 % of the height (median ≈24 %), frontal in 6 of 8, eyes at 0.23–0.52; sky behind the heads 10–60 % of the top band in 6 of 8; frame — sill at the bottom 10–19 % in 2, lid edge at the top up to 24 % in 1, in 3 more — visually; static in 6 of 8 (jitter 0.02–0.3 %); shots 1.6–8.8 s", confidence: medium}
+---
+id: angle.water_level
+family: angle
+group: angle
+level: B
+aliases: [water level shot, waterline shot, surface shot, over-under, split-level, camera on the water, at water level, half-frame underwater]
+what: the camera lies right on the surface of the water — the waterline cuts the frame, ripples right at the lens, a swimmer's head, a boat or a hand at the viewer's eye level; sometimes a wave washes over the lens or the frame is split into "above" and "below" the water
+frames: |
+  1. The camera 0–20 cm above the water: the waterline is horizontal and runs at 0.45–0.73 of the frame height (typically 0.55–0.7);
+     below it — ripples and glints that move 1.3–3.4 times more than everything above the line (in 6 of 8; up to ×16 in a static shot on calm water).
+  2. On the waterline — whatever comes out of it: a swimmer's head, a hand or a foot touching the surface, the silhouette of a boat,
+     a person waist-deep in the sea; in the distance above the water — a shore, a city or fog.
+  3. The camera is static (4 of 8, jitter ≤0.2 %) or rocks on the waves with the water (jitter 0.7–4.2 %);
+     roll usually ≤2°, on a wave — spikes up to 10–20°.
+  4. A wave washes over the lens: for 0.3–0.7 s the picture blurs (sharpness below 0.35 of normal), then the water runs off,
+     drops remain on the glass; in the same way the camera dives and resurfaces — a cut or a pass through the surface.
+  5. Over-under (half the frame underwater): the waterline at 0.3–0.5 of the height, above — the scene in the air, below — the body underwater,
+     distorted by refraction, with a different color cast; 0.5–8 s, more often 2.3–4 s (58–100 frames @25 fps).
+variants:
+  - a swimmer on the waterline — head and shoulders above the water, ripples in the foreground, night lighting or steam (2 of 8)
+  - touching the surface — a foot from a pier or a hand trailing through the water, rings spreading (2 of 8)
+  - a silhouette on the water — a boat or a person in the sea against the sky, completely static 2.4–8 s (2 of 8)
+  - dive and resurface — the camera goes underwater and resurfaces to a panorama of the shore, 1–2-frame flashes at the joins (1 of 8)
+  - over-under with a floundering hero — the top in the air, the bottom underwater (1 of 8)
+status: footage
+fallback: requires a waterproof housing or an underwater housing with a dome port (for over-under); code can only add drops on the glass, a "wash" over the lens (blur + a color shift toward blue-green for 8–18 frames) and ripples with reflections at the bottom edge, but not the camera position itself; if there are no suitable shots — generation with consent
+params:
+  camera_height: 0–0.2 m above the water; for over-under the lens is half in the water
+  waterline: 0.45–0.73 of the height from the top (typically 0.55–0.7); over-under — 0.3–0.5
+  ripple_motion: frame-to-frame change below the line 1.3–3.5 times greater than above it (up to ×16 in a static shot on calm water)
+  subject: on the waterline — a head, a hand, a foot, a boat; a swimmer's head ≈15–35 % of the frame height
+  camera: static (jitter ≤0.2 %) or rocking on the water 0.7–4.2 %; roll ≤2°, on a wave spikes up to 10–20°
+  wash: a wave on the lens 0.3–0.7 s (8–18 frames @25 fps), sharpness ≤0.35 of the shot median, then drops
+  duration: 0.5–8 s, typically 2.3–4 s (58–100 frames @25 fps)
+  colour: underwater a blue-green shift and a loss of saturation; over-under — a different color cast in the top and the bottom
+when: travel by the sea, a pool, surfing and swimming; calm meditative shots (a boat silhouette, a hand through the water) — intro, outro, a pause; tension and danger — a drowning hero, a wave; "the border between worlds" — a transition from an underwater scene to one above the water; summer UGC and travel videos, ads for swimwear and waterproof gear
+avoid: murky water and spots on the glass that are not intended; long rocking — causes motion sickness; the waterline exactly in the center for no reason — the frame looks cut in half; a tilted horizon in static shots
+sfx: splashing right at the microphone, a dull underwater rumble when a wave washes over (a high cut at ≈500–800 Hz for 0.3–0.7 s), bubbling, distant surf; on resurfacing — a sharp return of the full sound
+genres: {travel: signature, calm: allowed, sport: allowed, drama: allowed, ugc: allowed, fashion: allowed, product: allowed, teaser: allowed, epic: allowed, motivation: allowed}
+detect: |
+  A horizontal water boundary at 0.3–0.75 of the height: a sharp row-wise jump in brightness/texture; below it — glinting ripples
+  whose frame-to-frame change is 1.3–3.5 times greater than above the line (up to ×16 on calm water). A head or a hand
+  crosses the waterline. A wave wash — 8–18 frames with sharpness ≤0.35 of the median and a brightness spike, drops afterwards.
+  Over-under — the line at 0.3–0.5, a different color cast above and below (a*/b* difference ≥6) and a distorted body at the bottom.
+  ed_motion: static (jitter ≤0.2 %) or rocking 0.7–4.2 %; on a dive — flash frames and cuts. Differences: underwater footage
+  (underwater) — the surface is visible at the top of the frame, if at all, the whole frame is inside the water; angle.ground — a solid surface
+  without ripples; reflections in the water filmed from above from the shore — the horizon is high, the water fills almost the whole frame, and the camera looks down.
+engine: |
+  footage: find_shot(waterline=[0.3, 0.75], ripple_ratio>=1.3) → cut(at).
+  "Through the surface" transition: cut on the wave-wash frame (sharpness at its minimum) + flash(color='white', dur=0.04–0.08)
+  + sfx('swell') with an underwater high cut. Wash imitation: water_wash(t, dur=0.5, blur=12px, tint='teal', drops=True) — a new primitive.
+  Outro: a silhouette on the water 3–5 s, fade(to='black', dur=1.0) on the last note.
+gen_hint: water-level shot, camera floating right on the surface of the <sea / pool / lake>, waterline crossing the lower third, ripples and sparkles in the foreground, <a swimmer's head / a boat silhouette / a hand touching the water> on the waterline, occasional small wave splashing the lens, natural light
+commands: ["a water-level shot for the intro", "through-the-surface transition: a dive and resurfacing to the shore", "find shots where the camera is on the water", "a wave washes over the camera on the drop"]
+related: [angle.ground, angle.low, scene.underwater, light.silhouette, trans.flash]
+evidence: {examples: 8, sources: 8, measured: "waterline at 0.45–0.73 of the height in 7 of 8, over-under 0.32–0.43 in 1; ripples below the line 1.3–3.4 times more mobile in 6 of 8 (×16 in a static shot on calm water); static 4 of 8 (jitter 0.09–0.19 %), rocking 0.7–4.2 %; lens wash 0.3–0.7 s (sharpness ≤0.35 of the median) in 2 of 8; over-under — top/bottom color difference 6.6; shots 0.5–8 s", confidence: medium}
+---
+id: angle.worms_eye
+family: angle
+group: angle
+level: A
+aliases: [view from below, from under the feet, worm's-eye view, worm's-eye angle, camera on the ground looking up, ground-up shot, circle of heads over the camera]
+what: the camera lies on the ground or the floor and looks almost straight up — people loom over the lens against the sky or a ceiling, heads in a circle or upside down; the "you are lying down and above you…" angle
+frames: |
+  1. The camera axis is tipped up by 60–90°: no horizon, the background is a plain sky, a ceiling or a vault (a flat bright background
+     fills 25–55 % of the frame, indoors — lamps and beams).
+  2. Figures grow from the edges toward the center: legs and bodies go into the corners, heads converge in the middle; with a vertical axis people
+     stand in a circle like "rays", faces upside down or turned sideways; verticals (walls, columns) converge to the center.
+  3. People look down — straight into the lens: they bend over, point a finger, reach out a hand, pour something from above; or
+     walk over the camera (legs step over it, soles in the frame).
+  4. The camera is static (jitter 0.07–0.28 %) — 5 of 6; sometimes a slow push-in ×1.6 over 2.2 s toward a looming face or a handheld
+     "rocking" following the hero bending over (jitter up to 5.8 %, push-in/pull-out ×1.4/×0.6 over ≈1 s).
+  5. Shot length 1–4 s (a static circle of heads can hold for up to 15 s as a background for lines).
+variants:
+  - circle of heads: 3–8 people bent over the camera in a circle, faces toward the center — "you come to, and everyone is above you"
+  - one looming: face and shoulders from above against the sky, looking into the lens, a hand reaching down
+  - walking over the camera: people step over the lens, soles and legs against a ceiling or the sky
+  - corridor upward: the camera on the floor, a ceiling with lamps and walls converge, the hero shouts from above
+  - through a frame: walls of a well, an opening or a box at the edges, faces peer inside from above (adjacent to angle.trunk)
+status: footage
+fallback: |
+  A real shot with the camera at the ground and the axis pointing up is needed — it cannot be made by cropping and rotating. Search the source footage: an action
+  camera on the ground, "the phone was put down and everyone leaned over", footage shot lying down. Weak imitation: a shot from below (angle.low) +
+  a rotation by 90–180° + barrel distortion and darkened edges — reads as "lying on my back". Generation — from the
+  gen_hint with the user's consent.
+params:
+  pitch: +60…+90° (almost straight up); less — that is angle.low
+  camera_height: 0–0.3 m (on the ground or the floor)
+  background: a plain sky, a ceiling or a vault — 25–55 % of the frame (a flat bright background); no horizon
+  figures: 1–8 figures, heads converge to the center (0.3–0.7 on both axes), bodies and legs go to the edges
+  faces: faces 8–25 % of the frame height, rotated or upside down, gaze down into the lens
+  verticals: converge to the center of the frame or to a point above it
+  lens: wide 14–24 mm equivalent (≈) — strengthens the "growth" of the figures
+  camera: static (jitter ≤0.3 %) | a slow push-in ×1.4–1.6 over 1.2–2.2 s | handheld "rocking" up to 6 %
+  duration: 1–4 s (25–100 frames @25 fps); a static circle — up to 15 s
+when: |
+  Waking up, a fall, a knockout, "I'm lying down and above me…" — comedic and dramatic; a child's or an animal's point of view;
+  a crowd walking over the camera as a transition; the power and threat of a hero looming over the viewer; music video and phonk — a shout into the camera
+  from above on the drop. 1–2 times per video; works well paired with getting back on one's feet (a regular angle afterwards).
+avoid: |
+  The axis is not tipped up — the result is an ordinary low angle, the effect is lost. An empty sky without people for longer than 1 s. Too
+  frequent upside-down shots — they disorient. A bright sun straight into the lens burns faces into silhouettes (unless intended).
+sfx: |
+  A dull thud of a fall or a "boom" before the shot, then ringing in the ears and muffled voices from above; on walking over the camera —
+  footsteps close and loud; on a shout from above — a close voice with reverb.
+genres: {viral: allowed, phonk: allowed, drama: allowed, fanedit: allowed, ugc: allowed, teaser: allowed, sport: allowed, motivation: allowed, epic: allowed}
+detect: |
+  ed_motion: static (jitter 0.07–0.28 %, 5 of 6) or a slow ZOOM-IN to the center; the handheld variant — jitter up to 6 %.
+  Own checks: no horizon; a flat bright background (sky or ceiling) 25–55 % of the frame; face detector — faces rotated
+  by 90–180° or tilted toward the center of the frame, arranged in a ring around the center; legs and bodies go to the edges; verticals
+  converge to the center; people's poses "bent down".
+  Difference from angle.low: there the axis points up only 10–45°, the horizon or the ground at the bottom edge, faces upright. From angle.ground:
+  the axis is horizontal, floor at the bottom. From angle.trunk: there is a frame of the opening (a lid) and an opening out of blackness. From angle.overhead:
+  the opposite — from above looking down, people lie on the floor.
+engine: |
+  footage: find_shot(angle='worms_eye', sky_or_ceiling_share>=0.25, faces_rotated=True, horizon=None) → cut(at).
+  classification: classify_angle(clip) → 'worms_eye' if there is no horizon, a flat bright background ≥0.25 and faces rotated ≥60°.
+  weak imitation: transform(rotate=[180, 180]) + lens_distort(k=0.15, kind='barrel') + vignette(0.4) on a shot from below.
+  delivery: cut(at=hit) + sfx('impact', at) + muffle(cutoff_hz=900, t=[at, at+1.5]) — "stunned";
+            transform(scale=[1, 1.5], center=[0.5, 0.5], t=[at, at+2], ease='linear') toward the face bending over.
+gen_hint: extreme worm's-eye view, camera lying on the ground pointing straight up at the sky, <group of people> standing in a circle and leaning over the lens looking down into it, faces toward the center, wide-angle lens, converging lines, overcast sky background
+commands: ["the hero falls — a shot from below, everyone bent over him", "a crowd walking over the camera on #6", "a shout into the camera from above on the drop", "a worm's-eye view as a transition between scenes"]
+related: [angle.low, angle.ground, angle.trunk, angle.overhead, pov.first_person, lens.fisheye]
+evidence: {examples: 6, sources: 6, measured: "static in 5 of 6 (jitter 0.07–0.28 %), a slow push-in ×1.59 over 2.2 s (1), handheld rocking with a push-in ×1.44 and a pull-out ×0.6–0.67 of ≈1 s each (1, jitter 5.8 %); flat bright background 0.24–0.53 of the frame in 4 of 6 (indoors 0.07–0.10 — a ceiling with lamps); faces in a circle or upside down in 4 of 6; axis angle — judged from the perspective (≈)", confidence: medium}

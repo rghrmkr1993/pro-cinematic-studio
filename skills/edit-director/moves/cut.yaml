@@ -1,0 +1,724 @@
+id: cut.crash
+family: cut
+group: editing
+level: B
+aliases: [crash cut, smash cut, abrupt cut, contrast cut, cut to silence, chaos to silence]
+what: smash cut — at the peak of a jolt (a sharp push-in or pull-out) the shot breaks off and crashes into a contrasting world (from a crowd to a quiet landscape, from darkness to color, from macro to a top-down view); the new shot flies out of the same motion and brakes to a standstill within 0.25–0.55 s
+frames: |
+  1. Lead-in (shot A): the frame picks up speed — an accelerating push-in ×1.5–2.2 over 0.2–1 s (5–26 frames @25 fps,
+     ease-in, peak ×1.09–1.3 per frame on the last frame), a one-frame "jab" ×1.3–1.4 right before the cut, or a sharp
+     pull-out ×0.7 over 0.2 s. Sharpness on the last frames drops by a factor of 2–20 — motion blur.
+  2. The cut lands on the frame of maximum speed, with no filler (0–1 frame of blur).
+  3. Impact (shot B): the first frame is already flying in the same direction (×1.26–1.42 per frame for a push-in,
+     ×0.76–0.85 for a pull-out) and brakes with ease-out — a fast phase of 3–8 frames, a full stop after 5–14 frames
+     (0.25–0.55 s); in one example a soft settle drags on for another ≈1 s.
+  4. Contrast (5 of 6): brightness changes by −20…+83 %, saturation by −59…+92 %, detail density ×0.27–×10, shot size
+     jumps several steps — feet on sand → a top-down view of a valley, a crowded market → a dawn expanse with balloons,
+     a dark face → a bright face against a colored wall, the belly of a passing plane → a white sky with a bird.
+  5. After: B stands still — motion in the frame drops to ×0.05–0.44 of shot A within 0.3–0.8 s (4 of 6); hold for
+     at least 0.5–1 s so that the "silence" that has set in reads.
+variants:
+  - "chaos to silence: a noisy crowded shot with a jolt → a quiet landscape that stops dead within 5 frames"
+  - "darkness to color: an accelerating push-in on a face in shadow → a bright saturated face, the push-in dies out within 9 frames"
+  - "scale jump: a blurred pull-out from a detail → a sharp top-down view of a similar texture, the pull-out continues and dies out"
+  - "through a flash: a static shot ≈0.9 s → a jolt toward a passing object → an almost white sky with a lone bird"
+  - "reverse, from silence into a jolt: a calm shot breaks off, and each next shot starts from a blurred pull-out ×0.5–0.62 that dies out within 0.24–0.44 s; 2–3 such cuts 0.4–0.5 s apart"
+  - "pure smash cut without a zoom (the classic meaning of the term, not in the sample): loud and fast → silence and stillness, or the other way round, on one hard cut; the sound breaks off together with the picture"
+status: code
+fallback: if the source footage has no contrasting shot B — take the calmest wide shot (minimum motion and detail) or the one that differs most in brightness and color; if there is none either — generate a quiet empty landscape or an almost white frame with a single object, with the user's consent
+params:
+  out: push-in ×1.5–2.2 over 0.2–1 s (5–26 frames @25 fps), ease inExpo or inCubic, peak ×1.09–1.3 per frame on the last frame | "jab" ×1.3–1.4 in 1 frame | pull-out ×0.7 over 0.2 s
+  seam: on the frame of peak speed; filler 0–1 frame of blur; sharpness of A at the seam ×0.05–0.5
+  in: starting speed ×1.26–1.42 per frame (push-in) or ×0.76–0.85 (pull-out); total ×1.4–2.4; ease outExpo; stop after 5–14 frames (0.25–0.55 s)
+  contrast: at least two cues — brightness ±20 % or more, saturation ±40 % or more, detail density ×2 or ×0.5, a shot-size change of 2+ steps
+  calm_after: motion in B after 0.3–0.8 s — no more than 0.5 of the motion in A (×0.05–0.44 in the sample); hold B for at least 0.6 s
+  reverse_chain: calm A → B starting from a blur ×0.5–0.62 that dies out over 0.24–0.44 s; 2–3 cuts 0.4–0.5 s apart
+  center: zoom center on the detail in A and on the point of interest in B, ≈0.45–0.55 of the frame
+when: |
+  A change of world and mood in a single hit: from city bustle into the quiet of nature, from night into day, from tension
+  into a pause, and the reverse move — from a lull into an explosion. Travel and teaser — a transition between locations or
+  parts; music video and fan edit — on the drop or where the music breaks off; comedy — "promise → reality". The cut lands
+  exactly on the downbeat or where the sound breaks off. Limit: 1–2 times per 30–60 s video; the reverse chain — once per chorus.
+avoid: two shots similar in light and pace (the hit does not read — it is just a zoom transition); a slow acceleration with no peak at the cut; B braking for longer than 0.6 s (the hit gets mushy); frequent repetition; videos that are calm throughout; a shot B with strong motion of its own — there will be no "silence"
+sfx: |
+  Chaos → silence: the sound breaks off together with the picture — music and noise die at the cut, leaving the quiet
+  ambience of the place (wind, birds) or full silence for 0.5–1 s; on the seam — a short hit or a whoosh, chopped off at the cut.
+  Silence → explosion: a pause or an inhale before the cut, at the cut — a hit, bass and the music coming in. On the
+  acceleration of A — a short riser of 0.2–1 s.
+genres: {travel: signature, teaser: signature, fanedit: allowed, viral: allowed, epic: allowed, drama: allowed, sport: allowed, phonk: allowed, clips: allowed, motivation: allowed, ugc: allowed, product: allowed, fashion: allowed, explainer: allowed, calm: forbidden}
+detect: |
+  ed_motion: one cut between two ZOOM events of the same sign — before: ZOOM-IN ease-in (50 % of the path after 0.78
+  of the duration), a one-frame ZOOM ×1.3–1.4 before the cut or ZOOM-OUT ×0.7 over 4 frames; after: ZOOM ease-out (50 %
+  of the path by 0.07–0.34 of the duration) peaking on the first frame, no further events. Custom check: 3 frames before and
+  frames 3–5 after the cut — brightness changes by 20 % or more, saturation by 40 % or more, edge density (Canny) ×2 or
+  more or ×0.5 or less — at least two cues are required; the difference between adjacent frames 0.3–0.8 s after the cut
+  is no more than 0.5 of that over the last 0.5 s of shot A.
+  Unlike trans.zoom: there the zoom hides the seam — tone and center of A and B are close, the motion flows on; here the
+  cut has to be felt — the world, light and pace are sharply different, B brakes to a standstill. Unlike zoom.crash: it has
+  no cut. Unlike cut.match: there the shape matches and contrast is secondary. Unlike cut.quick: that is a series, this is one hit.
+engine: |
+  crash_cut(a, b, at=beat, mode='zoom_in'|'zoom_out'|'punch'|'hard'|'reverse',
+            out={scale: 1.8, dur: 0.4, ease: 'inExpo'}, inn={scale: 1.8, dur: 0.4, ease: 'outExpo'},
+            blur='zoom', center=[track(detail_a), track(subject_b)], audio='cut_to_ambience'|'cut_to_silence'|'hit')
+  — new primitive = transform(A, scale=[1, out.scale], t=[at − out.dur, at], ease) + cut(at)
+    + transform(B, scale=[1, inn.scale], t=[at, at + inn.dur], ease) + blur(kind='zoom', amount∝speed);
+  pick_contrast(clips, ref=a, want='calm'|'busy', by=['luma', 'sat', 'edges', 'motion']) — new: picks B
+    with maximum contrast (at least two cues);
+  + duck(music, to=−40 dB, at=at, dur=0.8) or mute(music, at) + ambience(b) + sfx('impact', at=at, align='attack')
+  + sfx('riser', at=at − out.dur).
+gen_hint: "two shots for a crash cut — shot A: <busy, loud, crowded scene>, the camera rapidly accelerates forward with heavy motion blur; shot B: <calm, empty, quiet wide landscape at dawn>, it starts with a fast zoom that brakes hard to a complete stop within a quarter of a second, then stays perfectly still"
+commands: ["crash cut from the bazaar into the dawn landscape at 0:14", "cut the noise off into silence on the drop", "sharp push-in on the face, then slam into the bright shot #5", "reverse crash: from silence into three jolting pull-outs on the chorus"]
+related: [trans.zoom, zoom.crash, cut.match, cut.quick, trans.flash, time.freeze]
+evidence: {examples: 6, sources: 2, measured: "ed_motion and custom measurements on 6 cuts (20–25 fps): A accelerates ×1.5–2.2 over 0.2–1 s peaking at ×1.09–1.39 per frame on the last frame, one-frame jab ×1.39, pull-out ×0.7 over 0.2 s; sharpness at the seam ×0.05–0.5; B starts at ×1.26–1.42 (push-in) or ×0.76–0.85 (pull-out) per frame and stops within 5–14 frames (0.25–0.55 s); contrast in 5 of 6 — brightness −20…+83 %, saturation −59…+92 %, edge density ×0.27–×10; motion 0.3–0.8 s after the cut ×0.05–0.44 of A in 4 of 6; reverse chain — 3 shots of 0.4–0.48 s, each starting from a blurred pull-out ×0.5–0.62; 5 examples from one travel film, no sound — the \"silence\" was judged by motion and detail, not by audio", confidence: medium}
+---
+id: cut.dance
+family: cut
+group: editing
+level: C
+aliases: [dance edit, dance video, choreography edit, dance editing, choreography editing, cutting to body movement, on-screen choreography]
+what: editing and camera serve the dance — a shot holds a whole movement phrase, the camera either stays still so the group's pattern reads or follows the body's trajectory, and cuts, light and effects hit the movement accents and the beats
+frames: |
+  1. The base is a long shot for a whole phrase: in 12 of 16 examples 1–4.5 s without a single cut; in the edited ones
+     pieces of 1–2.8 s (25–70 frames @25 fps), 3–10 times longer than in quick cutting. In 11 of 16 the dancers are seen
+     full-length in at least one shot (≈): the figure takes 35–90 % of the frame height, feet in frame, the lead in the center.
+  2. The camera picks a role. Spectator (8 of 16): tripod, frontal or straight overhead, frame shift < 0.15 % of the width
+     per 40 ms — the pattern reads: a line, a circle, a diagonal, the lead with backing dancers on the sides, a pass through the frame.
+     Partner: the camera repeats the body's trajectory — arms go up → the frame rises by 56 % of the height over 2.4 s
+     with a push-in ×1.6 (accelerating toward the end); a jump to the side → a pan following it, 44 % of the width in 1 s (peak 9.5 %/frame);
+     a couple spins → an orbit in the same direction, 70–90 % of the frame width per second; a wave along a line → a track along the line
+     at ≈ 25 % of the width per second (scale ×25 over 4.5 s), accelerating ×2–2.5 on the last beat.
+  3. Cuts only on an accent: the new shot starts just before a body hit, and the hit falls within its first
+     0–200 ms (0, 2, 3 and 4 frames @20 fps after the four measured cuts); the cuts themselves sit within ±1.5 frames of
+     the beat grid. Shot size follows the body: wide → feet only when the tap dancing starts; solo →
+     ensemble through a 0.4 s blur; medium shot → wide shot of the trio on the beat after the light has held.
+  4. Group: unison (3–4 heads turn at once, cycle ≈ 0.8 s) or canon — one movement travels along
+     the line from dancer to dancer every 5–8 frames @25 fps (0.2–0.32 s, faster toward the end), the wave crosses the frame
+     left to right in ≈ 2.6 s.
+  5. Light and effects double the rhythm: in-frame light flashes on a 1/8 grid (225 ms, ≈ 133 BPM, ±0.5 frame),
+     +15–35 to mean brightness for 1 frame; bright light holds for 0.5 s and is broken off by a cut on the beat.
+variants:
+  - frontal wide on a tripod: the group full-length against a wall, a car or shelving; the lead in the center, backing dancers on the sides, or dancers pass right through the frame; 2–3.5 s without cuts
+  - pattern from above: people lie or sit on stairs, sand, a stage with rings of light — a diagonal or circles; a slow push-in ×1.27 over 1.6 s or a camera "nod" — down by 51 % of the height in 0.55 s, a 0.3 s pause, back up
+  - partner camera: a rise following raised arms, a pan following a jump, an orbit together with a couple's spin, a track along the line of dancers
+  - canon wave: a line of 4–8 people repeats one movement in turn with a 0.2–0.32 s delay
+  - unison close-up: several heads or hands in one close-up move at the same time
+  - shot-size change by the body: wide shot → feet only during the tap, the step hit 2 frames after the cut
+  - clones and echo: one dancer multiplied into a line of 6–8 copies or leading 2 echo copies with a trail; the entry into the line of clones — through a 0.4 s horizontal blur
+  - split screen: a close-up and a wide of the same movement side by side (panels ≈ 59/41 % of the width), in sync
+  - foreshadowing: 4 frames before the cut — a 1-frame (50 ms) flash of the next shot at the peak of a jump
+  - tableau: the group freezes in a pose for ≈1 s with almost no movement — a full stop at the end of the phrase
+status: footage
+fallback: |
+  No group — build the choreography in code from one dancer (hybrid): a person mask and 4–8 copies in a line (unison)
+  or each next copy delayed by 5–8 frames (canon). No camera movement — a digital "partner" on 4K:
+  a crop ×1.2–1.6 that follows the center of the body (rising with the arms, shifting with a jump). No dance at all — search
+  the source footage for shots with rhythmic body movement to music, or generate a motion transfer: a reference dance
+  is transferred onto the user's subject with the user's consent.
+params:
+  shot_len: 1–4.5 s (25–110 frames @25 fps), typically 2 s; no shorter than a whole combination (4–8 counts), except for short inserts
+  framing: full-length, the figure takes 35–90 % of the frame height, feet in frame, the lead in the center; close-ups — only faces (unison) and feet (tap)
+  static_cam: frame shift < 0.15 % of the width per 40 ms; frontal or straight overhead
+  follow_cam: camera speed and axis = body speed and axis — a rise of 20–25 % of the height per second, a pan following a jump 40–45 % of the width per second, an orbit 70–90 %, a track along the line ≈ 25 %; acceleration toward the end of the phrase (inCubic)
+  cut_lead: the cut 0–5 frames @25 fps (0–200 ms) before the body accent, typically 2–3 frames; on the beat grid ±1 frame
+  canon_delay: 5–8 frames @25 fps (0.2–0.32 s) between neighboring dancers; speeding up toward the end is acceptable
+  light_pulse: +15–35 to mean brightness (out of 255) for 1 frame every 1/8 or 1/4 beat
+  split: 2 panels ≈ 0.59/0.41 of the width, the very same moment (offset 0 frames)
+  clones: 2–8 copies evenly spaced across the width, delay 0 (unison) or 5–8 frames (canon)
+  whip_to_group: horizontal blur of 8 frames @20 fps (0.4 s) between solo and ensemble
+when: |
+  Music videos and fashion videos with a pronounced beat, dance trends and challenges, introducing a team or a collection,
+  the ensemble's entrance on the drop, a final pose as the full stop at the end. A dance phrase = a piece of the edit: a shot per 1–2 bars;
+  group unison — on the chorus, canon wave — on the build before the drop, solo — on the verse; shot-size changes are best
+  placed on count "1" or "5" of an eight-count. One short insert (feet, hands) is acceptable between long shots.
+avoid: a cut in the middle of a combination (breaks the movement and the count); quick cutting of 2–6 frames per piece on a dance (the body does not read); framing that cuts off the feet during tap or the arms during a wave; a camera that moves against the dancer or overtakes them; an angle change without a change of movement; a shaky handheld camera on a synchronized group (the pattern gets lost); clones and echo copies that lag behind the music
+sfx: |
+  The music itself comes first: cuts and flashes on its beats, with no extra effects on top. Boost the body sounds: soles
+  and heels striking during tap, claps, fabric rustle on spins (3–6 dB louder than in reality). Blur into the ensemble —
+  whoosh; the ensemble's entrance on the drop — a hit; the final pose — silence or the music stopping for 0.3–0.5 s.
+genres: {fashion: signature, viral: signature, fanedit: allowed, ugc: allowed, teaser: allowed, product: allowed, sport: allowed, motivation: allowed, epic: allowed, drama: allowed, travel: allowed, clips: allowed, phonk: allowed, calm: allowed, explainer: allowed}
+detect: |
+  Custom measurement: the residual motion of people after subtracting camera motion (p95 of dense flow) is large — 1.5–4 %
+  of the width per 40 ms — with little camera motion (< 0.15 %) or with camera motion tied to the center of the
+  body (ed_motion: a long SHIFT or ZOOM without cuts for 1–4.5 s, the center of body motion shifts in the same direction).
+  2+ full-length people in the same pose at the same moment — unison; the same pose offset by 5–8 frames along
+  the line — canon (the center of residual motion drifts evenly across the frame). Cuts are few (≤ 1 per 1–2 s), and they sit
+  0–5 frames before the peak of residual motion; ed_motion flashes (flash) at an even step of 1/8–1/4 beat.
+  Unlike cut.quick: there the pieces are 0.07–0.6 s and each one is a new action; here the shot holds a phrase.
+  Unlike track.subject: there the camera follows a walking subject at a constant speed; here it responds to the body's rhythm.
+  Unlike time.echo_trail and fx.duplicate: those are effects in their own right; here the copies dance in unison or in canon.
+engine: |
+  dance_accents(clip, by='motion'|'audio'|'both') — new: body hits = p95 peaks of the residual flow (after
+  subtracting camera motion) and sharp stops; matched against the track's beats.
+  cut(at=accent - lead, lead=2–3 frames, snap='beat') — a cut before the accent; a shot no shorter than a phrase (1–2 bars).
+  follow_cam(target=track(person), axis='y'|'x'|'orbit'|'along', gain=0.8–1.0, crop=1.2–1.6, ease='inCubic') —
+  new: a digital partner camera following the center of the body (crop from 4K; rising with the arms, shifting with a jump).
+  canon_clone(clip, mask='mediapipe_person', copies=4–8, spacing=[dx, 0], delay=0|5–8 frames) — new: unison
+  or canon from a single take. split_screen(layout='2v', ratio=[0.59, 0.41], sync=True);
+  flash(color='white', t=beats('1/8'), dur=1 frame, gain=0.1–0.15); transition('whip', dur=0.4) — solo → ensemble;
+  echo(trails=2, decay=0.5); sfx('impact', at=ensemble entrance); sfx('whoosh', at=blur).
+gen_hint: "music video choreography: <a group of 4–6 dancers> performs a sharp synchronized routine <on a staircase | in front of a plain wall | on a dark stage with rings of light>, full body visible head to toe, locked-off frontal wide shot (or the camera rises together with their raised arms), every move hits on the beat, then a wave passes along the line from one dancer to the next"
+commands: ["cut the dance by phrases: a shot per 2 bars, cuts 2 frames before the hit", "on the drop — the whole group enters in a wide shot", "make a canon from one dancer: 6 copies delayed by 6 frames", "switch to the feet on the tap section", "make the camera rise with the arms in #4"]
+related: [cut.quick, cut.vector_match, track.subject, time.echo_trail, fx.duplicate, layout.split_screen, light.flash, trans.whip, angle.overhead, frame.tableau, frame.central]
+evidence: {examples: 16, sources: 8, measured: "16 clips from all 8 sources of the section: 12 — a single shot of 1–4.5 s without cuts, in 4 — 6 cuts, pieces of 1.05–2.8 s (some cut off by the clip edge); the camera is static in 8 of 16 (shift < 0.15 % of the width per 40 ms); camera following the body per ed_motion: a rise of 56 % of the height over 2.4 s with a push-in ×1.59, a pan of 44 % of the width in 1 s (peak 9.5 %/frame), an orbit of 255 % of the width over 2.85 s, a track ×25 over 4.5 s (≈1 % of the width per 40 ms, ×2–2.5 toward the end); body hit 0, 2, 3 and 4 frames @20 fps after the cut (residual flow); light flashes on a 4.5-frame grid @20 fps (225 ms) from frame 48, two cuts within ±1.5 frames of it; canon — peaks 8, 7 and 5 frames apart @25 fps; split panels are in sync (motion correlation 0.70 at offset 0, 0.5 at ±1); the \"full-length\" shares are a visual estimate; periodicity of the movement by autocorrelation is weak (r ≤ 0.33), the tempo was not derived from the dances themselves", confidence: medium}
+---
+id: cut.flash
+family: cut
+group: editing
+level: B
+aliases: [flash cut, flash montage, flicker montage, rapid image montage, flickering frames, image barrage, photo flipbook, subliminal flash, ultra-short inserts]
+what: a stream of dozens of different images at 1–2 frames each (12–25 changes per second) — most often the eyes, face, figure or object stay at one point of the frame while people, places, outfits and color flicker around them; energy, "the whole collection in a couple of seconds", a flash of memory
+frames: |
+  1. Entry: on a downbeat the normal pace breaks off — or the video opens straight away with the stream.
+  2. Stream: 13–97 changes over 0.5–7.3 s (median excerpt 2.7 s). Each image holds for 1–2 frames @25 fps
+     (40–80 ms): the median across all pieces is 70 ms, 10 % — 40 ms, 90 % — up to 140 ms; in excerpts at the full rate
+     of 25 fps, 71 % of the pieces are exactly 1 frame long. The "readable" variant — 3–4 frames (100–160 ms, 6–10 changes per second).
+     Hard cuts, no separators (29 of 30); there is almost no motion inside a piece — these are photos, freeze frames
+     or 1–2 frames of video.
+  3. Match (24 of 30): the main object — eyes, a face, a full-length figure, a traffic light, a butterfly, an ornament — stays
+     at the same point and the same size in all the images, so the averaged frame of the whole series stays
+     sharp; the person, place, era, outfit and light color change. In 5 of 30 — a free stream of unrelated
+     shots from the video (music video, trip) with motion blur, flares and a single white frame.
+  4. Rhythm inside: even (20 of 29); speeding up 100 → 50 ms or 350 → 140 → 70 ms over 2–4 s (4 of 29);
+     a breather of 0.36–1 s on one image in the middle of a long stream (2); a landing of 0.5–1 s (12–25 frames)
+     on a key image at the end (5).
+  5. Exit: a landing on the final frame, a hard return to the main shot or, less often, 2–4 frames
+     of semi-transparent overlay of the last images.
+variants:
+  - "one subject, many worlds: the same person in dozens of places, outfits, looks or concerts, the face or figure at one point; mirrored and upside-down frames turn up among the normal ones"
+  - "a collection of one kind: dozens of different faces, eyes, animals, traffic lights, butterflies, cards with the same pose — all aligned on the object; the ending on the \"main\" specimen"
+  - "texture and pattern: ceiling coffers, a facade with rows of windows, reliefs, a crowd, night traffic — adjacent frames are almost identical in structure, only the content flickers"
+  - "free stream: unrelated shots of the video itself at 1–2 frames each with motion blur, flares and an occasional white frame — the energy of a music video or a trip"
+  - "takes of one shot: the same setup and shot size, while the take, the expression and the hood change — 1–3 frames each (borderline with cut.jump)"
+  - "stack collage: photos land on top of each other with a rotation, the stack grows, then it switches to a full-screen stream (borderline with look.photo_prints)"
+  - "styling: a single tone (green monochrome, B&W, cold stone) or a deliberately different light color on each frame; a rounded \"film\" frame border; a paper tear over the cut frame"
+  - "order: a small set cycles round (repeating every 8–15 changes) or runs back and forth as a palindrome — in the sample 13 % of changes repeat an image already shown"
+  - "single insert (the classic meaning of the term, not found in the sample): 1–6 frames of a different shot inside a normal scene — a flash of memory or premonition"
+status: code
+fallback: |
+  It needs a set of 12–100 images of one kind. No ready set — assemble one from the user's source footage: the best frame
+  of the subject from each shot (face detection, alignment by the eyes), freeze frames of all clips of the same shot size, photos
+  from the user's gallery. Too few options — cycle the set or play it as a palindrome. No material at all — generate
+  a series "the same subject or object, the same pose and shot size, different places and looks" with the user's consent.
+params:
+  image_len: 1–2 frames @25 fps (0.04–0.08 s), typically 2 frames; "readable" variant 3–4 frames (0.12–0.16 s); measured 30–160 ms, median 70 ms
+  rate: 6–25 changes per second, typically 12–15 (at least 12 in 20 of 29 examples)
+  burst: 1–4 s (25–100 frames @25 fps), typically 2.5 s; at least 12 images; ceiling ≈ 7 s
+  pool: 12–100 different images; a cycle of 8–15 or a palindrome is acceptable, repeats no more than 15–20 % of changes
+  anchor: the eyes, the center of the face or object at one point ± ≈3–5 % of the frame, size ±10 % (≈, judged by the sharpness of the series' averaged frame)
+  rhythm: even | speed-up 3 → 2 → 1 frame over 1.5–3 s | a 0.4–1 s breather inside a stream longer than 3 s
+  landing: 12–25 frames (0.5–1 s) on a key image — optional
+  grade: a single tone (shared LUT, monochrome) or a deliberately different color on each frame; in safe mode adjacent images differ in mean relative luminance by no more than 0.1
+  separators: none; optionally 1 white frame (brightness ≥ 240 out of 255) or a flare once every 8–16 changes, a paper tear on 1 frame at the cut
+  exit: landing | hard return to the main shot | overlay of the last 2–4 frames
+  safety: in the sample the median is ≈ 4.6 large brightness jumps per second (more than 3 in 18 of 29) — by default the engine evens out the brightness of adjacent images and keeps it to no more than 3 jumps per second, otherwise it warns
+when: |
+  The drop and the climax (a stream for a whole bar, landing on the next downbeat), the hook of the first 1–2 s ("all the subject's looks",
+  "the whole collection"), the intro and ending of a fan edit, a lookbook in fashion, a product in dozens of settings, a teaser, a flashback or a "flash
+  of memory", a transition between parts of the video. Limit: 1–2 streams per 30–60 s video; the stream starts and ends on a
+  downbeat, while the changes inside go by frames, not by beats.
+avoid: unaligned images in the "matched" variant (the face jumps around the frame and reads as junk); sharp brightness swings, red or white alternating frame by frame with dark — a risk for photosensitive viewers; fewer than 10 images (then it is cut.quick); a stream longer than 5–7 s without a breather; small details and text — they do not read in 1–2 frames; a calm contemplative tone and moments where the viewer has to understand something
+sfx: |
+  A continuous texture for the whole stream: a riser, projector or shutter clatter, ticking, a glitch trill; on the landing — a hit
+  or a sub; before the stream — an inhale or the music stopping for 1 frame. A click on every change — only at 8 changes
+  per second or fewer, otherwise the clicks merge into noise.
+genres: {fanedit: signature, teaser: signature, fashion: signature, viral: allowed, phonk: allowed, epic: allowed, drama: allowed, travel: allowed, clips: allowed, product: allowed, ugc: allowed, motivation: allowed, sport: allowed, calm: forbidden}
+detect: |
+  ed_motion: cuts on almost every pair of frames (8–25 cuts per second over a stretch of 1 s or longer), methods ecc/fail,
+  no global motion; many flash frames and strobe flips — these are brightness jumps between different images,
+  not white frames (a flat frame with brightness spread < 10 — in 1 of 30). Custom check: 12+ pieces in a row of
+  1–4 frames @25 fps; segmentation on 96 px thumbnails — a cut if the HSV histogram distance is > 0.5, or the mean
+  difference is > 30, or the difference is > 9 with a correlation < 0.85 that does not disappear after shift compensation.
+  Match: the averaged frame of the series keeps its structure — structure index 0.3–0.78 (random frames give
+  0.22 ± 0.03), edge-map correlation of adjacent images ≥ 0.1 (random ones give 0.04).
+  Unlike cut.quick: there 2–6 cuts per second and pieces of 2–15 frames, each one reads and carries an action; here
+  8–25 changes per second, images of 1–2 frames each, usually aligned on the object. Unlike cut.match: there a series of rhymes at
+  0.4–1.5 s per link. Unlike trans.flash: there a flat white or colored frame at the cut, not images. Unlike
+  light.flash: only the light changes within one shot. Unlike cut.stutter: there the same fragment repeats.
+  Unlike time.step_print: phases of one shot freeze. Unlike look.photo_prints: photo prints with borders, 3–12 frames each.
+engine: |
+  flash_burst(pool, t=[t0, t1], per=2 (frames @25 fps) | per=[3, 1] (speed-up), align='eyes'|'face'|'person'|'object:<name>'|None,
+              scale_tol=0.1, order='shuffle'|'cycle:12'|'pingpong', grade='unify'|'vary'|'mono:#3cff6e',
+              mirror_share=0–0.15, separator=None|'white:1/12'|'tear:1', rest=None|{at, dur: 0.5},
+              landing={image, dur: 0.6}, exit='land'|'cut'|'ghost:3', safety={max_flashes: 3, dY_max: 0.1}) — new primitive.
+  collect_pool(source='user_photos'|'best_frames', subject=track(face:<id>)|'object:<name>', n=24–100, dedupe=0.93,
+               min_sharpness) — new: collects and cleans up the set from the source footage.
+  align_to(anchor='eyes'|'bbox_center', target=[0.5, 0.42], scale_ref='eye_distance'|'bbox_h') — new:
+               transform(scale, shift, rotate) of each image to a common anchor.
+  + beat_sync(event='flash_burst', grid='1 bar') + sfx('riser', at=t0) + sfx('impact', at=t1, align='attack').
+gen_hint: "a set of 30 photos of <subject> for a flash-cut montage: identical framing in every photo, <subject's eyes or the object> at exactly the same position and size, centered, same camera height and lens; each photo in a different location, outfit, era and light color; sharp, high contrast, no text"
+commands: ["on the drop, a flash cut of all the subject's looks, landing on the last one", "a stream of 40 photos at 2 frames each, aligned by the eyes", "an accelerating flash before the chorus: from 3 frames down to 1", "a 2-second flash montage of all the cities from the trip in the intro"]
+related: [cut.quick, cut.match, cut.stutter, cut.jump, trans.flash, light.flash, look.photo_prints, time.step_print, fx.kaleidoscope]
+evidence: {examples: 30, sources: 30, measured: "frame-by-frame segmentation of 30 excerpts (sources 6–33 fps; at 14 and 6 fps the piece length is no shorter than the frame step): 0.45–7.3 s, median 2.7 s, 13–97 changes; 1171 pieces — median 70 ms, p10 40, p90 140 ms; in 25 fps excerpts 71 % of the pieces are 1 frame long; 2.5–28.6 changes/s, at least 12 in 20 of 29; even rhythm 20/29, speed-up 4/29, landing of 0.5–1 s 5/29, breather 2/29; object alignment 24/30 (structure index of the averaged frame 0.3–0.78 vs 0.22 ± 0.03 for random frames); image repeats 13 % of changes; white frame 1/30 (241 out of 255, 1 frame), no black or colored flat frames; median brightness jumps 4.6/s; no sound — the link to the beats was not measured", confidence: high}
+---
+id: cut.insert
+family: cut
+group: editing
+level: B
+aliases: [cut-in, insert shot, insert, detail insert, close-up insert, detail, detail shot, axial cut, cut-out, reverse cut-in]
+what: a cut from a wide or medium shot to a tighter shot of the same place and moment — a face, a hand, an object or a detail of the action; the action is not interrupted, and the viewer gets a "magnifying glass" on what matters
+frames: |
+  1. Main shot 0.45–2.3 s: the viewer sees where and who; the detail is in it, but small (anywhere in the frame).
+  2. The cut — with no in-between frames (15 of 18 examples), less often a 2-frame dissolve, 1 frame of white flash
+     or 8 frames of a "wipe" when a hand or a shoulder covers the lens.
+  3. The insert: the same point of the scene, tighter. Axial — the same angle, ×1.3–3.6; on a person the window is centered
+     horizontally (0.49–0.53) and shifted up toward the face (0.19–0.46), the face at 32–39 % of the height from the top;
+     on an object — the window where it stands (a car — window center 0.43, 0.64).
+     From a new position — ×2–4 on the subject or group. Detail — ×5–15: eyes, a trigger, a lighter flame, a wheel, a pilot's helmet.
+  4. Time is continuous: the movement continues from the same phase (a gesture, a turn, a car passing, a burst of flame),
+     with neither a jump forward nor a repeat at the seam.
+  5. Insert length: a step in a series 6–7 frames @20 fps (0.3–0.35 s ≈ 8 frames @25 fps); a detail with a return — 21 frames @25 fps
+     (0.84 s); inserts that end the excerpt — from 0.8 to 2.8 s. The return goes back to the same main shot
+     with the same framing: in all three examples with a return, scale 1.000 and shift ≤ 0.04 % of the frame.
+variants:
+  - a step closer on the axis: wide → medium of the same subject ×1.3–2 (dance, gesture, performance), the same angle
+  - ladder of axial inserts: wide → ×1.34–1.58 → ×2.6–2.7 → ×1.34–1.58 again → wide; the outer steps 0.3 s each, centered on the face; the tightest shot holds for 0.35–2.25 s; the steps are exact enlarged crops of the wide (residual after alignment 1–3 out of 255)
+  - action detail: a hand with a lighter → the flame ×7, a hand with a weapon → the finger on the trigger ×12–15, a hand on an object → the object; the key thing happens on the detail (the flame flares up, the finger squeezes)
+  - face detail: medium → eyes ×2.8 for 0.84 s (a blink, a glance) → back
+  - insert from a new position: a wide through the foreground (flowers, a corridor, a crowd) → the subject or group ×2–4 from a different angle and with different light
+  - insert on a moving object: a passing car ×3.6 — the object crosses the frame and leaves, an empty background remains
+  - insert hidden in a "wipe": a hand, shoulder or body passes in front of the lens for 8 frames (brightness −40 %, saturation +30 %), and from behind it — a close-up of the face
+  - reverse insert (cut-out, reveal): detail → wide shot ×1/4.7–1/20 — a butterfly in a hairdo → the whole figure (1 frame of white flash), feet → a square of hundreds of people, a swing of a club → a person on a car roof in the middle of an empty canal
+status: footage
+fallback: |
+  No separate close-up — crop from the main shot: an axial insert up to ×1.5 from 1080p and up to ×2.7 from 4K
+  (sharpening; at ×2+ on 1080p — upscale the fragment); center on the target, the face in the upper third of the crop.
+  A ×5+ detail cannot be made by cropping — search the source footage for a take with the same thing in close-up (find_detail) or generate
+  a close-up of the detail from a frame of the main shot (same light, color and action) with the user's consent.
+params:
+  scale: axial 1.3–3.6 (typically 2); from a new position 2–4; detail 5–15 (typically 7–10); reverse insert ×1/4–1/20
+  target: track(face | hand | object:<name>); axial — window centered horizontally ±0.03, the face at 0.32–0.39 of the crop height
+  main_before: 0.45–2.3 s (11–56 frames @25 fps) — the viewer must have time to read the place
+  insert_len: a step in a series 0.3–0.35 s (7–9 frames @25 fps); detail 0.5–1.5 s (12–38 frames), typically 0.84 s (21 frames); final insert up to 2.8 s
+  ladder: scales 1 → 1.35–1.6 → 2.6–2.7 → 1.35–1.6 → 1; steps of 1/8–1/4 beat each, the tightest holds for 1–4 beats
+  continuity: cutting on action — the phase of movement at the seam matches (±1 frame), time is continuous
+  transition: a 0-frame cut (main option) | 2-frame dissolve | 1 frame of white flash (+70 brightness, saturation −30) | foreground wipe of 8 frames
+  return: back to the same main shot with the same framing — after 1 insert or after 2–3 details in a row
+when: |
+  Product and explainer: when an item or a step is mentioned — a detail in the hands, a button, a texture (0.5–1.5 s), then back
+  to the speaker. Drama and teaser: the detail the scene hinges on (eyes, a hand on the trigger, a key, a flame) — on a pause
+  or at the climax of the action. Music: a step closer on the axis on the downbeat, a ladder of inserts on 1/8 before the drop,
+  the tightest step — on the drop. A reverse insert — to reveal the scale or an absurd location in the hook
+  and at turning points. No more than 1 insert per 3–5 s of speech, a detail series — 2–3 details in a row, then back to the main shot.
+avoid: |
+  An insert unrelated to the meaning or the line — it distracts. A detail that was not visible or mentioned in the main
+  shot — the viewer loses track of where it is. A shot-size jump below ×1.3 (looks like a framing mistake; that is already
+  zoom.punch). A broken action phase at the seam (a repeated or skipped movement), different light and balance for no reason.
+  A ×2+ crop from 1080p without upscaling — mush. Inserts more often than once every 2 s in speech genres — they chop up the narrative.
+sfx: the main shot's sound runs continuously through the insert (it is the same moment); the detail can be emphasized with a close-up sound of the object — a click, a strike, fabric rustle, a button sound — on the insert frame; in a ladder — a short hit or bass on each step, on the return — no sound or an "exhale"
+genres: {product: signature, drama: signature, explainer: signature, fashion: signature, teaser: signature, ugc: allowed, motivation: allowed, sport: allowed, travel: allowed, epic: allowed, viral: allowed, fanedit: allowed, clips: allowed, phonk: allowed, calm: allowed}
+detect: |
+  A cut (ed_motion cut or a frame-difference jump ≥ 3× the neighbors) after which frame B is an enlarged part of frame A:
+  multi-scale template search (B scaled down by s inside A) gives a correlation peak ≥ 0.8 at s = 1.3–4 —
+  an axial insert; a residual after alignment of 1–3 out of 255 — the insert was made by cropping. From a new position: the palette is close
+  (hist 0.2–0.6), the same person or object (face, clothes, color) takes up 2–15 times more. The strongest cue —
+  A → B → A: the main shot returns with the same framing (ORB alignment of the A frames before and after the insert: scale 1.00,
+  shift ≤ 0.5 %, inlier ratio ≥ 0.8). Ladder: 2–4 cuts in a row with a scale of ×1.3–1.7 per step and a mirrored
+  return. Unlike cut.jump: there the framing is the same (s ≈ 1) and time jumps. Unlike zoom.punch: a punch is a digital
+  zoom-in ×1.1–1.35 within a shot as an accent on the beat, an insert is a new shot on the target at ×1.3+. Unlike zoom.crash: there
+  the zoom movement is visible, with blur. Unlike cut.flash: a flash insert is shorter than 6 frames. Unlike cut.match: there the place changes.
+engine: |
+  cut_in(main, at, dur=0.84, target=track(face|hand|object:<name>), scale=2|'auto', source='crop'|'clip:<id>',
+         match_action=True, transition='cut'|'dissolve:2f'|'flash:1f'|'fg_wipe:8f', return_to_main=True)
+  — source='crop': transform(scale=S, center=target, t=[at, at+dur], ease='hold') + sharpen; S>1.5 on 1080p → upscale;
+  — source='clip': find_detail(clips, of=target, min_scale=2) looks for a close-up of the same thing; align_action(main, insert,
+    by='motion_phase') butts the movement phases together (±1 frame).
+  Ladder: insert_ladder(scales=[1, 1.4, 2.65, 1.4, 1], per='1/8', hold_peak='1/2', center=track(face), face_at=0.35).
+  Reverse insert: cut_out(detail, wide, at=beat) — first the detail, then the wide; + flash(color='white', dur=1/25).
+  + sfx(kind by object: 'click'|'impact', at=at, align='attack') on a detail.
+gen_hint: "extreme close-up insert of <detail: hands / object / eyes> from the same scene as <wide shot description>, same lighting, same color palette and same moment of action, shallow depth of field, the detail fills the frame"
+commands: ["detail insert on the product when I name it", "on #3 cut in to a close-up of the hands with the lighter and go back to the wide", "a ladder of push-ins by cuts on the face before the drop", "start with the detail, then reveal the wide shot"]
+related: [cut.jump, zoom.punch, zoom.crash, cut.flash, cut.match, shot.extreme_close_up, shot.close_up, trans.wipe, zoom.out]
+evidence: {examples: 18, sources: "18 (one each from different works)", measured: "frame by frame with our own script: cuts by frame-difference jumps, scale and position of the insert — by multi-scale template search (reliable in 6: ×1.34, ×1.58, ×2.0, ×2.6–2.7, ×2.8, ×3.56, window center 0.43–0.53 horizontally) and by the size of the subject or object in the rest (≈×2–15, estimates); exact crops in two ladders (residual 1–3); return to the main shot with the same framing in 3 of 3 (scale 1.000); continuity of action at the seam — visually in 6 scenes with movement; lengths: steps 6–7 frames @20 fps, detail with a return 21 frames @25 fps, the other inserts are cut off by the end of the excerpt (≥0.7–2.8 s); transitions: 15 hard, 1 dissolve of 2 frames, 1 white frame +70 brightness, 1 wipe of 8 frames; 3 of 18 are reverse (detail → wide)", confidence: high}
+---
+id: cut.jump
+family: cut
+group: editing
+level: B
+aliases: [jump cut, jump, time jump, elliptical cut, choppy cut, jump cut with punch-in, punch-in jump cut, cut out pauses]
+what: a cut within one camera setup with a chunk of time removed — the background stays put while the subject's pose, position or surroundings change in a jump; it compresses speech and action, shows that time has passed, sets a nervous rhythm
+frames: |
+  1. The base is one shot with a static camera (tripod, a mount on a car or a wall) or an almost static handheld one.
+     The background on both sides of the cut matches: in 30 of 69 measured joins scale 0.996–1.003 and shift ≤ 0.3 % of the frame;
+     with a handheld camera scale 0.97–1.02, shift 2–8 % of the frame, roll ≤ 1°.
+  2. A chunk is cut out of the action: the subject's pose, gesture, position or distance to the camera "jumps". Sometimes
+     the surroundings jump — the light (night → morning, blue dusk ↔ golden sunset), wall color, people around, an object nearby.
+  3. At the join the change in the frame is 3–15 times larger than the normal frame-to-frame change in a moving shot and 20–85 times in a static one;
+     the changed area is the subject itself (5–70 % of the frame), the rest does not move.
+  4. Piece length: in a rhythmic series 5–20 frames @25 fps (median 12.5 frames ≈ 0.5 s, sometimes an even grid of 6+6+6+6 frames
+     of 0.24 s each); in a narrative "time passes" series — 21–44 frames (0.85–1.75 s). A series is 2–7 jumps, the last piece
+     is usually longer (1.3–1.75 s) or gives way to a close-up.
+  5. The join is hard (0 frames) in 19 of 24 examples; in the rest — 1–3 frames of white flash with a "ghost" of both poses
+     (brightness +38…+52 out of 255, saturation −10), or the jumps are hidden in a continuous camera spin with blur.
+variants:
+  - pose after pose: the camera stays still, between cuts the subject lies, sits, stands, moves around the sofa or the room; a group or choreography rearranges in jerks
+  - time passes: the same frame, but the light and the time of day have changed, someone has left, it has got dark outside; pieces of 0.85–1.75 s
+  - leaving or arriving: with each cut the subject is closer or farther across a field, along a corridor, down a street — the journey without the movement itself (the figure's height changes 1.5–2.1 times per cut)
+  - the world around a fixed frame: elevator doors open on different floors, a camera on a car — the landscape changes, an object or an animal "pops up" or jumps in the frame
+  - look change on the rhythm: glasses, clothes, an accessory or even a different person in the same composition on every beat (6 frames @25 fps)
+  - nervous handheld: a scene or dialogue shot handheld, pieces of 0.3–0.8 s, the frame shifts by 2–8 % between them
+  - jump with a punch-in: shot size alternates ×1.0 ↔ ×1.14–1.29 (centered on the face in the middle of the frame) on every cut of a talking head or a wide-angle selfie; inside a piece there may be a quick zoom-in ×1.13 over 4 frames
+  - soft: 1–3 frames of white flash or a dissolve with doubled poses — for a dream, waiting, a memory
+  - jump in a blur: the camera spins continuously around the subject with the background blurred, while the pose jumps at the joins — the jump is only 1.5–2.6× the frame-to-frame change and drowns in the overall motion
+  - continuous zoom-in: a slow digital zoom-in ×1.2 over 1.3 s runs over the whole series of jumps, the scale does not jump at the joins
+  - through a blink: the eyes close in one time and open in another (extreme close-up, the light or the age has changed)
+status: code
+fallback: |
+  Handheld camera without a common background — first stabilize + align the pieces by the background (crop ×1.05–1.1), then cut.
+  A change of look, place or time within the same framing is needed but there are no such takes — search the source footage for series of shots with
+  a matching setup (find_same_setup); none of those either — generate several clips from one starting frame (the same
+  angle and lens, a different pose, clothes or light) with the user's consent.
+params:
+  remove: speech — pauses > 0.25 s and filler words (a cut of 0.15–1.5 s); action — 0.3–5 s, the pose must change noticeably; "time passes" — minutes and hours (a change of light)
+  segment: rhythmic series 5–20 frames @25 fps (0.2–0.8 s), typically 10–14 frames (0.4–0.55 s); talking head — by phrases, 1.5–4 s; "time passes" 21–44 frames (0.85–1.75 s); final piece 1.3–1.75 s
+  grid: on the beat at 110–125 BPM (0.48–0.55 s, 12–14 frames) or on 1/8 (6 frames @25 fps); in speech — on word boundaries
+  framing_match: the background matches — scale 1.00 ± 0.03, shift ≤ 3 % of the frame (tripod ≤ 0.3 %), roll ≤ 1°; nervous handheld variant — shift 2–8 %
+  punch: alternate ×1.0 and ×1.15–1.3 (measured ×1.14–1.29, median ×1.23), centered on the face track(face); less than ×1.15 reads as a mistake
+  jump_magnitude: the change at the join ≥ 3× the normal frame-to-frame change (otherwise it looks like a dropped frame)
+  soft: 0 frames (main option) | a flash of 1–3 frames — brightness +40…+50, saturation −10, overlay of both poses 30–70 % | a dissolve of 2–3 frames
+  series: 2–7 jumps in a row; then a hold or a change of technique
+  audio: speech is cut together with the picture with a 10–20 ms micro-crossfade; the music runs continuously on top
+when: |
+  Talking head (UGC, explainer, viral): cut out pauses, breaths and slips of the tongue, a cut every 1.5–4 s, a punch-in on every other
+  cut — the pace rises and the jump looks intentional. Hook: the first 1–3 s — 2–4 jumps of 6–10 frames each.
+  Music: a series of jumps on the beats in a verse or on the drop — a change of pose, look or place on every 1/4 (or 1/8 at the peak).
+  "Time passes": waiting, boredom, work, night → morning, getting ready, a workout — 2–5 pieces of 0.85–1.75 s from a tripod.
+  Progress: walking off into the distance, rearranging, "before/after" in one frame. No more than 2–3 series per 30 s of a music-driven video.
+avoid: |
+  The frame shifted by 10–30 % between pieces or the shot size changed by less than ×1.15 — it reads as a mistake, not a technique
+  (match by the background or make an obvious punch-in). Too small a jump (almost the same pose) — looks like a dropped frame.
+  A cut in the middle of a word or syllable, clicks without a crossfade. Hard jumps in a calm, luxury or mournful tone —
+  only the soft variant. More than 6–8 punch-ins back and forth in a row (causes motion sickness). Different light and balance in adjacent pieces for
+  no reason. Jumps where continuity of action matters to the viewer (a stunt, a goal, a product demo in action).
+sfx: in speech — no separate sound, joins on word boundaries with a 10–20 ms crossfade; in music — cuts on the beats, on a look change a short "click" or an 80–150 ms whistle on the join; the soft variant with a flash — a light hit or a film "rustle"; "time passes" — a ticking clock, ambience or the scene sound fading out on each jump
+genres: {ugc: signature, explainer: signature, viral: signature, fashion: signature, clips: signature, fanedit: allowed, phonk: allowed, teaser: allowed, drama: allowed, product: allowed, travel: allowed, sport: allowed, motivation: allowed, calm: allowed}
+detect: |
+  ed_motion often misses such a cut (same palette, hist < 0.5) — a custom check on frame pairs is needed: a jump in frame
+  difference ≥ 3× the median of neighboring pairs (ignore held frames), while ORB+RANSAC alignment of the last frame of A and
+  the first frame of B on the background holds (inlier ratio ≥ 0.4, scale 1.00 ± 0.03, shift ≤ 3 %; handheld — ≤ 8 %), and
+  the residual after alignment is concentrated on the subject (5–70 % of the frame). The palette is usually the same (hist < 0.3), except for jumps
+  with a change of light (up to 0.6–0.95). Punch variant: background scale at the join 1.14–1.3 centered on the face, alternating.
+  Soft: 1–3 frames with a brightness jump of +40…+50 and doubling. Series: 2+ such joins with pieces of 5–44 frames.
+  Unlike cut.match: there the place and background change, only the subject's shape or pose matches. Unlike cut.insert: an insert is
+  the same moment, tighter (×1.3–15), time does not jump. Unlike zoom.punch: a punch-in within a continuous take, the pose does not jump.
+  Unlike cut.stutter: a stutter repeats frames already shown (time goes back), a jump only goes forward. Unlike cut.quick: there different
+  shots and angles. Unlike time.fast_motion: the motion is continuous, without breaks.
+engine: |
+  jump_cut(clip, remove=[[t0, t1], ...] | auto='silence'|'fillers'|'beats'|'action', min_keep=0.2, min_remove=0.15,
+           align='bg', punch=[1.0, 1.2], punch_every=1|2, punch_center=track(face), soft=None|'flash'|'dissolve',
+           soft_frames=2, snap='word'|'beat')
+  — speech: speech_segments(clip, vad=True, fillers=True, pad=0.06) → keep the segments, cut out pauses > 0.25 s;
+    transform(scale=1.2, center=track(face)) on every second piece.
+  — a series of look or place changes: jump_series(clips_same_setup[], per='1/4'|'1/8', hold_last=1.5);
+    find_same_setup(clips, tol_scale=0.03, tol_shift=0.03) looks for pieces with the same camera setup.
+  — soft join: flash(color='white', dur=2/25, gain=+45) + transition('dissolve', dur=2/25).
+  + sfx('click', at=cut, align='attack') only for a look change to music.
+gen_hint: "locked-off static camera on a tripod, identical framing and lens in every clip: <subject> in <place>; several short clips where the subject changes pose / position / outfit or the light changes between clips, background perfectly still, for a jump-cut sequence"
+commands: ["cut the pauses out of the talking head with jump cuts, a punch-in on every other cut", "a series of jump cuts on every beat: a look change every 6 frames", "show the waiting on the sofa with jumps in time", "a jump cut with a white flash between the poses in #3"]
+related: [cut.match, cut.insert, zoom.punch, cut.stutter, cut.quick, time.fast_motion, trans.dissolve, address.direct]
+evidence: {examples: 24, sources: "≈24 (one example each from different works)", measured: "22 of 24 analyzed frame by frame with our own script (frame difference, ORB+RANSAC on the background): 69 joins (including the frames of soft transitions) — 30 with a static background (scale 0.996–1.003, shift ≤ 0.3 %), ≈10 with handheld drift (scale 0.97–1.02, shift 2–8 %), 3 punch-ins ×1.14–1.29 centered on the face, the rest — an angle change or low background texture; 38 inner pieces — 5–44 frames @25 fps, median 12.5; jump 3–15× (moving shot) and 20–85× (static) relative to the frame-to-frame change; soft joins — 1–3 frames of flash +38…+52 brightness in 3 examples; the removed time is not measured directly; the figure's height in the \"leaving\" variant changes 1.5–2.1 times per cut", confidence: high}
+---
+id: cut.match
+family: cut
+group: editing
+level: B
+aliases: [match cut, match editing, graphic match cut, shape match cut, visual rhyme, graphic match, same pose different place]
+what: a cut in which two different shots share the main thing — the shape, the subject's pose and position, an object or the composition; the world around changes while the eye sees continuity and a "rhyme"
+frames: |
+  1. Shot A reaches the moment when the key element sits in a precisely set place: a round object in the center,
+     the subject's head from behind in the center, a pose of the hands, the lines of a row or an arch, an object on a white background.
+  2. The cut lands exactly on that frame (hard; less often a 2–6 frame dissolve). In shot B the element is the same size
+     and at the same point: a ball → another round thing (a record, a target, a game chip, a planet), a drawing of a tree →
+     a real tree on a hill, a graffiti eye → a living eye, rows of a vineyard → corrugated roofing →
+     field markings, a tunnel arch → cathedral vaults, a bullet → a megaphone → a spray can (elongated objects on white).
+  3. Subject version: the same person in the same pose and shot size, but the place, time, outfit or
+     reality has changed — the back of the subject's head in the center in a bakery → a train car → a bookshop; a couple on a bicycle among tulips →
+     on a snowmobile in the mountains; the heroine's face against different worlds; different people in the same bed seen from above.
+  4. Series: 2–6 such cuts in a row at 0.4–1.5 s per shot, usually on every beat; the movement (a step, a turn,
+     a gesture) continues through the cut at the same speed.
+variants:
+  - graphic: shape and size match (a circle, an arch, parallel lines, an elongated object), the objects are different
+  - subject "same pose — different place": the subject and their pose stay the same, the world, outfit and time change
+  - object → reality: a drawing, a photo, a model → the real object in the same composition
+  - compositional: the vanishing point, the horizon, the arrangement of a group at a table match, the people and place are different
+  - detail → detail: a hand on a shoulder → a hand on fabric, a foot in a sneaker → a car wheel (by movement and position in the frame)
+  - time across the cut: the same overhead angle, a bed or a table, but different people or a different age
+  - extreme close-up match: eye ↔ circle, mouth ↔ hole, pupil ↔ tunnel
+status: code
+fallback: pairs are picked in code from the user's source footage (a search for matching shapes, poses and subject positions — see engine); if the match is imprecise, shot B is fitted to A by crop, shift and rotation (≤10 % scale, ≤5°); no pair — generate shot B from the first frame of A (the same angle and pose in a different place) with the user's consent
+params:
+  align_pos: the center of the key element matches to within 2–5 % of the frame
+  align_scale: element size ±5–15 %
+  align_rot: angle ±3–8°
+  cut_frame: the cut on the frame where the match is greatest (IoU of the element mask ≥ 0.5)
+  shot_len: 0.4–1.5 s per shot in a series (10–38 frames @25 fps), a single rhyme — 1.5–4 s before and after
+  series: 2–6 cuts in a row, typically 3–4, on beats or bars
+  dissolve: 0 (hard) or 2–6 frames (match dissolve)
+  motion: the speed and direction of the element's movement match across the cut (±20 %)
+  contrast: everything else differs strongly — color, place, time (histograms far apart), otherwise the rhyme does not read
+when: a change of place or time without losing the subject (travel "me in different cities", growing up, "years have passed"), linking ideas (drawing → reality, object → metaphor), intro and hook (a series of graphic rhymes on the beats), advertising — the product rhymes with a shape from life, music video — one gesture across different worlds; a series — on a verse or a build, a single rhyme — on a section change
+avoid: a "rough" match (a jump of 10–20 % of the frame reads as a mistake); shots identical in both shape and background (that is already a jump cut); a series of rhymes without rhythm; a rhyme that breaks the meaning of the scene; more than 6–8 cuts in a row without a breather
+sfx: at the cut — a click, a hit or bass on the beat; for graphic rhymes — a sound shared by both objects (a ball hit → a hit on a target); a sound bridge — the sound of scene A carries on into B; in a subject series — the ambience of the places changes under continuous music
+genres: {travel: signature, fanedit: signature, fashion: signature, teaser: signature, viral: allowed, product: allowed, ugc: allowed, clips: allowed, epic: allowed, drama: allowed, motivation: allowed, explainer: allowed, sport: allowed, phonk: allowed, calm: allowed}
+detect: |
+  ed_motion: a cut with high hist (> 0.5) — the shots differ in color and place — but a custom check on the last frame of A
+  and the first frame of B shows a structural match: edge-map correlation (Canny, smoothed by 3–5 px) > 0.3,
+  IoU of the main object mask (saliency / person mask) ≥ 0.5, the center of the subject's or face bbox shifted ≤ 5 % of the frame,
+  size ±15 %. Series: 2+ such cuts in a row with a similar placement of the element.
+  Subject version: the face/person embedding is the same, the pose (keypoints) almost the same, the background different.
+  Unlike cut.jump: in a jump the background and place are the same, the time or pose changes. Unlike cut.vector_match: there what decides is
+  the motion vector on both sides of the seam (cos ≥ 0.55, speed ≥ 0.3 %/frame), the shape can be anything; here it is
+  the match of shape and position in the cut frame with any motion, even zero; if both match — both tags. Unlike trans.morph: there
+  in-between frames flow smoothly into each other. Unlike trans.dissolve: there is no shape match there.
+engine: |
+  match_cut(a, b, on='shape'|'pose'|'position'|'object'|'vanishing_point', anchor_a=track(...), anchor_b=track(...),
+            align=True, tol_pos=0.04, tol_scale=0.12, tol_rot=6, at='best_overlap', dissolve=0)
+  — searches a ±0.5 s window for the frame of maximum match and fits B to A with transform(scale, shift, rotate);
+  finding pairs in the source footage: find_matches(clips, by='silhouette'|'circle'|'lines'|'pose'|'face', top_k=10);
+  series: match_chain(clips[], on='pose', per_link=beat, anchor=track(person)) — "same pose, different places";
+  + sfx('impact'|'click', at=cut, align='attack').
+gen_hint: "two shots for a match cut: <shot A description>; shot B shows <new place or object> with the same <shape | pose | composition>, identical framing, subject in exactly the same position and size, same camera angle and lens"
+commands: ["a series of \"same pose — different city\" cuts on every beat", "find a rhyme for the ball in #3 in the source footage", "match-cut the drawing to the real house by shape", "match cut between #2 and #3 on the face"]
+related: [cut.jump, trans.morph, trans.dissolve, trans.hidden_cut, layout.frame_division]
+evidence: {examples: 60, sources: "≈50 (different works, judging by appearance)", measured: "only a visual review of about 60 examples from the section at 5–7 points of each animation (scripted frame capture was blocked by browser permissions); match types were counted from frames, alignment accuracy and shot durations are \"≈\" estimates, not measured", confidence: medium}
+---
+id: cut.quick
+family: cut
+group: editing
+level: B
+aliases: [quick cuts, fast cutting, rapid cutting, rapid-fire montage, hip hop montage, quick cutting, music-video-style cutting, burst of cuts, machine-gun editing]
+what: a burst of 3–20 short shots in a row, 2–15 frames @25 fps each (0.07–0.6 s) — each holds one action, detail or face, the cuts hit the beats or the hits of the action, and the burst usually discharges into a long held shot
+frames: |
+  1. Lead-in: the normal pace (1–3 s per shot) or a long shot — the burst needs contrast to be "heard".
+  2. Burst: 3–20 shots in a row, 2–6 cuts per second (median across examples ≈3). Piece length — 2–15 frames @25 fps:
+     overall median 0.2 s (5 frames), the middle of the distribution 0.14–0.35 s (3.5–9 frames), 10 % shorter than
+     0.07 s (1–2 frames), 10 % longer than 0.49 s (12 frames); the median of a single burst — from 0.14 to 0.6 s, typically 0.3 s.
+     Within a burst the lengths are multiples of one unit: in an even series 3–4 pieces in a row of the same length (0.4/0.4/0.4 s,
+     0.32/0.32 s, a 0.14 s pulse), in a musical one — 1 or 2 units (0.16 and 0.32 s, 0.2 and 0.3 s).
+  3. Each piece is one thought: a complete micro-action (pressed, turned, splashed, zipped up), one detail
+     of the place, one face or one shape; a close-up or an extreme close-up, the object in the center. The cut comes right after
+     the peak of the action: the hit + 0.14–0.28 s of follow-through (≈3–7 frames: a bounce, a splash, a blur), never before the peak.
+  4. Acceleration (in 5 of 18): toward the climax the pieces get 3–7 times shorter — 0.5 → 0.07 s, 0.35–0.55 → 0.1–0.15 s;
+     at the peak — 1–2-frame inserts (a burst of fire, a flare, a black frame), then the result.
+  5. Landing (visible in 6 of 18, in the rest the clip ends earlier): the burst ends with a hold of 0.84–2.3 s
+     (typically 1.2 s, 2.5–10 times longer than the average piece) — a reaction face, a wide shot of the place, the result of the action.
+variants:
+  - routine or process: 3–6 close-ups of hands and objects at 0.28–0.77 s (7–19 frames), one action per piece, in process order; the sound of each action is exaggerated; landing on a face or a wide shot
+  - mechanism from inside: parts, pistons, a spark, a burst of fire filling the frame — pieces of 0.07–0.21 s accelerating toward the burst, plus a result shot (a gauge needle, a start)
+  - graphic strobe: 1–2-frame pieces (an even 0.14 s pulse) of abstract images with repeating shapes (a dome, a triangle, a profile) and alternating warm and cold, up to 7 cuts per second; landing of 1.2 s
+  - musical pulse: 0.16–0.4 s, lengths of 1 or 2 grid units; two angles alternate A-B-A, 1-frame returns to the previous shot, flares on the cuts, axial jumps "wide → closer → closer" at 0.25 s each, whip blurs as joins
+  - burst of reactions: 6–8 different faces at 2–3 frames each (0.1–0.15 s), the main character returns every other piece, the ending — an extreme close-up of an eye or a face
+  - parallel burst: two lines of action alternate at 0.25–0.3 s, at the climax pieces of 1–2 frames (0.05–0.1 s), afterwards 0.4–0.6 s again (V-shaped pace)
+  - accelerating montage: over 5–7 s the length drops from 0.5 s to 1 frame; on the early cuts — a one-frame overlay of two shots
+  - through black: pieces of 0.18–0.42 s separated by 1–2 black frames (0.06–0.12 s), the pauses get shorter, the ending — a long close-up
+  - details of a place: still details at exactly 0.4 s (10 frames) each, then a wide shot of 1 s or longer
+status: code
+fallback: too few different shots — cut long shots into pieces from different moments and shot sizes (crop ×1.3–2 from 4K, mirroring), alternate two angles A-B-A; no "actions" — find moments with a motion peak in the source footage (hands, objects, faces) or generate a series of extreme close-up micro-actions with the user's consent
+params:
+  shot_len: 2–15 frames @25 fps (0.07–0.6 s); typically 5–8 frames (0.2–0.32 s); strobe 2–4 frames (0.07–0.15 s); routine 8–15 frames (0.3–0.6 s)
+  unit: grid unit of 1/16 or 1/8 beat — at 120 BPM 0.125 s (3 frames) or 0.25 s (6.25 frames); pieces = 1–2 units in a strobe, 2–4 in a pulse, 4–8 in a routine
+  count: 3–20 pieces in a row, typically 4–8; strobe up to 15–40
+  cut_rate: 2–6 cuts per second (median ≈3); above 6 — only for 1–2 s
+  accel: optional — lengths drop 3–7 times toward the peak in steps (2–4 pieces of the same length, then half as long — 0.28 → 0.14 → 0.07 s); 1–2-frame inserts at the peak
+  cut_point: on the beat grid ±1 frame; in action — 0.14–0.28 s (≈3–7 frames) after the motion peak
+  landing: a hold of 0.8–2.3 s (typically 1.2 s = 30 frames), no shorter than 2.5× the average piece length of the burst
+  framing: close-up and extreme close-up, the object in the center; the centers of attention of adjacent pieces within ≈0.2 of the diagonal
+  contrast: in a routine adjacent pieces are close in brightness (|ΔL| ≤ 20 out of 255); in a strobe and a parallel burst — light/dark alternation (|ΔL| 40–75)
+  inner_motion: 64 % of pieces have motion inside; still pieces (faces, details, graphics) — only on a strict grid
+  bridges: optional 1–2-frame joins — black (0.04–0.12 s), a flare or a flash (0.04–0.3 s), a 1-frame overlay, a whip blur of 2–4 frames
+when: |
+  The build before the drop (the burst accelerating into the hit), the drop itself (a pulse on 1/8), "getting ready" and processes (dressing, cooking,
+  repairs, preparing gear), introducing a place (details → wide shot), a crowd's reaction to an event,
+  the climax of parallel action, the hook of the first 1–2 s. Limit: 1–2 bursts of 1–4 s per 30 s of video, with
+  at least 3–4 s of calm pace between them; after a burst — a landing on an important shot.
+avoid: the same length with no landing for longer than 4–5 s (tiring, the hit gets lost); small details and text on pieces shorter than 0.3 s (they do not read); wide shots with different centers of attention on pieces shorter than 0.25 s; a cut before the peak of the action; random off-grid lengths over music; shots that need the character's line or emotion (they need 1 s or more); a calm and contemplative tone
+sfx: |
+  Routine: each piece gets its own short exaggerated action sound (a click, a splash, a zipper, a hit) exactly on the cut
+  or the peak, louder than real life; the musical version — cuts on the kick and hi-hats, no extra effects; before the landing —
+  the sound stops or an inhale, on the landing — a hit or silence; 1-frame inserts and black joins — a tick, a glitch or
+  a bass hit; acceleration — a riser over the whole burst.
+genres: {viral: signature, fanedit: signature, clips: signature, phonk: signature, sport: signature, teaser: signature, travel: signature, ugc: allowed, motivation: allowed, product: allowed, fashion: allowed, epic: allowed, drama: allowed, explainer: allowed, calm: forbidden}
+detect: |
+  Custom segmentation on 64 px thumbnails: a cut if the frame correlation with a shift of up to ±4 px is < 0.45 or
+  the HSV histogram distance (Bhattacharyya) is > 0.45 with a correlation < 0.7 — on 18 examples precision 0.80, recall
+  0.83 (misses — one-frame overlays and joins within one palette; false positives — strong blur); ed_motion: the list of
+  cuts gives 0.75/0.80. Check doubtful pairs with blur by sharpness and content.
+  Signature of the move: 3+ pieces in a row no longer than 15 frames @25 fps (0.6 s) with a median ≤ 0.35 s; in 5 of 18 the series
+  contains 1–3-frame black, white or flared pieces (ed_motion: black / flash / white); at the end — a hold ≥ 0.8 s.
+  Unlike cut.flash: there a stream of 12+ different images at 1–2 frames each (8–25 changes per second), usually with the point of interest in one place of the frame; here pieces of 3–12 frames, and they are ordinary shots.
+  Unlike cut.stutter: there the same fragment repeats; here every piece is new (an A-B-A return is a different moment).
+  Unlike cut.jump: there the same angle and background with a jump in time (axial jumps are a borderline case).
+  Unlike cut.vector_match: there the continuity of camera motion across the cut matters, the length is secondary.
+  Unlike time.step_print: there phases of one shot freeze, with no new shots.
+engine: |
+  cut_series(clips[], n=4–8, unit='1/8'|'1/16', lengths=[2,2,1,1,...] (in units) | pattern='even'|'accelerate'|'v'|'alternate',
+             snap='beat'|'action_peak', order='process'|'contrast'|'alternate_ab', bridge=None|'black'|'flash'|'mix1',
+             landing={clip, dur: 1.2}) — new primitive; lengths are computed from beat times, not as a sum of frames
+             (1/8 at 120 BPM = 6.25 frames → 6-6-6-7); minimum piece 2 frames (1 — only for flashes and inserts).
+  action_peak(clip, by='motion'|'audio') — new: the time of the motion peak in a piece; cut = peak + 0.14–0.28 s.
+  pick_hits(source, n, min_motion=3, scale='close', dedupe=0.9) — new: candidates from the source footage (close-ups,
+  motion peak, no repeats). Joins: fade(to='black', dur=0.04–0.12) | flash(color='white', dur=0.04) |
+  transition('dissolve', dur=0.04). Sound: sfx('click'|'impact'|'whoosh', at=cut, align='attack'); landing —
+  sfx('impact') or duck(music) for 0.3 s. Stepped acceleration: 2–4 pieces of length L, then L/2, until it reaches 2 frames.
+gen_hint: "a set of separate 1-second extreme close-up shots for a fast-cut montage: <hand zips a jacket>, <finger presses a button>, <water splashes into a sink>, <key turns in a lock>; each shot shows one short decisive action centered in frame, fast shutter, strong clear motion, consistent lighting and color, plain background"
+commands: ["quick cuts of getting ready: one shot per action and a landing on the face", "accelerate #3–#9 into the drop — from a half-beat down to 2 frames", "a burst of reactions at 3 frames each between #12 and #13", "cut the details of the place at 0.4 s each, then a wide shot for a second"]
+related: [cut.flash, cut.stutter, cut.jump, cut.insert, cut.vector_match, cut.match, cut.dance, time.speed_ramp, time.step_print, trans.whip, zoom.punch]
+evidence: {examples: 18, sources: 18, measured: "frame-by-frame segmentation of 18 clips (source 10–25 fps, accuracy ±1 frame = 40–100 ms): 168 complete pieces — median 0.2 s (5 frames @25 fps), IQR 0.14–0.35 s, p10 0.07 s, p90 0.49 s, maximum 0.9 s; burst medians 0.14–0.6 s (median 0.3 s); 1.35–6 cuts/s; landing of 0.84–2.3 s in 6 of 18; acceleration in 5 of 18; adjacent pieces by brightness |ΔL| 8–21 in routines and 40–74 in strobes; motion inside in 64 % of pieces; the cut 0.14–0.28 s after the action peak (≈, 5 examples); no sound — the link to the beats was inferred from the regularity of the grid (0.4/0.4/0.4, 0.16/0.32, 0.14, 0.25 s), not from audio", confidence: high}
+---
+id: cut.stutter
+family: cut
+group: editing
+level: B
+aliases: [stutter, stutter edit, frame stutter, loop stutter, stuck motion, motion loop]
+what: the motion "gets stuck" — a 3-frame fragment repeats 7–9 times in a row (about a second), a run, a gesture or a swing twitches in place at ≈8 Hz, then comes a cut, or the motion is released and carries on
+frames: |
+  1. Lead-in: 0–8 frames @25 fps of normal motion (0–0.32 s) — or the stutter starts right from the cut.
+     The fragment is taken from the last frames before the stopping point, when the camera has almost come to rest.
+  2. Loop: 3 frames (0.12 s) repeat 7–9 times in a row — 21–27 frames, 0.84–1.08 s, about two beats at
+     120 BPM. A runner, a dancer's arm, a racket swing get stuck in one phase and vibrate at ≈8.3 Hz.
+     At the loop seam the frame jumps back: the difference between adjacent frames is 1.4–2 times the normal step —
+     this jump is what makes the "stutter" visible.
+  3. Repeats: exact copies (1 of 3 examples), or a slow digital zoom-out continues over the loop —
+     scale ×0.997 per cycle, ×0.976–0.977 over 18–24 frames (about −0.1 % per frame): the action is stuck
+     while the frame keeps breathing (2 of 3).
+  4. Exit: a cut to the next shot, which immediately stutters with its own loop (a chain of two stutters of
+     ≈1 s each); or the loop releases the motion — 3–4 frames of slowdown and normal playback; or the loop spreads apart,
+     and for another half second every third step is bigger than the rest (×1.3) — residual twitching.
+variants:
+  - "clean loop: 3 identical frames × 8–9, then a cut"
+  - "stutter chain: two shots in a row, each with its own loop of ≈1 s, the second one stutters from its first frame"
+  - "loop with drift: the repeats run under a slow zoom-out of ≈2.3 % per second — the action is stuck, the camera is alive"
+  - "spreading loop: the repeats gradually drift apart, and the loop flows into normal motion with a twitch every 3 frames"
+  - "short hiccup (from editing practice, not in the sample): 2–6 frames × 2–4 repeats on a single hit"
+status: code
+fallback: it needs a shot with large fast motion (running, dancing, a swing, a hit) — 2–5 % of the frame per frame; if the motion is small, the loop is not visible — take another piece from the source footage or boost the shot with a ×1.2–1.5 crop on the moving object; no suitable action — generate a short shot with a repeated sharp movement with the user's consent
+params:
+  fragment: 3 frames @25 fps (0.12 s) — in all 4 measured loops; in practice 2–6 frames (0.08–0.24 s), length = 1/16 beat (exactly 3 frames at 125 BPM)
+  repeats: 7–9 in a row (0.84–1.08 s) — measured; short hiccup 2–4 repeats (≈)
+  lead_in: 0–8 frames of normal motion before the loop; place the loop point when the camera has almost stopped
+  seam_jump: the jump at the seam is 1.4–2 times the normal step; motion within the fragment at least 2–5 % of the frame per frame, otherwise the stutter does not read
+  repeat_mode: exact (exact copies) | drift — zoom-out ×0.997 per cycle (≈ −0.1 % of scale per frame, ×0.976 per second), centered on the frame center
+  exit: cut (a cut; the next shot may stutter on its own) | release (3–4 frames of slowdown → normal speed) | decay (the repeats drift apart, 0.5 s of twitching every 3 frames)
+  chain: up to 2 stutters in a row of ≈1 s each
+  sync: fragment length = 1/16 or 1/32 beat of the track; the loop starts on a beat and ends on the next downbeat
+when: |
+  On an audio stutter or roll in the track (a repeated syllable, a drum roll, a glitch-chopped sample), in the build before
+  the drop, at the peak of a dance move or a hit, when you want to "suspend" the subject for a second. Works well with running,
+  dancing, sport, flapping fabric. Limit: 1–2 stutters (or one chain of two shots) per 30 s of video.
+avoid: small or slow motion — the loop reads as the video freezing; on-screen speech (the mouth "stutters" without sound); a loop longer than 1.5 s — it turns into a GIF; a stutter that misses the sound event; strong camera movement during the loop — the whole frame jerks at the seam; calm and explainer videos
+sfx: |
+  The same technique in the audio: the last syllable, a hit or a 1/16 slice of the track's sample repeats in sync with the picture (the same
+  0.12 s period); or a short glitch roll or a scratch over the whole loop; on the exit — a hit or the track coming back on the beat.
+genres: {fanedit: signature, phonk: signature, viral: allowed, clips: allowed, teaser: allowed, fashion: allowed, sport: allowed, ugc: allowed, motivation: allowed, epic: allowed, drama: allowed, calm: forbidden, explainer: forbidden, travel: forbidden}
+detect: |
+  Custom check (the main cue): frame i ≈ frame i+N for N = 2–6 over 4+ repeats in a row — the difference over the moving
+  area ≤ 0.5 of the normal step between adjacent frames (≈0 in an exact loop, 0.15–0.7 with drift); the autocorrelation
+  of adjacent-frame differences peaks at lag N (N = 3 in the sample); at the seam point — a jump 1.4–2 times the
+  normal step. The drift of the repeats is measured with ECC: scale ×0.997 per cycle.
+  ed_motion: periodic one-frame SHIFT or ZOOM events every N frames against the direction of motion
+  (backward jumps of 4.7–4.8 % of the frame every 3 frames for a runner), high x_dir_flips and jitter_pct > 1 % with no cuts
+  inside the shot; no holds — the frames do not freeze, they repeat in a cycle.
+  Unlike time.boomerang: there a 0.25–1 s segment plays forward and then mirrored backward, the difference profile is symmetric;
+  here a short fragment repeats forward only (a sawtooth) with a jump back. Unlike time.step_print: there each
+  phase freezes for 2–6 frames and playback only goes forward, with no repeating cycle. Unlike time.freeze: there it is a single frame.
+  Unlike cut.flash: there it is a new image every time.
+engine: |
+  stutter(clip, at=t, frag=3 (frames @25 fps) | frag='1/16', repeats=8, mode='loop'|'drift'|'decay', lead_in=0–8,
+          drift={scale_per_frame: 0.999, center: [0.5, 0.5]}, exit='cut'|'release'|'decay', release_frames=4)
+          — new primitive: sawtooth time remapping of the source (t_src = t0 + (t − t0) mod frag);
+          drift = transform(scale=[1, 0.976], t=[t0, t0+1.0], ease='linear') over the loop;
+          decay — each next cycle starts 1 frame later, by the end of the loop it transitions into speed(1.0).
+  + beat_sync(event='stutter', grid='1/16') — fragment length from the BPM (3 frames at 125 BPM, 4 at 94);
+  + audio_stutter(track, at=t, slice=frag, repeats) — new: the same slice repeat in the music or the voice;
+  + sfx('glitch'|'scratch', t=[t0, t0+dur]) if needed.
+gen_hint: "a short static-camera shot of <subject> doing one sharp, repeated, large movement (sprinting stride, dance arm swing, racket swing), fast shutter, crisp frames, clean background, subject large in frame — footage for a loop stutter edit"
+commands: ["stutter on #4: loop 3 frames 8 times before the drop", "make the runner stutter on the downbeat, then release into normal motion", "a chain of stutters on #6 and #7, a second each", "make the dancer stutter in sync with the glitch in the track"]
+related: [time.boomerang, time.step_print, time.freeze, cut.flash, cut.jump, fx.glitch, time.speed_ramp]
+evidence: {examples: 3, sources: 1, measured: "frame-by-frame analysis of 3 excerpts at 25 fps (2.3–4 s) from one clip: 4 loops — a 3-frame fragment (0.12 s) in all of them, 7–9 repeats (0.84–1.08 s); exact copies in 1 example (difference 0.4–0.7 out of 255), in 2 — a zoom-out ×0.997 per cycle, ×0.976–0.977 over 18–24 frames (ECC); jump at the seam 1.4–2× the normal step; lead-in 0–8 frames; exits — a cut to a second stutter, a release with 3–4 frames of slowdown, spreading apart with a twitch every 3 frames (autocorrelation at lag 3 — 0.41, at lag 6 — 0.55); the sample is narrow — one source, no sound", confidence: medium}
+---
+id: cut.vector_match
+family: cut
+group: editing
+level: B
+aliases: [match on action, motion match cut, motion vector match, continuous motion, continuous camera across cuts, movement match]
+what: cutting on the motion vector — the end of shot A and the start of shot B move in the same direction (a pan, a tilt, a push-in or pull-out, a roll, the subject itself), so different places and times read as one continuous move; the speed at the seam is held, damped or accelerated
+frames: |
+  1. Shot A moves: a sideways drift, a tilt up or down, a push-in or pull-out, a roll — or the subject moves in the frame
+     (a step, a jump, raising the arms). The cut comes mid-motion: on the last 2–3 frames of A the camera is still moving.
+  2. Seam: the head of B moves in the same direction. In 33 of 61 measured seams the direction is preserved — the cosine
+     of the shift vectors is 0.57–1.0 (median ≈0.95) or the zoom and roll have the same sign. Speed B/A: 0.65–1.5 —
+     "continuation" (15 seams, median ×1.15, B slightly livelier), 0.1–0.7 — "braking" (8), 2–5 — "acceleration" (10).
+  3. Typical speeds at the seam (@25 fps): drift 0.3 % of the frame per frame, tilt 1–3 %, fast tilt 5–8 %,
+     whip 20–30 %; pull-out 2–5 % of scale per frame, a pull-out jolt 11–22 %; spiral push-in 4–12 % + roll 3–12°/frame;
+     roll 1.5–5.5°/frame.
+  4. Rhythm: pieces of 40–2500 ms, median 400 ms (10 frames @25 fps), half of them 170–540 ms; a quarter of the pieces are flashes
+     of 1–4 frames inside fast passes. Often an even grid (all 9–10 frames each).
+  5. Links at the seam: an anchor at the same point of the frame (offset ≤ 2 % of the frame), a near object or 3–5 black frames
+     fly past the lens, 1–3 frames of blur at speeds above 5 %/frame. The series is closed by a "landing" — a shot
+     that damps the motion within 1–8 frames and holds still.
+variants:
+  - continuation drift: two views of one place (day and night, empty and with the subject) alternate every 9–10 frames @25 fps, both drift sideways by 0.28–0.34 % of the frame per frame, the anchor stays at one point (offset < 2 %)
+  - vertical pass: a tilt or crane up (down) at 1–3 %/frame through 3–4 different shots; in the fast variant 5–8 %/frame, speed ratio ×1.1–1.3
+  - spiral push-in through circles: 4–5 shots in a row, each a push-in to the center at 4–12 %/frame with a roll of 3–12°/frame in the same direction; a round shape in the center (a pupil, a dome, a bowl, a face from above), center 0.47–0.57; the ending — a sharp pull-out
+  - relaunch: every shot starts with the same jolt (a pull-out ×0.35–0.65 over 3–9 frames, peak 11–22 % of scale per frame, ease-out, center 0.5), then 0–5 frames of rest and a cut on the beat — the motion repeats rather than continues
+  - braking and landing: a whip or a fast tilt at 20–30 %/frame hands over to a shot moving the same way at 7–10 %/frame (×0.3–0.5); or an acceleration in A (pull-out up to 15 %/frame) and 1–2 frames of remaining motion in B — then a stop
+  - acceleration into a series: a slow pass (1–2 %/frame) turns into a fast pass in the same direction ×2–5, then a series of 1–4-frame flashes (book pages, textures) gradually dying down 10 → 2 %/frame
+  - pendulum: all shots rotate (roll 1.5–5.5°/frame), but the roll direction changes at every cut; pieces of 400–550 ms — craft and texture montages
+  - by the subject's movement: the camera differs, but the action continues the direction — a sandal step from above → the heroine stepping toward the camera, a jump down → a dive underwater, a hand flinging open a curtain in the direction of the pan; the camera often follows the action
+  - wipe at the lens: a column, an arch, a bed headboard, a board or 3–5 black frames pass at the seam, and the motion comes out of the wipe (sometimes already in the other direction, if it is a "relaunch" after a fade to black)
+status: code
+fallback: |
+  No pair of shots with the same motion — make up the difference in code: a digital shift, scale or roll of 5–10 % of the frame (≤5°)
+  on the last 6–10 frames of A and the first 6–10 frames of B (crop ×1.1–1.2) until the vectors match; for a "relaunch"
+  and a "landing" a transform on the head of B is enough (scale ×1.1–1.6 → 1.0 over 2–9 frames, outCubic). A static source
+  with a strong mismatch — 2 frames of directional blur at the seam. A real pass is needed — search the source footage
+  via ed_motion (type and direction of motion) or generate a shot with the specified motion with the user's consent.
+params:
+  direction_match: when building, the cosine of the shift vectors ≥ 0.75, when detecting ≥ 0.55 (0.57–1.0 in the examples, median ≈0.95); for zoom and roll — the same sign; compare the median of 2–3 frame pairs on each side
+  min_speed: both sides ≥ 0.3 %/frame of shift, ≥ 1 %/frame of zoom or ≥ 1°/frame of roll — otherwise it is not the move but an ordinary cut
+  speed_ratio: B/A 0.65–1.5 continuation (typically ×1.15), 0.1–0.7 braking (typically 0.3–0.6), 2–5 acceleration
+  speeds: drift 0.3 %/frame; tilt 1–3, fast 5–8, whip 20–30 %/frame; pull-out 2–5 % of scale/frame, jolt 11–22; spiral push-in 4–12 % + 3–12°/frame; roll 1.5–5.5°/frame (all @25 fps)
+  shot_length: 40–2500 ms, median 400 ms (10 frames @25 fps), working range 170–540 ms; flashes of 1–4 frames only inside a fast pass
+  cut_point: the middle of A's motion, not the acceleration or the braking; on a beat (1/4 or 1/2 bar)
+  anchor: an anchor (a shape, a vanishing point, the center of a circle) at the same point of the frame ±2–5 % — desirable
+  relaunch_head: pull-out ×0.35–0.65 over 3–9 frames, peak 11–22 %/frame, ease-out, center [0.5, 0.5]; rest of 0–5 frames before the cut
+  landing: the last shot damps the motion within 1–8 frames and holds still for ≥ 0.5 s
+  seam_blur: 1–3 frames of directional or radial blur at speeds > 5 %/frame or > 4°/frame
+  correction: a digital shift, scale or roll of up to 5–10 % of the frame (≤5°) over 6–10 frames at the seam, crop ×1.1–1.2
+when: |
+  Travel and "a day in 15 seconds", craft and process, music video, teaser, fashion — when many places and shots have to be carried
+  in one gesture. An even beat grid (1/4–1/2 bar) on a verse or build; accelerating the series — into the drop, braking and
+  landing — on the final shot or a downbeat; relaunch — on every beat of the chorus. A series of 3–6 seams, then
+  a breather of ≥ 1 bar; a single seam works for a change of place without losing the pace.
+avoid: opposite directions on adjacent seams without intent (it jerks; the exception is a deliberate roll "pendulum"); a cut on a still frame after motion; different types of motion (pan → push-in) without a link; a different horizon and roll in adjacent shots; pieces longer than 1.5 s — the continuity gets lost; more than 6–8 seams in a row without a landing — causes motion sickness; very dark or empty shots — the vector does not read
+sfx: a shared continuous layer (music, wind, hum) with no dips at the seams; on fast seams (> 5 %/frame) — a soft whoosh on the cut; on acceleration — a riser over the whole series; a hit or bass — on the landing of the final shot; in a "relaunch" — a short pulse on every jolt, on the beat
+genres: {travel: signature, clips: signature, fanedit: allowed, viral: allowed, epic: allowed, sport: allowed, fashion: allowed, product: allowed, teaser: allowed, motivation: allowed, ugc: allowed, drama: allowed, explainer: allowed, calm: allowed}
+detect: |
+  1. Cuts: hist > 0.35 and diff > 20 by the custom check; ed_motion reports extra cuts inside blurs (method fail/ecc,
+     few points) — re-check them; skip duplicate frames (diff < 1.5) in clips at 30+ fps.
+  2. For each cut — the median of 2–3 pairs before and after: tx, ty (% of the frame/frame @25 fps), zoom (%/frame), roll (°/frame);
+     on dark and detail-poor frames — dense flow (DIS) with a similarity fit, on textured ones — LK from ed_motion.
+  3. The move is present if the video has ≥ 2 such seams: the same type of motion, cos ≥ 0.55 or the same sign of zoom/roll, both sides
+     faster than min_speed. Mode by B/A: 0.65–1.5 continuation, 0.1–0.7 braking, 2–5 acceleration. A head of B with a jolt of
+     11–22 %/frame after ≥ 3 static frames of A, repeated at 2+ seams — relaunch; the roll sign alternates over 3+
+     seams — pendulum; the camera differs but the subject's movement (flow within the person mask) keeps its direction — by the subject's movement.
+  4. Visually: a montage of different places where "the camera never stops"; an anchor or a round shape at one point of the frame.
+  Unlike cut.match: there the shape and position in the cut frame match (mask IoU ≥ 0.5) with any motion,
+  even zero; here the motion vector decides, the shape can be anything. If both shape and motion match — put both
+  tags (a rhyme in motion). Unlike trans.whip: there the seam is hidden in 1–3 frames of solid blur > 20 %/frame with no detail.
+  Unlike zoom.infinite: there the seam is hidden by a dissolve or nesting, the push-in speed is strictly constant. Unlike trans.zoom:
+  one cut at the peak of a push-in with blur. Unlike cut.quick: cutting without matching vectors (cos < 0.3, random signs).
+engine: |
+  motion_profile(clip, at='head'|'tail', frames=3) → {tx, ty, zoom, roll} via ed_motion (DIS flow on dark frames);
+  match(on='motion', mode='continue'|'brake'|'accelerate'|'relaunch'|'pendulum'|'subject', min_cos=0.75,
+        speed_ratio=[0.65, 1.5] | [0.3, 0.6] | [2, 5]) — picks "tail of A / head of B" pairs and the order of the shots;
+  cut(at=middle of A's motion, snap='beat', grid='1/4'|'1/2');
+  mismatch → transform(shift|scale|rotate up to 0.1 of the frame and 5°, t=[cut-0.3, cut+0.3], ease='linear') on both shots;
+  relaunch → transform(scale=[1.6, 1.0], center=[0.5, 0.5], t=[cut, cut+0.3], ease='outCubic') on the head of each shot;
+  landing → transform(scale=[1.08, 1.0], t=[cut, cut+0.08]) and a hold ≥ 0.5 s;
+  speed > 5 %/frame or > 4°/frame → blur(kind='directional'|'zoom', amount∝speed, t=[cut-0.08, cut+0.08]);
+  series: vector_match_chain(clips, mode, order='by_speed'|'alternate_sign', per_link='1/2 bar', anchor=track(object))
+  + sfx('whoosh', at=cut) on fast seams, sfx('impact', at=landing).
+gen_hint: "several different locations filmed with one identical camera move so they can be cut together as a single continuous motion: the same direction and speed in every shot (a slow drift to the left, a continuous upward tilt, a centred push-in with a slight clockwise roll or a fast pull-back from a close-up), the main subject or a round shape kept at the centre of frame"
+commands: ["cut the travel shots so that the camera motion carries on", "pick pairs of shots with the same pan for #2–#6", "a series of push-ins to the center with a roll across #3–#7, landing on #8", "start every chorus shot with the same pull-out jolt on the beat"]
+related: [cut.match, trans.whip, zoom.infinite, trans.zoom, trans.wipe, trans.hidden_cut, cut.quick, track.subject]
+evidence: {examples: 18, sources: 8, measured: "ed_motion + DIS flow on 18 examples: 62 pieces of 40–2500 ms, median 400 ms, a quarter of them flashes ≤ 160 ms; 61 seams — direction preserved in 33 (cos 0.57–1.0, median ≈0.95, or the same sign of zoom/roll): continuation 15 (B/A 0.65–1.5, median ×1.15), braking 8 (×0.1–0.7), acceleration 10 (×2–5); relaunch 6, landing 3, roll pendulum 3, no match or a change of type 16 (whip transitions, passes through black, static shots); the subject's movement continues across the seam in 3 examples; drift 0.28–0.34 %/frame, spiral push-in 4–12 %/frame + 3–12°/frame, pull-out jolt 11–22 %/frame", confidence: high}

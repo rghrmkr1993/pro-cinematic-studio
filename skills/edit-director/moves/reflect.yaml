@@ -1,0 +1,158 @@
+id: reflect.mirror
+family: reflect
+group: optics
+level: A
+aliases: [mirror shot, mirror, shot in the mirror, mirror reflection, rear-view mirror shot]
+what: we see the character in a mirror — the mirror becomes a frame within the frame; talking to oneself, a double, the "true face", watching from the outside
+frames: |
+  1. The mirror is a frame within the frame: ≈ 20–85 % of the area (a shard ≈ 20–25 %, a wall mirror ≈ 35–45 %, an oval near the face ≈ 85 %);
+     a rear-view mirror is shot so tight that it fills the whole frame.
+  2. Around it — a wall, a dark room or the character's own back: a dark blurred foreground ≈ 25 % of the frame, focus on the reflection.
+  3. The camera is locked off or pushes in slowly (×1.06 over 0.45 s — ×1.2 over 3 s); shot 2–6 s; it shakes only in a car.
+  4. Action inside the mirror: looks themselves in the eye, touches their face, cries, adjusts their look; or walks away —
+     the reflection of the room stays empty after ≈ 2 s; or the mirror opens (a cabinet door) and shows what is behind it.
+variants:
+  - the face in the mirror in close-up — emotion, talking to oneself
+  - over the shoulder into the mirror — the character's back blurred in the foreground, the face in the reflection
+  - shard of a broken mirror — a fragmented character in a small shard against a dark background
+  - rear-view mirror — the driver's eyes or passengers in a narrow strip
+  - empty mirror — the character has left, the reflection of the room remains
+  - camera behind the mirror — the character approaches the mirror as if it were the camera, opens the door, the view changes
+status: footage
+fallback: search the source footage for mirror cues (detect); code only does the entry "into the mirror" — a zoom-in on the mirror area until the reflection fills the whole frame, and a cut to the "reflection world"; a convincing mirror from scratch — generation
+params:
+  mirror_area: ≈ 20–85 % of the frame; the face in the reflection 15–40 % of the frame height
+  placement: mirror on the thirds (center x 0.3–0.7), less often centered
+  focus: sharpness on the reflection, the real foreground soft
+  move: static or a push-in ×1.05–1.2 over 2–4 s, ease inOutQuad
+  hold: 2–6 s
+  enter_mirror: zoom-in on the mirror area until it fills the frame over 0.8–1.5 s (20–38 frames), inCubic, then a cut
+when: a moment of self-realization, a confession, a crisis, "getting ready" before going out (fashion, UGC try-on), horror and anxiety (something is wrong in the mirror), dialogue in a car through the rear-view mirror, a transition "into another world" through the mirror
+avoid: the camera or crew visible in the mirror; text in the reflection not flipped (gives the fake away); many mirror shots in a row; the face in the mirror too small when the emotion matters
+sfx: quiet scene — room tone, breathing; horror — a low rumble, a sharp hit on an appearance; entering the mirror — a soft whoosh or a "glassy" chime
+genres: {drama: signature, teaser: allowed, fashion: allowed, ugc: allowed, fanedit: allowed, motivation: allowed, calm: allowed, viral: allowed}
+detect: |
+  A frame within the frame with a clear border (rectangle, oval, arch, shard; often a light rim or a sharp edge),
+  inside — a scene with a different perspective and mirror-flipped text; a face inside the frame; sometimes outside it
+  the same clothes seen from behind (the real character). ed_motion: the camera is static, movement only inside the region; with the "camera
+  behind the mirror" the character looks straight into the lens and reaches toward it.
+  Differences: a window — a different space behind the frame, not flipped, no double; screen within a screen — a glowing
+  plane with an interface; a reflection in water and gloss — flipped vertically and distorted (reflect.surface).
+engine: |
+  search: reflection_detect(shot) → {kind='mirror', region, flipped_text, face_inside}
+  mirror entry: transform(scale=[1, 1/region_w], center=region_center, t=[t0, t0+1.2], ease='inCubic') + cut(at=t0+1.2)
+  editing: hold the mirror shot 2–6 s, place it before the character's change of state
+gen_hint: close-up of a person looking at their own reflection in an oval wall mirror, the real person soft and out of focus in the foreground, the reflection in sharp focus, dim moody room light, static camera, intimate cinematic
+commands: ["find shots with a mirror in the source footage", "put a mirror shot before the chorus", "do a mirror entry on #6 and a cut to the next scene", "through the rear-view mirror in the car dialogue"]
+related: [reflect.surface, reflect.window, pov.mirror, pov.object, frame.central]
+evidence: {examples: 6, sources: 6, measured: "mirror share visually ≈ 20–85 % (shard, wall mirror, oval), rear-view — the whole frame; camera static in 4 of 6 (ed_motion without events), push-in ×1.058 over 0.45 s; only the car shakes (jitter 1.9 %); the character leaves the mirror within ≈ 2 s; camera-behind-the-mirror — the door opens at ≈ 4.4–5 s", confidence: medium}
+---
+id: reflect.surface
+family: reflect
+group: optics
+level: B
+aliases: [reflection shot, reflection, water reflection, puddle reflection, mirror floor, reflection in glass]
+what: the character is shown not directly but through a reflection — in water, a puddle, a glossy floor, metal, a lens or glass; a double, an upside-down world, a view "from the outside"
+frames: |
+  1. The camera films the surface: the frame holds only the reflection (5 of 8) or the boundary "original above the reflection" (a line in the lower third).
+  2. The reflection is distorted by the surface itself: water and puddles — upside down, with ripples; convex metal and a lens —
+     a small, stretched or curved figure; a glossy floor — a blurred dark double; glass over a picture —
+     a semi-transparent face over the image behind the glass (a natural double exposure).
+  3. The reflection is darker and softer than the original (≈ by 0.3–1 stop, details blurred); on water in daytime — almost the same brightness (sky).
+  4. The camera is locked off, the shot holds 2–6 s; motion comes from the character or the surface itself.
+  5. Payoff: the surface is disturbed — a hand touches the water, rings run across the reflection and it breaks up within ≈ 1 s
+     (25 frames); or a cut to the real character, sometimes through a white flash of 1–3 frames.
+variants:
+  - water or a puddle — the character upside down, ripples, a touch breaks the reflection
+  - glossy floor or table — a figure and its dark double below the contact line
+  - convex object or lens — a tiny curved figure in a shiny surface
+  - narrow strip (a blade, the edge of a mirror) — only the eyes are visible
+  - glass over a poster or painting — a face over the image
+  - car body and car glass — the character and the street in one curved reflection
+status: footage
+fallback: hybrid simulation — a reflection in water or gloss from any shot of the character via a mask — a copy flipped along the line of the feet, 0.5 stop darker, slightly blue or matched to the surface color, ripple displacement 0.5–1.5 % H; to "break" the reflection — ramp the ripple up to 3–5 % H over 0.5–1 s; otherwise search the source footage (puddles, shop windows, gloss) or generate
+params:
+  darken: 0.3–1 stop (glossy floor ≈ 0.7), saturation ×0.8
+  axis: the contact line (feet, the surface edge), usually 0.6–0.85 of the frame height; a "reflection only" frame — flip the whole frame
+  ripple: amplitude 0.5–1.5 % H, wavelength 3–8 % H, 0.5–1.5 Hz; vertical blur 0.3–0.8 % H
+  disturb: ripple growth to 3–5 % H over 0.5–1 s (12–25 frames) centered on the touch point, then decay over 1–1.5 s
+  tint: water — toward the sky color (#7fa3c0 at 15–25 %), floor — warm, toward the wood color
+  glass_overlay: face over the picture — screen, opacity 0.35–0.5
+  shot_length: 2–6 s; transition to the real character — a cut or a white flash of 1–3 frames
+when: introducing the character "through a reflection", self-discovery, dreams and an upside-down world, travel and nature (mountains and sky in a lake), a product on a glossy surface; the "break the reflection" payoff — on a hit or a change of section in the track
+avoid: frequent repetition; murky water and dirty glass for no reason; a fake reflection whose perspective doesn't match or that lacks surface distortion; a reflection where the face is unreadable when the emotion matters
+sfx: water — a splash or a drip on the touch, a soft hum; gloss and glass — a quiet chime or a pad; flash transition — a short whoosh
+genres: {drama: allowed, teaser: allowed, travel: allowed, fashion: allowed, fanedit: allowed, calm: allowed, product: allowed, motivation: allowed}
+detect: |
+  The reflection is often flipped: the top and bottom of the scene are swapped (head at the bottom), sky at the bottom of the frame; ripples — wavy
+  horizontal displacements that run across the frame while the camera is static; a convex surface gives a distortion
+  similar to a fisheye, but only inside the object. A double below the contact line: gradient correlation between the top and the
+  flipped bottom > 0.2 around a horizontal axis, the bottom darker. ed_motion: the camera is static, no events or
+  local motion (ripples, nonrigid > 0.5).
+  Differences: a mirror — a clear, non-flipped reflection in a frame (reflect.mirror); shooting through glass — a moving
+  semi-transparent layer over the character (reflect.window); the mirror effect (symmetric joining of halves) — the seam exactly in the center,
+  without surface distortions.
+engine: |
+  search: reflection_detect(shot) → {kind='surface', axis_y, flipped_score, ripple}
+  simulation: mask('mediapipe_person') → water_reflection(axis_y=feet, darken=0.5, saturation=0.8, tint='#7fa3c0', tint_amount=0.2,
+            ripple_amp=0.01*H, ripple_len=0.05*H, ripple_hz=1.0)
+  break: water_reflection(ripple_amp=[0.01, 0.04]*H, center=touch_point, t=[t0, t0+0.8], ease='outQuad') + sfx('splash', at=t0)
+  glass over a picture: composite([art, face], blend='screen', opacity=0.4)
+gen_hint: upside-down reflection of a person standing at the edge of calm water, only the reflection is in frame, soft sky in the water, gentle ripples, then a hand touches the surface and the reflection breaks into rings, static camera, cinematic
+commands: ["show the character first as a reflection in a puddle", "make a reflection of the character on a glossy floor on #3", "break the reflection in the water on the drop", "pick shots with reflections from the source footage"]
+related: [reflect.mirror, reflect.window, trans.double_exposure, light.silhouette]
+evidence: {examples: 8, sources: 8, measured: "camera static in 7 of 8 (ed_motion without events); water — touch at ≈ 0.7 s, the reflection breaks up by ≈ 2.1 s; glossy floor — double below the axis at ≈ 0.8 H, darker by ≈ 0.7 stop (correlation weak, 0.23); transition through white frames (3 flash frames) in 1 of 8; the rest — visual analysis", confidence: medium}
+---
+id: reflect.window
+family: reflect
+group: optics
+level: B
+aliases: [through-glass shot, shooting through glass, through the car window, reflections on glass, window reflection, glass reflection overlay, through the windshield]
+what: the character is filmed through glass (a car window, a shop window, an apartment window) — reflections of the street, trees, lights slide across the face; two layers of the world in one frame, pensiveness and the road
+frames: |
+  1. The camera is outside the glass, the character inside and almost still: sitting, riding, looking out of the window.
+  2. On the glass — a reflection of the outside world (sky, treetops, streetlights, neon): soft, out of focus, semi-transparent;
+     adds +40…+70 of 255 of light, mostly on the dark parts (hair, clothes, shadows), on light skin it is almost invisible.
+  3. The reflection drifts: in a moving car 0.5–1.3 % of the width per frame @25; a light streak 14–16 % W wide
+     crosses the frame from left to right in ≈ 3 s (≈ 1.3 % W per frame); at a stationary window the reflection stays put,
+     while the camera slowly pushes in (×1.39 over 2.9 s).
+  4. The frame often includes the edge of the glass — a door, a seal, a rounded window corner — as a dark line or a darkening on one side.
+  5. The shot holds 3–6 s; a bright reflection passing across the face is an emotional point within the shot.
+variants:
+  - side car window by day — trees and sky run across the face
+  - night road — neon and streetlights pass across the faces in streaks
+  - windshield — the driver is still, treetops and sky stand in the glass
+  - house window or shop window — city lights over the character, a slow push-in
+  - train or bus — the landscape and the reflection of the interior together (travel)
+status: code
+fallback: code simulation — flip a second clip (trees, lights, city) horizontally, blur it, combine it with screen at 0.25–0.55 opacity and move it at road speed; a real through-glass shot is better — search the source footage for two-layer motion (detect) or generate
+params:
+  overlay_opacity: 0.25–0.55 (screen or lighten); by day 0.25–0.35, at night for lights 0.4–0.55
+  overlay_blur: 1–3 % H — the reflection is always softer than the character
+  overlay_speed: in a car 0.5–1.5 % W per frame @25, against the direction of travel; a house window 0.05–0.3 % W
+  overlay_content: by day treetops and sky, at night streetlights, neon, headlights; city — windows and lights
+  overlay_flip: mirrored horizontally
+  subject_contrast: ×0.85–0.95 (the glass adds a slight "veil")
+  glass_edge: darkening of 5–10 % of the width on one side or a dark line of the window frame
+  hold: 3–6 s
+  streak: light streak 12–16 % W, passes in 2–3 s
+when: the road, a journey, pensiveness, sadness, waiting, a night city, travel transitions between locations; a calm verse or bridge; works well as a pause after a noisy scene
+avoid: fast, hard-hitting parts of the track; an overlay so dense it hides the face; an overlay flowing in the opposite direction to the car's movement; a sharp (in-focus) reflection — looks like a double exposure, not glass
+sfx: road or cabin noise, a muffled street, rain on the glass; the outside sound is muffled — as if behind glass
+genres: {travel: signature, calm: allowed, drama: allowed, fanedit: allowed, teaser: allowed, fashion: allowed, motivation: allowed, ugc: allowed}
+detect: |
+  Two-layer motion: after subtracting the global shift a semi-transparent layer remains, drifting 0.5–1.5 % W per frame
+  (Farneback), while the character stays still; added light above the 10th percentile over time +40…+70 on 10–37 % of pixel-frames,
+  mostly on dark parts; the reflection is soft and mirrored; the glass frame at the edge of the frame.
+  ed_motion: no global events or a slow push-in, nonrigid high with small overall motion.
+  Differences: double exposure — both layers sharp, mixed deliberately, often via a dissolve; flash and flicker —
+  the brightness of the whole scene changes rather than a shape sliding; a mirror shot — the reflection is the character (reflect.mirror).
+engine: |
+  reflection_overlay(layer=clip('trees'|'city_lights'|'neon'), flip_x=True, blur=0.02*H, blend='screen', opacity=0.35,
+                     speed=0.01*W per frame, direction=-travel, tint=None, t=[t0, t1])
+  + color(contrast=0.9) + vignette(side='left', amount=0.2)
+  search: reflection_detect(shot) → {kind='window', overlay_speed, additive_light}
+gen_hint: shot from outside a car side window, a person sitting inside looking out, reflections of passing trees and sky sliding across the glass over their face, soft out-of-focus reflections, quiet melancholic mood, natural light, cinematic
+commands: ["add tree reflections on the glass on #4", "night lights sliding across the faces in the car — on the bridge", "find shots through a car window in the source footage", "make the shot look as if through glass, slow reflections"]
+related: [reflect.mirror, reflect.surface, trans.double_exposure, light.flash]
+evidence: {examples: 6, sources: 6, measured: "residual layer 0.44–1.06 % W per frame @25 (Farneback, after subtracting the global shift); added light +39…+70 on 10–37 % of pixel-frames; light streak 14–16 % W crosses x 0.03→0.99 in 3.0 s; stationary window — push-in ×1.39 over 2.9 s; camera static in 5 of 6", confidence: medium}

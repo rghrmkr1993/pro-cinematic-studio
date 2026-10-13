@@ -1,0 +1,912 @@
+id: time.boomerang
+family: time
+group: time
+level: B
+aliases: [boomerang, ping-pong loop, ping-pong, back-and-forth, forward-reverse loop, reverse loop]
+what: a 0.25–1 s stretch of motion plays forward, then mirrored back to the starting pose, 1–4 times — the gesture "bounces" back and forth like a rubber band
+frames: |
+  1. Take one complete motion of 0.25–1 s (typically 0.4–0.5 s = 10–12 frames @25 fps): a swish of fabric,
+     a head turn, a lean, a laugh, a gesture, a throw.
+  2. The segment plays forward to the peak (the point of maximum swing) and with no pause plays backward to the starting pose —
+     the frames are mirrored: frame p−k matches p+k.
+  3. At the turning point the motion slows down (the difference between neighboring frames drops 2–4 times), so the joint doesn't jerk;
+     the peak frame is not duplicated.
+  4. 1–4 cycles (a full cycle 0.7–1.9 s); with several reversals they fall into a rhythm of ≈ every 0.5 s.
+  5. Exit — a cut or the shot continuing forward with a new action.
+variants:
+  - single: forward and back once, cycle 0.7–1.9 s
+  - rhythmic ping-pong: 3–4 reversals in a row of ≈0.5 s each, reversals on the beats
+  - throw-and-return: an object or fabric flies off and comes back into the hands, 7–9 frames each way
+  - asymmetric: slowly forward (1–1.5 s), then a fast rewind ×4–5 to the start in 0.25–0.3 s and straight into a new action
+  - with a handheld camera: the reverse pass also repeats the camera movement — the roll rocks one way, then the other
+status: code
+params:
+  segment: 6–24 frames @25 fps (0.25–1 s) one way, typically 10–12 (0.4–0.5 s)
+  cycles: 1–4, typically 2
+  pivot: the frame of maximum swing; the reversal on a downbeat
+  pivot_ease: if the motion is fast at the peak — 2–3 frames of ×0.5 slowdown before and after the reversal (mirrored)
+  rewind_rate: 1 (symmetric) or 3–5 (fast rewind)
+  total: 0.7–2.5 s for the whole move
+  beat: cycle = 1 beat (≈0.5 s at 120 BPM) or half a bar
+when: dance, a gesture, a hair or fabric flip, a jump, a throw, splashes, a funny reaction; repeating a phrase or a beat in the chorus; a hook and an addictive loop for social media; no more than 1–2 times per minute of video
+avoid: shots where the reverse pass gives itself away — smoke, water, fire, passers-by in the background walking backwards; on-camera speech (mouth in reverse); a segment longer than 1 s one way — the springiness is lost; more than 4 cycles in a row; serious and dramatic scenes — the move reads as a joke
+sfx: on the reverse pass — a reverse whoosh or a "tape rewind"; in comedy the segment's audio can be reversed too; in music-driven editing the music runs steadily, the reversal — on a beat
+genres: {viral: signature, ugc: signature, fanedit: allowed, phonk: allowed, fashion: allowed, sport: allowed, travel: allowed, product: allowed, clips: allowed, drama: forbidden, epic: forbidden, teaser: forbidden, motivation: forbidden}
+detect: |
+  Mirroring: frame p−k ≈ frame p+k for k = 1…K (K ≥ 5), difference ≤ 0.3–0.5 of the difference between neighboring frames;
+  the difference profile is symmetric around p with a dip at the turning point. Several reversals — dips every ≈10 frames.
+  ed_motion: mirrored pairs of events — clockwise/counterclockwise ROTATE of similar magnitude, SHIFT there and back,
+  ZOOM-IN and ZOOM-OUT whose factors multiply to ≈1 with no cut between them; a fast rewind — a short event of 3–6 frames.
+  Difference from zoom.in_out: there only the framing rocks, while the action in the frame moves forward.
+  From a seamless loop (repeat from the start): there the first frame comes right after the end, no reversal.
+  From cut.stutter: there chunks repeat forward. From reverse playback: there is no forward pass.
+engine: |
+  loop(mode='pingpong', seg=[t0, t0+0.45], cycles=2, pivot_ease=0.1, rewind_rate=1)
+  — ffmpeg: trim the segment → split → reverse the second copy, without its first frame → concat; repeat cycles times.
+  Asymmetric: speed(rate=4) on the reversed copy. Put the reversal on a beat: beat_sync(event='pivot', grid='1/4').
+  + sfx('reverse_whoosh', at=pivot, align='attack') optionally.
+gen_hint: <subject> performs one short expressive motion (<hair flip / throws a silk scarf / jumps / laughs and leans back>), static camera, clean background, the motion has a clear start, peak and end, no other moving objects in the frame
+commands: ["boomerang on the fabric swish in #3", "loop the jump back and forth 3 times on the chorus", "ping-pong on the laugh in #6, reversal on the beat", "slow push-in and a fast rewind back in #2"]
+related: [zoom.in_out, cut.stutter, loop.end, time.freeze, time.speed_ramp]
+evidence: {examples: 6, sources: 2, measured: "one-way segment 5–19 frames (0.25–0.95 s), typically 9–11; mirrored pairs with a difference of 0.1–0.4 of the neighboring one; 1–4 reversals, in ping-pong ≈every 10.5 frames (0.52 s); a 2–4 times dip in difference at the turning point; 1 asymmetric example — a ×5 rewind over 6 frames; with a handheld camera — roll alternating ±2.5–5.7°", confidence: medium}
+---
+id: time.bullet_time
+family: time
+group: time
+level: C
+aliases: [bullet time, frozen moment, time stop, orbit around a frozen frame, mannequin challenge]
+what: time stops at the peak of the action — the subject and everything flying around it hang in the air, while the camera keeps moving around it or through the scene
+frames: |
+  1. Entry (0.2–1 s): the action at normal speed or a sharp slowdown to the peak — a punch, a gunshot, a jump,
+     a throw, an explosion. Often the entry is a cut straight into the already frozen frame.
+  2. Freeze: the character's pose doesn't change; shards, knives, birds, flames and smoke hang in the air (10–60 objects).
+     An "almost freeze" of ≈×0.01–0.05 is acceptable: flames and smoke flow slowly, bullets crawl with a spiral trail.
+  3. The camera stays alive: an arc around the subject of ≈15–180° (more often 45–90° over 2–4 s, ≈15–45°/s), usually with a push-in ×1.2–1.7,
+     less often with a pull-out ×0.45–0.85; the background travels 20–130 % of the frame width, the subject stays near the center (0.4–0.6).
+     Strong parallax: the foreground, the subject and the background shift at different speeds.
+  4. The frozen segment — 1.3–7 s (typically 2.5–4 s); long orbits are broken up by cuts into 2–3 points.
+  5. Exit: a cut to normal speed or a 0.3–0.6 s speed-up, a hit in sound and motion.
+variants:
+  - orbit around frozen action (the classic): a 45–180° arc around the character mid-jump, mid-punch, mid-gunshot
+  - move through a frozen scene: the camera travels forward or sideways past frozen people, an explosion, birds (up to 7 s in one shot)
+  - stopped world: the character moves while the street and the people around are frozen (often seen through the character's eyes)
+  - super slow projectiles: bullets or objects fly slowly with ring-shaped trails, the camera almost still or pushing in slightly
+  - living tableau: people simply hold a pose, the camera slowly circles (a cheap version without a camera array)
+status: generation
+fallback: "hybrid simulation: a freeze frame at the peak + a mask of the character + a filled-in background + layers shifted in different directions (a fake arc of up to 10–15°) + zoom-in ×1.1–1.3; footage: search the source footage for shots where people hold a pose while the camera moves, or orbits around a static subject; generation — from the peak frame with the user's consent"
+params:
+  freeze_rate: 0 (full freeze) or ≈0.01–0.05 (flames, smoke, projectiles keep flowing)
+  arc: 15–180°, typically 45–90°; speed ≈15–45°/s; a fake 2.5D arc — no more than 10–15°
+  push: push-in ×1.2–1.7 (up to ×2.9) simultaneously with the arc; pull-out ×0.45–0.85 — less often
+  duration: 1.3–7 s of frozen segment, typically 2.5–4 s (≈62–100 frames @25 fps)
+  ramp_in: a cut into the freeze or a slowdown over 0.2–0.5 s before the peak
+  ramp_out: a cut or a 0.3–0.6 s speed-up
+  center: track(subject), the subject at 0.4–0.6 of the width; the background shifts by 20–130 % of the width
+  ease: inOutQuad on the arc and the push-in; no jerks
+  debris: 10–60 suspended objects strengthen the effect; without them — noticeable background parallax is needed
+when: the climax of action (a punch, a gunshot, a jump, an explosion), a "moment of truth", a display of power or control, the entry into the drop, a hook in the first 2 s of a teaser; product variant — a frozen splash around the product; no more than 1 per video (2 in a long clip)
+avoid: no shot with a frozen moment and generation not agreed to; a 2.5D simulation on hair, smoke and fine details without a good mask — seams show; calm and explainer videos; a freeze longer than 5 s without camera movement or new details; several freezes in a row — the impact is lost
+sfx: on the entry — a reverse whoosh or a sub drop and a sharp muffling of the world (low-pass, ringing or silence); during — a drone, breathing, a heartbeat, a stretched reverberated hit sound; on the exit — an impact and the return of full sound
+genres: {epic: signature, fanedit: signature, teaser: signature, sport: allowed, motivation: allowed, phonk: allowed, viral: allowed, product: allowed, fashion: allowed, drama: allowed, ugc: allowed, calm: forbidden, explainer: forbidden}
+detect: |
+  ed_motion: a long camera move of 1.3–7 s — ZOOM-IN ×1.2–2.9 and/or SHIFT of 20–130 % of the width with nonrigid 0.15–0.35
+  (real parallax), while the subject's pose and the positions of flying objects relative to it don't change:
+  after camera compensation the local difference on the subject is ≈0. Flying objects motionless in the air are the main sign.
+  Before and after — normal speed or a cut; often a speed ramp nearby.
+  Difference from time.freeze: there the camera is still too (holds in ed_motion, frame difference ≈0, no parallax).
+  From slow motion: there the subject visibly moves every frame. From a regular orbit (arc.orbit): there the subject is alive.
+  From time.super_slow_motion: there everything still visibly moves and the camera usually stays still.
+engine: |
+  Generation (main path): gen_insert(from=frame(t_hit), prompt=gen_hint, dur=3–4 s) → cut at t_hit, exit — a cut
+  into a live shot; before the insert speed(curve=[[t_hit-0.4, 1], [t_hit, 0.1]], interp='flow').
+  Code simulation: freeze(at=t_hit, dur=2.5) + mask(method='hf_remove_background') → subject/background layers (background — outpaint)
+  + parallax_orbit(angle=12, push=1.25, layers=2–3, t=[t_hit, t_hit+2.5], ease='inOutQuad')
+  + sfx('reverse_whoosh', at=t_hit-0.3, align='peak') + duck(music, under=hum) + sfx('impact', at=t_hit+2.5).
+gen_hint: bullet time shot, time frozen at the peak of <action>, <subject> suspended mid-motion with <debris> hanging motionless in the air, camera smoothly orbits 90 degrees around the subject with a slight push-in, strong parallax, nothing in the scene moves except the camera
+commands: ["bullet time on the punch in #4", "freeze the jump in #2 and orbit the camera around the character", "stop time on the drop — everything freezes, the camera moves past", "frozen splash around the product with an orbit"]
+related: [time.freeze, time.speed_ramp, time.super_slow_motion, orbit.turntable, arc.orbit, time.cinemagraph]
+evidence: {examples: 12, sources: "≈10", measured: "frozen segment 1.3–7 s (typically 2.5–4); push-in ×1.19–2.88 over 1.6–2.9 s in 6 of 12, pull-out ×0.44–0.86 in 3; the background travels 20–126 % of the width; nonrigid 0.08–0.33; objects suspended in the air in 5 of 12; super slow projectiles — 2, stopped world with a live character — 1, a move along a frozen scene of 6.9 s — 1; arc angle — a visual estimate", confidence: medium}
+---
+id: time.cinemagraph
+family: time
+group: time
+level: B
+aliases: [cinemagraph, living photo, animated photo, loop photo, partial freeze]
+what: the frame is frozen like a photograph, and only one zone — water, hair, steam, leaves — moves endlessly in an invisible 0.6–4 s loop; a pause, atmosphere, a stopped moment
+frames: |
+  1. Source — a tripod shot (shift between frames ≈0 px) with local repeating motion: water ripples,
+     hair in the wind, steam, liquid in a glass, leaves, fabric, blinking.
+  2. One reference frame is frozen entirely, except for a mask over 3–20 % of the area (up to 80 % if water takes up
+     almost the whole frame): outside the mask the temporal brightness spread is ≈0 (no grain, no breathing), in the zone — 5–13 levels.
+  3. The motion in the zone is looped: ripples 0.6–1.5 s, hair ≈1.5 s, slow natural motions 3.7–3.9 s.
+     The seam is invisible: the jump from the last frame to the first is no more than 1.1–1.4 of a normal step (a chosen repeating
+     segment, a 0.3–0.5 s dissolve of the tail into the start, or ping-pong).
+  4. The mask edge is soft and hidden along natural contours: the waterline, the edge of hair, the wall of a glass.
+  5. In the edit it holds 2–6 s (2–5 loop repeats); the camera doesn't move.
+variants:
+  - water: ripples and reflections in a lake, a pool, a flooded hall — loop 0.6–1.5 s, zone 17–80 %
+  - wind: the person is frozen, only hair, leaves or fabric move — loop 1.5–4 s, zone 3–12 %
+  - liquid and steam: particles and bubbles in a glass or cup, product shots — zone ≈20 %, loop ≈4 s
+  - micro-loop: a tiny gesture or detail of 4 frames (0.16 s), an almost imperceptible twitch
+status: hybrid
+fallback: no tripod shot — stabilize(strength=1) on the static part, and if residual shift is >0.3 px, don't do the move; no motion at all — image-to-video generation from a photo ("only the water/steam/hair moves") and freezing the rest with a mask
+params:
+  loop: 0.6–4 s; water 0.6–1.5 s, hair and leaves 1.5–4 s
+  seam: dissolve of 8–12 frames @25 fps (0.3–0.5 s) or ping-pong; jump at the seam ≤1.4 of a normal step
+  zone: 3–20 % of the frame (up to 80 % for water scenes)
+  mask: by the segment's temporal spread (threshold ≈2.5 levels on 8×8 blocks, close the holes) or semantic (hair, water, sky)
+  feather: 1–3 % of the frame width
+  still_frame: the most expressive sharp frame of the same segment
+  hold: 2–6 s on screen (2–5 repeats)
+when: intros and title-card backgrounds, a breather between fast blocks, the final shot, food and drink product shots (steam, bubbles, pouring), travel (water, flags, clouds), fashion (hair and fabric in the wind); a background for text; 1–2 times per video
+avoid: a handheld camera without stabilization — the frozen part "swims"; motion crossing the mask edge (a hand passing through the frozen area) — ragged edges; light changes in the zone (clouds, flashes) — flicker at the seam; a short shot with no repeating motion — the jump is visible; fast editing where a shot stays on screen less than 1.5 s; sync speech and dialogue
+sfx: a quiet looped ambience of whatever moves (splashing, wind, hissing steam, crackling fire), no hits; music — a sustained note or a pad; the sound must loop as seamlessly as the picture
+genres: {calm: signature, product: signature, travel: allowed, fashion: allowed, teaser: allowed, drama: allowed, motivation: allowed, explainer: allowed, ugc: allowed, viral: allowed, epic: allowed}
+detect: |
+  Map of temporal brightness spread: a compact zone of 3–20 % (in water scenes up to 80 %) with a spread of 5–13 levels,
+  the rest ≈0 — a dead freeze, without grain or micro-movements; global shift ≈0 px.
+  The video is a short loop of 0.16–4 s: the frame at the seam is almost equal to the first one (jump ≤1.1–1.4 of a normal step).
+  ed_motion: no events, a large overlay-mask (the static part), no holds (the zone changes every frame).
+  Difference from time.freeze: there everything is still. From an ordinary static shot: there the still parts have noise, people breathe
+  and blink (spread 1–3). From time.bullet_time: there the camera moves around the frozen scene, here the camera stays still.
+engine: |
+  cinemagraph(seg=[t0, t0+L], still=frame(t_ref), mask='motion'|'mediapipe_hair'|'water'|'manual', feather=0.02,
+              loop='crossfade'|'pingpong', seam=0.4, repeat=3, invert=False)
+  — stabilize(strength=1) → mask: temporal spread of the segment > 2.5 on 8×8 blocks, morphological closing, feathering;
+  out = still·(1−mask) + loop(segment)·mask; seam — xfade of the tail into the start 0.4 s or loop(mode='pingpong').
+  invert=True — the reverse variant: a frozen character (mask='mediapipe_person') on a living background.
+  Generation: image-to-video from a frame with motion only in the needed zone, then the same mask-based freeze.
+gen_hint: cinemagraph-style shot, locked-off tripod camera, a completely still scene of <subject/scene>, only <the water ripples / the hair moves in the wind / steam rises from the cup> in a gentle seamless loop, everything else frozen like a photograph
+commands: ["cinemagraph from #3 — let only the water move", "bring the photo to life: steam from the cup, freeze the rest", "a 4-second cinemagraph title card on the model's hair", "reverse cinemagraph: the character is frozen, the crowd around them moves"]
+related: [time.freeze, time.boomerang, time.bullet_time, loop.end, rig.locked_on]
+evidence: {examples: 8, sources: 8, measured: "moving zone 3.5–19 % of the frame (one water scene — 79 %); outside the zone temporal spread 0–0.5 versus 4.6–12.9 in the zone; loop 0.16–3.9 s (water 0.6–1.5 s); jump at the seam 0.9–2.1 of a normal step (6 of 8 ≤1.4); global shift ≤0.5 px; what moves: water — 3, hair and wind — 2, liquid — 1, leaves — 1, micro-gesture — 1", confidence: high}
+---
+id: time.echo_trail
+family: time
+group: time
+level: B
+aliases: [echo, echo trail, trails, trail, ghost trail, frame echo, onion skin, glowing motion trail]
+what: a moving subject drags a trail of copies of its past positions (0.3–2 s) — the copies hang in the frame and catch up with it when it stops; dance, a strike, a walk, a trance
+frames: |
+  1. Source: clear motion of the subject against a calm background — a dance, hand strikes, a swish of fabric, a walk; the camera is still
+     or smoothly follows the subject. Best of all — a light subject on a dark background.
+  2. Past frames are mixed into every frame: the copies lie along the trajectory behind the direction of motion,
+     the freshest copy is the sharpest. Static parts of the frame stay sharp.
+  3. Two kinds of trail: (a) a dense fan — a copy from every frame, 8–16 of them in a 0.3–0.65 s window, blended by lighten
+     (maximum) — the subject turns into a fan or a sculpture; (b) separate copies — 3–5 of them 3–8 frames apart
+     (0.12–0.32 s) for gestures and up to 10–19 frames (0.4–0.75 s) for a walk, a "procession" of doubles.
+  4. The trail often switches on mid-shot: within 0.5–0.7 s it grows from 0 to 3–5 copies and holds; when the subject
+     freezes, the copies converge into it over the window time (0.3–1 s) — the frame is clean again.
+  5. With a moving camera the copies stay in the "world": the background is sharp, the doubles stand where the subject was
+     (when the character advances on the camera — behind it and smaller).
+variants:
+  - dense fan: light fabric or a body on a black background, maximum over 8–16 frames, equal weights — a dense fan
+  - procession of doubles: 2–4 opaque copies spaced 0.4–0.75 s apart, the camera follows the character, the background sharp
+  - limb fan: arms and hands leave 3–6 fading ghosts spaced ≈0.24 s apart (weight ≈×0.75 per copy)
+  - strike trail: a long smeared tail on a sharp lunge or turn, decay ≈0.9–0.96 per frame
+  - ghostly crowd: people dancing indoors, a soft trail of 5–10 frames, the camera still
+  - many-armed silhouette: copies of the arms a few frames apart add up to a figure with a dozen arms
+status: code
+fallback: with a busy background or a shaky camera — hybrid (a mask of the character via mediapipe or hf_remove_background, the trail only on the character over the current frame); a suitable shot — search the source footage for shots with fast motion against a plain or dark background
+params:
+  trails: 3–16 copies; dense fan 8–12, separate copies 3–5
+  lag: 1 frame (dense fan) or 3–8 frames @25 fps (0.12–0.32 s) between copies; for a walk up to 10–19 frames (0.4–0.75 s)
+  window: 0.3–2 s, typically 0.5–0.65 s
+  decay: per copy 0.5–0.8 (gestures), 1.0 with maximum (dense fan, procession), ≈0.9–0.96 per frame (strike trail)
+  blend: max (light on dark) | min (dark on light) | mean (everything else)
+  align: screen (camera still) | camera (compensate for camera motion, background sharp)
+  mask: none | subject (hybrid — the trail only on the character)
+  ramp_in: 0.3–0.7 s of build-up; exit — the motion stopping or a 0.3–0.5 s fade-out
+  duration: 1–4 s, rarely the whole shot up to 6 s
+when: dance and choreography, martial arts, a model's walk, a swish of fabric and hair, the character's "super speed", trance, intoxication, split personality, a memory; a drop or a sustained note; 1–2 times per video, hold for 1–4 s
+avoid: a busy background with a still camera — everything that moves doubles; a shaky camera without compensation — mush across the whole frame; a talking face in close-up; text and UI; a window longer than 1.5–2 s — a mess; a subject walking straight at the camera with a screen-space trail — the copies merge into a blob
+sfx: echo or delay on the music with the same spacing (1/8 or 1/16 of a beat); on sharp movements — a whoosh; when the trail switches on — a reverse swell
+genres: {fanedit: signature, fashion: signature, phonk: allowed, epic: allowed, sport: allowed, viral: allowed, teaser: allowed, motivation: allowed, drama: allowed, travel: allowed, clips: allowed, ugc: allowed, product: allowed, explainer: forbidden}
+detect: |
+  In one frame — several copies of the moving subject along its trajectory, the last one the sharpest; static parts are sharp.
+  Per pixel: after the subject passes, brightness doesn't fall back to the background but stays at 0.4–1.0 of the peak for 3–16 frames
+  (a flat shelf for a dense fan; humps every 3–8 frames for separate copies). Every frame is unique — no holds.
+  ed_motion: usually no global events, or a smooth camera move; the frame difference is small for the visible motion.
+  When the subject stops, the copies merge with it within 0.3–1 s.
+  Difference from time.motion_blur: there the smear is within a single frame, with no separate copies and no tail after stopping.
+  From fx.duplicate: the clones live on their own and don't converge into the character. From time.step_print: there frames are held.
+  From double exposure: there two different shots are mixed, not past frames of the same one.
+engine: |
+  echo(trails=N, decay=d, lag=L, blend='max'|'min'|'mean', align='screen'|'camera', mask=None|'mediapipe_person',
+       t=[t0, t1], ramp_in=0.5)
+  — dense fan on a dark background: ffmpeg lagfun=decay=0.93 (maximum with decay) or tmix=frames=10;
+  separate copies: out = blend(f[t], d·f[t−L], d²·f[t−2L], …), L=4–6 frames, N=4;
+  align='camera': align past frames with the current one by global motion (estimated as in ed_motion) before blending;
+  mask='subject': the trail from the character mask over the current frame. Switching the trail on — on a beat: beat_sync(event='echo_on', grid='1/4').
+gen_hint: <subject> performs <a fast expressive dance / martial arts strikes / a fabric twirl> against a plain dark background, static camera, hard rim light, high contrast, each movement leaves a fan of fading ghost copies of the limbs, long-exposure echo trails
+commands: ["echo trail on the dance in #3", "echo on the strikes in #5, 4 copies with decay", "a trail of doubles behind the character on the walk in #2, background sharp", "a dense fan of white fabric on the drop"]
+related: [time.motion_blur, time.step_print, fx.duplicate, trans.double_exposure, time.speed_ramp]
+evidence: {examples: 8, sources: 8, measured: "dense fan: a flat maximum shelf of 8 frames (≈0.64 s), then a drop to 0.24; arm fan: copies every 3 frames (0.24 s) with weights 0.55 → 0.42; procession: 2–4 opaque copies spaced ≈0.45–0.75 s apart with the camera at 1.2–1.6 %/frame, background sharp (2 of 8 with camera compensation); the trail grows to 3–5 copies within 0.5–0.7 s; in 3 of 8 — light on a dark background; strike trail decay ≈0.9–0.96 per frame (≈, the camera moves slightly)", confidence: medium}
+---
+id: time.fast_motion
+family: time
+group: time
+level: B
+aliases: [fast motion, fast forward, undercranking, sped-up footage, speed up]
+what: the action plays 2–10 times faster than real time — compresses routine and time, gives a comic jerkiness or the feeling that the world is rushing past a frozen character
+frames: |
+  1. Entry is usually by a cut; the shot is already sped up (a speed-up within the shot is time.speed_ramp).
+  2. Action: 1.5–4 s on screen (38–100 frames @25 fps) hold 5–40 s of real time. People walk
+     jerkily at 3–6 steps per second, hands on a keyboard, a knife or boxes flicker, cars and crowds
+     turn into a stream. In night and moving shots — semi-transparent trails behind people, and lights
+     stretched into lines; in static daytime shots — sharp, "jerky" movements without motion blur.
+  3. A common construction: the character stands or sits almost motionless and sharp, while around them a crowd, security guards,
+     shoppers, cars rush past as blurred ghosts; or a blurred skateboarder flies past the lying
+     character.
+  4. Exit by a cut to normal speed or an abrupt stop (time.freeze) on a beat.
+variants:
+  - the world rushes, the character is frozen: camera on a tripod, the character motionless, everything around ×4–10 with trails
+  - comic jerk: an everyday action (typing, cutting, eating, dancing, posing) ×2–4, jerky movements, no motion blur
+  - drive: camera on the hood or in the cabin, the city at night, ×4–12, lights stretch into streaks, radial blur at the edges
+  - a sped-up handheld or fisheye walk-through along a street, a bridge, an interior ×3–6 (close to time.hyperlapse)
+  - archival jerk: black-and-white or faded street newsreel, passers-by scurry jerkily (the effect of an old hand-cranked camera)
+  - a carousel, a crowd in a hall, product handling from above — repetitive motion turns into a pattern
+status: code
+fallback: the frozen-character variant — hybrid (mask(person) from a single frame of the character over the sped-up background, the camera must be still — otherwise stabilize or search the source footage for a static shot); radial trails for a drive — blur(kind='zoom') over the speed-up, if the source was shot with a short exposure
+params:
+  rate: ×2–10, typically ×3–4 for people's actions, ×6–8 for crowds and traffic; ×10+ is already time.timelapse
+  interp: drop — a jerky comic or archival look; blend — trails and flow (average 50–100 % of the source frames that fall on each output frame)
+  shutter: fraction of averaged frames 0.5–1.0 with blend (1.0 = continuous trail, 0.5 = short tail)
+  duration: 1–4 s on screen (25–100 frames @25 fps), typically 2 s; longer than 5 s gets tiring
+  stabilize: mandatory before speeding up a handheld camera ×4+ (the shake speeds up along with the action)
+  audio: either mute the source audio, or speed it up with rising pitch (comedy), or replace it with a rewind sound; music at normal tempo
+  hero_still: the character — 1 frame or speed(1.0) via a mask, the background ×4–10 blend
+when: showing that "time has passed", routine and preparation (cooking, getting ready, cleaning, assembly, computer work), a comic insert, a transition between locations, a drive through a night city, isolating the character in a crowd; on fast drum fills, rapid hi-hats, before the drop (an abrupt stop at the moment of the hit); 1–3 times per video
+avoid: sync speech and singing (pitch and lips); a product, text and details that need to be read; a shaky handheld camera without stabilization; a speed-up longer than 5 s in a row; a dramatic or luxury tone in the comic version
+sfx: a rewind (a fast tape "zip"), ticking, quick clicks on the cuts; on exit — a scratch or a stop hit; comedy — the source audio sped up and high-pitched; drive — a hum and a whoosh on every pass of lights
+genres: {ugc: signature, viral: signature, travel: signature, clips: allowed, phonk: allowed, explainer: allowed, product: allowed, motivation: allowed, sport: allowed, teaser: allowed, fanedit: allowed, fashion: allowed, drama: allowed, epic: allowed}
+detect: |
+  Visually: gait and gestures are too frequent (more than 3 steps per second), clouds, shadows and traffic flow;
+  with blend — semi-transparent "ghosts" and trails behind moving things, lights stretch into lines against a sharp background;
+  with drop — jerks, sharp contours. A still, sharp character amid a blurred stream is the "world rushes" variant.
+  ed_motion: with a moving camera — frequent SHIFT/ZOOM events peaking at 3–10 %/frame and high shake
+  (jitter_pct ≳0.5, many x_dir_flips: handheld shake sped up); frame diff consistently high; with blend
+  sharp_ratio drops to ×0.3–0.6 without dropping on static parts; no holds.
+  Difference from time.timelapse: there frames come from sparse stills (×60+), light and shadows change. From time.hyperlapse:
+  there the camera covers a large distance smoothly, not in jerks. From time.speed_ramp: the speed is constant.
+engine: |
+  stabilize(0.8) for a handheld camera → speed(rate=4, interp='blend', shutter=0.75) — flow with trails;
+  speed(rate=3, interp='drop') — comic jerk;
+  "frozen character": composite([speed(rate=6, interp='blend', shutter=1.0), mask(method='mediapipe_person', feather=6) on freeze(at=t_hero)])
+  + audio_speed(rate, pitch='follow'|'mute') + sfx('reverse_whoosh'|'scratch', at=t_out)
+gen_hint: fast motion time-lapse style shot of <subject> standing perfectly still while crowds and traffic rush past as motion-blurred streaks, locked-off camera, long exposure ghost trails
+commands: ["speed up #3 4x", "fast forward on the getting-ready part at the start", "the character stands still, the crowd rushes past — on #6", "speed up the night drive with light trails"]
+related: [time.timelapse, time.hyperlapse, time.speed_ramp, time.slow_motion, time.freeze, time.step_print]
+evidence: {examples: 52, sources: "≈45 (different works, judging by appearance)", measured: "visual review only: 3–4 animation moments per example (scripted frame capture blocked by browser permissions); factors — ≈ estimates from step frequency and light changes, not measured", confidence: medium}
+---
+id: time.freeze
+family: time
+group: time
+level: B
+aliases: [freeze frame, frame freeze, freeze, stop moment, freeze-frame intro, character intro on a freeze frame]
+what: the action suddenly stops on a single frame and holds for 0.5–3 s — captures the peak of an emotion or action, introduces a character, puts a full stop on a scene or the ending
+frames: |
+  1. The action runs at normal speed (or in slow motion) and approaches the peak: a scream, a jump, a gunshot, a punch,
+     a hug, a head turn toward the camera, a pose with a hand gesture.
+  2. Stop: a single frame freezes instantly, with no deceleration (deceleration is time.speed_ramp into a stop). Often
+     at the moment of the stop — a white flash of 1–3 frames and a shutter sound (the frame as a taken photo); sometimes
+     a viewfinder frame with focus marks on top.
+  3. Hold 0.5–3 s. On the frozen image: a name or title (cut-out sticker letters, a large
+     font), a switch to black-and-white or faded color, a slight slow zoom-in ×1.05–1.2 or a sharp
+     punch-in, sometimes the frame shrinks into a photo card with a white border and a tilt.
+  4. Exit: a cut to the next scene, the action resuming from the same frame, or the ending — the freeze holds
+     until the fade to black or the end titles.
+variants:
+  - stop at the peak of action: a jump, a punch, a gunshot, the frame of a fall — 0.5–1.5 s, often with a punch-in
+  - character intro: a stop on the face or pose + name and role in a large or cut-out font, 1.5–3 s
+  - snapshot: a white flash + shutter, the frame becomes a photo (B&W, border, tilt) — "moments" compilations
+  - final stop: the last frame of the scene or video freezes, with a title or a fade to black on top, 2–5 s
+  - stop rhythm: several short stops of 0.2–0.5 s on the beats — in music videos and dance
+  - color change: in the stop the color goes to B&W, sepia or a faded tone — a "memory"
+status: code
+fallback: a freeze frame can be made on any video; if the peak frame is blurred — take a neighboring sharp frame (by max sharpness in a ±3 frame window) or sharpen it; if you need a freeze with a cut-out character over a live background — hybrid (mask(person) on a single frame over the continuing video)
+params:
+  hold: 0.5–3 s (12–75 frames @25 fps); action peak — 0.5–1.2 s, character intro — 1.5–3 s, ending — 2–5 s
+  freeze_at: the peak frame (max pose, contact, emotional peak) with maximum sharpness in a ±2–3 frame window
+  entry: instant, on 1 frame; optionally flash(color='white', dur=1–3 frames, curve=outExpo)
+  push: on the freeze transform(scale=[1, 1.05–1.2], ease='linear') or a punch-in ×1.1–1.3 over 2–3 frames
+  color: optionally B&W or sepia in the freeze, transition over 0–6 frames
+  text: appears 3–8 frames after the freeze; hold ≥1 s; inside the safe zone
+  grain: live grain 0.02–0.05 during the freeze — so the frame doesn't look like a frozen player
+  exit: a cut (default) or resuming from the same frame; final freeze — a 0.5–1 s fade to black
+when: introducing a character or participant (intro, start of a chapter), the action peak before the drop or on a hit, a comic pause — a reaction or a "here I am", the final shot of the video or scene, a compilation of "moments" with a photo flash; at the start of an explainer — a freeze + a "that's me" caption; no more than 1 per 15–20 s (except the stop rhythm)
+avoid: a freeze on a blurred frame; a freeze with no purpose and no caption in a fast video — looks like a playback hang; sync speech cut off mid-word (unless a comic effect is intended); more than two different freezes with text in a row — it turns into a slideshow
+sfx: a camera shutter, a click or a vinyl scratch and the music cutting off at the moment of the freeze; a whoosh under the text appearing; an impact on the downbeat; for the ending — a ring, a drone or silence
+genres: {fanedit: signature, viral: signature, ugc: signature, sport: signature, drama: allowed, teaser: allowed, clips: allowed, fashion: allowed, explainer: allowed, motivation: allowed, phonk: allowed, product: allowed, epic: allowed, travel: allowed, calm: allowed}
+detect: |
+  ed_motion: holds — a run of 12+ frames (≥0.5 s) with frame diff < 0.6 right after frames with noticeable
+  motion; if there is a zoom-in over the freeze — ZOOM-IN with nonrigid ≈ 0 and zero residual after compensation
+  (a rigid picture, no local motion). Before the freeze there is often a flash frame (a white flash of 1–3 frames).
+  Visually: everything in the frame, including smoke, hair, water and grain, freezes instantly; often text appears
+  or the color changes. Difference from a static shot: a static shot has noise, breathing, small movements.
+  From time.super_slow_motion: there the motion isn't zero. From time.speed_ramp into a stop: there the stop is preceded by
+  3–8 frames of deceleration.
+engine: |
+  freeze(at=t_peak, dur=1.2)
+  + flash(color='white', t=t_peak, dur=0.08, curve='outExpo') + sfx('click'|'scratch', at=t_peak)
+  + transform(scale=[1, 1.1], t=[t_peak, t_peak+1.2], ease='linear')
+  + color(params={saturation: 0}) on the freeze segment (opt.) + grain(amount=0.03)
+  + text(content=<name/caption>, style='bold'|'cutout', anim='pop', t=[t_peak+0.2, t_peak+1.2])
+  t_peak = the peak frame with maximum sharpness in a ±3 frame window; put the freeze on a downbeat.
+  Photo variant: photo_card(border=0.04, rotate=-4..4°, shrink=0.85, t=t_peak).
+gen_hint: freeze frame of <subject> at the peak of <action> in mid-air, sudden still frame with a bold name title, cinematic, white camera flash, black-and-white photo look
+commands: ["freeze frame on the jump in #4 with a flash", "introduce the character with a freeze frame and their name at the start", "final freeze frame and title", "B&W snapshot on every hit of the chorus"]
+related: [time.speed_ramp, time.slow_motion, time.super_slow_motion, cut.flash, zoom.punch]
+evidence: {examples: 21, sources: "≈18", measured: "visual review only: 5 animation moments per example (scripted frame capture blocked by browser permissions); hold duration and text timing — ≈ estimates and industry practice, not measured", confidence: medium}
+---
+id: time.hyperlapse
+family: time
+group: time
+level: B
+aliases: [hyperlapse, moving timelapse, walklapse, drivelapse, vortex hyperlapse]
+what: a camera journey over a long distance, sped up 10–60 times — toward a landmark, around it or along a street; the anchor object holds at one point of the frame while the city, people and clouds rush past
+frames: |
+  1. Start: a wide shot of a street, square or embankment; the anchor — a tower, a cathedral, a bridge, a statue, an entrance — in the center
+     or on a third of the frame.
+  2. Travel: 2–4 s on screen (50–100 frames @25 fps) hold 20–200 m of path. The anchor stays in place
+     and smoothly grows (×1.3–3 per link) or turns sideways to the camera, the foreground and facades
+     rush past with parallax, people and cars flicker jerkily, clouds flow. Slight "jitter" and brightness flicker
+     from frame to frame — traces of shooting in photo series.
+  3. Common enhancements: during the move the camera tilts over and rotates by 45–180° (a "vortex"), especially
+     at a low angle among high-rises and under arches; a wide-angle or fisheye shot.
+  4. Seam: at the end of a link a sharp zoom-in with radial blur, a turn or passing behind a pillar — and the next
+     link in a different location; the video — a series of 4–12 links of 1.5–4 s each in rhythm with the music.
+variants:
+  - on foot to the target: a walk across a square or along an embankment to a cathedral, bridge, tower — the anchor grows in the center
+  - orbit: the camera circles a monument, tower, streetlamp in an arc, the anchor in the center, the background rotates around it
+  - vortex: a low angle, the camera rotates by 90–180° over 2–3 s, high-rises "twist"
+  - drivelapse: from the hood or the cabin, a night city and highway — lights stretched into streaks (long exposure)
+  - from the water: a boat or ferry heads toward a city panorama, the propeller wake at the bottom of the frame
+  - card on white: the frame is shrunk and rotated on a white field, turns and grows to full screen — a stylized entry into a link
+  - zoom jump: a zoom with radial blur onto a facade detail, a statue, a fresco — a bridge between links
+status: footage
+fallback: from an ordinary walking or driving video of ≥20 s (search the source footage for the cue "camera moves steadily forward") code does stabilization locked to the anchor, a ×10–30 speed-up and deflickering; from a photo series of one point — alignment to the anchor and assembly at one frame per photo; no material — generation of a link with the user's consent
+params:
+  rate: ×10–60 of real time when shooting video (typically ×15–20); with photos — 1 shot per 0.3–1 m of path, 1 shot = 1 frame
+  link: 1.5–4 s per link (38–100 frames @25 fps), typically 2.5 s; 4–12 links in a row
+  anchor: the anchor at one point of the frame ±5–10 % over the whole link; growth ×1.3–3 per link when moving toward the target
+  rotation: vortex — 90–180° over 2–3 s (30–90°/s), ease inOutQuad; without a vortex — a level horizon
+  stabilize: maximum, locked to the anchor (lock=track(object)); crop 10–20 %
+  interp: drop for daytime; blend (shutter 1.0) for night — lights into lines
+  deflicker: window of 7–15 frames — mandatory for photo series and exposure changes
+  seam: zoom_blur 6–10 frames (0.25–0.4 s) or spin 8–12 frames; seam on a downbeat
+when: intros and establishing shots of a location, a change of city or day in a travel video, an "all in one day" edit, the entry into the main part of the track; a series of links on the build and the drop; in non-travel genres — 1–2 links as a transition between locations
+avoid: a link longer than 5 s; a jerky source without stabilization (causes motion sickness); an anchor wandering around the frame; a vortex more often than once every 15–20 s; mixing day and night links without color preparation
+sfx: a whoosh on every seam and every turn of the vortex; a riser under a series of links; sped-up city noise or silence under the music; a hit on a change of location
+genres: {travel: signature, epic: allowed, motivation: allowed, teaser: allowed, product: allowed, explainer: allowed, viral: allowed, clips: allowed, fanedit: allowed, phonk: allowed, ugc: allowed, calm: allowed}
+detect: |
+  ed_motion: a long steady ZOOM-IN ×1.3–3 over 2–4 s with a peak ≤×1.05/frame and nonrigid >0.3 (real
+  forward motion with parallax), the zoom center stable on the anchor; for an orbit — SHIFT of 2–6 % per frame with
+  a stationary anchor; for a vortex — ROTATE 90–180° over 1.5–3 s. Luma flicker ±1–4 from frame to frame without cuts,
+  a small residual jitter of 0.2–0.6 %. Cuts every 1.5–4 s, at the seams sharpness drops to ×0.2–0.5
+  (zoom blur).
+  Visually: people, cars and clouds move jerkily and too fast while the camera is smooth.
+  Difference from time.timelapse: there the camera stands still or moves 1–2 m on a slider, the main thing is the change of light.
+  From time.fast_motion: there the distance is short, no anchor. From a regular drive-through: the camera's speed
+  is higher than any real walking speed.
+engine: |
+  stabilize(strength=1.0, lock=track(object:<anchor>), crop=0.15)
+  → speed(rate=15, interp='drop'|'blend', shutter=1.0 for night) → deflicker(window=11)
+  → optionally transform(rotate=[0, 180], center=anchor, ease='inOutQuad') for a vortex
+  Series: chain(links[], per_link=2.5, seam=transition('zoom', dur=0.3) + blur(kind='zoom')), seams on the beats.
+  From photos: align_stills(photos[], anchor=track(object), fps=25) → deflicker(window=11).
+gen_hint: smooth hyperlapse walking toward <landmark> in <city>, the landmark stays locked in the center of frame while streets, people and clouds rush past, wide angle, stabilized, daylight
+commands: ["hyperlapse to the cathedral in the intro", "make a hyperlapse from the walk in #2: speed it up 15x, tower in the center", "vortex hyperlapse on the transition to the night city", "a series of hyperlapses through cities on every beat"]
+related: [time.timelapse, time.fast_motion, zoom.infinite, zoom.crash]
+evidence: {examples: 30, sources: "≈15", measured: "visual review only: 3–4 animation moments per example (scripted frame capture blocked by browser permissions); speed, link length and vortex angles — ≈ estimates, not measured", confidence: medium}
+---
+id: time.motion_blur
+family: time
+group: time
+level: B
+aliases: [motion blur, motion smear, long exposure, shutter drag, dragged shutter, slow shutter]
+what: deliberate heavy motion blur, as with a long exposure — everything that moves (or the whole frame on a camera jerk) stretches into streaks of 3–25 % of the frame; speed, chaos, dream, detachment
+frames: |
+  1. A source with motion: a fast subject crossing the frame, a handheld camera in a crowd, a whirl of people around a motionless
+     character, sharp head turns. More often night or darkness with point light sources.
+  2. Each frame is "exposed" for the whole interval or longer: whatever moves stretches into streaks along the motion,
+     3–25 % of the frame width (typically 8–15 %), lights draw lines.
+  3. Two sources of blur: (a) camera movement — the whole frame smears in one direction, the direction changes with every
+     jerk (anisotropy 0.05–0.4); (b) movement of objects with a still camera — the background and everything static are sharp,
+     people and hands dissolve; a motionless character is 3–11 times sharper than the crowd around them.
+  4. The blur pulses: peaks on jerks (up to 16–22 % of the width), on a "landing", a hit or a flash the frame becomes
+     sharp within 0.2–0.5 s.
+  5. Often combined with a flash (a sharp core + a tail), a ragged frame rate and a dark vignette.
+variants:
+  - panning with a fast subject: a car or a runner — horizontal streaks 14–22 % of the width, then a sharp shot on the landing
+  - handheld chaos: a party, a crowd, a fight — blur of 3–16 % in a constantly changing direction, flashes of light
+  - still in the flow: the camera stands or slowly rotates, a blurred crowd swirls around, the character sharp
+  - head smear: fast turns of the face produce a horizontal trail of 9–24 % of the width — anxiety, horror, a split self
+  - flash with a slow shutter: a sharp figure with a glowing tail, night, an erratic camera
+  - dreamy: a soft blur of a portrait or a swimmer, doubled contours — a dream, a memory
+status: code
+fallback: the best result — a source with a long exposure or 50–60 fps (frame averaging); at 25 fps with fast motion, averaging produces separate copies instead of streaks — then blur by optical flow or a directional blur along the camera vector; no motion in the frame — destabilize or generation
+params:
+  shutter: equivalent of 360–1440° (1/25–1/6 s); synthesis — the average of 4–8 frames at 50–60 fps or 8–16 intermediate frames via optical flow
+  blur_len: 3–25 % of the frame width, typically 8–15 %; at jerk peaks 16–22 %
+  direction: along the global motion (camera) or along the local flow (objects)
+  adaptive: blur length ∝ speed; on a stop — sharp within 0.2–0.5 s
+  flash_core: 0 or 0.3–0.6 — mix a sharp frame over the blur (flash effect), 1–2 frames of white flash
+  duration: from a 0.3 s accent on a jerk to a whole 3–6 s scene
+when: speed (cars, sport, running), clubs and parties, panic, a fight, a chase, intoxication, anxiety and horror (head smear), loneliness in a crowd (still in the flow), dreams and memories; night scenes and the build before the drop; an accent on every camera jerk
+avoid: a face that needs to be recognized, and lip sync; text, UI, product details; tutorial videos; frame averaging at 25 fps with fast motion — you get doubles instead of blur; whole-frame blur for longer than 6 s in a row — causes motion sickness; a flat daytime shot — the blur looks like a defect or a missed focus
+sfx: a whoosh on every jerk; a drive-by — a hum with Doppler; in the dreamy variant — music under a low-pass; on a flash — a shutter click
+genres: {fashion: signature, sport: allowed, epic: allowed, drama: allowed, fanedit: allowed, teaser: allowed, travel: allowed, motivation: allowed, clips: allowed, ugc: allowed, phonk: allowed, viral: allowed, product: allowed, explainer: forbidden}
+detect: |
+  Frame: strong directional blur — gradient anisotropy ≤0.4 (≤0.1 at peaks); for the derivative along the blur,
+  autocorrelation gives a negative peak at the blur length L = 3–25 % of the width (the sign of a "box" exposure trail).
+  Camera blur: ed_motion — large SHIFT/ROTATE of 5–60 %/frame, min sharpness ×0.06–0.5 on jerks.
+  Object blur: no global events, but on the sharpness map static things are 3–11 times sharper than moving ones.
+  Frames are unique (no holds), unless the move is combined with time.step_print.
+  Difference from time.echo_trail: there separate copies persist for several frames after stopping; blur is present only during motion.
+  From shallow depth of field: there the blur is round (anisotropy 0.8–1) and doesn't depend on motion.
+  From pan.whip: there it is a short 2–6 frame jerk used as a transition; here blur is a stable texture of the scene.
+engine: |
+  motion_blur(mode='camera'|'frames'|'flow', shutter=720, samples=8, adaptive=True, flash_core=0, t=[t0, t1])
+  — camera: along the global motion vectors (as in ed_motion) blur(kind='directional', amount=|v|·shutter/360, angle=dir(v));
+  — frames: ffmpeg tmix=frames=N (N = shutter/360 · fps_src/25), better on a 50–60 fps source;
+  — flow: minterpolate=fps=200:mi_mode=mci → tmix=frames=8 → fps=25 (real blur at 25 fps);
+  flash_core: composite(sharp frame, opacity=0.4, blend='screen') + flash(dur=1 frame).
+  Put the pulsing on jerks and beats: beat_sync(event='blur_peak', grid='1/4').
+gen_hint: night scene, <subject> <dancing in a crowded club / sprinting / spinning around>, slow shutter speed long exposure look, heavy motion blur streaks and light trails, erratic handheld camera, occasional on-camera flash freezing a sharp silhouette inside the blur
+commands: ["dragged shutter on the party in #4", "motion blur on the car drive-by in #2", "the crowd as a blurred stream around the motionless character", "motion blur on every camera jerk in the chorus"]
+related: [time.echo_trail, time.step_print, pan.whip, zoom.crash, handheld.shaky, focus.shallow]
+evidence: {examples: 8, sources: 8, measured: "blur length 3–22 % of the width: car drive-by 14–22 % with anisotropy 0.04–0.07; handheld camera in a club 2.5–16 % (median 7.8 %), direction jumps 0–172°; night dance 2–11 %; head smear in the face zone 9–24 % (anisotropy 0.12–0.45); a motionless figure 3–11 times sharper than the swirling crowd; 2 of 8 with a flash; sharpness returns within ≈0.4 s on the landing", confidence: medium}
+---
+id: time.slow_motion
+family: time
+group: time
+level: B
+aliases: [slow motion, slow-mo, slowdown, high-speed footage, high-speed filming, overcranking, high frame rate, HFR]
+what: playback at 1/2–1/5 of real speed to stretch a peak of motion, a walk or an emotional beat, while the music keeps its normal tempo
+frames: |
+  1. Entry: usually by a cut from a normal-speed shot (if the speed changes within the shot, that is time.speed_ramp).
+  2. Action: 2–5 s on screen (50–125 frames @25 fps) containing 0.5–2 s of real time. Hair, fabric,
+     liquid, smoke, debris and confetti "float", falling objects hang, a running stride lasts ≈0.6–1.2 s
+     instead of 0.3 s. The frames are crisp: blur on fast objects is less than you'd expect (short exposure when shooting
+     at 50–120 fps). The camera often moves itself (tracking alongside a runner, a slow push-in, an orbit) — also smoothly,
+     without small shakes: handheld footage in slow motion "glides".
+  3. Peak: the jump, punch, throw, swing or glance falls in the middle or the second third of the shot.
+  4. Exit: a cut to normal speed, more often on a downbeat; less often — a dissolve into the next slow-motion shot.
+variants:
+  - hero walk: one person or a group walks toward the camera, ×2–2.5, shot 3–5 s, often night or backlight
+  - body in motion: running, jumping, dancing, pole acrobatics — hair and clothes flow, ×2–4
+  - chaos and destruction: debris after an explosion, a crash, a car flipping over, objects in the air — ×3–8
+  - objects in close-up: falling fruit and bags, a water splash, a burner flaring up, a spinning part, confetti on the floor — ×4–10
+  - reaction and comedy: an awkward jump, thrown popcorn, a facial reaction — the slowdown makes the moment solemnly funny
+  - music or sports detail: a cymbal hit, a ball kick, a player's feet in close-up
+status: code
+fallback: in code reliably up to ×2–2.5 (optical flow); ×3 and stronger — only from a 75+ fps source (search the frame-rate metadata of the user's source footage) or generation of an HFR shot with consent; don't slow down shots with complex occlusion (a crowd, a fence, hair on a busy background) by interpolation — take another shot, time.freeze or normal speed
+params:
+  rate: 0.25–0.6 of real speed (slowdown ×1.7–4), typically 0.4–0.5
+  source_fps: 50/60 fps → rate 0.5/0.42 without frame synthesis; 100/120 fps → 0.25/0.21; 25/30 fps → interpolation only, not below 0.4
+  interp: drop (every source frame without synthesis) if src_fps ≥ 25/rate; otherwise flow (minterpolate mci + aobmc + bidir); blend — only at rate ≥ 0.7, otherwise ghosting
+  duration: 1.5–5 s on screen (38–125 frames @25 fps), typically 2.5–3 s (60–75 frames)
+  peak_position: 40–70 % of the shot length
+  camera: any camera movement of its own is fine; ×2 slow motion halves the frequency of handheld shake
+  audio: either mute the source audio or slow it down as an effect (pitch down 5–12 semitones + low-pass 1–2 kHz); music — at normal tempo
+  deflicker: with artificial light in a 100+ fps shot — remove the brightness pulsing (window of 5–9 frames)
+when: the peak of an action (a jump, a punch, a throw, a splash), the character's walk, a glance or a smile at an emotional point, a product with particles or liquid; on a breakdown, half-time, a long note or a vocal pause; the classic — slow motion on the build and normal speed on the drop, in epic genres — slow motion on the drop itself; in fast genres ≤25 % of the running time and no more than 2 slow-motion shots in a row, in epic and sport — up to 50 %
+avoid: sync speech and singing in the shot (lips "drift"); shots shorter than 1.5 s on screen (the slowdown doesn't read); interpolating 25 fps beyond ×2.5 — rubbery edges and mush; noisy night shots through flow; identical slow-motion shots in a row without a change of shot size; a comic pause when the joke's timing relies on speed
+sfx: on entry reverse_whoosh or sub_drop; inside — a muffled, pitched-down ambience or silence, music through a 0.8–2 kHz low-pass for an "underwater" sound; at the peak — an impact or a swell; exit to normal speed — a hit on the downbeat
+genres: {epic: signature, sport: signature, motivation: signature, fanedit: signature, fashion: signature, drama: allowed, product: allowed, travel: allowed, viral: allowed, phonk: allowed, teaser: allowed, clips: allowed, ugc: allowed, calm: allowed, explainer: allowed}
+detect: |
+  Visually: motion slower than physics — a thrown or falling object hangs longer than 0.5 s, running — fewer than 2 steps
+  per second, hair, fabric, liquid flow as if underwater, yet the frames are sharp.
+  ed_motion: the camera floats — SHIFT/ZOOM events lasting ≥1 s with a peak ≤1 %/frame and shake jitter_pct ≲0.2
+  even with handheld shooting; frame diff low relative to the visible action; no cuts within the shot.
+  Signs of fakery: optical flow — the background dragging along the contours of arms and legs; blending — semi-transparent double
+  contours; duplication — holds of 1–2 frames at a regular step (jerky). Real HFR under artificial
+  light — brightness pulsing with a period of 2–10 frames.
+  Difference from time.speed_ramp: the speed is constant for the whole shot. From time.super_slow_motion: there the motion almost
+  stands still (×8+), a punch lasts seconds. From time.freeze: the motion doesn't stop. From step printing: no jerks.
+engine: |
+  speed(rate=0.4, interp='flow') on the source segment [a, b] — by default;
+  if source_fps(clip) ≥ 25/rate — speed(rate=25/source_fps, interp='drop') (conform without synthesis);
+  + deflicker(window=7), if the shot is HFR under artificial light
+  + audio_speed(rate, pitch='mute'|'follow', semitones=-7, lowpass_hz=1500)
+  + sfx('reverse_whoosh', at=t_in, align='peak') + sfx('impact', at=t_out) — exit on a downbeat.
+  Screen length = (b−a)/rate; put the action peak on a beat of the track.
+gen_hint: cinematic slow motion shot of <subject> <action>, filmed at 120 fps, hair and fabric flowing, particles and debris floating in the air, smooth tracking camera, crisp detail
+commands: ["slow motion on the jump in #4", "slow #2 down by half", "high-speed slow motion on the splash at 0:12", "all of the character's walks — in 50 % slow motion"]
+related: [time.super_slow_motion, time.speed_ramp, time.freeze, time.fast_motion, time.bullet_time]
+evidence: {examples: 34, sources: "≈30 (different works, judging by appearance)", measured: "visual review only: 3–4 animation moments per example (scripted frame capture blocked by browser permissions); factors and durations — ≈ estimates and industry practice, not measured", confidence: medium}
+---
+id: time.speed_ramp
+family: time
+group: time
+level: B
+aliases: [speed ramp, speed ramping, ramp, speed change, time remapping, time remap, speed-up and slow-down]
+what: "fast–slow–fast inside one uncut shot: the footage rushes in, brakes hard into slow motion at the peak of the action, then rushes out again, so the motion itself keeps time with the music"
+frames: |
+  1. Speed-up: 0.3–1 s of action at ×2–5 — the motion is blurred, dancers and cars have semi-transparent trails
+     (frame blending), the camera rushes by with blur.
+  2. Braking: within 3–8 frames (0.12–0.3 s) the speed drops to 0.2–0.4 — exactly at the peak: the highest
+     point of a jump, a car flipping, a ball contact, a ball or a fist right at the lens, a throw of popcorn,
+     flowers or money, a swish of fabric, an exhale of smoke, a head turn toward the camera.
+  3. Slow motion: 0.5–1.5 s of screen time — the peak can be examined, the frames are sharp.
+  4. Exit: a reverse speed-up to ×1–4 over 3–6 frames — the action plays out quickly; often a cut right away.
+     Speed switches sit on downbeats: the braking — on the hit, the speed-up — on the next beat.
+variants:
+  - fast → slow: a speed-up and braking at the peak (a jump, a skateboard trick, a punch, a throw) — the most common
+  - slow → fast: a slow-motion entry and a sharp speed-up on the drop or an exit from the frame
+  - sawtooth: several fast–slow cycles on the beats within one shot — a dance, a fight, group choreography (a continuous beat pulse of speed through the whole video is a separate move, time.velocity)
+  - with trails: fast chunks with semi-transparent "ghosts" (blending of 3–8 frames) — a dance, wrestling, a car
+  - camera jerk: a fast camera move or turn with blur → abrupt slow motion on a face or the character
+  - ramp to a stop: braking to 0 and a freeze frame (transition into time.freeze)
+status: code
+fallback: deep slow motion in a ramp (0.25 and slower) — needs a 50+ fps source; at 25–30 fps braking no lower than 0.4–0.5 via optical flow, and deeper — search the source footage for an HFR version of the shot, or replace the slow-motion part with time.freeze with a zoom-in
+params:
+  fast: ×1.5–5 (typically ×2.5–3); trails — blending of 3–8 neighboring frames or blur(kind='directional')
+  slow: 0.15–0.5 (typically 0.25–0.35); deeper than 0.4 — only from 50+ fps
+  ramp_down: 3–8 frames (0.12–0.32 s), ease inOutCubic; fully instant — 1–2 frames (a jolt)
+  ramp_up: 3–6 frames (0.12–0.24 s), ease inCubic
+  slow_hold: 0.4–1.5 s of screen time (10–38 frames @25 fps), typically 0.7 s
+  cycle: sawtooth — 1 cycle per 1–2 beats (at 120 BPM 0.5–1 s); 2–4 cycles in a row
+  anchor: start of slow motion = action peak = downbeat (align the ramp so that the peak lands on the beat)
+  shot_length: the whole shot 1.5–4 s on screen
+  interp: flow (optical flow) for the slow-motion part, blend for the fast part; drop — if the source is HFR
+  audio: mute the source audio or stretch it along the curve; on the braking — a "sucking in" of the sound (pitch down + low-pass)
+when: the peak of a motion in a dance, sport, a stunt, a fight, a thrown object, the character's walk; on the drop (braking = hit), on a change of track section; sawtooth — on fast beats in fan edits and music videos; 1 ramp per 4–8 bars in fast genres, in epic and sport — on every key action
+avoid: a shot without a clear peak (the ramp brakes on "nothing"); sync speech; a ramp at 25 fps deeper than 0.4 — mush; a ramp on every shot in a row — the rhythm is lost; calm and explainer videos; braking out of sync with the beat — looks like a mistake
+sfx: on the speed-up — a whoosh or a riser, on the braking — an impact, sub_drop or reverse_whoosh peaking at the moment of slowdown; in slow motion — muffle the music with a 1–2 kHz low-pass; on the exit — a short whoosh
+genres: {fanedit: signature, sport: signature, phonk: signature, viral: signature, drama: signature, epic: allowed, motivation: allowed, fashion: allowed, teaser: allowed, clips: allowed, travel: allowed, product: allowed, ugc: allowed, calm: forbidden, explainer: forbidden}
+detect: |
+  Within a shot without a cut the speed of visible motion changes 4–15 times: in ed_motion the same
+  SHIFT/ZOOM event has a peak %/frame at the start 4+ times higher than in the middle (or is split into fast and slow
+  parts), frame diff drops in a step over 3–8 frames, sharpness (sharp) rises at the moment of braking —
+  blur and trails go away. In the fast part — semi-transparent double contours (blend) or directional blur.
+  Visually: a jump or a throw "hangs" at the top point, then the action plays out in a rush.
+  Difference from time.slow_motion: there the speed is constant. From time.freeze: the motion doesn't stop
+  completely (except the "ramp to a stop" variant). From a cut between fast and slow takes: no cut in ed_motion,
+  background and camera are continuous.
+engine: |
+  speed(curve=[[0, 2.5], [t_peak−0.2, 2.5], [t_peak, 0.3], [t_peak+0.7, 0.3], [t_peak+0.9, 2.5]],
+        interp='flow', ease='inOutCubic')
+  + echo(trails=4, decay=0.6) or blur(kind='directional', amount∝speed) only on segments with rate ≥ 2
+  + audio_speed(curve, pitch='follow'|'mute')
+  + sfx('whoosh', at=start of the speed-up) + sfx('impact', at=t_peak, align='attack')
+  t_peak = the moment of the action peak (pose track, vertical max, contact) — snap it to the nearest downbeat.
+  Sawtooth: velocity_pattern(beats, fast=3, slow=0.3, split=0.5) — one cycle per beat.
+gen_hint: dynamic speed ramp shot of <subject> <action, e.g. skateboard kickflip, jump off a roof, dancer's spin>, fast real-time approach with motion blur then sudden slow motion at the peak of the action, then speeds up again, single continuous take
+commands: ["ramp on the jump in #3: speed-up and slow motion at the top point", "brake into slow motion on the hit on the drop", "speed up until the throw, then slow down to 30 %"]
+related: [time.velocity, time.slow_motion, time.fast_motion, time.freeze, time.super_slow_motion, time.echo_trail, zoom.crash]
+evidence: {examples: 50, sources: "≈40 (different works, judging by appearance)", measured: "visual review only: 3–7 animation moments per example (scripted frame capture blocked by browser permissions); factors and transition durations — ≈ estimates and industry practice, not measured", confidence: medium}
+---
+id: time.step_print
+family: time
+group: time
+level: B
+aliases: [step printing, step print, low frame rate, choppy, choppy frame rate, laggy frame, animating on twos]
+what: the motion "breaks up" into 5–12 images per second — each phase freezes for 2–6 frames and is usually blurred, as with a long exposure; chaos, adrenaline, disorientation
+frames: |
+  1. Source — a shot with strong motion: a handheld camera, running, a crowd, a drive-by, the lights of a night city.
+  2. Each phase of motion freezes for 2–6 frames @25 fps (80–250 ms; more often 3–4 frames = 120–160 ms),
+     then the picture jumps to the next phase: 5–12 unique images per second on screen
+     (median ≈8). On fast pans the jump is 2–6 % of the frame width, on camera jerks up to 20–30 %.
+  3. In the classic form each frozen phase is blurred, as if exposed for the whole interval: lights stretch
+     into streaks, hands and faces are smeared along the motion, the static background stays readable.
+  4. The rhythm of holds is uneven: 2 and 3, or 3, 4 and 5 frames mixed — time feels "alive" and ragged.
+  5. The move holds for the whole shot (1.5–5 s) or the whole scene; it is often interrupted by cuts of 1–3 frames and flashes.
+variants:
+  - smeared (classic): a hold of 3–6 frames + full blur over the interval — a chase, a crowd, a crush, night
+  - clean choppy: a hold of 2–3 frames without blur, the frames sharp — a walk, a dance, a street, a rhythmic beat
+  - with dissolves: neighboring phases flow into each other (mix 1/3 → 1/2 → 2/3), semi-transparent doubles are visible — a memory, a dream, intoxication
+  - stepped slow-mo: the same on top of a ×0.33–0.5 slowdown — viscous, stretched time (≈, judging by 1–2 examples)
+  - in a montage jumble: choppy shots mixed with flashes and cuts of 1–2 frames (3 of 14 examples)
+status: code
+fallback: on a static shot the effect doesn't read — first add motion (destabilize, jerks via crop) or take a shot from the source footage with a handheld camera and motion in the frame; it is worth generating ordinary motion and adding the choppiness in code
+params:
+  hold: 2–6 frames @25 fps (80–240 ms), typically 3 (120 ms) → 8.3 unique frames/s
+  unique_fps: 4–12, typically 6–9
+  shutter: 0–1 — the fraction of the hold interval averaged into one frame (blur); classic 0.8–1, clean variant 0
+  blend: none | cross — a crossfade between neighboring phases (mix steps 1/3, 1/2, 2/3)
+  hold_jitter: ±1 frame on 20–30 % of holds
+  speed: 1.0 (main); 0.33–0.5 for stepped slow-mo
+  duration: 1.5–5 s per shot; a whole scene — up to 15–20 s if interrupted by normal shots
+  beat_lock: phase change on 1/16 or 1/8 of a bar (at 120 BPM 1/16 = 125 ms ≈ 3 frames)
+when: chaos, a chase, a fight, panic, a crush, a party, a night city, backstage and a runway show; adrenaline, intoxication, loss of control; a verse or the build before the drop when nervous energy is needed without speeding up the cutting; the dissolve variant — memory and dream. No more than 1–2 scenes per minute of video
+avoid: sync speech (lips break up); text, UI and product that need to be read; static shots — no visible effect; a source that already has dropped frames or a low frame rate; smooth slow motion and the choppy move in one shot without intent; stretches longer than 6 s in a row; dark noisy shots with full blur turn to mush
+sfx: a dedicated sound is not required; put the phase changes on the hi-hat or 1/16; on camera jerks — a short whoosh; for disorientation — muffle the music with a low-pass filter for the duration of the move
+genres: {fashion: signature, drama: allowed, epic: allowed, sport: allowed, travel: allowed, fanedit: allowed, phonk: allowed, teaser: allowed, clips: allowed, ugc: allowed, viral: allowed, motivation: allowed, calm: forbidden, explainer: forbidden, product: forbidden}
+detect: |
+  The difference between neighboring frames alternates near-zeros (≤5–10 % of a typical jump) in runs of 1–5 with sharp jumps:
+  5–12 unique frames per second in a 20–30 fps container, holds of 80–250 ms, an uneven rhythm.
+  ed_motion: many short holds of 2–6 frames and/or "cuts" every 2–6 frames within one scene (the palette
+  doesn't change) — these are phase jumps, not cuts; ZOOM/SHIFT/ROTATE events 1 frame long with a large factor.
+  Blur: directional blur on everything that moves (gradient anisotropy 0.18–0.4 versus 0.6–0.9 for sharp frames).
+  Dissolve variant: a frame is a linear mix of its neighbors (mix ≈1/3, 1/2, 2/3), no exact repeats.
+  Difference from time.freeze: there it is a single hold of 0.5 s or more. From cut.stutter: there a chunk repeats with a jump back.
+  From slow motion: there every frame is unique. From time.echo_trail: there copies are overlaid within one frame and there are no holds.
+  From a corrupted file: there dropped frames are rare and random.
+engine: |
+  step_print(hold=3, shutter=1.0, blend='none', jitter=0.2, t=[t0, t1])
+  — average hold neighboring frames weighted by shutter (blur), take every hold-th one, duplicate up to 25 fps
+  (ffmpeg: tmix=frames=3,fps=25/3,fps=25); clean variant — without tmix; blend='cross' — framerate/minterpolate
+  with mi_mode=blend instead of duplicates. Stepped slow-mo: speed(rate=0.5, interp='drop') before step_print.
+  Align the phase changes to the track: beat_sync(event='phase', grid='1/16').
+gen_hint: chaotic handheld night scene, <subject> pushing through a dense crowd, neon signs and headlights, fast erratic camera movement, long-exposure motion smear, gritty film texture, normal frame rate (stutter is added in post)
+commands: ["step print on the chase in #3", "make it a choppy 8 frames per second with blur on the verse", "low fps without blur on the walk in #5", "the memory in #7 — step printing with dissolves"]
+related: [time.freeze, time.speed_ramp, time.motion_blur, time.echo_trail, cut.stutter, cut.quick, handheld.shaky]
+evidence: {examples: 14, sources: "up to 14 (7 different ones in each of two sections)", measured: "phase hold 80–250 ms (2–6 frames @25); 5–11 unique frames/s in 10 of 14 (median ≈8), 15–16 in 2 soft examples; strong directional blur (anisotropy 0.18–0.39) in 5 of 14, general softness in 3 more; dissolve between phases (mixes 0.33/0.5/0.67) in 2 of 14; in 3 of 14 — mixed with cuts of 1–3 frames; the rhythm of holds is uneven", confidence: high}
+---
+id: time.super_slow_motion
+family: time
+group: time
+level: B
+aliases: [super slow motion, super slo-mo, high-speed camera, high-speed footage, 1000 fps, extreme slowdown, high-speed filming]
+what: extreme slowdown of 10–40 times or more — a hit, a wingbeat, a flash or a splash lasting fractions of a second stretches over several seconds and reveals details invisible to the eye
+frames: |
+  1. Setup: the subject or a face in close-up, centered; the background dark or plain (sky, a wall), hard light,
+     often backlight. The camera is still or shifts very slowly.
+  2. Event: 0.05–0.3 s of real time take 2–6 s of screen time (50–150 frames @25 fps). A fist, a ball, a pie or a
+     blast of air hits a face — skin and cheeks ripple in waves, crumbs and droplets hang; a single wingbeat of a bird
+     takes about a second; a racket slowly deforms a ball; shards, sparks, splashes fly apart barely perceptibly;
+     flames flow like liquid; hair in a jump sways as if underwater.
+  3. Ending: a cut before the event is over — or a speed-up to normal speed (time.speed_ramp).
+variants:
+  - hit to the face: a fist, a ball, a pie or a jet of air — a wave across the skin, droplets and crumbs flying
+  - sport: a jump with a racket against the sky, ball contact, players at the net, a top view of a table
+  - wings: a small bird hovering at a flower, a white bird on a black background
+  - fire, explosion, destruction: a burning stuntman in the air, a flash, glass and earth flying apart
+  - objects and music: a stick hitting a cymbal with a cloud of dust, bouncing fruit, splattering paint
+  - dance and crowd: hair and clothes in a jump, a slow wave of motion through a group
+  - reaction: a face or a gesture (covering the ears, a grimace) — a comic effect from an almost frozen moment
+status: footage
+fallback: needs a 240+ fps source (a phone slow-motion mode or a specialty camera) — search by frame rate in the metadata; on top of 120–240 fps code adds no more than ×2 via optical flow; don't do it from 25–60 fps (mush) — instead use time.freeze with a slow zoom-in (zoom.slow) or time.slow_motion ×2; generating such a shot — with the user's consent
+params:
+  rate: 0.01–0.1 of real speed (×10–100), typically ≈0.03–0.05 — equivalent to shooting at 500–1000 fps
+  source_fps: 240 fps → rate 0.104 (×9.6) at 25 fps; 480 → 0.052; 1000 → 0.025 (×40)
+  real_event: 0.05–0.4 s of real time → 2–6 s of screen time (50–150 frames @25 fps), typically 3 s
+  interp: drop (every source frame); flow — only an extra ×2 on top of 120–240 fps
+  framing: the subject in close-up and centered, a clean or dark background, hard light; the camera static
+  deflicker: mandatory under artificial light — mains flicker is visible already at 240 fps (window of 7–11 frames)
+  audio: mute the source audio; silence, a low drone or a stretched hit
+when: a climactic hit, a goal, ball contact; a product with liquid, powder or splashes; a wow shot in an intro or teaser; a comic reaction (a face in a blast of air, a pie in the face); the silence before the drop or a long note; no more than 1–2 times per video, 2–6 s each
+avoid: a 25–60 fps source (×10 interpolation gives mush and rubbery edges); fast cutting; a shot longer than 6 s without development; speech and sync sound; a series in a row — the effect disappears
+sfx: silence or a low drone; at the moment of contact — a stretched impact with a long tail or a sub_drop; before the exit — reverse_whoosh, on the exit to normal speed — a sharp return of the sound on a downbeat
+genres: {product: signature, sport: signature, viral: allowed, epic: allowed, motivation: allowed, fanedit: allowed, teaser: allowed, fashion: allowed, explainer: allowed, drama: allowed, calm: allowed, clips: allowed, ugc: allowed}
+detect: |
+  Visually: an event that is fast by nature (a hit, an explosion, a wingbeat, a bounce) lasts more than a second on screen;
+  droplets are round and hang; skin ripples in waves; yet the frame is almost still.
+  ed_motion: no global events or one slow shift; frame diff very low over 2–6 s,
+  no holds (this is not a freeze frame — particles drift slowly); under artificial light — periodic
+  luma pulsing with a period of 3–20 frames; often a dark background (low luma_med) and hard light.
+  Difference from time.slow_motion: there walking and running still read as motion (×2–5). From time.freeze: here
+  the motion is not zero. From bullet time: the camera doesn't orbit a frozen moment.
+engine: |
+  speed(rate=25/source_fps(clip), interp='drop') on the HFR segment (240 fps → 0.104; 1000 fps → 0.025)
+  + if another ×2 is needed: speed(rate=…/2, interp='flow') only on top of 120–240 fps
+  + deflicker(window=9)
+  + audio_speed(rate, pitch='mute') + sfx('sub_drop', at=t_in) + sfx('impact', at=t_contact, align='peak')
+  No HFR — freeze(at=t_contact, dur=1.5) + transform(scale=[1, 1.1], ease='linear') instead of the extreme slowdown.
+gen_hint: "extreme super slow motion at 1000 fps, <impact event, e.g. a fist hitting a face, a racket hitting a ball, a small bird beating its wings>, skin ripples, droplets and particles suspended in mid-air, dark background, hard backlight, static camera, ultra crisp detail"
+commands: ["super slow motion on the hit in #3", "stretch the ball contact to 3 seconds", "use the 240 fps source on the splash", "extreme slowdown on the final shot of the teaser"]
+related: [time.slow_motion, time.speed_ramp, time.freeze, time.bullet_time]
+evidence: {examples: 26, sources: "≈20 (different works, judging by appearance)", measured: "visual review only: 3–4 animation moments per example (scripted frame capture blocked by browser permissions); factors — ≈ estimates from the physics of the events and industry practice, not measured", confidence: medium}
+---
+id: time.time_slice
+family: time
+group: time
+level: C
+aliases: [time slice, time slices, time stripes, day-to-night slices, time stack, time gradient, time rings]
+what: one static frame is cut into stripes, rays, rings or nested frames, and each slice shows its own time from a timelapse; the sky in a single frame smoothly passes from day to night, and in animation the slices flow like a wave of time
+frames: |
+  1. Base: a tripod timelapse of one spot over 1–3 hours — a city, a tower, an embankment, a street, a sunset over water,
+     a flower by a window; the light changes from day through sunset to night.
+  2. The frame is divided into 10–40 slices with hard boundaries in one of these shapes: vertical or horizontal
+     stripes; fans of rays from a point (the top of a tower, the sun, a flower); concentric rings around the sun
+     or a dome; nested rectangles toward the vanishing point of a street; a grid of squares. Neighboring slices are neighboring
+     moments, so a smooth gradient runs across the frame: light blue → pink → orange → dark blue,
+     the city lights switch on from slice to slice. The sun or moon in the stripes lines up as a "staircase" —
+     a diagonal chain of positions.
+  3. Often only the sky is sliced: buildings, water and the foreground stay in one time (usually night with lights).
+  4. Animation: each slice plays the timelapse with a phase offset — rings spread out from the center, rays
+     rotate, stripes crawl; a cycle of 2–6 s, often looped.
+variants:
+  - stripes: vertical (time from left to right) or horizontal; the sun or moon runs in a diagonal staircase
+  - fan of rays: wedge slices from the top of a tower, a spire, a flower — the sky as an unfolded fan of hues
+  - rings: concentric circles around the sun over water or around a dome, spreading out or converging
+  - tunnel of frames: nested rectangles in the gap of a street toward the vanishing point — time recedes into the depth of the frame
+  - mosaic: a grid of squares of different times across the sky over a harbor or a square
+  - freeze frame: a static "photo" composition, no animation, 2–4 s on screen
+status: footage
+fallback: needs a static timelapse with a change of light (search the source footage for long tripod shots of a sunset, a city, a window); if there is only one static frame — a code simulation where each slice gets its own color grade along the scale day → golden hour → blue hour → night, and the window lights get a glow via a mask of bright points; night and day frames of the same spot — two shots and blending by slices are enough; timelapse generation with consent
+params:
+  slices: 10–40, typically 16–24
+  shape: stripes_v / stripes_h / wedges (a fan from a point) / rings (from a point) / rects (nested toward the vanishing point) / grid
+  slice_size: stripes 3–8 % of the frame width; wedges 3–10°; rings — a step of 3–6 % of the diagonal, can narrow toward the center
+  center: the sun, the top of a tower, a flower or the vanishing point [x, y]; for stripes — the gradient direction (angle)
+  span: the whole timelapse from day to night (usually 60–180 min of real time) distributed across the slices; order — from the center outward or from left to right
+  mask: sky only (sky segmentation or a brightness-and-color mask) or the whole frame
+  edge: hard boundary, feather 0–2 px; no softening, otherwise the step between slices doesn't read
+  flow: animation — a phase shift of 1 slice per 2–6 frames; a cycle of 2–6 s (50–150 frames @25 fps), can be looped
+  duration: 2–5 s on screen; static version 2–3 s
+when: the intro or ending of a travel video or a video about a city, "a whole day in a second", a day → night transition, a title card under the location name, a pause on a long note; 1 per video, 2 at most
+avoid: the camera moved (the slices won't line up, breaks in facades are visible); no change of light in the timelapse — the slices look the same; people and cars in the foreground without a mask (ragged pieces of bodies); fast cutting — the shot needs 2+ s for the eye to read the gradient
+sfx: a soft swell or a pad over the whole shot; on the ring animation — quiet ticks or a "shimmer" on each new slice; no hits
+genres: {travel: signature, calm: allowed, epic: allowed, teaser: allowed, viral: allowed, motivation: allowed, explainer: allowed, clips: allowed, fanedit: allowed, product: allowed}
+detect: |
+  ed_motion: no global motion, shake ≈0; holds or very slow changes.
+  Own check: the brightness and hue profile along a row, along the radius from a point or along the angle around it —
+  a staircase with an even step (10–40 steps), a monotonic trend of luma or hue across the steps; the contours
+  of buildings and the horizon pass continuously through the boundaries (one scene, different times). The sun or the
+  moon repeats several times along a diagonal. In animation the boundary stays put while the content of the steps shifts
+  in phase (or the boundaries spread out as rings).
+  Difference from split screen: the slices show one and the same scene. From slit-scan: in slit-scan the time shift is smooth
+  across every row and moving objects are stretched; here — discrete slices and a static scene.
+  From bullet time: there a frozen moment is orbited by the camera, here the camera stands still (the term "time-slice"
+  sometimes means a camera array for a frozen moment — that is time.bullet_time, not this card).
+engine: |
+  time_slice(clip, slices=20, shape='wedges', center=[0.5, 0.25], span=[0, 1], order='center_out',
+             mask=sky_mask(method='color_luma'|'hf_remove_background'), edge_px=1, flow=1/4 of a slice per frame)
+  — pixel p takes frame t_k(τ) = t0 + span·k/N + flow·τ, where k is the slice index for p.
+  Static version: flow=0, duration 2–3 s + zoom.slow ×1.05.
+  Without a timelapse: time_slice(still, slices=16, shape='stripes_v', grade_ramp=['day','golden','blue_hour','night'], lights=glow(threshold=0.85)).
+gen_hint: "time slice photography of <city skyline or landmark>, the sky divided into <vertical stripes, radial wedges or concentric rings>, each slice showing a different time from bright day through sunset to night, buildings lit at night in the foreground, locked-off tripod view, crisp hard edges between slices"
+commands: ["time slices on the final shot of the city", "a day → night fan around the tower in the intro", "time rings around the sun in #5", "turn the timelapse in #2 into time stripes"]
+related: [time.timelapse, time.hyperlapse, fx.slit_scan, time.bullet_time]
+evidence: {examples: 12, sources: 12, measured: "visual review only, of all examples in the section at 3–4 animation moments (scripted frame capture blocked by browser permissions); the number of slices counted from frames as ≈ (12–30), slice shapes — 5 types; cycle durations — estimates", confidence: medium}
+---
+id: time.timelapse
+family: time
+group: time
+level: B
+aliases: [timelapse, time-lapse, interval shooting, day-to-night, blooming timelapse]
+what: a static or barely moving shot in which minutes, hours or days pass in 2–6 seconds — clouds race, the sun sets, the city lights up, a flower opens, people appear and disappear
+frames: |
+  1. The shot is on a tripod (less often a slow slider move or pan of 0.5–2 % of the frame per second): a landscape,
+     a sky with tree silhouettes, a city panorama, a room, a flower on a black background.
+  2. 2–6 s on screen (50–150 frames @25 fps) hold from 10 minutes to several days: clouds boil and
+     race, shadows crawl across the wall and floor, the sun or moon crosses the frame, lights come on in windows and
+     streets, a bud opens, a sprout pushes out of the soil, a crane finishes a floor; people in a room
+     or at a party flicker, swap places and vanish as semi-transparent ghosts.
+  3. Static things (buildings, furniture, rocks) are absolutely sharp and stable: the contrast "the world stands still, time runs".
+     The brightness and color of the frame change smoothly: day → sunset → night, or the other way round.
+  4. Exit by a cut at the moment of an event (the lights came on, the flower opened) or by a dissolve.
+variants:
+  - sky and clouds: clouds race over silhouettes of trees, mountains, roofs; ×100–300
+  - sun and moon: a sunset or sunrise over the sea, the moon rising over a city panorama; ×300–1000
+  - day → night: a city, roofs, windows — daylight fades, lights come on; ×500–2000
+  - blooming and growth: a flower opens on a black or green background, a sprout in a pot; ×1000–30000
+  - construction and change: a building grows, a room changes its furniture, a riverbed dries up and fills again
+  - people over time: a room, a sofa, a party over hours — people appear, disappear, change poses; ×300–3000
+status: footage
+fallback: from any long static video of the user's (tripod, webcam, stream, a workspace recording, a view from a window — from 5 minutes) in code — a speed-up to the needed screen length + stabilization + deflickering; a day-to-night change can't be made in code without source footage — only search or generation with consent (clouds, sunsets, blooming generate well)
+params:
+  rate: ×60–30000 of real time; typically ×150–600 for sky and people, ×500–2000 for a sunset and a change of day, ×1000+ for plants and construction
+  interval: for a photo series 1–5 s between shots for clouds and people, 5–15 s for a sunset, 1–15 min for plants and construction (1 shot = 1 frame)
+  duration: 2–6 s on screen (50–150 frames @25 fps), typically 3–4 s
+  source_needed: screen length × rate (4 s × 300 = 20 min of source)
+  interp: blend (shutter 0.5–1.0) — smooth clouds and ghosts of people; drop — staccato, sharp jerks
+  camera: tripod; slider or pan movement ≤2 % of the frame per second, ease inOutQuad
+  deflicker: window of 15–25 frames — mandatory
+  light_change: Δluma 30–100 over the shot during a change of day and night
+when: intros and establishing shots of a location, a change of day or time of day, "hours/days have passed", a process (cooking, assembly, work, construction, growth), a breather between scenes; on a long note, an intro, a verse → chorus transition; 1–3 shots per video, in travel and calm — a series of 3–5
+avoid: a shaky source (every micro-shift turns into shake); flicker without deflicker; shots where nothing can change (no sky, light, people); too short a fragment — under 2 s doesn't read; sync speech
+sfx: ambience, wind, a distant city hum; clock ticking or sped-up noise for a room; on the change of day — a soft swell; no hits
+genres: {travel: signature, calm: signature, epic: allowed, explainer: allowed, motivation: allowed, drama: allowed, product: allowed, teaser: allowed, clips: allowed, viral: allowed, ugc: allowed, fanedit: allowed}
+detect: |
+  ed_motion: no global events (or one slow SHIFT ≤0.3 %/frame — a slider), shake jitter ≈0;
+  yet frame diff is noticeable: clouds, people, shadows — local motion on a static background.
+  Brightness: a monotonic luma trend of 20–100 units over 2–6 s (sunset, dawn, lights switching on) and slight
+  flicker of ±1–3 from frame to frame; shadows and highlights creep across surfaces.
+  Visually: clouds and shadows move at a visible speed, people and cars appear and disappear without traveling
+  the path — no steps are visible. A flower or a sprout changes shape smoothly.
+  Difference from time.fast_motion: there ×2–10 and the gait itself is visible; here light and shadows, ×60+.
+  From time.hyperlapse: the camera doesn't travel. From a cinemagraph: the whole frame changes, not one looping zone.
+engine: |
+  stabilize(0.6) → speed(rate=len(src)/screen_dur, interp='blend', shutter=0.75) → deflicker(window=21)
+  + optionally transform(shift=[[0,0],[0.03,0]], ease='inOutQuad') — a slider simulation on 4K;
+  for a photo series: image_sequence(photos[], fps=25) → deflicker(window=21).
+  A change of day and night by joining two timelapses: transition('dissolve', dur=1.0) on a matching angle.
+gen_hint: time-lapse of <scene, e.g. clouds rolling over a mountain ridge, a city skyline from sunset to night with lights turning on, a flower blooming on a black background>, locked-off tripod camera, smooth motion-blurred clouds, light changing over hours
+commands: ["sky timelapse in the intro", "speed up the sunset in #3 to 4 seconds", "day → night between #2 and #3", "make a timelapse from the hour-long workspace recording"]
+related: [time.hyperlapse, time.fast_motion, time.time_slice, time.slow_motion]
+evidence: {examples: 21, sources: "≈12", measured: "visual review only: 3–4 animation moments per example (scripted frame capture blocked by browser permissions); factors and intervals — ≈ estimates from the speed of clouds, sun and blooming, not measured", confidence: medium}
+---
+id: time.velocity
+family: time
+group: time
+level: C
+aliases: [velocity, velocity edit, velocity ramp, remap to the beat, speed sawtooth, beat-synced speed ramp, time remap on beat, fast-slow on the beat]
+what: the clip's speed pulses on the beats of the track — on each beat the action peak almost freezes and is sharp, between beats the shot rushes by at ×4–8 with motion blur; a remap of a whole section to the beat, not a single ramp
+frames: |
+  1. Beat (frame k0): the frame shows the action peak of the source — a hit, a pose, a touch, the apex of a turn, a landing; speed 0.25–0.45,
+     the frame is sharp.
+  2. Speed-up: within half a beat (5–6 frames @25 at 125 BPM, 7 @30 at 120 BPM) the speed rises along an S-curve to ×4–8 by the middle
+     of the beat; frames are blurred along the motion (shutter 180–360°), contours stretch into streaks of 2–5 % of the frame.
+  3. Braking: mirrored toward the next beat — the next action peak lands on it, sharp again.
+  4. The cycle repeats on every beat (or every 2 beats) for 2–8 bars; the average speed is ×2–3 — the source runs
+     faster than real time. Cuts between clips — only on beats, in the slowest and sharpest frames.
+     Often on the same beats — zoom.punch and shake.beat, on the downbeat — a flash.
+variants:
+  - "classic — a 1-beat cycle at 90–140 BPM, slow on the beat, speed peak in the middle"
+  - "half-bar — a 2-beat cycle at 140+ BPM or for 'heavy' footage (cars, sport, walk-bys)"
+  - "choppy — a 1/8 cycle, only in the last bar before the drop or under a drum roll"
+  - "with a hang (hang) — the slow zone is shifted 1–3 frames after the beat: the hit is shown and 'hangs' a little"
+  - "reverse — slow between beats and a ×4–6 jolt on the beat itself; under a snare roll or rustling hats"
+  - "multi-clip — each clip of the section lives 1–4 beats with its own action peaks, cuts on the beats"
+  - "hard — quint curve, influence 0.9: 0.25 on the beat, up to ×8 in the middle, blur 270–360°"
+status: code
+fallback: |
+  Needs a source with motion: a static shot or a talking head won't "ride" — take shots with high motion_energy
+  (ed_analyze source), add digital motion (a transform move across a crop or a zoom-in with the same speed curve) or
+  generate an action shot with the user's consent. A slow part below 0.5 from 25–30 fps — only via optical flow
+  (on fast motion, "jelly" artifacts); a 50–60 fps source is better, where 0.4–0.5 is almost frame for frame. No clear action
+  peaks — uniform anchors (anchors='uniform'), but then influence ≤ 0.7, otherwise the speed pulses "into the void".
+params:
+  grid: "cycle = 1 beat at 90–140 BPM (N = 60·fps/BPM frames: 125 BPM → 12 @25, 120 BPM → 15 @30); 2 beats at 140+ BPM or if action peaks are sparser; 1/8 — only 1 bar before the drop"
+  anchors: "a_i — the source moment shown on beat b_i: an action peak (a stop after a jerk, a contact, an apex, a pose) — the minimum of the median optical flow right after its maximum, or the maximum of acceleration, ±1 source frame; step a(i+1) − a(i) = r̄·(b(i+1) − b(i))"
+  rate_mean: "r̄ = 1.5–4 per cycle, typically 2–3: below 1.5 the pulsing doesn't read, above 4 — mush; if the next action peak is farther than 4 beats of travel — switch the clip"
+  curve: "s(t) = a_i + r̄·T·[(1 − m)·u + m·E(u)], u = (t − b_i)/T, T — cycle length; E = inOutCubic (default) or inOutQuint (harder); m = 0.8–0.9 ('influence'); speed on the beat r̄·(1 − m), in the middle r̄·(1 + 2m) for cubic and r̄·(1 + 4m) for quint"
+  rate_25: "125 BPM @25 (N 12), r̄ 2.5, m 0.85, cubic — speed between frames k → k+1 from the beat: 0.43 0.79 1.50 2.56 3.98 5.75 | 5.75 3.98 2.56 1.50 0.79 0.43 (the source advances 30 frames per beat)"
+  rate_30: "120 BPM @30 (N 15), same r̄ and m: 0.41 0.64 1.09 1.77 2.68 3.81 5.17 6.33 5.17 3.81 2.68 1.77 1.09 0.64 0.41 (37.5 source frames per beat)"
+  rate_hard: "hard @25 (N 12): quint, m 0.9 → 0.25 0.30 0.62 1.61 3.90 8.32 | 8.32 3.90 1.61 0.62 0.30 0.25"
+  other_tempo: "with a non-integer N the curve is computed continuously in frame time; beats — from ed_audio, anchors and cuts — on frames k0 = floor(t_beat·fps + 0.4)"
+  peak_frame: "the anchor (action peak) — exactly on the beat frame k0, tolerance ±1 frame; the slowest transitions — k0−1 → k0 → k0+1; with a hang (bias 0.15–0.3, u → u^(1+bias)) the slow zone shifts 1–3 frames after the beat"
+  motion_blur: "only on frames with speed r ≥ 1.2: the average of n = clamp(⌈2·r·shutter·fps_src/fps_out⌉, 2, 12) subframes over a span of r·shutter source frames around s(k) (flow if there aren't enough real frames); shutter 0.5 (180°) by default, 0.75–1.0 — heavy blur; trail length = in-frame speed × r × shutter — a pan of 0.8 % of the frame per source frame at r 5.75 and 180° gives ≈ 2.3 % of the width; no blur on the beats"
+  interp: "r < 1 from 25–30 fps — flow (DIS or minterpolate); r ≥ 1 — subframes with blur; a 50–60 fps source — real frames down to r ≈ 0.5 (nearest)"
+  cuts: "a cut between clips — only on a beat (minimum speed, the sharpest frame); a new clip starts from its own anchor; a clip in velocity lives 1–4 beats"
+  section: "a velocity section of 2–8 bars; around it — normal speed or slow motion, for contrast"
+  audio: "source audio off; music continuous"
+when: |
+  Music (phonk, fan edit, sport, motivation, travel, fashion):
+  hook — 1 bar of velocity on a vivid action, to show the energy right away;
+  build — normal speed or slow motion; in the last bar — choppy velocity at 1/8;
+  drop — the main place: classic on every beat for 2–8 bars, on downbeats — zoom.punch and shake.beat on the same frame k0;
+  outro — no velocity, or braking into time.freeze on the last beat.
+  Shots: dance with clear poses, martial arts, sport (a hit, a throw, a landing), stunts, drifting and drive-bys of cars, a model's
+  walk, fast camera moves — anything where action peaks in the source happen more often than once every 1–2 s.
+  Limits: velocity — no more than 40–50 % of the video length and no more than 2–3 sections per 30 s; no more than 2 clips in a row with the same
+  action; in motivation — only on cutaways under the voiceover, without sync sound.
+avoid: |
+  Speech and sync sound (lips, voice), a product and details that need to be examined (the blur eats them), talking heads and static
+  shots, shots without clear action peaks — the speed pulses "into the void". An action peak that misses the beat — the error
+  is visible immediately. A slow part below 0.5 from 25–30 fps without flow — duplicate frames and judder. A face in close-up in the fast part —
+  the blur disfigures it. Blur on the beat frames — the "stop-hit" is lost. The whole video in velocity — causes motion sickness and loses contrast.
+  Calm, explainer, luxury and dramatic videos.
+sfx: |
+  The music carries the hit by itself — don't put separate sounds on every beat. On entering the section — sfx.riser on the bar before it and
+  sfx.impact or sfx.sub_drop on the first beat (align='attack', 0 ms to k0); sfx.whoosh — only on the longest speed-up
+  (no more than once per bar, peaking in the middle of the speed-up, −12…−15 dB relative to the music, panned in the direction of motion). Source audio
+  is off.
+genres: {phonk: signature, fanedit: signature, viral: allowed, sport: allowed, travel: allowed, fashion: allowed, teaser: allowed, motivation: allowed, drama: forbidden, calm: forbidden, product: forbidden, clips: forbidden, explainer: forbidden, ugc: forbidden, epic: forbidden}
+detect: |
+  ed_motion: global motion in one direction (SHIFT, ZOOM or ROTATE) is cut into a series of events — one per beat
+  (or per 2 beats): each spanning 0.65–0.9 of the period (10 of 12 frames @25 at 125 BPM, 13 of 15 @30 at 120 BPM, 8 of 12 for the hard
+  curve) with a gap of 2–4 frames on the beats, with equal sums and a peak %/frame in the middle; at constant speed — one
+  long event. Frame difference (diff): mean in the middle of the beat / mean within ±1 frame of the beat = 4–8 (constant speed
+  ≈ 1); diff autocorrelation at a lag of one beat ≥ 0.5 (0.82–0.84 on a pan, 0.54 on a zoom-in; constant speed — 0.21).
+  Sharpness: with blur, frames at the beats are 1.6–3 times sharper than in the middle of the beat; without blur ≈ 1, but with blend interpolation
+  contours double in the slow part. Speed on the beat below 0.2 without flow — holds of 2–3 frames exactly on the beats.
+  shake.jitter_pct ≤ 0.4 — no oscillation, the source only moves forward. The numbers — a synthetic render of these curves on a
+  pan and a zoom-in (ed_motion at 320 px, 25 and 30 fps). With a character in the frame: action peaks (stops, contacts) sit on
+  the beats ±1 frame in ≥ 70 % of cycles.
+  Difference from time.speed_ramp: there 1–2 transitions per shot and a slow part of 0.4–1.5 s around a single peak; here ≥ 3 cycles
+  in a row with a beat period and slow zones of 2–6 frames each. From time.fast_motion: the speed is constant (even diff). From
+  time.step_print: frozen phases of 2–6 frames and jumps, without a smooth speed-up. From cut.stutter: frames repeat, time
+  jumps back. From zoom.in_out on the beats: there the scale returns each time (product ≈ 1), here the source
+  only moves forward.
+engine: |
+  velocity_pattern(clips|clip, beats, grid='1/4'|'1/2'|'1/8', anchors='action_peaks'|'uniform'|[a…], rate_mean=2.5,
+                   influence=0.85, ease='inOutCubic'|'inOutQuint', bias=0, rate_min=0.2, rate_max=8, shutter=0.5)
+    — extends velocity_pattern from time.speed_ramp: anchors on action peaks, the curve s(t) from params, per-frame source times.
+  action_peaks(clip, flow='DIS', min_gap=0.25) — a new primitive: source moments where the median flow drops after a
+    maximum (a stop, a contact) or the acceleration is at its maximum; anchors are chosen by dynamic programming — as close as possible
+    to the peaks with each cycle's r̄ in [1.5, 4].
+  → speed(curve=[[t, rate], …], interp='flow' for r < 1 | 'blend' for r ≥ 1)
+  → motion_blur(mode='flow'|'frames', shutter=0.5, adaptive='rate') from time.motion_blur — only on frames with r ≥ 1.2.
+  Render: ed_edl already accepts segment.times — the source time for each frame (+ interp='flow'); the blur needs a new fx
+  shutter(n, span) — the average of n subframes; ed_render only supports a constant clip speed — speed_curve is needed.
+  Sound: mute the source. + beat_punch and beat_shake on the same k0 (opt.) + sfx('riser', at=section start − 1 bar)
+  + sfx('impact', at=first beat of the section, align='attack').
+gen_hint: "<subject> performing <fast continuous action with clear hits: dance with sharp poses / boxing combination / skateboard trick / car drift>, shot at 60 fps with fast shutter, crisp frames, dynamic camera following the action, distinct accents and brief stops at each hit"
+commands: ["velocity over the whole drop", "do velocity on the beats in #3–#6, motion peaks on the hits", "hard velocity with blur on the chorus", "choppy 1/8 velocity in the last bar before the drop", "half-bar velocity — the track is too fast", "remove the velocity, back to normal speed"]
+related: [time.speed_ramp, time.motion_blur, time.echo_trail, time.slow_motion, time.fast_motion, time.step_print, time.freeze, cut.stutter, zoom.punch, shake.beat, trans.flash, fx.rgb_split, cut.quick]
+evidence: {examples: 0, sources: 0, measured: "edit culture: parameters from editing practice; verify with a demo render", confidence: medium}

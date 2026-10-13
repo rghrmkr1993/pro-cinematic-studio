@@ -1,0 +1,240 @@
+id: track.follow
+family: track
+group: camera
+level: A
+aliases: [follow shot, following shot, follow from behind, camera walks behind the subject, behind the back, travel follow-me shot, chase cam]
+what: the camera follows a subject who walks away from it at a constant distance — the viewer sees the back and the path ahead and seems to be walking along behind
+frames: |
+  1. The subject with their back to the camera, usually centered (x 0.4–0.6): back and head — 40–70 % of the frame height, or only the legs
+     and lower body with a low camera; a car — 10–25 %.
+  2. The camera moves at their speed: the subject stays in place in the frame, while the space ahead "opens up" from the vanishing
+     point. At walking pace the background grows ×1.1–1.3 per second, running ×1.5–1.9, right at the ground up to ×3.7 — grass and floor fly under the camera.
+  3. Camera height: shoulder (normal), hip or knee (low, the subject "looms"), at the ground (legs only).
+  4. Ending: the subject reaches the goal — a meeting, a door, other people — and the camera stops or circles around them;
+     or the subject walks on ahead, getting smaller, while the camera falls behind.
+  A smooth stabilizer or gimbal — shake 0.1–0.5 % of the frame; a handheld chase — 0.7–1.6 %, running at ground level — up to 5.6 %.
+variants:
+  - at walking pace behind one subject or a pair — smooth, tight, 2–7 s
+  - chase: a handheld camera behind a runner, the subject bounces in the frame, shake up to 1.6 %
+  - low: the camera at hip or knee height, legs and an object in the hand are visible; at ground level — only sneakers and flying grass
+  - walking off into the distance: the camera falls behind or stands still, the subject shrinks to half size in 10–11 s — a final shot, a farewell
+  - walking backward: the subject moves away but looks into the camera (walks backward, sings, looks back)
+  - behind a car: the car in the center, a night street opens up ahead
+status: footage
+fallback: |
+  Code: from a static shot where the subject walks away — a smooth digital zoom-in that keeps their size constant
+  (the subject does not shrink, the background grows; there will be no parallax, ×1.5–2 resolution headroom is needed); from a handheld "tail" —
+  stabilization on the subject's back. Generation — with the user's consent.
+params:
+  duration: 1.3–11 s (typically 2–4 s, 50–100 frames @25 fps)
+  subject_size: 40–70 % of the frame height (back with head); low variant — the bottom 50 % of the frame; a car 10–25 %
+  subject_pos: x 0.4–0.6, below center
+  background_zoom: walking ×1.004–1.011 per frame @25 fps (×1.1–1.3/s); running ×1.016–1.026; at ground level up to ×1.054
+  lock_ratio: 0.14–0.25 smooth tracking; 0.9–1.45 chase
+  camera_height: shoulder | hip-knee | ground
+  jitter: 0.1–0.5 % smooth, 0.7–1.6 % chase, up to 5.6 % at ground level
+  receding: the "walking off into the distance" variant — subject size ×0.5 in 10–11 s
+when: |
+  A journey, entering a new place, "follow me" in travel, a chase, tension (what is ahead?), an introduction from behind before
+  the face is revealed. Hook — a tight follow of 2–3 s; build — a long one of 4–7 s; outro — walking off into the distance. A back that fills
+  the frame in a dark passage is a handy wipe for a cut.
+avoid: a back with no goal ahead (boring beyond 3–4 s); sudden jerks in distance; following from behind and leading from the front with the same subject cut back to back without a reason; a shot where the background is empty and no movement is visible (unclear that the camera is moving)
+sfx: footsteps in rhythm, breathing, ambience of the place; in a chase — percussion in step; at ground level — rustling grass
+genres: {travel: signature, sport: allowed, drama: allowed, epic: allowed, fashion: allowed, ugc: allowed, motivation: allowed, teaser: allowed, clips: allowed, viral: allowed, fanedit: allowed, calm: allowed, product: allowed}
+detect: |
+  ed_motion: a long ZOOM-IN of almost linear shape ×1.2–5.5 over 1.3–4 s, nonrigid 0.14–0.36 (the background "pushes in"
+  with parallax), zoom center at the vanishing point behind the subject; no cuts.
+  Own measurement: in the subject's box the flow is 4–7 times weaker than at the edges (lock 0.14–0.25); the radial component
+  at the edges is positive (expansion). Visually — the back of the head or the back in the center.
+  Unlike a dolly push-in on a standing person: there they grow. Unlike track.lead: the background shrinks (ZOOM-OUT), the face is visible.
+  The "walking off into the distance" variant: ZOOM-OUT ×0.72–0.85 as the subject shrinks — the camera falls behind.
+engine: |
+  footage: search by the detect signature; cut 2–4 s (fast genres) or 4–7 s (calm ones); the cut entry —
+  on the subject's step or on a beat.
+  code: reframe(aspect, target=track(person), keep_size=True, smooth=0.85) — a digital follow of the departing subject;
+  stabilize(strength=0.8, anchor=track(person)) — calm down a handheld follow.
+gen_hint: smooth follow shot from behind <subject> walking away from the camera through <place>, the camera keeps a constant distance at shoulder height, the subject stays centered and the space ahead opens up, gimbal-stabilized
+commands: ["follow the subject from behind at the start of the travel video", "the camera follows him down the corridor in #2", "at the end — the subject walks off into the distance", "find shots where the camera drives behind a car"]
+related: [track.subject, track.lead, zoom.in, zoom.slow]
+evidence: {examples: 11, sources: 11, measured: "6 from the section + 5 from the main set: background ×1.2–5.5 in 1.3–4 s (walking ×1.1–1.3/s, running ×1.5–1.9/s, at ground level ×3.7/s), nonrigid 0.14–0.36; lock 0.14–0.25 for smooth ones, 0.9–1.45 for chases; shake 0.1–5.6 %; 1 example of walking off into the distance — size ×0.5 in 11 s with ZOOM-OUT ×0.72; 1 — the subject moves away facing the camera", confidence: high}
+---
+id: track.lead
+family: track
+group: camera
+level: A
+aliases: [leading shot, lead tracking, reverse tracking, camera backs up, walks toward the camera, walk and talk, front tracking]
+what: the subject walks or rides straight toward the camera while the camera retreats ahead of them at the same speed — the face and the outfit stay in frame the whole time, while the space behind recedes into depth
+frames: |
+  1. The subject faces the camera in the center (x 0.45–0.55): a waist-up or medium shot — 70–100 % of the frame height, the head
+     in the upper third; or full-length — 35–50 % of the height, often in the symmetrical perspective of a street or corridor.
+  2. The camera retreats at their speed: the subject's size is constant, while the background "shrinks" toward the vanishing point — at walking pace
+     ×0.8–0.88 per second (×0.991–0.995 per frame @25 fps). Walls and columns at the sides slide off the frame edges.
+  3. Handheld, the camera bobs in time with the operator's steps: a vertical shift of 5–7 % of the frame every 0.45–0.55 s;
+     on a stabilizer or a vehicle — shake of 0.14–0.3 %.
+  4. Ending: the subject reaches the goal (sits down, meets people) and the camera stops; or they walk right into the lens —
+     the frame is covered by the body or by darkness, a handy wipe for a cut.
+variants:
+  - walking with a phone, or a monologue to camera: waist-up shot, 2–3 s, light bobbing
+  - squad walk-out: the leader in the center, the group behind them in a narrow passage, wide angle
+  - symmetrical street or corridor: full-length, vanishing point behind the head, smooth tracking for 3–4 s
+  - oncoming vehicle: a boat, a bicycle, a car "glued" to the frame, spray and road flow around them
+  - underwater: a swimmer swims toward the camera, roll ±14°
+  - entering from behind a wipe and exiting into the lens: starts on a dark foreground, ends with the subject blocking the frame
+status: footage
+fallback: |
+  Code: from a static shot where the subject walks toward the camera and grows — a smooth digital zoom-out that keeps their size
+  (starting crop ×1.5–2.5, resolution headroom is needed; there will be no parallax). A selfie video at arm's length is already
+  this kind of tracking shot — stabilize it on the face. Generation — with the user's consent.
+params:
+  duration: 2–9 s (typically 2.5–4 s, 60–100 frames @25 fps)
+  subject_size: 70–100 % of the frame height (waist-up, medium) or 35–50 % (full-length)
+  subject_pos: x 0.45–0.55; eyes at 0.15–0.3 of the height from the top
+  background_zoom: ×0.991–0.995 per frame @25 fps (×0.8–0.88/s) — the background shrinks
+  bounce: handheld — a vertical shift of 5–7 % every 0.45–0.55 s; stabilizer — 0.14–0.3 %
+  lock_ratio: 0.3–0.9 (the subject's face and hands move noticeably)
+  ending: arrival + a 1–2 s static hold, or walking into the lens (2–4 frames of coverage → cut)
+when: |
+  Introducing the subject and going "out in public", a monologue and dialogue on the move, a confident walk to the goal, "the squad is coming",
+  a full-length outfit in fashion, presenting an oncoming vehicle. Hook — the first 2–3 s of the video with the face in frame;
+  build — a long walk of 4–6 s; walking into the lens — a transition into the next scene on the downbeat.
+avoid: the subject drifts off center or grows and shrinks (the camera does not hold the distance); handheld sway in a calm genre; cutting it back to back with a tracking shot from behind of the same subject without a reason; an empty background without landmarks — the movement does not read
+sfx: voice and footsteps; the step rhythm matched to the beat of the track; on walking into the lens — a whoosh or a dull thud on the coverage
+genres: {fashion: signature, ugc: signature, viral: allowed, motivation: allowed, epic: allowed, fanedit: allowed, teaser: allowed, drama: allowed, calm: allowed, travel: allowed, sport: allowed, product: allowed, explainer: allowed, clips: allowed}
+detect: |
+  ed_motion: a long ZOOM-OUT of almost linear shape ×0.27–0.75 over 1.8–6 s, nonrigid 0.2–0.27 (the background shrinks
+  with parallax); handheld — a series of short ZOOM-OUTs ×0.92–0.97 and periodic downward SHIFTs of 5–7 % every 0.45–0.55 s.
+  Own measurement: the radial component of the flow at the edges is negative (contraction), the subject in the center barely changes size.
+  Visually — the subject's face in the center, the vanishing point behind the head.
+  Unlike track.follow: there the background expands (ZOOM-IN) and the back is visible. Unlike a zoom or a dolly pull-out from a standing
+  person: there the subject shrinks.
+engine: |
+  footage: search by the detect signature, place it in the hook or at the subject's introduction; cut 2.5–4 s, the point
+  of walking into the lens — on a beat, cut immediately.
+  code: reframe(aspect, target=track(face), keep_size=True, smooth=0.85) — a digital tracking shot from a static shot;
+  stabilize(strength=0.6, anchor=track(face)) — for selfies and handheld footage, keep a light step bob.
+gen_hint: smooth leading shot, <subject> walks straight towards the camera through <place> while the camera moves backwards at the same speed, the subject stays centered and the same size, symmetrical perspective behind them
+commands: ["the subject walks toward the camera at the start of the video", "tracking from the front with a monologue on #2", "the squad walks toward the camera on the drop", "at the end of #5 have him walk into the lens, then cut"]
+related: [track.subject, track.follow, zoom.out]
+evidence: {examples: 11, sources: 11, measured: "6 from the section + 5 from the main set: background ×0.27–0.75 in 1.8–6 s (walking ×0.8–0.88/s), nonrigid 0.2–0.27; handheld — bobbing of 5–7 % every 0.48–0.56 s; smooth tracking — shake 0.14–0.3 %; 2 examples — vehicles, 1 — underwater (roll ±14°), 1 — entering from behind a wipe and exiting into the lens", confidence: high}
+---
+id: track.roam
+family: track
+group: camera
+level: B
+aliases: [roaming camera, roving camera, wandering camera, camera as a guest, camera stroll, walkthrough, one-take walk through a space]
+what: a camera with no subject slowly wanders through a space like an invisible guest — drifting past people and details in a single take, turning its "gaze" now to one, now to another
+frames: |
+  1. A single take of 4.6–8 s with no anchor subject: the camera at eye level or lower moves forward at walking speed —
+     the scene "opens up" ×1.3–2 per second (×1.01–1.03 per frame @25 fps), nonrigid 0.15–0.33 (real parallax).
+  2. The path curves: the camera turns toward new objects — lateral shifts of 18–78 % of the frame over 1–2.8 s change side
+     2–4 times per take, a soft roll of 13–40° on turns (with a light drone indoors — up to 90°).
+  3. Each point of interest (a person, an object, a screen) is in frame for 0.5–1.5 s, then the camera drifts on; people
+     go about their lives and look into the camera only in passing, if at all.
+  4. Ending: arriving at the main object — a screen, a counter, a shop window, a person; often a pass through a screen or window
+     into another place, or a dash toward the next group of people.
+  Smoothness: gimbal or stabilizer — shake 0.46–1.2 % of the frame; handheld — up to 3.3 %.
+variants:
+  - through a crowd: a bar, a party, fans — the camera weaves between people and tables
+  - through an interior: an apartment room by room, through doors and over tables; on a light drone — with deep rolls
+  - skimming: low along lying people or objects, roll up to 40°
+  - along a facade: the camera glides outside past the windows, peeks inside and turns around its axis
+  - backstage: a walk across a film set past lights, equipment and people to the main spot
+  - into another place: the wandering leads to a screen or window and passes through it (see pass.through)
+status: footage
+fallback: |
+  Code without parallax: a virtual "wander" over a wide or 4K shot — a slow zoom-in of ×1.2–1.6 over 5–6 s
+  along a curved path of the crop center with a ±3–5° roll; link several such shots with pass-throughs or
+  whip pans. No source — generation with the user's consent.
+params:
+  duration: 4.6–8 s (115–200 frames @25 fps); in fast editing — a 2–3 s fragment
+  forward: ×1.3–2 per second on the background (×1.01–1.03 per frame @25 fps), nonrigid 0.15–0.33
+  path: 2–4 side changes per take, lateral shifts of 18–78 % of the frame over 1–2.8 s
+  roll: 13–40° on turns; a fly-through with a light drone — up to 90°
+  dwell: 0.5–1.5 s on each object
+  height: eye level or lower; skimming — right at the ground
+  jitter: 0.46–1.2 % (gimbal, stabilizer), up to 3.3 % (handheld)
+  ending: the main object, a pass-through or a dash
+when: |
+  Introducing a place (a bar, a party, an apartment, a set), a tour and backstage, the atmosphere before the main
+  action, a music-video verse where the camera "looks around". A long take — in calm and dramatic videos;
+  in fast editing — a 2–3 s fragment as a breather between impact shots.
+avoid: the viewer needs a clear subject — without an anchor they get lost; empty stretches without points of interest longer than 1.5 s; sharp jerky turns (read as a defect); a hook in the first 1–2 s of the video — wandering does not grab attention
+sfx: hum and ambience of the space (a crowd, music from speakers), soft whooshes on close passes, an even pad
+genres: {travel: allowed, product: allowed, calm: allowed, drama: allowed, epic: allowed, teaser: allowed, ugc: allowed, explainer: allowed, fanedit: allowed}
+detect: |
+  ed_motion: a 4–8 s take without cuts; a long ZOOM-IN ×1.4–18 (the camera moves forward) with nonrigid 0.15–0.33;
+  SHIFT along X changes sign 2–4 times (turns in the path), ROTATE 13–93°; shake ≤ 1.2 %.
+  Own measurement: there is no subject — the flow in the center is only slightly weaker than at the edges (lock 0.5–1.0, the difference comes only
+  from the vanishing point), while track.follow has 0.14–0.25 with a "glued" back. Unlike drone.fpv: slower (×1.3–2/s versus ×2.5+/s) and lingers on people.
+  Unlike handheld.shaky: a smooth move without constant shake.
+engine: |
+  footage: look for long takes with forward motion and no "glued" subject; cut by points of interest
+  (0.5–1.5 s each), exit — on the downbeat.
+  code: drift(path=[[0.4, 0.5], [0.55, 0.45], [0.5, 0.55]], scale=[1.15, 1.45], roll=[-3, 3], t=[t0, t0+6],
+  ease='inOutQuad') — a virtual wander over a wide shot; links — pass.through or pan.whip.
+gen_hint: slow wandering gimbal shot drifting through <a crowded bar / a cozy apartment> at eye level, the camera glides past people and details without following anyone, gently turning to look around, one continuous take
+commands: ["roaming camera through the bar at the start of the video", "take the camera through the apartment in one take for the intro", "the camera wanders around the film set in the backstage part", "walk through the crowd and go into the TV screen"]
+related: [track.follow, track.subject, drone.fpv, pass.through, pan.whip, handheld.shaky]
+evidence: {examples: 7, sources: 7, measured: "takes 4.6–8.2 s; forward motion ×1.4–17.8 in 3.4–7.3 s (×1.26–2.05/s), nonrigid 0.15–0.33; lateral shifts 18–78 % with 2–4 side changes; roll 13–93°; shake 0.46–1.2 %, handheld 3.3 %; 1 example with implausible timing (520 ms per frame) excluded from the speed calculation", confidence: medium}
+---
+id: track.subject
+family: track
+group: camera
+level: A
+aliases: [tracking shot, tracking, camera tracking, camera follows the subject, camera travels with the subject, subject tracking]
+what: the camera moves together with a walking or riding subject at the same speed — the subject is "glued" to one spot in the frame while the world flows past
+frames: |
+  1. The subject (a person, a group, a car, an animal) is moving; the camera travels with them, so their size and position in the frame
+     barely change for 2–9 s: usually centered horizontally (x 0.4–0.6), a medium or waist-up shot — 40–90 % of the frame
+     height; a car — 10–25 %.
+  2. The world flows: from behind the subject the background "opens up" from the vanishing point (×1.2–3.5 in 2–4 s), from the front it "shrinks"
+     (×0.27–0.57 in 3–6 s), from the side it slides horizontally while foreground objects fly past as a wipe;
+     from above the ground or the crowd moves under the subject. The flow at the frame edges is 3–15 times stronger than on the subject.
+  3. Ending: the subject arrives (a meeting, sits down at a table, a door) and the camera settles into a static composition for 1–2 s
+     or circles around them in an arc; or a cut right in motion.
+  Shake: stabilizer or gimbal — 0.1–0.5 % of the frame; handheld chase — 0.8–7 %.
+variants:
+  - from behind, the subject walks away from the camera — a separate card, track.follow
+  - from the front, the subject walks toward the camera — a separate card, track.lead
+  - from the side: a long lens next to a fast subject (a car, a runner), passers-by in the foreground fly past as a wipe, shift up to 15 % of the frame per frame
+  - from above: the camera above a subject who is being carried or is moving; the crowd or the ground flows beneath them
+  - with arrival: the tracking ends when the subject reaches people or sits down — a transition into a static wide shot or two-shot
+  - chase: a handheld camera behind a runner, strong shake, the subject "wanders" around the frame
+status: footage
+fallback: |
+  Code: a virtual tracking shot from a static wide shot — a ×1.6–2.2 crop that smoothly follows the subject
+  (works for movement across the frame and diagonally, there will be no parallax); from a shaky handheld "tail" —
+  stabilization on the subject so they settle into place. No suitable shot — generation with the user's consent.
+params:
+  duration: 2–9 s (typically 3–4 s, 75–100 frames @25 fps); in fast editing — fragments of 1–2 s
+  subject_size: 40–90 % of the frame height (person), 10–25 % (car)
+  subject_pos: x 0.4–0.6; feet at the bottom edge or in the lower third
+  lock_ratio: flow on the subject / flow at the edges — 0.06–0.2 for tight tracking; 0.7–1.3 if the subject actively moves within the frame
+  background_flow: 0.3–3 % of the frame width per frame @25 fps; from the side on a long lens — up to 15 %
+  background_zoom: from behind ×1.004–1.03 per frame, from the front ×0.98–0.995 per frame (the background, not the subject)
+  jitter: 0.1–0.5 % (stabilizer), up to 7 % (chase)
+  ending: arrival and a 1–2 s static hold, or a cut in motion
+when: |
+  Introducing the subject (an entrance, a walk-through), dialogue on the move, a journey and the road, a chase, entering a new space.
+  Build and verse — a long tracking shot of 4–8 s; hook and drop — a 1–2 s fragment in motion. A side tracking shot with a foreground
+  pass is convenient to cut on the pass — the wipe hides the cut.
+avoid: the subject "jumps" around the frame or leaves it (the operator could not keep up); cutting a tracking shot from behind straight into a tracking shot from the front of the same subject without a reason; longer than 8 s without an event in a short video; waves and "jelly" after aggressive stabilization
+sfx: footsteps and the ambience of the place; on a side tracking shot — short whooshes as foreground objects pass; chase — rhythmic percussion in step
+genres: {travel: signature, sport: signature, fashion: signature, drama: allowed, epic: allowed, calm: allowed, ugc: allowed, motivation: allowed, teaser: allowed, clips: allowed, viral: allowed, product: allowed, fanedit: allowed, explainer: allowed}
+detect: |
+  ed_motion: 2+ s without cuts; a long ZOOM-IN (camera behind) or ZOOM-OUT (in front) of almost linear shape with
+  nonrigid 0.2–0.35 — this is camera movement with parallax, not a zoom; from the side — a long SHIFT along X with peaks
+  on foreground passes; from above — an even SHIFT along Y.
+  Own measurement (dense Farneback flow on textured pixels): in the subject's central box the flow is 3–15 times weaker
+  than in the side strips (lock 0.06–0.3).
+  Unlike a dolly push-in and zoom.in: there the subject grows. Unlike a pan from a fixed position following the subject: the background shifts as a whole,
+  nonrigid < 0.15. Unlike a lateral camera move (truck) past a static scene: nothing is "glued" to the frame.
+engine: |
+  footage: classify the shots — sign of the background zoom (+ behind, − in front), X shift (side), lock ≤ 0.3;
+  cut 2–4 s in fast genres, 5–9 s in calm ones; put the arrival point on the downbeat.
+  code: reframe(aspect, target=track(person), zoom=1.6–2.2, smooth=0.85) — a virtual tracking shot from a wide shot;
+  stabilize(strength=0.8, anchor=track(person)) — "glue" the subject in a handheld shot.
+gen_hint: smooth tracking shot moving with <subject> as they walk through <place>, the camera travels at the same speed so the subject stays centered and the same size while the background flows past, gimbal-stabilized
+commands: ["track the subject on the walk-through at the start of the video", "camera travels beside the car from the side on #3", "find shots in the source footage where the camera tracks the subject", "virtual tracking shot following the person in #4"]
+related: [track.follow, track.lead, tilt.basic, zoom.in]
+evidence: {examples: 14, sources: 14, measured: "5 from behind, 5 from the front, 1 from the side, 1 from above, 1 passage through a space, 1 almost static; background from behind ×1.15–3.5 in 1.9–3.9 s, from the front ×0.27–0.57 in 2.9–6 s, nonrigid 0.24–0.33; lock 0.06–0.2 for 5 tight tracking shots, 0.7–1.3 with active subject movement; from the side — shift up to 15.5 %/frame with foreground passes; shake 0.1–7 %", confidence: high}

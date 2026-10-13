@@ -1,0 +1,615 @@
+id: gfx.callout
+family: gfx
+group: graphics
+level: B
+aliases: [callout, callout box, pointer, arrow to object, object outline, label pointer, annotation, hotspot, labeled pin, object highlight]
+what: a callout — a dot with a leader line, an arrow, an outline ring, target brackets or a darkened surround latches onto an object in the frame and labels it with a short fact; it stays on the object via tracking and appears exactly when the object is mentioned, or on a beat
+frames: |
+  1. Target: the object is found and tracked (box + anchor point) at least 0.3 s before the callout appears; the track is smoothed, the box
+     jitters no more than 0.2 % W per frame.
+  2. The pin dot "pops" on the anchor point over 4 frames @25 fps (5 @30 fps): ×0 → ×1.2 → ×1.0 (outBack); optionally a
+     ripple ring from the dot (radius ×1 → ×2.5, opacity 0.6 → 0 over 10 frames @25 fps / 12 @30 fps).
+  3. The leader line draws from the dot toward the free side over 6–8 frames @25 fps (7–10 @30 fps, inOutCubic): a 45° segment
+     4–6 % H long and a horizontal "shelf" of 8–14 % W.
+  4. The label plate unfolds from the end of the line in the direction the line runs (wipe mask, 6–8 frames); the text fades in
+     last over 4 frames @25 fps (5 @30 fps), starting 2 frames before the wipe ends. The whole assembly takes 0.6–0.8 s (16–20 frames @25 fps /
+     19–24 @30 fps) and finishes by the end of the word the narrator uses to name the object.
+  5. Hold ≥ 1.5 s + 0.3 s per word of the label. The dot moves rigidly with the object, the plate follows with a "spring" lag
+     of 2–4 frames so it does not jitter; the line stretches between them.
+  6. Exit: reverse order over 6–8 frames (inCubic) or an overall fade of 4 frames @25 fps (5 @30 fps); if the object nears the edge (box
+     closer than 5 % to the frame edge) or the track is lost for longer than 6 frames, the callout leaves early.
+  Other forms: an outline ring draws over 8–12 frames from "10 o'clock" clockwise; an arrow has its shaft drawn over 8–12 frames and the head
+  over 2 frames; target brackets converge from ×1.15 onto the object box over 6 frames; a darkened surround takes 8 frames to drop to 45–60 % brightness.
+  Unmarked frame counts are @25 fps; for 30 fps multiply by 1.2 and round (4 → 5, 6–8 → 7–10, 8–12 → 10–14).
+variants:
+  - labeled pin — a dot, a shelf leader line and a plate with a fact; a series of 2–4 callouts on a product, one per beat ("specs")
+  - arrow — a vector or "marker" arrow from empty space toward the object, the tip stops 2–4 % H short, 1–3 words next to it
+  - outline — a circle or ellipse around the object draws over 8–12 frames, as a clean line or a marker stroke with overlap
+  - target brackets — four corners converge onto the object box and "snap" into place, a small label by one corner (tech, sport)
+  - darkened surround — everything except the object dims to 45–60 % brightness, the object and the label stay bright (sports breakdown, product)
+  - price-tag sticker — a plate rotated by 4–8° with a number or word pops up by the object with a ×1.15 bounce (price, discount, "new")
+  - who's who — short pointer labels above people in a group shot, each one follows its own head
+status: code
+fallback: |
+  Requires an object track: a detector (onnx model) + optical flow with re-detection every 10 frames; if the object is not
+  recognized by class, the user points it out once (a click or "left sneaker on #3"), then tracking takes over.
+  If the object barely moves, pin to a frame point without tracking. A darkened surround following the exact silhouette is hybrid
+  (mediapipe mask or remove_background); without a mask, an ellipse with a 3–5 % H feather. If the object is smaller than 3 % of the frame
+  area, first magnify it (zoom.punch, lens.magnifier or cut.insert), then label it.
+params:
+  target: "track(object | face | person | point); the anchor point is the box center or a set point on the object; re-detection every 10 frames; One Euro smoothing (min_cutoff 1 Hz, beta 0.02) or EMA τ ≈ 0.1 s; jitter ≤ 0.2 % W per frame"
+  dot: "diameter 1.2–1.6 % H (16:9) / 0.9–1.2 % H (9:16); accent fill, a thin #000 ring at 30 % opacity, 0.15 % H thick, so it reads on any background"
+  leader: "thickness 0.25–0.35 % H (3–4 px @1920×1080, 5–7 px @1080×1920); shape: \"elbow\" (a 45° segment 4–6 % H long + an 8–14 % W shelf) or straight; angles 0 / 45 / 90° only; the line never crosses the object, faces or other callouts"
+  type_class: "grotesque sans 600 (semibold), sentence case; numbers in tabular figures, 700; the font must cover the caption language; marker style: a handwritten marker font (as in type.hand_drawn); font size = em size"
+  label_16x9: "font size 2.8–3.6 % H (30–39 px @1920×1080); up to 2 lines, ≤ 24 characters per line; plate height ≈ 1.8 × font size per line"
+  label_9x16: "font size 2.2–2.8 % H (42–54 px @1080×1920), never smaller than 2 % H; up to 2 lines, ≤ 18 characters per line"
+  plate: "padding 0.5 × font size on the sides and 0.3 × font size top and bottom, corner radius 0.2 × font size; plate-less variant: text with a 0.3 % H shadow"
+  color: "line and dot: accent #FFC400 or white #FFFFFF with a 1 px shadow; plate #FFFFFF 92 % + text #111 (light) or #111 80 % + text #FFFFFF (dark); marker outline and arrow: red #E8323C or white; one accent per video; label contrast ≥ 4.5:1"
+  ring: "thickness 0.5–0.8 % H; radius 0.55–0.70 of the object box diagonal, gap to the object ≥ 1.5 % H; draws over 8–12 frames @25 fps / 10–14 @30 fps (inOutCubic), starting at \"10 o'clock\", clockwise; marker style: open, with a 10–15° overlap"
+  arrow: "shaft 0.6–1.0 % H, head 3–4 shaft widths, arc bend 20–40°; the shaft draws over 8–12 frames @25 fps / 10–14 @30 fps, the head pops in over 2 frames; the tip stops 2–4 % H short of the object; the arrow comes from an empty part of the frame"
+  brackets: "corners 15–20 % of the box side, thickness 0.4 % H, 3 % margin from the object; converge from ×1.15 to ×1.0 over 6 frames @25 fps / 7 @30 fps (outCubic)"
+  spotlight: "brightness outside ×0.45–0.60 over 8 frames @25 fps / 10 @30 fps; ellipse = object box × 1.25, edge feathered by 3–5 % H; optionally a slight background blur of 0.3 % W"
+  in: "dot 4 frames @25 fps / 5 @30 fps (outBack) → line 6–8 / 7–10 frames (inOutCubic) → plate 6–8 / 7–10 frames (wipe) → text 4 / 5 frames (fade); whole assembly 0.6–0.8 s"
+  timing: "speech: the dot lands on the first frame of the object word minus 2 frames (from word-level timestamps), assembly complete by the end of the word (+0…4 frames); music: dot on the beat, label on the next half-beat; series: a step of 1 beat or 8–12 frames @25 fps / 10–14 @30 fps"
+  hold: "≥ 1.5 s + 0.3 s per label word, but no longer than the object stays in frame"
+  out: "reverse order 6–8 frames @25 fps / 7–10 @30 fps (inCubic) or fade 4 / 5 frames; early exit if the box is closer than 5 % to the edge or the track is lost for > 6 frames"
+  layout: "the label goes toward the side with the most free space (little texture, no faces or captions); 9:16: everything within x 0.06–0.88 and y 0.12–0.80 (top 12 %, bottom 20 % and right 12 % are platform UI); 16:9: margins ≥ 5 %; at once ≤ 3 callouts in 16:9 and ≤ 2 in 9:16"
+when: |
+  Explainer and product are the main use: a detail, feature or spec at the moment the voice names it
+  ("this seam right here…"); a series of 2–4 pins on a product in the build, one per beat. UGC: a "look here" arrow or outline
+  on the hook (first 1–2 s). Clips: an outline around whatever is being talked about. Sport: a darkened surround on a player or target brackets
+  0.5–1 s before the key action, ideally on a freeze frame. Travel: a pin with the place name on a landmark. Fashion: labels for the pieces
+  of the look in a minimal style. Teaser: only an outline of a detail, no label. Product outro: one callout with the price
+  or the main fact by the packshot, together with the CTA. Limit: ≤ 1 callout per 3–4 s of speech, series ≤ 4, at once ≤ 3 (16:9) /
+  2 (9:16); do not use on the drop or in fast cutting, there is no time to read them.
+avoid: |
+  A callout that does not stick to the object (drifts or jitters more than 0.2 % W per frame) is worse than none; a label
+  over a face or captions; lines crossing the object or each other; more than 3 words on a plate in fast-moving sections;
+  holds shorter than 1.5 s and callouts on shots shorter than 1.5 s; different callout styles in one video; small text below
+  2 % H in vertical video; an arrow jammed right up against the object; unverified facts in labels; epic, calm,
+  dramatic tone, phonk and fan edit: pointers break immersion.
+sfx: |
+  Pin dot: a short "pop" or "tick" (−18…−22 dB under the voice) on the frame it appears, align='attack'; line and plate:
+  a quiet whoosh of 0.2–0.3 s (sfx.whoosh); marker outline: a marker scratch for the duration of the drawing; darkened surround:
+  a soft low "inhale" or sfx.impact at −18 dB at the moment of full dimming; a series of pins on beats needs no sound.
+genres: {explainer: signature, product: signature, ugc: allowed, clips: allowed, viral: allowed, sport: allowed, travel: allowed, motivation: allowed, epic: forbidden, calm: forbidden, drama: forbidden, phonk: forbidden, fanedit: forbidden, fashion: forbidden, teaser: forbidden}
+detect: |
+  Custom check (ed_motion does not do it): thin straight lines (Hough transform) 0.2–0.4 % H thick at 0 / 45 / 90° angles,
+  one end at a small circle or at the object, the other at a short text plate (OCR: 1–4 words, ≤ 2 lines);
+  or a ring around the object, or a triangular arrowhead, or four corners around the object box. Over time:
+  line and arc length grows over 6–12 frames (drawing), the dot pops with a ×1.2 overshoot; the graphics move together
+  with the object: their displacement matches the local motion of the object region (optical flow), not the global
+  motion of the frame; darkened surround: brightness outside the ellipse drops by 40–55 % over 6–10 frames while it stays unchanged inside.
+  ed_motion: global events are those of the shot itself; overlay-mask is low (the graphics ride with the object), on a static
+  shot 0.01–0.06.
+  Differences: type.margin_notes is a handwritten list next to the subject with no anchoring to an object; gfx.mixed_media is object
+  labeling and scribbles as texture (many boxes, a choppy pace of 2–6 frames per drawing); lens.magnifier is a circle with magnification
+  inside; type.lower_third is a caption for the shot in the bottom strip without a pointer; anim.doodle_overlay is faces drawn on objects;
+  type.diegetic is lettering on a surface with that surface's perspective; cut.insert is a cut to a close-up instead of graphics.
+engine: |
+  callout(target=track(object:<name>|face|person|point:[x,y], redetect=10fr, smooth='one_euro(1.0, 0.02)'),
+          kind='pin_label'|'arrow'|'ring'|'brackets'|'spotlight'|'tag'|'who', text='<fact ≤ 24 chars>',
+          side='auto' → free_side(target, avoid=[faces, subtitles], safe_zone='tiktok'),
+          dot={d:0.014*H, color:'#FFC400', pop:'4fr outBack', ripple:{to:2.5, dur:10fr}},
+          leader={shape:'elbow'|'straight', diag:0.05*H, shelf:0.11*W, w:0.003*H, draw:'7fr inOutCubic'},
+          label={class:'grotesk', weight:600, size:0.032*H (16:9) | 0.025*H (9:16), plate:'#FFFFFF', alpha:0.92, color:'#111',
+                 pad:[0.5, 0.3], radius:0.2, reveal:'wipe(7fr)+fade(4fr)', lag:3fr},
+          t=[word_ts(object)-2fr, ...] | beat_sync(event='callout_in', grid='1/4'), hold='auto',
+          out='reverse(7fr, inCubic)'|'fade(4fr)', exit_on_edge=0.05, lost_track=6fr)
+  — composite primitive = shape(...) + text(...) + track(...); frames are given @25 fps, for 30 fps multiply by 1.2 and round.
+  free_side(target, avoid, safe_zone) — new: the side with the most free space (texture, faces, captions).
+  spotlight(target, dim=0.5, feather=0.04*H, shape='ellipse'|mask('mediapipe_person'|'hf_remove_background'), dur=8fr) — new.
+  outline: shape(kind='ring', around=target, scale=0.62, w=0.006*H, draw_on=10fr, start=300°, cw=True, style='vector'|'marker').
+  arrow: shape(kind='arrow', from=free_point, to=target, gap=0.03*H, w=0.008*H, head=3.5, curve=30°, draw_on=10fr, head_pop=2fr).
+  target brackets: shape(kind='brackets', around=target, arm=0.18, w=0.004*H, from_scale=1.15, dur=6fr, ease='outCubic').
+  series: callout_series(items=[...], step='1/4'|0.4, max_on_screen=3|2) — new.
+  + sfx('click', at=dot_in, gain=-20dB, align='attack').
+  check: qa_track_jitter(layer, max=0.002*W) — new; qa_overlap(face|subtitles); qa_text_safe_zone(layout='tiktok').
+gen_hint: clean product shot of <product> on a plain seamless background, the product slightly left of center, generous empty space on the right for labels, soft even studio light, static camera, sharp details, no text, no logos
+commands: ["label the seam on the sneaker with a callout when he talks about it", "three spec pins on the product, one per beat", "circle the ball before the kick in #4", "darken everything around the player at 0:12", "a \"look here\" arrow on the hook"]
+related: [type.margin_notes, gfx.mixed_media, gfx.counter, lens.magnifier, cut.insert, zoom.punch, type.lower_third, anim.doodle_overlay, product.hero, time.freeze]
+evidence: {examples: 0, sources: 0, measured: "edit culture: parameters from editing practice; verify with a demo render", confidence: medium}
+---
+id: gfx.collage
+family: gfx
+group: graphics
+level: B
+aliases: [collage, cut-out collage, cutouts, paper collage, scrapbook, zine aesthetic, zine, stickers, photo stack, photo pile, moving moodboard]
+what: the frame is assembled from cut-out photos, video windows and stickers — pieces land in layers, slightly rotated, with paper borders, tape and shadows, and change in jerks like stop-motion; a handmade, "magazine" feel
+frames: |
+  1. Backing: clean white (L≈245, the pieces cover 1 → 33 % of the frame as it grows), a flat color
+     or a soft gradient (peach RGB 245/195/130 → pink 209/152/185), black; or the video itself.
+  2. Pieces: rectangular photos and video windows 16–50 % of the frame width, stickers 2–11 % of the area, figures and objects
+     cut out along their silhouette; each one rotated by ±5–30°; cutouts have a white paper border ≈1–1.5 %
+     of the width and a torn edge; strips of clear tape, an ink blot, grain.
+  3. Pace: stop-motion at 6–14 fps (5 of 9 examples), a new piece or a swap every 1–3 frames
+     (80–150 ms); a photo stack grows by one shot every ≈0.6 s while the whole table "moves closer":
+     stack width 0.16 → 1.1 of the frame width over 5.8 s.
+  4. Entrances: slap (the piece appears whole in 1 frame), slide-in from the side as a strip, grow from a point,
+     "boiling" — the cutout is replaced every frame by a new variation of the same shape (7 fps).
+  5. Ending: the frame is fully covered (a sticker wall) or a transition to clean full-frame video.
+variants:
+  - photo stack: shots drop onto a white table one after another, each one rotated, the stack grows, the product sits in the center
+  - sticker wall: badges and stickers cover the whole frame in 2 s, a new one every 2–3 frames @20 fps
+  - cut-out figure: a person cut along the silhouette with a paper border on a colored gradient, the background changes every 1–2 frames, tape and blots
+  - boiling strip: a torn paper strip over the eyes of a portrait, a new shape every frame (7 fps)
+  - strip of video windows: rectangles with different clips slide in from the side one after another, overlapping
+  - memory windows: 1–2 rectangles with other moments of the same scene pop up over the main frame
+  - mosaic page: photos and frames are laid out as tiles, then full-screen video follows
+  - sticker object: a cut-out object grows next to the subject in the frame
+status: hybrid
+fallback: without masks, only rectangular pieces (photos, windows, strips) in code; silhouette cutouts via mediapipe/hf_remove_background; paper textures, tape and blots from an overlay library or a generation with consent; image pieces are frames from the user's source footage (freeze frames of their own video)
+params:
+  bg: "#ffffff | flat color | gradient #f5c382 → #d198b9 | black | video"
+  pieces: photos 16–50 % of the width; stickers 2–11 % of the area; 3–30 pieces per frame
+  rotation: ±5–30° per piece, random, never uniform
+  edge: paper border 1–1.5 % of the width (white), torn edge, shadow at 20–35 % opacity with a 0.5–1 % offset
+  texture: grain 0.04–0.08, tape (semi-transparent, 30–50 %), 1–3 blots
+  pace: a new piece every 1–3 frames (40–150 ms) in a "wall"; 0.5–0.7 s in a stack; on the beat, 1/8 or 1/4
+  fps: 6–14 fps for the whole collage (hold 2–4 frames @25 fps); video inside the windows plays on ones
+  enter: slap (1 frame) | slide-in 3–6 frames | grow from a point 4–8 frames
+  camera: slow zoom-in on the stack ×2–3 over 5–6 s or a static table
+  duration: 2–8 s per collage episode; an intro can run up to 20 s
+when: intros and title sequences, moodboards and fashion lookbooks, a product surrounded by "life" (a stack of shots with people and the product), memories and year-in-review recaps, lists (each item is a new piece on a beat), chapter changes; 1–3 episodes per video
+avoid: identical rotations and sizes of the pieces look like a template; overly smooth motion (60 fps) kills the handmade aesthetic; small text on the pieces; more than 30 pieces with fast swaps turns into a mess; cutouts with a dirty mask and no border
+sfx: a paper slap or a click for each piece, paper rustle, tape being torn off, a shutter click for photos; the rhythm of the pieces follows the beats of the track
+genres: {fashion: signature, fanedit: allowed, viral: allowed, product: allowed, teaser: allowed, ugc: allowed, clips: allowed, travel: allowed, motivation: allowed, explainer: allowed, calm: allowed}
+detect: |
+  Several rectangles or cutouts with different scenes and different exposure in the frame, rotated at different angles,
+  with white borders and shadows; a flat or white background. Over time, new compact regions appear
+  (2–50 % of the frame) while the rest of the frame stays still; the animation frame rate is 6–14 fps (repeated frames).
+  ed_motion: "no significant global motion", cuts in parts of the frame, low overlay-mask; sometimes a slow ZOOM-IN of the whole stack.
+  Difference from layout.split_screen: that is an even grid with no rotation, borders or overlaps.
+  Difference from mask.silhouette_window: that is one window inside a silhouette, here there are many layers.
+  Difference from anim.stop_motion (cut-out animation): there parts of a character move, here image pieces pile up and swap.
+engine: |
+  collage(bg='#ffffff'|gradient(['#f5c382','#d198b9']),
+          pieces=[collage_piece(src=still|clip, cutout='rect'|mask('hf_remove_background')|'torn', scale=0.16–0.5,
+                                rotate=uniform(-30, 30), pos=random_in(safe=0.1), border=0.012, shadow=0.3, enter='slap'|'slide'|'grow', t=beat_i)],
+          fps=10)
+  + paper_texture(amount=0.06) + tape(n=1–2, opacity=0.4) + grain(amount=0.05)
+  + step_print(hold=2)  # stop-motion
+  Stack with a zoom-in: transform(scale=[1, 2.5], t=[t0, t0+6], ease='linear', layer='collage')
+  + sfx('click'|'paper_slap', at=beat_i)
+gen_hint: handmade paper collage animation, cut-out photographs and stickers with white paper borders, torn edges and tape, pieces slapped onto a <white table / pastel gradient background> one by one, slightly rotated, stop-motion at 8 fps, zine aesthetic
+commands: ["build the intro as a collage of freeze frames from #1–#8", "a photo stack with the product in the center, one shot per beat", "cut out the subject with a paper border on a pink gradient", "cover the frame with stickers on the drop"]
+related: [mask.silhouette_window, layout.split_screen, layout.windowbox, anim.stop_motion, time.step_print]
+evidence: {examples: 9, sources: 9, measured: "5 of 9 at 6.25–14.3 fps; a new sticker every 2–3 frames @20 fps (stickers 2–11 % of the area); stack: frame coverage 1.2 % → 33 %, width 0.16 → 1.14 of the frame width over 5.8 s, a new shot ≈ once every 0.64 s; cutout background: peach 245/195/130 with the gradient replaced every 1–2 frames @12.5 fps; the paper strip changes shape every frame @7.1 fps", confidence: medium}
+---
+id: gfx.counter
+family: gfx
+group: graphics
+level: B
+aliases: [counter, count-up, rising numbers, rolling digits, infographics, infographic, animated stats, stat card, odometer, progress bar, bar chart, chart overlay]
+what: counter and infographics — a number counts up to its total, slowing toward the end, bars grow from a common baseline, a chart line draws itself, a ring fills; the total lands exactly on a beat or on the spoken number word
+frames: |
+  1. Entrance (4–6 frames @25 fps / 5–7 @30 fps): the plate or the number appears with a "pop" ×0.9 → ×1.0 (outCubic) or slides up from below
+     by 4 % H; the starting value (0 or the "before" value) holds for 2–4 frames before the count begins.
+  2. Count 0.8–2.0 s (20–50 frames @25 fps / 24–60 @30 fps), typically 1.2 s. Default outCubic: half the total in the first
+     ≈21 % of the time, the last 10 % of the value stretches over the last ≈46 % of the time; "slow settle" outExpo: half in ≈10 %,
+     the last 10 % over the last ≈67 % (only from 1.5 s up). Digits are tabular (equal width), room for the final width
+     is reserved so the number does not "wiggle"; the lowest digit changes every frame, the higher digits settle first.
+  3. Landing: the last frame shows the exact total (outExpo never reaches 1 by itself, so substitute it); a ×1.10 pulse over 3 frames
+     and back over 5 @25 fps (4 + 6 @30 fps, outBack), a color change to the accent, the unit or label "trickles in" (fade 4 frames
+     @25 fps / 5 @30 fps). The landing goes on a downbeat or on the end of the spoken number word.
+  4. Hold ≥ 1.2 s after the landing (+0.3 s per word of the label).
+  5. Charts: bars grow from a common baseline over 0.5–0.8 s (outCubic) staggered by 3–5 frames @25 fps (4–6 @30 fps) or one per beat,
+     the values above them count in sync; a line draws left to right over 1.0–1.6 s (inOutCubic), the dot at its end
+     pulses; a ring fills from "12 o'clock" clockwise over 0.8–1.2 s (outCubic), the number in the center moves with the arc;
+     a progress bar fills from the left over 0.8–1.5 s (outCubic), the percentage rides on the edge of the fill.
+  6. Exit: fade 4–6 frames @25 fps (5–7 @30 fps) or together with the cut; charts shrink back over 6 frames @25 fps (7 @30 fps, inCubic).
+variants:
+  - big number — a single number in the center (+340 %, 12 500 ₽, 1.2M), a unit label under it; lands on a downbeat
+  - before → after — the old number is struck through (a line over 6 frames), the new one counts up beside or below it; price, time, weight
+  - bars — 2–6 bars from a common baseline, the main one in the accent color, the rest gray; comparisons such as "before / after", "us / the market"
+  - line chart — the line draws left to right, the end point pulses and is labeled with the total
+  - ring or progress bar — fills up to a percentage, the number in the center or at the edge of the fill
+  - timer and clock — mm:ss or hh:mm run linearly (real time or sped up ×10–×60 for a timelapse), the colon blinks once per second
+  - year rewind — the year "rolls" to the target one over 1.5–2 s (inOutCubic) with vertical motion blur on the digits; a time jump
+  - odometer — each digit scrolls on its own drum with vertical motion blur, the lower digits spin faster
+  - speed and distance — km/h next to a car or a runner (tracking) or the mileage along a route line on a simple diagram; only from the user's data
+status: code
+fallback: |
+  Numbers and data come from the user or the script; if the narrator says a number, take it from speech recognition and
+  ask again when in doubt. The engine does not invent figures or touch up "nice" values. No calm
+  background: a plate or a 30–50 % dim, or a separate card on a solid background. Speed and distance are not estimated from the video
+  without data from the user. No base maps from third-party services: a simple route diagram
+  as a line, or the user's own map.
+params:
+  type_class: "number: grotesque sans 700–900 with tabular figures (tnum), a condensed cut for long numbers of ≥ 7 characters; label: the same grotesque at 500–600; monospaced for timers and a \"technical\" tone; caption-language coverage for labels; font size = em size, digit height ≈ 0.72 × font size"
+  size_16x9: "big number: font size 18–30 % H (typically 24 % ≈ 260 px @1920×1080), label 3–4 % H; on a chart, values 2.5–3.5 % H, bar and axis labels 2.2–2.8 % H"
+  size_9x16: "number: width ≤ 72 % W (5–7 characters ≈ 9–13 % H); label 2.4–3.0 % H; chart values ≥ 2.2 % H"
+  position: "big number: center of the safe zone (16:9: x 0.5, y 0.42–0.50; 9:16: x 0.47, y 0.32–0.55) or a free third of the frame next to the object; chart in 16:9: a block of 50–70 % W × 40–55 % H; 9:16: x 0.08–0.86, y 0.25–0.70 (top 12 %, bottom 20 % and right 12 % are platform UI)"
+  format_ru: "digit grouping: a narrow no-break space U+202F from 5 digits (12 500, 250 000), 4-digit numbers unspaced (2500), but one format within a series; decimal separator: comma (3,5); decimal places as in the total from the first frame of the count (0,0 → 4,8); percent: \"45 %\" with a narrow space; currency after the number: \"1 990 ₽\"; growth \"+\", decline \"−\" (minus sign U+2212, not a hyphen); from 1 000 000, by default \"1,25 mln\" (the Russian abbreviation for million, 1–2 digits after the comma), the full form only when precision matters and the width allows; the abbreviation for thousand (\"tys.\") only when space is short; count abbreviated numbers directly in these units (0,00 → 1,25 mln)"
+  format_en: "digit grouping: comma (12,500), decimal separator: dot (3.5), \"45%\" with no space, \"$1,990\", abbreviations 1.2K and 3.4M"
+  count: "0.8–2.0 s (20–50 frames @25 fps / 24–60 @30 fps), typically 1.2 s; a short fact 0.6–0.8 s; a \"suspenseful\" total 2–3 s; ease outCubic (default) | outExpo (slow settle, ≥ 1.5 s) | inOutCubic (year rewind) | linear (timers and clocks only); each frame shows floor(value) when rising and ceil when falling, so it stays monotonic; last frame = exact total"
+  roll: "odometer: each digit has its own drum of digits, offset = the fractional part of its value; vertical motion blur ≤ 0.5 of the digit height per frame; a digit settles once its value no longer changes"
+  landing: "pulse ×1.08–1.12 over 3 frames and back over 5 @25 fps (4 + 6 @30 fps), outBack; color → accent; label fade 4 frames @25 fps / 5 @30 fps; landing on the downbeat frame (±1 frame) or on the end of the spoken number word"
+  bars: "2–6 bars; width 6–10 % W (16:9) / 9–14 % W (9:16), gap 40–60 % of the bar width; baseline at 0.72–0.78 H; maximum 40–50 % H; growth 0.5–0.8 s outCubic, staggered by 3–5 frames @25 fps / 4–6 @30 fps or per beat; axis from zero, one scale per comparison"
+  line: "thickness 0.4–0.6 % H, drawing 1.0–1.6 s inOutCubic; a fill under the line at 15–25 % opacity fades in over 8 frames afterwards; end point ⌀ 1.2 % H with a pulse"
+  ring: "thickness 3–5 % H, radius 10–16 % H; starts at \"12 o'clock\", clockwise, 0.8–1.2 s outCubic; ring track in the same color at 20 %"
+  progress: "bar 60–76 % W, thickness 1.5–2.5 % H, rounded ends; fill 0.8–1.5 s outCubic, the percentage rides on the edge of the fill"
+  timer: "mm:ss in tabular figures, linear; the colon blinks at 1 Hz (0.5 s on, 0.5 s off), optional"
+  color: "number #FFFFFF; growth: green #2BD96B with a ▲ or \"+\" sign; decline: red #FF4D4D with a ▼ or \"−\" sign (meaning not by color alone); landing: accent #FFC400 or one from the video's palette; secondary bars #8A8F98 at 60 % opacity; plate #000 50–60 % or a 30–50 % frame dim; contrast ≥ 4.5:1"
+  timing_speech: "the count starts 1.0–1.5 s before the end of the number word (from word-level timestamps) and lands on its end; if the number comes at the very start of a phrase, start with the beginning of the word and land 0.8 s later"
+  limits: "one counter on screen (2 for a comparison); in speech genres ≤ 1 per 8–10 s; in music genres ≤ 3 per video; charts ≤ 6 bars and ≤ 2 lines"
+when: |
+  Explainer and clips: when the voice names a number, the count lands on the end of the number word; bars and lines for comparisons
+  and trends. Sport: player or match stats on a freeze frame (time.freeze), speed or distance. Product:
+  a spec in numbers in the build, a "before → after" price before the CTA in the outro. UGC: "saved 12 000 ₽" on the hook.
+  Motivation: "365 days", "1 % a day". Travel: kilometers and days on the road. Teaser: a timer to the date at the end. Phonk and
+  car edits: km/h by the car in the build, landing on the drop. Music genres: start the count on a beat, land on a downbeat
+  or on the drop (together with sfx.impact). Limit: ≤ 1 counter per 8–10 s of speech, ≤ 3 per music video, one on screen.
+avoid: |
+  Made-up numbers or numbers "rounded to look nice"; a truncated bar axis (baseline not at zero) and different scales in one
+  comparison; proportional figures, which make the number jitter while counting; a total that holds for less than 1 s; linear on large numbers
+  (the last digits are unreadable); more than 6 bars and labels smaller than 2.2 % H in 9:16; meaning by color alone (red /
+  green) without a sign; a hyphen instead of a minus and a dot instead of a comma in Russian text; several counters at once;
+  infographics over a face; calm, fashion and fan edit: it breaks the tone.
+sfx: |
+  Ticks during the count (sfx click, −22…−26 dB under the voice, ≤ 15 per second, sparser as the count slows) and a single accent
+  on the landing: a "ding" or a short sfx.impact at −14…−18 dB, align='attack' on the total frame; bars growing: a short
+  rising sweep of 0.3–0.5 s; timer: a tick once per second; in a music video no ticks are needed, the landing goes on a downbeat
+  or on the drop and the track itself provides the accent.
+genres: {explainer: signature, sport: signature, product: allowed, clips: allowed, ugc: allowed, motivation: allowed, travel: allowed, viral: allowed, teaser: allowed, epic: allowed, drama: allowed, phonk: allowed, calm: forbidden, fashion: forbidden, fanedit: forbidden}
+detect: |
+  OCR per frame: a numeric string (digits, "%", "₽", "M"/"mln") changes value monotonically over 0.5–3 s, almost every frame at the start
+  and less and less often toward the end (half the total in the first 10–25 % of the time: outExpo or outCubic), then holds ≥ 1 s; the width of the number's
+  box is constant (tabular figures), on the landing the box height goes ×1.08–1.12 for 3–5 frames. Charts: rectangles grow
+  from a common baseline staggered by 3–5 frames; a polyline lengthens left to right; a ring arc grows in angle. ed_motion: on a card,
+  holds after the landing; on a live background, overlay-mask 0.03–0.2 (a static plate) with normal shot motion;
+  the graphics produce no global events.
+  Differences: a 3-2-1 countdown (type.kinetic) is separate digits cut on the beats, with no intermediate values; pov.screen is
+  a mirrored phone interface with a counter; type.margin_notes is handwritten sums written out letter by letter and crossed out;
+  look.retro_graphics is a static teleshopping plate with a price; gfx.callout is a pointer to an object with no animated value.
+engine: |
+  counter(from=0, to=V, dur=1.2, ease='outCubic'|'outExpo'|'inOutCubic'|'linear', end_at=word_ts(number).end | beat('downbeat'),
+          format={locale:'ru', group:'U+202F', group_from:5, decimal:',', decimals:'auto', prefix:'', suffix:' %'|' ₽'|'',
+                  sign:'auto', minus:'U+2212', abbreviate:'auto'},
+          style={class:'grotesk_black', weight:900, tabular:True, size:0.24*H (16:9) | fit_width(0.72) (9:16), color:'#FFFFFF'},
+          land={pulse:1.1, dur:[3fr, 5fr], ease:'outBack', color:'#FFC400', label_fade:4fr},
+          mode='count'|'roll'|'clock', round='floor'|'ceil', snap_final=True,
+          plate={color:'#000', alpha:0.55}|None, pos=..., safe_zone='tiktok')
+  — counter(...) from the engine vocabulary, refined: format, land, mode, round, snap_final, end_at (start = end_at − dur).
+  chart(kind='bar'|'line'|'ring'|'progress'|'compare', data=user_data, baseline_zero=True, highlight=i,
+        colors={main:'#FFC400', rest:'#8A8F98'}, grow={dur:0.6, ease:'outCubic', stagger:4fr | beat_sync(event='bar_in', grid='1/4')},
+        labels={size:0.025*H, count_with=True}, pos=..., safe_zone='tiktok') — new primitive.
+  before → after: shape(kind='strike', over=old, draw_on=6fr) + counter(from=old, to=new, dur=1.0).
+  speed next to an object: counter(values=user_series, anchor=track(object:<car|person>), offset=[0.12*W, 0], smooth=0.3).
+  frames are given @25 fps, for 30 fps multiply by 1.2 and round.
+  + sfx('click', rate_max=15, gain=-24dB) on the count, sfx('impact', at=landing, gain=-16dB, align='attack').
+  check: qa_numbers(source=user_data) — new (the total on screen = the value in the data); qa_text_safe_zone(layout='tiktok').
+gen_hint: clean minimal background plate for data graphics, <calm wide shot or soft gradient> with a large empty dark area in the center, low detail, gentle slow camera drift, no text, no numbers, no charts
+commands: ["a counter up to 12 000 ₽ when he says the amount", "\"before and after\" bars growing on the beats", "a percentage in a ring on the drop", "rewind the year to 2026 on the transition", "a 00:59 countdown timer at the end of the teaser"]
+related: [gfx.callout, type.kinetic, type.margin_notes, time.freeze, pov.screen, look.retro_graphics, type.title_card, layout.split_screen, sfx.impact]
+evidence: {examples: 0, sources: 0, measured: "edit culture: parameters from editing practice; verify with a demo render", confidence: medium}
+---
+id: gfx.floating_ui
+family: gfx
+group: graphics
+level: B
+aliases: [floating UI, messages in the frame, chat bubbles, text in the air, floating text messages, on-screen texting, diegetic interface, chat overlay]
+what: a device interface (messages, a chat, a typing window) hangs right in the scene next to the subject — you see both the face and what they are reading or writing, without cutting away to the screen
+frames: |
+  1. Trigger: the subject looks at a phone or laptop; the device is in the frame or implied by the pose.
+  2. Appearance: a bubble flies out of the device and grows into place over 5–6 frames (200–240 ms, decelerating)
+     — or "pops" in by scale over 2–3 frames.
+  3. Placement: next to the head, on the empty side of the frame, at head height (upper third); it does not cover faces.
+     Bubble 12–35 % of the frame width, letters 1.5–4.5 % of the height (larger on close-ups); a chat is a stack in an upper
+     corner with avatars, other people's messages on one side, one's own on the other and in a different color.
+  4. Life: text types out letter by letter at 9–14 characters per second (1–2 frames per character); a new message pushes the stack
+     up by one bubble height; a typed word "flies off" into the open space over 3 frames.
+  5. It stays while the subject reads (1.5–4 s) and survives a cut to another angle at the same screen position; it leaves
+     with a dissolve over 4–6 frames or together with the cut.
+variants:
+  - single incoming message: a flat semi-transparent bubble (teal, ≈18 % of the width) flies out of the phone and settles by the head
+  - chat stack: 3–4 bubbles in the upper left corner with avatars, scrolling up as new messages arrive
+  - typing window: a dark semi-transparent panel over ≈30–45 % of the frame, a word types out letter by letter, then flies off into the open space
+  - reactions around the subject: 3–4 bubbles with a white outline and no fill, small names above them, scattered around the head and the phone
+  - text without a bubble: message lines type out in an empty part of the frame and continue after the cut
+  - in a wide shot: a tiny bubble (letters ≈2.5 % of the height) next to a small figure, growing out of its phone
+status: code
+fallback: with a moving camera, point or planar tracking is needed (otherwise the bubble "drifts" across the scene); if there is no room next to the subject in the frame, reframe with extra space or outpaint
+params:
+  pop_in: 5–6 frames (200–240 ms) flying out of the device with deceleration (outBack | outCubic); short variant, a scale of 0.6→1.0 over 2–3 frames
+  size: bubble 12–35 % of the width, 5–8 % of the frame height tall; window panel up to 30–45 % of the frame
+  text: grotesque (sans), lowercase height 1.5–4.5 % of the frame height; name or time label at 50–60 % of the main font size, gray
+  style: flat fill with 10–30 % transparency (teal, blue, pink) and white text | white 1–2 px outline with no fill | dark semi-transparent panel
+  position: at head height (y 0.15–0.35 in a medium shot), offset 0.10–0.25 of the width toward the empty side; a chat goes in an upper corner, 3–5 % margin
+  typing: 9–14 characters/s (≈), the cursor blinks 2 times per second
+  stack: a new bubble shifts the stack by its own height over 4–6 frames
+  hold: 1.5–4 s per message; exit with a 4–6 frame dissolve
+when: |
+  Scenes with texting and social media: a message arrives, a "read" reply, a group chat reacts; UGC storytelling
+  "he texted me…"; explainer and product videos, to show what an app does without leaving the user's face;
+  comedy, an awkward text exchange. A separate beat for each message; no more than 3–4 bubbles at once.
+avoid: |
+  Real logos and interfaces of specific apps: neutral style only. Small text on a vertical screen
+  (below 3 % of the height it is unreadable on a phone). Bubbles over faces. A bubble that does not stick to the scene when the camera
+  moves. Different bubble styles in one video. Long messages: 1 line of up to 30–40 characters.
+sfx: |
+  A "knock" or a notification sound when the bubble appears; keyboard clicks while typing (on every 2nd–3rd letter); a short
+  send whoosh; phone vibration on an incoming message. Everything quiet (−12…−18 dB) under the music, on the beat.
+genres: {ugc: signature, viral: allowed, explainer: allowed, product: allowed, drama: allowed, teaser: allowed, fanedit: allowed, calm: allowed}
+detect: |
+  ed_motion: a static graphics layer gives overlay-mask 0.05–0.5; camera motion meanwhile is normal or zero.
+  Visually: flat rounded rectangles with thin white grotesque text, sharp against a blurred background (they ignore
+  the scene's depth of field and lighting), semi-transparent; they appear from a point at the phone, scaling up over 5–6 frames;
+  the text grows letter by letter; the stack shifts up.
+  Difference from pov.screen: there the camera is the screen itself, with a mirrored interface over the face. From layout.screen_in_screen: there
+  the screen itself or an inset window is shown as a picture. From type.subtitles: captions sit bottom center and carry speech. From type.kinetic:
+  that is decorative typography, not a device interface.
+engine: |
+  ui_overlay(kind='bubble'|'chat_stack'|'window'|'outline_bubble', text=<message>, anchor=track(person:head),
+             offset=[0.15*W toward the empty side, 0], width=0.18*W, opacity=0.85, color='#2bb3a8', font='sans', cap_h=0.03*H)
+  + pop_in(from=track(object:phone), dur=0.22, ease='outBack') + type_on(cps=12, cursor=True)
+  + chat_stack(messages[], corner='top_left', bubble_h=0.06*H, gap=0.01*H, push_dur=0.2) for a chat
+  + fade(to='transparent', dur=0.2) on exit
+  + sfx('click', at=pop_in.t0, gain=-14dB); with camera motion, track(kind='planar'|'point') for the anchor.
+gen_hint: medium shot of <person> reading a message on their phone, natural light, clean empty space beside their head for floating message graphics added later, static camera, shallow depth of field, no on-screen text
+commands: ["a message pops up as a bubble by the subject's head at 0:04", "a chat in the upper left corner, new messages push the old ones up", "in #5, text typing out letter by letter in a floating window", "friends' reactions as bubbles around the heroine"]
+related: [pov.screen, layout.screen_in_screen, type.subtitles, type.kinetic, layout.split_screen]
+evidence: {examples: 6, sources: 6, measured: "bubble flying out of the phone in 5–6 frames (200–240 ms) in 2 clips; letter-by-letter typing at ≈14 characters/s (a 9-letter word in 0.65 s) and ≈9 characters/s; bubble 12–35 % of the width, letters 1.5–4.5 % of the height; placement by the head in the upper third or as a stack in the upper left corner; 1 clip is a still frame with 4 outline bubbles; transparency and colors by eye (≈)", confidence: medium}
+---
+id: gfx.mixed_media
+family: gfx
+group: graphics
+level: C
+aliases: [mixed media, mixed technique, hybrid graphics, video plus graphics, layered frame, assembled frame]
+what: live video is mixed in one frame with foreign layers — "machine vision" labeling, interfaces, handwritten marks, print texture, 3D elements; each layer has its own texture and its own pace, and the frame looks assembled rather than shot
+frames: |
+  1. Base: live video at 20–33 fps or a photo; on top of it or instead of the background, 1–3 layers of a different nature.
+  2. Each layer is recognizable by its texture: thin colored boxes with labels (object labeling), interface screens
+     and icons, white or red hand-drawn lines, halftone and torn paper, 3D particles.
+  3. Two paces in one frame are the technique's main signature: the live layer changes every frame, while the graphic one
+     holds each drawing for 2–6 frames @25 fps (80–220 ms) or lives in bursts: the interface scrolls for 7–8 frames in a row
+     (0.3 s), then holds for 0.3–0.7 s; the background behind a cutout changes every frame (90–100 ms).
+  4. Often the rest of the frame is still: in a live collage 65–89 % of the pixels stand still, while one cut-out
+     figure or one screen inside the picture moves.
+  5. The palette goes to extremes: acid (saturation 130–190 of 255) or near-monochrome print (25–40).
+variants:
+  - object labeling: rectangular 2 px boxes (≈0.7 % of the frame height) colored by class — magenta for people, green for objects, teal for furniture; label tags ≈4–5 % of the height; the boxes follow the objects every frame
+  - live plus interface: a person shot on chroma key stands in front of phone screens, the interface scrolls in bursts of 7–8 frames, a second screen appears beside it
+  - handwritten marks: a photo or video of a product, red ovals and arrows circle details (line ≈1 % of the height), a pencil in the frame, the sheets change every 0.5–1 s
+  - print texture: torn paper strips with halftone portraits, large text, cut-out hands; 4.5 fps (each drawing holds for 5–6 frames @25 fps)
+  - cutout on a changing background: one cut-out object (an eye) in the center, the background — a butterfly, op art, a lizard — changes every frame
+  - color cycle: a poster or placard whose plate and letter colors change every 100 ms
+  - live plus 3D: CG petals, particles or a whole world around a live person (saturation 170–190)
+  - negative window and scribbles: inverted b/w video in a window ≈50 % of the width jumps between positions, with white handwritten lines on top
+  - living postcard: a static collage where one element comes alive — a TV set inside the picture or a figure on a paper background (see gfx.collage)
+status: hybrid
+fallback: |
+  code: object labeling (detector + drawn boxes), handwritten marks (stroke animation), print textures
+  (halftone, paper, photocopy), color cycle, an inset window that jumps around. hybrid: cutouts and "live plus interface"
+  (person mask via mediapipe or hf_remove_background). generation: 3D elements and worlds around a person, with consent;
+  otherwise a library of ready-made overlays (particles, paper, tape).
+params:
+  layers: 2–4 heterogeneous layers, one of them live
+  graphic_hold: 2–6 frames @25 fps (80–220 ms) per drawing of the graphic layer; the live layer changes every frame
+  ui_burst: bursts of 7–8 frames (0.3 s) with pauses of 0.3–0.7 s
+  bg_cycle: the background behind the cutout changes every 90–100 ms (2–3 frames @25 fps)
+  static_share: 0.65–0.89 of the pixels still in the "living postcard" variant
+  boxes: 2 px line at 288 px height (≈0.7 %), tag ≈4–5 % of the height, 3 colors by class, lowercase label
+  marker: line ≈1 % of the frame height, red 200/60/90 or white; an oval draws over 3–6 frames
+  palette: acid (saturation 130–190) or print (25–40, halftone, torn edges)
+  duration: 1.5–8 s per scene; in a cut sequence, inserts of 0.5–1.5 s
+when: |
+  Explainer and tech videos (object labeling "the way a machine sees it", marks on a product), product and
+  archive breakdowns (a moodboard with circled details), music videos and fan edits with a collage aesthetic, teasers and intros with a "magazine" feel.
+  Tie the pace of the graphics to the beats: background and color changes on every eighth note, interface scrolling on the drum fills.
+  No longer than 8 s in a row: then a "clean" live frame to give the eye a rest.
+avoid: more than 3 heterogeneous layers at once is a mess; meaningless labeling (boxes on everything); small labels under 3 % of the height in vertical video; print texture on faces in close-up without need; an acid palette in a calm or luxury video; boxes lagging behind objects (drifting tracking)
+sfx: interface clicks and "beeps" when boxes appear and screens change; paper rustle and marker squeak on the marks; glitch ticks on background changes; a soft rustle for 3D particles
+genres: {explainer: signature, fanedit: allowed, viral: allowed, product: allowed, fashion: allowed, teaser: allowed, clips: allowed, ugc: allowed, phonk: allowed, calm: forbidden}
+detect: |
+  Custom measurement: live motion and a layer with repeated frames in the same frame at once (the graphics hold each drawing for
+  2–6 frames), so the rate of change differs by region; a share of still pixels of 0.65–0.89 alongside a live area;
+  thin rectangles of pure color (magenta, green) with tags ≈4–5 % of the height, moving with objects;
+  red or white closed strokes growing over 3–6 frames; a halftone grid and torn edges.
+  ed_motion: overlay-mask 0.3–0.9 (large areas stand still) or frequent cuts in part of the frame; no global motion.
+  Difference from gfx.collage: there the whole frame is made of paper cutouts and photos; here the base is live video with a foreign layer.
+  From anim.live_mix: there it is drawn characters. From gfx.floating_ui: there the interface is part of the story next to the subject.
+engine: |
+  labeling: detect_overlay(model='yolo-onnx', classes={person:'#ff00ff', object:'#33ff33', furniture:'#33ffcc'},
+  line_px=0.007*H, label_h=0.045*H, track=True, every=1) over the clip.
+  marks: annotate(shape='ellipse'|'arrow'|'scribble', target=track(object:<name>), color='#c83c5a', width=0.01*H,
+  write_on=4 frames, t=on the beat) + text(style='serif', size=0.05*H).
+  print: texture(kind='halftone'|'torn_paper'|'photocopy', amount=0.6) + step_print(hold=5) for the graphic layer.
+  cutout: mask(method='hf_remove_background') → composite over bg_cycle(images, every=0.1 s) or over UI screens
+  ui_scroll(burst=8 frames, pause=0.4 s). color: palette_cycle(colors=5, every=0.1 s). Keep the live layer at 25 fps.
+gen_hint: mixed media music video frame, live action footage of <subject> layered with <torn paper cutouts / hand-drawn red marker circles / computer vision bounding boxes / phone interface screens>, graphic layers animated at a low choppy frame rate while the live footage moves smoothly
+commands: ["make #3 mixed media with halftone and torn paper", "add neural-network-style object labeling at 0:05–0:09", "circle the sneaker with a marker on #2", "put the subject on a background of phone screens"]
+related: [gfx.collage, anim.live_mix, anim.doodle_overlay, gfx.floating_ui, time.step_print, time.echo_trail]
+evidence: {examples: 13, sources: 13, measured: "2 object labelings: 2 px lines at 288 px height, tags ≈4–5 % of the height, 3 class colors, boxes update every frame @14.3 fps; interface: background-change bursts of 7–8 frames @25 fps with pauses of 7–17 frames; living postcard: 65 % and 89 % still pixels; print texture at 4.5 fps with saturation 25; background change behind the cutout 90 ms, color cycle 100 ms; 3D petals and a CG world: saturation 169–186", confidence: medium}
+---
+id: gfx.route_map
+family: gfx
+group: graphics
+level: B
+aliases: [route map, travel route, animated route, route on a map, route line, path across a map, plane flying across the map, trip map, track on a map, minimap]
+what: a route on a map — the path line is drawn in code from point to point over a solid background or a stylized map, place pins pop up on arrival, a running dot or a transport icon leads the eye, labels are set in our own font; each leg starts on a beat and lands on a downbeat
+frames: |
+  1. Entrance (6–10 frames @25 fps / 7–12 @30 fps): the background fades in or is already there; the virtual camera shows the start point
+     with room around it; the start pin pops ×0 → ×1.15 → ×1.0 over 5 frames @25 fps / 6 @30 fps (outBack), the place label
+     fades in over 4 frames @25 fps / 5 @30 fps with a 1 % H shift.
+  2. Leg: the line grows from point to point by path length (not by x) over 0.6–1.2 s, typically 2 beats (1.0 s at 120 BPM =
+     25 frames @25 fps / 30 @30 fps), ease inOutCubic, the last leg outCubic. At the end of the line, a running dot with a halo
+     or a transport icon turned along the tangent of the path. A land route is a solid polyline through the track points,
+     a flight is a dashed arc with a height of 15–30 % of the leg length, a water route is dashed.
+  3. Camera: the frame smoothly follows the end of the line (inertia 0.3–0.5 s), at a scale where the current leg takes up
+     40–70 % of the width; before a long leg, a zoom-out to ×0.6–0.8 over 0.4 s and back in at the arrival point; no rotation.
+  4. Arrival: the end of the line touches the point exactly on the downbeat frame (±1 frame); the pin pops, a ripple ring
+     goes ×1 → ×2.5 fading 0.6 → 0 over 10 frames @25 fps / 12 @30 fps; the place label appears; the path traveled stays at full
+     brightness, the path ahead (if shown in advance) is dashed at 25–35 %.
+  5. Summary (optional): zoom out to the whole route over 0.8–1.2 s, all pins and labels, kilometers or days of travel counted up by
+     gfx.counter landing on a downbeat; hold ≥ 1.2 s (+0.3 s per label word); exit: fade 6 frames
+     @25 fps / 7 @30 fps, a whip or a light flash into the next shot.
+variants:
+  - diagram on a solid background — only points, the line and labels on a dark or light field; the default variant, needs no map at all
+  - stylized map — a background with land and water in 2–3 muted tones and no lettering, an image from the user or one generated with their consent
+  - flight arc — a dashed arc and a small plane along the tangent; several flights in a row, one per bar
+  - route from a track — a polyline through GPS points from the footage metadata or from the user's track file (thinned to 1 point per 0.5–1 % of the width)
+  - overview recap — the whole route in the outro: the line draws in over 1.5–2 s, the pins land on the beats, then the distance counter
+  - minimap — a diagram 30–40 % of the width on a plate in a corner of the safe zone over road footage; the dot moves along with the shots
+  - diagram without geography — places in order on a straight line or an arc with equal segments when there are no coordinates; distances are not labeled
+status: code
+fallback: |
+  Points: place names and order come from the user (coordinates from the user as well, or from the GPS metadata of videos and photos);
+  the engine does not guess places from the picture and does not draw a "nicer" path. No coordinates: a diagram without geography
+  (equal segments, no kilometers). Background: solid or gradient by default; the line and pins stand on their own.
+  If a real map is needed, only an image from the user (their own or freely licensed) georeferenced by 2 control
+  points (pixel ↔ coordinates), or a generation after the price is confirmed: a generated map is decorative texture,
+  coastlines are not guaranteed, so without anchoring to real coordinates the points are placed schematically.
+  Base maps and styles of third-party map services, their icons, labels and logos are never used; place
+  labels are set in our own font.
+params:
+  points: "2–8 places per showing (more: group them by region or split into 2 showings); order by capture time from the metadata or by the user's list; track: polyline simplification by maximum deviation with a tolerance of 0.5 % of the width"
+  projection: "region up to ≈ 2000 km: equidistant x = (lon − lon0)·cos(lat0), y = lat; larger: conformal cylindrical y = ln tan(π/4 + lat/2); the route bounding box fits into 60–76 % of the width with margins ≥ 12 %; north up"
+  background: "solid #0F1A24 (night) or #F3EEE4 (paper), or a vertical gradient of ±6 % brightness; stylized map: saturation ×0.5–0.7, contrast ×0.8, no text; the line is always the highest-contrast element (≥ 4.5:1 against the background)"
+  line: "thickness 0.5–0.8 % H (10–15 px @1080×1920), round caps and joins; color: a single accent from the video's palette (default #FF5A36); a 0.15 % H #000 outline at 30 % opacity on a busy background; dashes: 1.5 % H dash, 1 % H gap"
+  arc: "flight: a quadratic curve with one control point, height 15–30 % of the leg length, bowing away from the frame center; the dashes \"run\" behind the plane"
+  leg_timing: "leg 0.6–1.2 s: t = clamp(0.5 + 0.35·L/W, 0.6, 1.2) s, where L is the on-screen leg length and W the frame width; with music, round to 1 or 2 beats; start on a beat, arrive on the frame of the next downbeat ±1 frame; with speech, arrive on the end of the place word"
+  head: "running dot ⌀ 1.6–2.2 % H with a halo ⌀ 3–4 % H (30 %); transport icon (plane, train, car, boat, footsteps) 3–4 % H, our own vector drawing, turned along the tangent with 3 frames of angle smoothing"
+  pins: "pin ⌀ 1.4–1.8 % H or a 3 % H \"teardrop\"; pop ×0 → ×1.15 → ×1.0 over 5 frames @25 fps / 6 @30 fps (outBack); ripple ring ×1 → ×2.5 over 10 frames @25 fps / 12 @30 fps; pin color = line color, visited pins turn white"
+  labels: "our own font: grotesque sans 600–700 in sentence case or handwritten (as in type.hand_drawn); the font must cover the caption language; font size 2.6–3.4 % H in 9:16 (never below 2.4 % H), 3–4 % H in 16:9; ≤ 18 characters; the label goes toward the free space and does not cross the line; fade-in 4 frames @25 fps / 5 @30 fps; plate #000 50 % or a 0.3 % H shadow"
+  camera: "the virtual camera follows the end of the line: a critically damped spring, τ 0.3–0.5 s; the current leg takes 40–70 % of the width; long flight: zoom out to ×0.6–0.8 over 0.4 s (inOutCubic) and back; no rotation or shake"
+  trail: "path traveled: 100 %; path ahead (the \"whole route in advance\" variant): dashed at 25–35 %, fades in together with the background"
+  overview: "summary: zoom out to the whole route over 0.8–1.2 s (inOutCubic), hold ≥ 1.2 s + 0.3 s per word; kilometers and days via gfx.counter only from the user's data or from the summed track length"
+  duration: "showing 2–6 s (2–4 legs); overview recap 2.5–4 s; minimap: as long as the road footage runs, but ≤ 8 s in a row"
+  safe_zone: "9:16: all graphics within x 0.06–0.88, y 0.12–0.80 (top 12 %, bottom 20 % and right 12 % are platform UI); minimap: upper left corner of the safe zone, 30–40 % of the width, margins 3 % of the width"
+  limits: "≤ 2 showings per video (road + summary); ≤ 8 pins in the frame; ≤ 1 transport icon in the frame; one style for the line, pins and labels across the whole video"
+when: |
+  Travel is the move's home: in the build, 2–4 s between road shots (train window, airplane wing, highway), a "from → to"
+  leg before the first shots of a new place; in the outro, an overview recap of the whole route with pins on the beats and
+  a counter of kilometers or days; in the hook, optionally "the whole trip in a second" (1 beat per leg). Explainer:
+  where it happened, the path of a shipment or parcel, the story of an expedition; the dot arrives on the end of the place word. Sport: the course
+  of a marathon, race, swim or bike route, with the dot moving in sync with the athlete's shots. Teaser: tour cities
+  pop up on the beats, the final pin is the place and date. Clips and vlogs: "where we've been" between segments. Epic:
+  the path of an expedition at a large scale. Calm: a slow line, 1.5–2.5 s per leg, pins without the ripple ring.
+  Music genres: leg = 1–2 beats, arrival on a downbeat; the first beat of the drop is not the map but the best shot of the place.
+  Limit: ≤ 2 showings per video, ≥ 8 s apart.
+avoid: |
+  Made-up geography and "approximate" distances without data; base maps, styles, icons and labels of map
+  services and other people's maps; real outlines from a generated map passed off as accurate; more than 8 pins in one
+  frame and labels smaller than 2.4 % H in 9:16; a leg faster than 0.5 s (the path does not read) or slower than 1.5 s in a music
+  video (it drags the pace); rotating or shaking the map; the line and labels over faces, captions and UI zones; a map
+  on the drop instead of the places; several map styles in one video; phonk, fan edit and fashion: information graphics
+  break the mood and the look.
+sfx: |
+  Leg growth: a soft whoosh of 0.3–0.6 s (sfx.whoosh, 6 kHz low-pass filter, −12…−14 LU relative to the music, peak on arrival);
+  flight: a short fly-by, noise with a rising band-pass sweep of 0.6–0.8 s, panned ±0.3 along the arc;
+  pin: a "tick" or "pop" of 30–60 ms (sfx click, −18…−22 dB, align='attack' on the arrival frame); summary: no sound or
+  sfx.impact at −16 dB on the counter landing. Under a voice, only the pin ticks; drop the whooshes. In a music video
+  where the place changes on every beat no sounds are needed, the track provides the accent.
+genres: {travel: signature, explainer: allowed, sport: allowed, teaser: allowed, clips: allowed, epic: allowed, calm: allowed, viral: allowed, phonk: forbidden, fanedit: forbidden, fashion: forbidden}
+detect: |
+  frame: a solid or muted background (histogram with 1–3 peaks, low texture) or a flat map in 2–3 tones
+  with no parallax; a thin line of constant thickness 0.4–1 % H whose total length grows monotonically over 0.5–1.5 s
+  per segment (the line's pixel count grows, then holds), the end of the line is a bright dot or an icon turned in the direction of travel;
+  round markers appear with a ×1.1–1.2 overshoot at the ends of segments; OCR finds short place-name labels (1–2 words)
+  next to the markers; dashed arcs between distant points.
+  ed_motion: on a map background, smooth SHIFT and ZOOM-IN/ZOOM-OUT (the virtual camera follows the end of the line) with nonrigid
+  ≈ 0 and jitter ≈ 0 (flat graphics, a perfect similarity transform), direction changes without jerks; while the camera holds and only
+  the line grows, holds (small frame difference: < 1 % of the pixels change); a minimap over video gives overlay-mask
+  0.05–0.15 (a static plate in a corner over a moving shot).
+  Differences: anim.line_art is an outline drawing without points, pins or place labels; gfx.counter is a number without a path (its variant
+  "mileage along the route line" combines with this move); gfx.callout is a pointer to an object in a live frame,
+  not a path between places; drone.aerial and angle.birds_eye are real overhead footage (texture, parallax, nonrigid
+  > 0.1); type.diegetic is lettering in the perspective of a surface in the frame.
+engine: |
+  route_map(points=[{name, lat, lon} | {name, xy:[x, y]}], source='user'|'gps_meta'|'track_file'|'schematic',
+            projection='equirect'|'conformal', fit={box:[0.06, 0.12, 0.88, 0.80], fill:0.68},
+            bg={kind:'solid'|'gradient'|'image', color:'#0F1A24', image=user_map|generated, georef=[2 control points] | None,
+                desat:0.6, contrast:0.8},
+            legs=[{mode:'plane'|'train'|'car'|'boat'|'walk', dur:'auto'|1.0, start=beat(n), arrive=beat('downbeat') | word_ts(place).end}],
+            line={w:0.006*H, color:'#FF5A36', cap:'round', outline:{w:0.0015*H, alpha:0.3}, dash_for=['plane', 'boat'], arc_h:0.2},
+            grow={by:'arc_length', ease:'inOutCubic', last:'outCubic'},
+            head={kind:'dot'|'icon', d:0.02*H, halo:0.035*H, orient:'tangent', angle_smooth:3fr},
+            pins={d:0.016*H, pop:{scale:[0, 1.15, 1.0], dur:5fr, ease:'outBack'}, ripple:{to:2.5, dur:10fr}},
+            labels={font:'own_grotesk_600'|'own_hand', size:0.03*H, side='auto' → free_side(...), fade:4fr, max_chars:18},
+            camera={follow:'head', tau:0.4, leg_fill:[0.4, 0.7], hop_zoom_out:0.7, rotate:False},
+            trail={done:1.0, todo:0.3}, overview={at:'end', dur:1.0, hold:1.2}, safe_zone='tiktok')
+  — new primitive: point projection, line growth by path length, pins and labels, a virtual camera; built from shape(...),
+  text(...) and transform(...) over its own background, rendered as vectors (antialiased, no raster base maps).
+  minimap: route_map(..., layout={kind:'inset', box:[0.06, 0.12, 0.40, 0.32], plate:{color:'#000', alpha:0.5}}).
+  summary: + counter(from=0, to=km_total, dur=1.2, ease='outCubic', end_at=beat('downbeat'), format={locale:'ru', suffix:' km'}).
+  sound: + sfx('whoosh', at=leg_end, align='peak', gain=-13dB, lowpass=6000) per leg; sfx('click', at=pin_in, gain=-20dB, align='attack').
+  background on request: generate_image(prompt=gen_hint) — only after the price is confirmed; third-party map base layers are forbidden.
+  frames are given @25 fps, for 30 fps multiply by 1.2 and round.
+  check: qa_route_data(points) — new: every point, label and number exists in the user's data or in the metadata;
+  qa_text_safe_zone(layout='tiktok').
+gen_hint: stylised flat map background of <region>, top-down view, land and water in two muted tones, subtle paper texture, no text, no labels, no roads, no icons, no logos, wide empty margins, clean minimal look
+commands: ["draw a route through my three cities in the build", "a route on the map from the GPS in my videos", "at the end show the whole trip and count up the kilometers", "a flight as a dashed arc with a little plane on the beat", "a minimap in the corner while the road footage runs", "a route diagram without a map, just points and a line"]
+related: [anim.line_art, gfx.counter, gfx.callout, type.hand_drawn, drone.aerial, trans.whip, zoom.out, time.hyperlapse, layout.screen_in_screen, sfx.whoosh]
+evidence: {examples: 0, sources: 0, measured: "edit culture: parameters from editing practice; verify with a demo render", confidence: medium}
+---
+id: gfx.touch_gesture
+family: gfx
+group: graphics
+level: B
+aliases: [screen gesture in real life, mid-air hand swipe, touch gesture, scrolling through reality, swiping through places, air swipe, swipe transition, pinch to zoom]
+what: a hand in the frame controls reality like a phone screen — a swipe flips through scenes, a pinch zooms in, a tap opens, a finger scrolls the frame like a feed, a snap turns day into night; the edit and the graphics fire exactly in time with the gesture
+frames: |
+  1. Setup: the hand enters the frame (usually first-person) over 0.3–1 s and takes up 15–40 % of the frame;
+     the target of the gesture is in the center: a building, a painting, a photo grid, an interface card.
+  2. The gesture and the frame's instant reaction:
+     - sideways swipe — the scene slides away in the direction of the hand's movement with motion blur: 49 % of the width in 0.25 s
+       (peak 13 % per frame), after the cut the motion continues in the new scene; the whole transition is 0.3–0.4 s;
+     - upward swipe, as in a feed — the new clip rises from below: the border between the two clips creeps from 81 to
+       46 % of the height in 0.3 s (dragged by the finger), holds for 0.4 s, then rolls on to the top in 0.2 s;
+     - pinch or spreading the fingers — a zoom of ×1.15 in 2 frames (a jolt) or a smooth ×7.5 over 2.7 s
+       through a series of pinches;
+     - tap on a cell — the rest of the grid fades to ≈50 % in 0.3 s, the chosen picture grows from
+       its cell to the frame width in ≈1.3 s and comes alive;
+     - a squeeze or a snap of the palm — a cut of the same frame "day → night" exactly on the change of hand pose;
+     - grabbing a corner — the frame curls up like a sheet of paper and flies away in 0.75 s, a new scene underneath;
+     - a swipe on an interface card hanging in the room (player, notification) — it changes its content in ≈0.3 s.
+  3. Landing: the new state holds from 0.9 s on; the hand leaves or prepares the next gesture;
+     chains of 2–4 gestures at 1–2 s intervals.
+variants:
+  - swiping through places — a sideways swipe, each scene is a new location from the same trip
+  - feed — an upward swipe, clips change as in a vertical feed, with a "halfway" pause
+  - pinch zoom — a zoom into a painting or a building, the painting becomes a real landscape
+  - tap in a profile grid — a tile expands to full frame and comes alive
+  - finger snap "day ↔ night" — the same camera position at a different time of day
+  - turned page — the frame curls up like a sheet of paper
+  - interface in space — a player card on the wall, a hand swipe switches the track
+status: hybrid
+fallback: if there is no shot with a hand, film the hand separately against a solid background and composite it via a mask (mediapipe hands / selfie) or generate a POV shot with the gesture (with consent); "day ↔ night" needs a second take from the same position, otherwise a night version in code (exposure −1.5…−2 stops, a blue tint, light in the windows via masks), which is honestly weaker
+params:
+  gesture: swipe_x | swipe_up | pinch | tap | snap | peel | ui_swipe
+  sync: the reaction starts on the frame where the fingertip speed exceeds 3 % of the frame per frame (±1 frame) and ends when the hand stops
+  swipe: 0.25–0.4 s (6–10 frames @25 fps), displacement of 100 % of the width, peak 8–13 % per frame, directional motion blur, inOutCubic; cut at the midpoint
+  scroll: drag of 35 % of the height in 0.3 s → pause 0.3–0.5 s → roll-on in 0.2 s (outCubic)
+  pinch: a jolt of ×1.15–1.3 in 2–3 frames or smoothly ×2–7.5 over 1.7–2.7 s; the zoom center is between the fingers
+  tap: the rest fades to 50 % in 0.3 s; the chosen item grows ×3 from its cell over 1–1.3 s, outCubic
+  snap_cut: cut on the change of hand pose; the frames match in composition within ±2 %
+  peel: frame curl 0.6–0.8 s, the corner follows the fingertip
+  hand: 15–40 % of the frame, in focus, the fingertip is point 8 in the hand landmarks
+  ui_card: a card 30–40 % of the width, semi-transparent gray (alpha 0.6), 8 % corner radius, attached to a plane
+when: first-person travel and lifestyle ("swiping through places"); before/after and day/night with a single gesture; a "watch what happens if I swipe" hook; videos about social media, apps and products with a screen; 2–4 gestures per video, on downbeats
+avoid: the hand out of focus or half out of frame; a reaction more than 2 frames late breaks the illusion; day and night shot from different positions turn into an ordinary cut; small frequent gestures in a row; interfaces with other companies' logos and names, only neutral cards
+sfx: swipe — a short whoosh or an interface click; tap — a click; pinch — a "pop" or a stretch sound; a finger snap on "day → night" plus a change of ambience; feed — a quiet scroll tick
+genres: {travel: signature, ugc: signature, viral: allowed, product: allowed, explainer: allowed, fashion: allowed, teaser: allowed, fanedit: allowed, clips: allowed}
+detect: |
+  A hand or finger in the foreground (mediapipe hands), and at the moment of a fast finger movement
+  (±1 frame) the whole frame starts reacting: ed_motion shows SHIFT of 8–13 %/frame in the direction of the hand's movement,
+  a ZOOM jolt or a cut; feed: a horizontal border between two clips creeping upward in jerks
+  (81 → 46 → 5 % of the height) with a pause; tap: the rest lightens, one rectangle grows; snap:
+  a cut with no change of angle and a sharp change in brightness and color (day/night).
+  Difference from trans.whip: there the blur comes from a camera turn, here the motion is driven by the hand in the frame.
+  Difference from a floating interface: there the cards just hang, here the gesture moves them.
+engine: |
+  track(hand) → fingertip path, speed; gesture_detect(kind='swipe'|'pinch'|'tap'|'snap') → t_g, direction, scale
+  swipe: transition(kind='whip', dur=0.3, params={dir: <swipe direction>, blur: 0.6}) starting at t_g
+  swipe_up: feed_scroll(A, B, drag=0.35, drag_dur=0.3, hold=0.4, snap_dur=0.2) — new primitive
+  pinch: transform(scale=[1, 1.2], center=pinch_center, t=[t_g, t_g+0.1]) or scale=[1, 7] over 2.7 s
+  tap: tap_expand(cell=<cell bbox>, dim=0.5, dim_dur=0.3, grow=3, dur=1.2, ease='outCubic') — new primitive
+  snap: cut(at=t_g) + match(on='shape') between the "day/night" takes
+  peel: page_curl(corner=fingertip, dur=0.75) — new primitive
+  ui_swipe: ui_card(kind='player', anchor=plane_track, swipe_out=0.25) — new primitive
+  + sfx('click'|'whoosh', at=t_g, align='attack')
+gen_hint: first-person POV, my hand in the foreground makes a swipe gesture in the air as if scrolling a phone screen, the whole scene slides away in the direction of the swipe and <next location> slides in, sharp hand, natural light
+commands: ["swipe through the locations with a hand swipe", "on a finger snap day turns into night on #3", "pinch to zoom into the painting and it comes alive", "flick the clips upward with a finger, like a feed"]
+related: [trans.whip, trans.portal, pov.first_person, trans.wipe, cut.match, gfx.floating_ui]
+evidence: {examples: 9, sources: 8, measured: "swipe: 49 % of the width in 0.25 s (peak 13 %/frame), motion blur 0.2 s; feed: border 81→46 % of the height in 0.3 s, pause 0.4 s, roll-on to 5 % in 0.2 s; pinch: ×1.15 in 2 frames twice or ×7.5 over 2.7 s; tap: the grid fades in ≈0.3 s, the tile grows in ≈1.3 s; day → night as a cut on the change of hand pose, night holds 0.9 s; the sheet-frame flies away in 0.75 s; the player card changes the track in ≈0.3 s", confidence: medium}

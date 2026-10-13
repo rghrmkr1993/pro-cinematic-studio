@@ -1,0 +1,1323 @@
+id: type.beat_text
+family: type
+group: graphics
+level: B
+aliases: [beat text, beat-synced text, text to the beat, text on the beat, words on beats, word per beat, text hits, words on the kick, lyric hits, word on beat]
+what: kinetic text to music — words and short lines land exactly on the track's beats, hit on downbeats and the kick and get denser toward the drop; timing comes from the beat grid, not the voice
+frames: |
+  1. Grid: the engine takes the beats, downbeats and kick hits from the track analysis and lays the words out into slots — a bar,
+     ½ bar, a beat or a half-beat. At 120 BPM a beat = 0.5 s = 12.5 frames @25 / 15 @30, a bar = 2 s = 50 / 60 frames.
+     Each word's entry frame = round(beat timestamp × fps) — from its own timestamp, with no accumulated error; entry on the beat
+     frame or 1 frame earlier.
+  2. Hit entry: the word appears whole, instantly at ×1.15–1.25, and settles to ×1.0 over 3–4 frames @25 (4–5 @30) (outExpo).
+     On a downbeat it is a slam: ×1.4–1.6 → ×0.97 over 3 frames → ×1.0 over another 2 frames, sometimes with a white frame for 1–2 frames
+     and a frame shake of 1–1.5 % H.
+  3. Hold — until the next slot. A word that stays longer than one beat pulses on every kick: ×1.05–1.08 over
+     1 frame and back over 4–6 frames @25 (5–7 @30, outQuad); the pulse strength follows the loudness of the hit.
+  4. Assembly: words accumulate on beats 1-2-3-4 — as a line from left to right or as a stack from top to bottom; on the downbeat
+     of the next bar everything is wiped in 1 frame, or the assembled phrase holds for one more bar and leaves on the one.
+  5. Acceleration into the drop: in the last 2–4 bars of the build the grid gets denser, following the riser — bar → ½ bar → beat →
+     half-beat (half-beat only up to 125 BPM, otherwise the acceleration ends on the beat); the last beat before the drop is empty
+     (a frame without text, or black), on the drop's downbeat — one huge word as a slam, holding for 1–2 bars or until
+     the first cut.
+  6. Exit: a hard switch on the frame of the next slot (0 frames) — the default; at the end of a phrase — a burst to ×1.3 with opacity
+     going out over 2 frames exactly on the downbeat.
+variants:
+  - word per beat — one word in the center, a hard switch on every beat, hit ×1.2 → ×1.0; the backbone of the hook and the build
+  - line assembly — 2–4 words are added to a line beat by beat, on the one of the next bar the line is wiped
+  - stack — 3–4 one-word lines grow from top to bottom (one line per beat), leading 0.95 × font size, reset on the one
+  - pulse on a held word — one word holds for 1–2 bars and breathes on the kick ×1.05–1.08, changes color on the snare
+  - outline ↔ fill — the same word switches from a solid fill to an outline every beat or half-beat; 1–2 bars before the drop
+  - jumping positions — on every beat the word lands at a new spot out of 3–4 safe-zone anchors (top, center, bottom, left, right)
+  - acceleration and slam — bar → ½ → beat → half-beat, an empty beat and a huge word on the drop's downbeat
+  - word cards — cuts footage ↔ black card with a word on the beats (card 1 beat, footage 1–3 beats); phrase cards of 1.5–2 s each are type.intertitle instead
+status: code
+fallback: |
+  Only text is needed — words from the user (a slogan, a list, a song line they sent) or 2–6 keywords
+  from the script that the engine suggests; we do not put lyrics of other people's songs into the library and do not transcribe them. If the beats in the track
+  are hard to read (rubato, ambient without drums) — a grid from strong onsets or from manual bar marking; no hits
+  at all — do not use the move, take type.kinetic (to the voice) or type.title_card. Background — a dark calm shot or
+  a 30–45 % darkening; no suitable shot — a black or colored card.
+params:
+  grid: "slot = bar | ½ bar (1/2) | beat (1/4) | half-beat (1/8); take the shortest unit whose slot ≥ 0.35 s: up to 85 BPM — half-beat, 86–170 BPM — beat, above 170 BPM — ½ bar; one step coarser in the verse and the intro"
+  slot_frames: "120 BPM — half-beat 0.25 s = 6.25 frames @25 / 7.5 @30; beat 0.5 s = 12.5 / 15; ½ bar 1 s = 25 / 30; bar 2 s = 50 / 60; entry frame = round(t_beat × fps), error ≤ 0.5 frame (20 ms @25, 17 ms @30), no accumulation"
+  lead: "−1 frame (−40 ms @25, −33 ms @30) — the word lands one frame before the hit; the slam on the drop — exactly on the downbeat frame"
+  min_on: "a word of 1–5 letters ≥ 6 frames @25 (0.24 s) / 8 @30 (0.27 s), +0.04 s for every letter beyond 5 (10 letters ≥ 0.45 s); a word longer than its slot takes two slots in a row"
+  rate: "on average ≤ 3 words/s, in any 2 s window ≤ 4 words/s; half-beat for no more than 2 bars in a row, only in the acceleration before the drop and only if the slot ≥ 0.24 s (up to 125 BPM); on a faster track the acceleration ends on the beat"
+  type_class: "condensed extra-bold grotesque in caps, 800–900, tracking −1…−3 % — the base; wide black grotesque 900 — for words of ≤ 5 letters; display faces (blackletter, spiky, chrome) — only for the slam word on the drop; one typeface per series, Cyrillic glyphs required; font size = em size, cap height ≈ 0.7 × font size"
+  size_16x9: "one word over footage — font size 18–30 % H (typically 22 % ≈ 240 px @1920×1080), on a card 28–40 % H; a line of 2–4 words 9–12 % H; stack 10–14 % H per line, leading 0.95–1.0 × font size; slam 40–60 % H, width ≤ 90 % W"
+  size_9x16: "size by width — one word 60–80 % W (≈ 8–16 % H depending on word length, no more than 16 % H except the slam); slam up to 84 % W; a line of 2–3 words ≤ 76 % W; stack 7–10 % H per line; never smaller than 5 % H"
+  position: "16:9 — x 0.5, line center 0.46–0.52 H, margins ≥ 5 %; 9:16 — center x 0.47, everything inside y 0.12–0.80 and x 0.06–0.88 (top 12 %, bottom 20 % and right 12 % are taken by the interface), jump anchors y 0.24 / 0.46 / 0.68; never over a face — use the face mask to move to a free anchor"
+  color: "white #FFFFFF on dark; one accent — yellow #FFE600 (viral), red #FF1E3C (phonk, sport) or a color from the frame (fan edit, fashion); accent only the downbeat word or the key word, no more than 1 word per bar; slam — inversion for 1–2 frames (black text on a white field); outline — a stroke of 4–6 % of the font size with no fill; contrast to the background ≥ 4.5:1, otherwise a darkening"
+  in: "hit ×1.15–1.25 → ×1.0 over 3–4 frames @25 / 4–5 @30 (outExpo) | slam ×1.4–1.6 → ×0.97 → ×1.0 over 3 + 2 frames @25 / 4 + 2 @30 | fall from above by 6–8 % H over 3 frames @25 / 4 @30 (outCubic) | cut"
+  out: "cut on the frame of the next slot (default) | burst ×1.3 and opacity 1 → 0 over 2 frames @25 / 2–3 @30 on the downbeat"
+  accents: "downbeat — slam or color inversion; snare (beats 2 and 4, onsets 1.5–8 kHz) — ×1.05 and a color change; kick (onsets 40–120 Hz) on a held word — pulse ×1.05–1.08 over 1 frame, return over 4–6 frames @25 / 5–7 @30 (outQuad), amplitude proportional to onset strength"
+  drop: "the last beat before the drop without text (optionally a black frame); slam on the downbeat frame; white flash 1–2 frames; shake 1–1.5 % H decaying over 6 frames @25 / 7 @30; hold for 1–2 bars, then 2–4 bars without text"
+  scrim: "a 30–45 % darkening under the text or a radial gradient 0 → 50 % toward the center, if the text-to-background contrast < 4.5:1"
+  limits: "beat text ≤ 30 % of the runtime; slam ≤ 1 per drop and ≤ 2 per video; a new phrase only from a downbeat and from the start of a 4- or 8-bar phrase of the track; flashes ≤ 3 per second"
+when: |
+  Music genres. Hook (first 1–2 s): 2–4 words on the beats state the theme right away — word per beat over the first shot.
+  Build: line assembly or a stack on the beats, together with the track's 4-bar phrases; the last 2–4 bars — acceleration following the
+  riser (bar → ½ → beat → half-beat). Drop: an empty beat and a one-word slam on the downbeat, then 2–4 bars
+  without text — the picture does the work. Outro: the last word on the final downbeat, holding for a bar (for the loop in viral).
+  Verse — sparser (½ bar or a bar), chorus — on the beat. Explainer — only in a music intro without voice.
+  Limits: ≤ 30 % of the runtime, slam ≤ 1 per drop, half-beat ≤ 2 bars in a row.
+avoid: |
+  Over speech or vocals the viewer must understand: two timing grids — voice and beat — compete (use type.kinetic
+  or type.karaoke there); tracks without clear hits (ambient, rubato); words shorter than 6 frames @25 (8 @30), half-beat longer than
+  2 bars or on a track faster than 125 BPM — unreadable, it flickers; a different animation and font for every word (except
+  the slam); an entry off the beat by more than 1 frame; a word that starts before a downbeat and carries over it; a pulse on
+  every bar in a row — causes motion sickness; text over a face without a darkening; a calm, meditative tone; flashes more often than
+  3 per second (a risk for photosensitive viewers).
+sfx: |
+  The track itself leads the sound: the words land on its beats, a separate sound per word is not needed (at most a quiet tick
+  at −20…−24 dB under the music in the line assembly). Slam on the drop — sfx.impact or sfx.sub_drop exactly on the downbeat
+  (align='attack'); acceleration — sfx.riser over the last 2–4 bars of the build if the track has no riser of its own; phrase burst —
+  a short sfx.whoosh that ends on the downbeat.
+genres: {teaser: signature, fanedit: signature, viral: allowed, phonk: allowed, epic: allowed, drama: allowed, product: allowed, sport: allowed, travel: allowed, fashion: allowed, motivation: allowed, explainer: allowed, calm: forbidden, clips: forbidden, ugc: forbidden}
+detect: |
+  Text detector or per-frame OCR: the text box changes its content abruptly within 1 frame, the intervals between changes are multiples
+  of the beat period (an interval histogram peaking at ½, 1, 2 and 4 beats; at 120 BPM — 0.25 / 0.5 / 1 / 2 s); ≥ 80 % of the changes
+  fall within ±1 frame of the beats found in the audio (onset-based beat tracking), new phrases — on downbeats. After a change
+  the box height goes ×1.15–1.6 → ×1.0 over 3–5 frames; on a held word the height oscillates by 4–8 % in time with the kick. Before the drop
+  the change intervals halve every 1–2 bars, then an empty beat and a large box ≥ 35 % H (16:9) on the downbeat.
+  ed_motion: on a text card — holds between changes with lengths that are multiples of the beat; on the slam — flash frames and a spike in shake
+  jitter; for word cards — cuts on every beat and a low median card brightness (luma 10–40).
+  Differences: type.kinetic — changes follow the syllables and words of speech (irregular intervals that match the voice onsets, not
+  the beat grid); type.karaoke — the line holds, a highlight runs across the spoken words; type.subtitles — phrases of 1–6 s at the bottom;
+  type.repeat — one word multiplied in a loop; type.title_card — one block holds ≥ 1 s; type.intertitle (trailer
+  cards) — phrases of 2–4 words for 1.5–2 s; cut.flash — images change on the beats, not words.
+engine: |
+  kinetic_text(words=user_words|lyrics_user|slogan, sync='beats',
+               slots=slot_plan(words, beats=beat_sync(event='word_in', grid='1/4'), min_slot=0.35, min_on='6fr@25|8fr@30',
+                               schedule=[{part:'verse', unit:'1/2'}, {part:'build', unit:'1/4'}, {part:'pre_drop', unit:'1/8', max_bars:2}],
+                               lead=-1fr, phrase_start='downbeat', max_rate=4),
+               layout='single'|'line_build'|'stack_build'|'jump(anchors=[[0.47,0.24],[0.47,0.46],[0.47,0.68]])'|'cards',
+               style={class:'grotesk_condensed_black', weight:900, caps:True, tracking:-0.02,
+                      size:0.22*H (16:9) | fit_width(0.76, max=0.16*H) (9:16), color:'#FFFFFF', accent:accent_from_clip(clip)|'#FFE600'},
+               anim_in='hit(scale=[1.2, 1.0], dur=4fr@25|5fr@30, ease=outExpo)', anim_out='cut',
+               accents={downbeat:'slam(scale=[1.5, 0.97, 1.0], dur=[3fr, 2fr])'|'invert(2fr)',
+                        snare:'bump(1.05)+color(accent)', kick:'pulse(amp=0.06, back=5fr, ease=outQuad, gain=onset_strength)'},
+               scrim=0.35, safe_zone='tiktok')
+  — new kinetic_text parameters: slots, accents; new primitive slot_plan(...) — quantizes the words to the grid, computes the entry
+    frame from each beat's timestamp, merges slots for long words, enforces the words-per-second limit.
+  drop: flash(color='black', t=drop-1beat, dur=1beat) optional
+        + text(word, style='display', size=0.5*H | fit_width(0.84), anim='slam(scale=[1.6, 0.97, 1.0], dur=[3fr, 2fr])', t=[drop, drop+1bar])
+        + flash(color='white', t=drop, dur=2fr) + shake(amp=0.012*H, freq=12, t=[drop, drop+0.25], decay='exp')
+        + sfx('impact', at=drop, align='attack').
+  outline ↔ fill: text_style_cycle(styles=['fill', 'outline(w=0.05)'], every='1/4'|'1/8', t=[drop-2bar, drop]) — new primitive.
+  kick and snare for accents: onsets(track, band=[40, 120]) and onsets(track, band=[1500, 8000]) on beats 2 and 4 —
+  new primitive onsets(track, band) on top of the track analysis (band-pass filter + envelope + peaks).
+  checks: qa_beat_sync(text_events, beats, tol=1fr) — new; qa_text_safe_zone(layout='tiktok'); qa_flash_rate(max=3) — new.
+gen_hint: dark moody background plate for bold beat-synced typography, slow-moving <subject or abstract texture> with a large calm negative space in the center, low contrast, deep shadows, static or slowly drifting camera, no text, no letters
+commands: ["slogan words one per beat in the hook", "assemble the line beat by beat in the build and clear it on the one", "speed the text up into the drop and slam a huge word on the drop", "make the word pulse to the kick for two bars", "alternate outline and fill every other beat before the drop"]
+related: [type.kinetic, type.karaoke, type.repeat, type.title_card, type.intertitle, cut.flash, cut.quick, shake.beat, trans.flash, zoom.in_out, sfx.impact, sfx.riser]
+evidence: {examples: 0, sources: 0, measured: "edit culture: parameters from editing practice; verify with a demo render", confidence: medium}
+---
+id: type.behind_subject
+family: type
+group: graphics
+level: B
+aliases: [text behind subject, text behind person, depth text, title behind the subject, text around the subject, contour text, words bursting from behind, text ring around a product]
+what: on-screen text is built into the depth of the frame together with the subject — words stand behind them, burst out from behind their back, run as a line along their contour or circle an object as a ring; the subject overlaps the text and the frame looks like a cover
+frames: |
+  1. A separable subject is needed — a person or an object on a plain or dark background, centered (x 0.38–0.62), 20–60 %
+     of the frame width; free space on both sides. The camera is static or almost static.
+  2. The text layer goes between the background and the cut-out subject. Entry from behind the back: letters fly out of a point behind the head —
+     a cloud of letters 16 % → 33 % → 58 % → 89 % of the frame wide over 4 frames @20 (0.2 s, outExpo, motion blur), with an overshoot and settling
+     over another ≈6 frames (0.3 s); often with a puff of colored smoke behind the subject. Contour entry: a line writes itself along the silhouette
+     at an offset of 2–5 % of the frame, from the middle outward, over 3–4 frames @33 (≈0.1 s). Wall entry: diagonal wipes
+     over 4–5 frames @33 reveal a wall of large text behind the subject.
+  3. Layout: word blocks in the empty space on the left and right (x 0.02–0.35 and 0.62–0.96, y 0.08–0.83), 2–3 lines of
+     12–14 % H, sans-serif letters, each in its own color; from the 4th frame on there is not a single letter in the subject's band (40–60 % of the width) —
+     the face is always clear. Ring: one word repeated in rays around the object, letters stretched along the radius, the ring covers
+     40–45 % of the frame area and reaches the edges, its inner edge sits 3–5 % from the silhouette. Wall: rows of ≈13 % H around the perimeter,
+     the lower part covered by the subject.
+  4. Life: the mask is recomputed every frame; when the object turns, the ring rebuilds to the new silhouette
+     (every 1–3 frames at 8 fps — it boils, like stop-motion); phrase change — the letters crumble into colored particles
+     and reassemble into the new phrase over 5–7 frames @20 (0.25–0.35 s).
+  5. Exit: a cut to a close-up of the subject (the text leaves with the shot) or the letters scatter outward over 3–4 frames.
+variants:
+  - burst from behind — colorful extruded letters with smoke fly out from behind the subject and settle into blocks on the sides; phrases change through a particle cloud
+  - contour line — a small line (≈3 % H) runs around the silhouette of a car or a person, then a wall of large text opens behind the subject (≈13 % H, black and white on plates)
+  - ring around an object — a word repeated in rays around a cut-out product on black, the ring rebuilds with every new angle of the product
+  - giant word behind the head — one word across the full width, the head and shoulders cover the middle letters (the title version is in type.title_card)
+status: hybrid
+fallback: mask — mediapipe (person) or remove_background (object), feather the edges by 1–3 px; if the background is busy — darken or replace the background (mask.bg_replace) before the layout; if the subject is cut off by the frame edge or is small (less than 20 % of the width) — reframe or a separate shot; ring and contour under strong motion — on keyframes every 2–3 frames (stop-motion instead of mask jitter)
+params:
+  subject: x 0.38–0.62, 20–60 % of the frame width, plain or dark background, sharp edges; a mask for every frame
+  layers: bottom to top — background, smoke or particles, text, the subject via the mask
+  layout: sides (blocks on the left and right, 2–3 lines) | contour_path | ring | wall | giant_behind
+  size: side blocks 12–14 % H per line; contour line ≈3 % H (≈); wall ≈13 % H; giant word 30–60 % H
+  offset: 2–5 % of the frame from the silhouette (contour, inner edge of the ring); blocks — no closer than 3 % to the mask
+  in_burst: from a point behind the head, cloud width 0.16 → 0.33 → 0.58 → 0.89 of the frame over 4 frames @20 (0.2 s) outExpo + settling 0.3 s; directional motion blur
+  in_path: write-on along the contour from the middle to the edges over 3–4 frames @33 (0.1 s)
+  in_wall: diagonal wipes, 4–5 frames @33
+  swap: break-up into particles and assembly of the new phrase, 5–7 frames @20 (0.25–0.35 s)
+  ring_update: the ring is rebuilt to the silhouette every 1–3 frames at 8 fps (≈0.12–0.36 s)
+  color: letters in different saturated colors (blue, red, green, cream), extruded | white on black | black and white on plates
+  safe_zone_9x16: side blocks do not fit in vertical — place them above and below the head (y 0.12–0.30 and 0.62–0.80), the subject in the center
+when: |
+  Hook and cover: the first frame of the video, introducing the subject or a product (a name, a slogan, a line of the track behind the performer
+  on the drop). Fashion lookbook — the name of the look or of a placeholder brand behind the model. Product — a ring of a feature word around
+  the cut-out product for 1–3 s. Sport — a placeholder surname or a number behind the athlete. Limit: 1–3 times per video, one
+  layout per scene; entry on the downbeat.
+avoid: |
+  A busy background without darkening; hair, smoke and motion blur at the subject's edge without feathering — a visible halo; a fast camera
+  (the mask lags by a frame — letters show through the subject); text over the face; the subject at the frame edge or smaller than 20 % of the width;
+  a stop-motion ring in a smooth video (it breaks the rhythm); long phrases — more than 4–5 words on the sides are unreadable.
+sfx: |
+  Burst from behind — a whoosh from the center to the edges and a low hit on the landing, a hiss of smoke; particles — a twinkling shimmer;
+  contour write-on — a short swish along the line; wall — a dull thud on the reveal; ring — dry clicks on every
+  rebuild.
+genres: {fashion: signature, viral: allowed, product: allowed, fanedit: allowed, motivation: allowed, sport: allowed, teaser: allowed, phonk: allowed, ugc: allowed}
+detect: |
+  Text boxes are clipped by the subject's silhouette: the edge of the letters matches the edge of the person or object mask (per-frame
+  segmentation), there are no letters in the subject's band; the text does not cover the face. The line or ring runs parallel to the contour at an almost
+  constant offset of 2–5 % of the frame. Entry: the text area grows ×6 from the subject's center within 0.2 s. ed_motion: static camera,
+  on phrase changes — a short spike in frame difference without a cut.
+  Differences: type.title_card — a title block, behind-the-subject is one of the title variants there; type.repeat — a repeated word with no
+  link to the silhouette; type.diegetic — the text belongs to the world of the scene (lettering on an object, letters made of a material);
+  mask.silhouette_window — another video inside the silhouette, not text around it.
+engine: |
+  m = mask(method='mediapipe_person'|'hf_remove_background', feather=2px, every_frame=True)
+  composite(layers=[clip, smoke(color='#5a8a2a', t=[t0, t0+0.6])?, text_layer, clip × m])
+  text_layer: layout='sides' → text(lines, style='chunky_multicolor', size=0.13*H, boxes=free_space(m, margin=0.03*W),
+              anim_in='burst(from=track(face), widths=[0.16,0.33,0.58,0.89], dur=0.2, ease=outExpo, blur=directional)')
+            | layout='contour_path' → text_on_path(text, path=contour(m, offset=0.03*W), size=0.03*H, reveal='center_out', dur=0.1)
+            | layout='ring' → text_repeater(text, layout='radial_fill', inner=contour(m, offset=0.04*W), stretch='radial', update='per_pose', fps=8)
+            | layout='wall' → text_repeater(text, layout='rows', size=0.13*H, colors=['#000','#fff']) + transition('wipe(diagonal)', dur=0.15)
+  phrase change: particles_swap(text_a, text_b, dur=0.3, particles=2000, colors=from_letters)
+  entry on the beat: beat_sync(event='downbeat'); sfx('whoosh', at=t0) + sfx('impact', at=t0+0.2)
+gen_hint: <person or product> centered against a plain dark studio background, full figure, crisp clean silhouette edges, generous empty space on both sides and above, even soft light, static camera, no text
+commands: ["text behind the subject on the hook", "words burst out from behind her on the drop", "a ring of the word around the product in #3", "a line along the car's contour, then a wall of text behind it"]
+related: [type.title_card, type.kinetic, type.repeat, type.diegetic, mask.bg_replace, mask.silhouette_window, product.hero, scene.void]
+evidence: {examples: 4, sources: 3, measured: "burst from behind: letter cloud 16 → 33 → 58 → 89 % of the width over 4 frames @20, settling ≈6 frames; from the 4th frame on 0 % letters in the 40–60 % width band; blocks x 2–35 % and 62–96 %, y 8–83 %, lines ≈12–14 % H; phrase change via particles 5–7 frames @20; contour line ≈3 % H, write-on over 3–4 frames @33; wall ≈13 % H, wipes 4–5 frames @33; ring — 40–45 % of the frame area, rebuilt every 1–3 frames at 8.3 fps (70–115 % pattern change on each rebuild)", confidence: medium}
+---
+id: type.credits
+family: type
+group: graphics
+level: B
+aliases: [credits, end credits, closing credits, opening credits, credit roll, rolling credits, scrolling credits, credits over picture, crew list, who shot it]
+what: the list of the video's creators (role and name) at the start or at the end — as changing cards or as a column rolling up, on a black field or over the last calm shot; it closes the piece, credits the team and sets the signature style of the work
+frames: |
+  1. Placement: the end of the video (most often) — after the last action or over the last shot; less often the opening —
+     over the first wide shot (top-down view, a road, an interior). The text appears by a cut within 1 frame over
+     the running shot, after the subject has left the frame, or on a cut to a black field.
+  2. The role — name pair is the basic unit. The role is 0.3–0.6 of the name's size: role 1–2 % H, name 2–5 % H
+     (height of the letter line, H — frame height); one or two accents (the title, the director) 6–8.5 % H. Dense lists — 1–1.7 % H.
+     Line pitch 1.3–1.6 × the line height, one or two empty lines between groups.
+  3. Layout (one for the whole credits block):
+     (a) centered stack — role above name, everything on the axis x = 0.5;
+     (b) two columns — roles flush left, names flush right (margins 5–6 % from the edges), dots or dashes between them,
+         or a shared central gutter: roles aligned right to the axis, names aligned left from it;
+     (c) a grid of 2–3 columns in a small font size across the whole frame;
+     (d) a solid justified paragraph 77 % of the frame wide: role in bold caps, followed by the names in regular weight;
+     (e) a column at the frame edge (margin 4–6 %) next to an image — a behind-the-scenes photo, empty sky, a top-down view;
+     (f) one line across the full width — name — role — name, large.
+  4. Motion — one of two modes:
+     cards — the block holds and changes by a cut (more often) or a 0.2–1.4 s dissolve; it holds from 0.8–1.2 s
+     (1–3 names, a quick delivery in a music video) to 2.4–2.7 s (7–10 lines) and 5 s or more (a dense page);
+     roll — the column crawls up at a constant speed of 8–28 % H per second (median ≈ 20 % H/s, variation within
+     one video ±5 %), the background holds still or lives its own life.
+  5. End: the last card or the last line leaves, and the background, a logo, a handwritten signature or a black
+     field remains; a variant — two flash frames and a hard stop, like the end of a film reel.
+variants:
+  - "cards on black: a centered stack or two columns with dots, changing by a cut every 1–2.7 s"
+  - "roll on black: a long two-column list (small role | large name) moves up at ≈20 % H/s"
+  - "over the last shot: the subject has left, an empty background remains (a wall, sky, the sea), and cards appear on it or a column crawls over it"
+  - "opening over the first shot: one large line or a 'starring' block with small roles — crawling up over a top-down view or a road"
+  - "column next to an image: on the left, behind-the-scenes photos or frames from the video change inside a white border, on the right the list crawls"
+  - "paragraph page: the whole team in one dense justified paragraph, bold roles in caps, holds for a long time and dissolves"
+  - "text following the composition: the block is aligned to one edge, and its other edge follows the diagonal of a wall, the horizon line or the edge of an object"
+  - "color from the frame: credits in one accent color from the video's palette (red, orange, cyan, pink, green) — in about half of the examples; the rest are white, cream or gray"
+  - "decoration: dot leaders, sparkle stars, a thin frame and cross marks in the corners, studio logos in a row, a handwritten signature"
+  - "colored cards: a solid field (light blue, yellow, coral) and 1–2 large lines, changing by a cut every 2.6–5 s"
+  - "on objects: the credits are printed on the set, a sign or a glass cube in the frame — see type.diegetic"
+  - "flash ending: the last card turns into a color inversion via 2 white frames or breaks off in flashes, like the end of a film reel"
+status: code
+fallback: |
+  The list of roles and names comes from the user (or from the project's caption); without it the engine offers a template with
+  empty fields. Credits over picture need a calm shot with an empty area (sky, a wall, water, a dark corner) —
+  look for it among the last shots of the source footage; if there is none — a black field, a blurred last frame (blur 3–5 % H, darkened
+  by 40–60 %) or a solid field in a color from the video's palette; an empty background can be generated with the user's consent.
+  Text on objects in the frame — hybrid (plane tracking), see type.diegetic.
+params:
+  entries: role — name pairs; role in lowercase or small caps, name in caps or as Name SURNAME; 1–3 pairs per quick card, 7–12 lines per regular card, up to 30 per dense one
+  type_class: condensed bold grotesque in caps ≈27 %; neutral or wide grotesque ≈27 %; rounded and display ≈17 %; serif (including high-contrast) ≈15 %; monospace ≈7 %; italic or handwritten ≈7 % — only for the title and the signature; no more than 2 typefaces
+  name_h: 2–5 % H (typically 2.5–3.5 %); accent (title, director) 6–8.5 % H; dense list 1–1.7 % H; for 9:16 no smaller than 1.5 % H
+  role_ratio: role = 0.3–0.6 of the name height (typically 0.45)
+  leading: line pitch 1.3–1.6 × line height, +1–2 lines between groups
+  layout: center_stack | two_column (leaders . or — , margins 5–6 %) | gutter (roles right-aligned to the axis, names left-aligned) | grid (2–3 columns) | paragraph (justified, ≈77 % wide) | side_column (at the edge, margin 4–6 %, next to an image) | spread (one line across the full width)
+  mode: cards | roll
+  card_hold: 1–1.2 s for 1–3 names (quick delivery); 2.4–2.7 s for 7–10 lines; 5 s or more for a dense page; rule of thumb ≈0.25–0.4 s per line, no less than 1 s
+  roll_speed: 8–28 % H per second, typically 18–21 (a line is visible for 3.5–12 s), constant, no acceleration
+  transition: cut (default) | dissolve 0.2 s (5 frames) | slow page dissolve 1.4 s | 2 white frames and inversion
+  appear: by a cut within 1 frame over the running shot or on a cut to the background; the first card — 0.5–1.5 s after the frame has cleared
+  bg: black | footage (calm area) | blur (blurred last frame, darkened 40–60 %) | solid (palette color) | photo_side (photos or frames on the side)
+  color: white, cream or gray ≈50 %; one accent from the video's palette ≈50 %; a 1–2 % H shadow or a darkened backing only on a light or busy background
+  margins: 3–6 % from the frame edges; in 9:16 — inside the safe zone (top 12 %, bottom 20 %, right 12 %), the columns fold into one stack
+  total: 3–15 s in a video up to a minute long (the examples are 1–10 s excerpts); for a very long list — a roll, not many cards
+when: |
+  The ending of a music video, a fashion film, a short film, a documentary video, a commercial film — after the last
+  action, on the music's fade-out or its final bar; an opening with a cinematic delivery — "a film by so-and-so",
+  "starring" over the first wide shot. For social media — one 1–2 s card with 1–3 key roles
+  (director, cinematographer, editor) or a "shot / edited by" line at the end. No more than one credits block per video.
+avoid: |
+  A long credit roll in a short vertical video (viewers leave — one card is better); a small font size
+  (under 1.5 % H) in vertical; more than two typefaces and three sizes; credits on a busy or fast-moving
+  background without darkening; a roll speed above 28 % H/s (unreadable) or below 8 % H/s (drags); a card shorter than
+  0.25 s per line; credits over a face or the main action; different alignment principles on adjacent cards;
+  other people's logos without permission.
+sfx: |
+  The video's music plays out or a closing track plays on the fade-out; on the first card — a soft hit or
+  the rhythm stops; cards change silently or with a quiet click on the cut; for a roll — no effects,
+  only the music and the ambience of the last shot; flash ending — a projector click or the sound cutting off.
+genres: {fashion: signature, drama: signature, epic: allowed, calm: allowed, teaser: allowed, product: allowed, travel: allowed, fanedit: allowed, clips: allowed, explainer: allowed, motivation: allowed, sport: allowed, phonk: allowed, viral: forbidden, ugc: forbidden}
+detect: |
+  Text layer: many lines of equal height 1–5 % H (local contrast, horizontal chains of letters), more often
+  in the last 5–15 % of the video or in the first 10 s. Layout: line centers at x = 0.50 ± 0.02 — stack; left edges
+  on one vertical and right edges on another with a dotted line between them — two columns; one aligned edge at a 3–6 % margin —
+  column at the edge; justified lines of equal length — paragraph.
+  Mode: roll — a constant vertical shift of the text layer (phase correlation of the text mask over 6–10 frames),
+  8–28 % H/s, with a static or independent background; cards — the text mask holds still (IoU of adjacent frames > 0.8)
+  for 0.8–5 s and changes abruptly (IoU < 0.1) or over a 5–30-frame dissolve. ed_motion on the background: often black frames
+  and cuts at the entry into the credits; cards have no global text motion.
+  Differences: type.title_card — 1–3 title lines of 9–90 % H at the start; type.intertitle — one phrase about the time, place
+  or chapter; type.subtitles — 1–2 lines at the bottom for speech; type.kinetic — words animate one by one to the rhythm;
+  type.diegetic — the text lives on an object in the scene's perspective.
+engine: |
+  credits(entries=[{role, names[]}, ...], mode='cards'|'roll', layout='center_stack'|'two_column'|'gutter'|'grid'|
+          'paragraph'|'side_column'|'spread', name_h=0.03, role_ratio=0.45, leading=1.45, leaders='.'|'-'|None,
+          type_class='condensed_bold_caps'|'grotesk'|'serif'|'mono', color='#ffffff'|'accent_from_clip',
+          bg='black'|'footage'|'blur'|'solid:#hex', margins=0.05, card_hold='auto'(0.3 s × lines, ≥1 s),
+          roll_speed=0.2 (fraction of H per second), transition='cut'|'dissolve:0.2'|'flash_invert', aspect='auto')
+  — new primitive; in 9:16 the layout folds the columns into a stack and recomputes the font size from the width.
+  find_calm_area(clip, min_area=0.25, by='texture+motion') — new: an empty area of the last shot for the text.
+  accent_from_clip(clip, k=5) — new: a saturated color from the video's palette for the credits (contrast to the background ≥ 4.5:1).
+  + text(...) for a separate title line; fade(to='black', dur=0.5) before credits on black;
+  + duck(music) is not needed — the music plays out; sfx('click', at=each card change, gain=−18 dB) optional.
+gen_hint: "a calm static closing shot for end credits: <location>, the subject has just left the frame, a large empty area of plain wall, sky or water on one side, soft even light, minimal movement, muted colors, cinematic wide frame, no text"
+commands: ["end credits: director, cinematographer, editor — one card each on black", "roll the credits up over the last shot", "two-column credits with dot leaders in a color from the frame", "one card at the end: 'shot and edited by' for 2 seconds"]
+related: [type.title_card, type.intertitle, type.vintage_title, type.diegetic, type.subtitles, type.kinetic, layout.windowbox, look.photo_prints, trans.fade]
+evidence: {examples: 30, sources: "28 (estimated by the selection tool)", measured: "contact sheets of 30 excerpts (20 at full frame rate with large frames, 10 overview): line heights from the text's color key — names 2–5 % H, accents 6–8.5 % H, roles 0.3–0.6 of that size, dense lists 1–1.7 % H, line pitch 1.3–1.6 × height (1.24 in a paragraph, up to 2 in sparse lists); margins 3–6 %; roll in 7 of 30, speed in 6 measurements 8.2 / 10.5 / 18.7 / 20.5 / 23.5 / 28 % H/s (constant, variation ±5 %); cards 0.8–1.2 s (1–3 names), 2.4–2.7 s (7–10 lines), 5 s and more (dense); change — a cut in most, dissolves of 0.2 s and 1.4 s, a 2-frame flash inversion; over the picture ≈19 of 30, on black or a solid color ≈11; accent color ≈14 of 30; font classes — estimated visually", confidence: high}
+---
+id: type.diegetic
+family: type
+group: graphics
+level: C
+aliases: [diegetic text, in-world text, text in the scene, 3D tracked text, text on a wall, tracked text, material letters]
+what: the text exists inside the world of the frame — printed on an object, written on a wall, emerging from the scene's material — and obeys the scene's perspective, light, motion and occlusions instead of hanging on the screen as a flat plate
+frames: |
+  1. Carrier: an object or a surface of the scene that the camera shows anyway — a ball, a sign, a screen, a wall, the floor,
+     the sky; or an action of the subject from which the letters are born (a gum bubble, a splash, smoke). The carrier takes 5–30 %
+     of the frame width and is within the focus zone.
+  2. Text on an object: the text covers ≈70 % of the object's visible side (2 lines — a large handwritten one + a small
+     line in another color), bends to its shape and moves with it: the object approaches from ≈7 to ≈28 %
+     of the frame height in ≈1 s (21 frames @20), the text is readable for ≈2 s and turns out of view as the object rotates, over ≈1.2 s. The camera
+     follows the object, not the text.
+  3. Letters from a material: a bubble ≈27 % of the width grows on the subject's face for ≈0.6 s, pops in 2–3 frames @25
+     (the splatter flies out to ≈70 % of the width), the splatter gathers into volumetric inflatable letters in ≈10 frames (0.4 s) —
+     letter area 6.9 → 12.3 % of the frame; the final block is 2 lines of ≈17 % H each, 55 % of the width × 37 % H, center x≈0.48,
+     between the camera and the subject; the letters are lit by the room's light (highlights from the ceiling lamps) and sway slightly.
+  4. Text on a surface (edit practice): the word is stuck by tracking to a wall, the floor, the sky or a screen, compresses
+     with the perspective, darkens and brightens together with the surface, people walk in front of it; it leaves with the shot.
+  5. Hold — while the carrier is in frame (1.5–4 s); exit — by the object rotating or moving away, by a cut, by leaving the frame.
+variants:
+  - text on an object — a name or a word printed on a ball, a can, a T-shirt; the camera follows the object, the text bends to its shape and leaves with a turn
+  - letters from a material — an action of the subject (a gum bubble, a splash, smoke) turns into volumetric letters made of the same material that stay hanging in the room
+  - text on a surface — a place name on a facade, a word on the floor or in the sky, with tracking and perspective (edit practice)
+  - "found text — a sign, a shop sign, a note or a screen in the source footage becomes a title: zoom-in, freeze frame, highlight (edit practice)"
+status: hybrid
+fallback: |
+  Found text — footage: search the user's source footage with OCR (signs, screens, text on objects) and use it
+  as a title. Text on a surface — plane tracking (homography) + a text layer with a blend mode driven by the surface's
+  brightness; occlusion by the foreground — a mask (mediapipe or remove_background). Text on a moving object —
+  object tracking and a wrap to its shape (sphere, cylinder); with complex rotation — generation. Letters from a material —
+  video generation with the user's consent; without it — 2.5D letters with volume, a highlight and a shadow, attached to the floor by tracking.
+params:
+  carrier: an object 5–30 % of the frame width within the focus zone | a plane (wall, floor, sky, screen) ≥ 15 % of the frame without heavy occlusion
+  text_coverage: on an object ≈70 % of the visible side; on a wall 30–70 % of the plane's width
+  type_class: whatever is natural for the carrier — handwritten or printed on objects, bold grotesque or small caps on facades, inflatable rounded letters for material letters
+  size: on an object — to fit the object (2–10 % H per line in frame); on a surface 8–25 % H; material block 2 × ≈17 % H, ≈55 % of the width
+  tracking: homography on the plane, error ≤ 0.3 % of the frame per step (otherwise it drifts); on an object — shape tracking, rotating together with it
+  look_match: light — multiply by the surface brightness (text contrast 0.6–0.9 of the flat version); sharpness — same as the carrier (the same depth-of-field blur); motion blur — from the track velocity; grain and noise — same as the frame
+  occlusion: everything closer than the carrier (people, hands, branches) goes over the text via a mask
+  material_in: pop 2–3 frames + assembly from the splatter ≈10 frames (0.4 s), sway ±2 % with a period of ≈1 s
+  hold: while the carrier is in frame, 1.5–4 s; readability ≥ 1 s
+when: |
+  Intro and character introductions: a place name on a facade or in the sky (travel), the subject's name on a sign, a T-shirt or a ball
+  (sport, fan edit), the product name on the product itself (product), the title of a music video made from an action of the subject (a bubble,
+  smoke, paint) on the first hit. Dramatic — a note or a screen the subject is reading. When you want "a title without
+  a title": the world itself shows the word. Limit: 1–2 times per video.
+avoid: |
+  Text that does not hold the perspective and light — it looks like a sticker; tracking jitter above 0.3–0.5 % of the frame; text
+  sharper or brighter than the carrier; other people's logos, brands and real names on objects (only your own or neutral words);
+  long phrases; small text in vertical (below 3.5 % H it is unreadable); a carrier moving faster than the text can
+  be read (less than 1 s in frame).
+sfx: |
+  The sound of the action itself: the bubble's pop, a splash, the squeak of inflatable letters; for an object — its own sound (a ball hit,
+  the whistle of flight); text on a wall — no separate sound, or a light accent when it appears in frame.
+genres: {travel: signature, teaser: allowed, fanedit: allowed, product: allowed, fashion: allowed, viral: allowed, drama: allowed, sport: allowed, epic: allowed, explainer: allowed}
+detect: |
+  The text box (OCR) is not a screen-aligned rectangle but a quadrilateral following the surface's perspective or an arc following the shape
+  of the object; its shift and scale match the motion of the nearby background or object (not the screen); the brightness and sharpness
+  of the letters change together with the carrier; the foreground occludes the letters. ed_motion: no static graphics layer
+  (low overlay-mask), the text moves with the global or local motion.
+  Differences: type.title_card and type.kinetic — a screen layer, flat and evenly lit; type.behind_subject — a flat
+  graphics layer between the background and the subject that does not obey the scene's light; gfx.floating_ui — flat interface bubbles;
+  layout.screen_in_screen — a screen with video in the frame, not text.
+engine: |
+  found: ocr_find(clips, min_h=0.03*H, max_skew=30°) → title candidates (zoom transform to the box + freeze(at, 1.0) optional).
+  surface:     tr = track(kind='planar', region=<quad of wall|floor|sky>, method='homography', max_err=0.003*W)
+               text(content, style=<per carrier>, warp=homography(tr), blend='multiply'|'overlay', shade=surface_luma,
+                    blur=match_sharpness(region), motion_blur=velocity(tr), grain=match) + composite(occluders=mask('mediapipe_person'|'hf_remove_background'))
+  object: text_wrap(content, surface='sphere'|'cylinder', track=track(object:<object>), coverage=0.7, rotate_with=True) — new primitive.
+  material: material_text(content, material='balloon'|'liquid'|'chrome', burst_from=track(object|face), pop=3fr, form=10fr, wobble={amp:0.02, period:1.0},
+            light=estimate_light(clip), shadow=True, anchor=track(kind='planar', region=floor)) — 2.5D; or generation (gen_hint) with consent.
+gen_hint: a person in a stylized room blows a big bubble of pink gum that pops and turns into large puffy 3D balloon letters spelling <word>, the letters hang in the air in front of them, lit by the room lights, static wide shot, cinematic
+commands: ["the place name right on the building wall with tracking on #1", "the subject's name on a sign in the frame instead of a title", "gum letters fly out of the bubble on the first hit", "find shots with text in the source footage and use them as chapters"]
+related: [type.title_card, type.behind_subject, type.kinetic, gfx.floating_ui, layout.screen_in_screen, pov.screen, product.hero, anim.live_mix, type.hand_drawn]
+evidence: {examples: 2, sources: 2, measured: "text on an object: the ball with text grows from ≈7 to ≈28 % of the frame height over 21 frames @20 (≈1 s, from the object's color mask), text ≈70 % of the visible side in 2 lines, readable for ≈2 s, leaves by rotation in ≈1.2 s (coverage and exit — by eye, ≈); letters from a material: bubble ≈27 % of the width, pop in 2–3 frames @25, splatter up to ≈70 % of the width, letter assembly ≈10 frames (area 6.9 → 12.3 % of the frame), block x 0.20–0.75, y 0.30–0.67; text on a surface and found text — from edit practice, no examples in this section", confidence: low}
+---
+id: type.hand_drawn
+family: type
+group: graphics
+level: B
+aliases: [handwritten text, handwriting, hand lettering, handwritten title, lettering, marker text, write-on, written live, boiling text, hand-drawn letters]
+what: the text looks drawn by hand — marker, brush, pen, chalk, puffy outlined letters; a word writes itself on screen letter by letter or stroke by stroke, boils, flows into the next word or stands as a handwritten caption; a warm, personal, homemade delivery
+frames: |
+  1. Handwriting: an uneven baseline, identical letters drawn differently, an even marker stroke (≈1–3 % H), a brush stroke —
+     with pressure and dry edges. Color — black on white or cream paper (background ≈ RGB 255/251/234, crumpled texture),
+     one bright color over the footage (magenta ≈ 169/86/131, red ≈ 218/51/84, white) or multicolor (a top-to-bottom
+     gradient, painterly strokes, olive gold ≈ 196/190/131 on cream).
+  2. Size (by frame height H): one letter or word filling the screen — 43–84 % H; a title line — 15–19 % H; a quote caption —
+     lines of ≈6 % H at a pitch of ≈10 % H, the block ≈⅔ of the width; small text along an arc — ≈3 % H; sweeping text over the footage —
+     a block 83 % of the width × 51 % of the height.
+  3. Entry — one of:
+     - written letter by letter: 1 letter per frame @14–20 (14–20 letters/s) — a word on a board, an onomatopoeia; slowly ≈5 letters/s —
+       a caption along an arc above an object;
+     - letters grow one at a time with a bounce: 2–3 frames @5 per letter (0.4–0.6 s), the next one starts growing before the previous one
+       has finished; a 4-letter word — in 2.4 s;
+     - stop-motion: each new letter is a new photo of the note in a new place, ≈4 frames @14 (0.28 s) per letter;
+     - drawing stroke by stroke: a symbol (a heart) is drawn in 9 frames @14 (0.63 s);
+     - slam: the whole text appears within ≤ 2 frames @20 (≤ 0.1 s) and holds.
+  4. Life: boiling — the letters are redrawn every frame @12.5–14 (mask overlap of adjacent frames 0.12–0.15) or
+     only jitter (overlap ≈0.7, ink density flickers ±10 %); morph — a word flows into the next one every
+     ≈0.46 s (holds 2–3 frames, 5–6 frames of transition @16.7), letters of the alphabet — 0.18 s each (2 clean frames + 1 in-between).
+  5. Exit: a smear erase in 1 frame and the next word in another place on the board; flowing into the next word; text
+     pinned to the sky moves up out of frame with a camera tilt; a cut.
+variants:
+  - written live — words on a board one letter per frame with erasing, a sticky note in stop-motion, a caption along an arc above a cloud, an onomatopoeia over a collage, a word of growing letters (5 of 17)
+  - boiling handwritten title — 2–3 handwritten lines on paper or over drawn animation, redrawn every frame or jittering slightly (3 of 17)
+  - handwritten morph — numbers written as words flow into one another, the alphabet in brush letter by letter, liquid letters swirl into a vortex and reassemble, puffy letters change style every 0.35–0.7 s (4 of 17)
+  - static handwritten text — a quote in lines over the sky, title cards on solid colored backgrounds for 2.1–2.6 s each, sweeping text as a slam, a title in the sky that moves up out of frame with a camera tilt (4 of 17)
+  - margin notes next to a speaker — a separate card, type.margin_notes (7 more examples from this section)
+status: code
+fallback: |
+  In code — with handwritten OFL fonts (marker, brush, pen; for stroke-by-stroke writing — single-line fonts with a
+  centerline) + procedural boiling and a reveal along the stroke path. Real paper, a board or a sticky note — footage: search
+  the source footage for shots with notes and boards (OCR + handwriting class) or have the user shoot it; stop-motion from photos
+  in different places — only from the source footage. Drawn letter animation (liquid shapes, style changes) — a generated insert
+  with the user's consent; in code — simplified, via contour morphing.
+params:
+  type_class: marker or pen (even stroke 1–2 % H), brush (variable 2–4 % H, dry edge), chalk, puffy letters with an outline of 4–6 % of the letter height; one handwriting per series, 2–3 glyph alternates for repeated letters
+  size: a word or letter filling the screen 43–84 % H; title 15–19 % H per line; caption 5–7 % H, line pitch ≈1.6 × line height; small text ≥ 3 % H (in 9:16 — ≥ 3.5 % H)
+  color: "black #111 on paper #fffbea; one bright color — magenta #a95683, red #da3354, white, lemon; multicolor gradient light blue → pink → orange → yellow"
+  background: paper (cream or crumpled white), a solid color, the sky or a calm shot; over busy footage — only large and with an outline
+  write_on_letter: 1 letter per 1 frame @25 (fast) … 5 letters/s (slow, along an arc); stop-motion 0.28 s per letter
+  write_on_stroke: a symbol in 0.5–0.7 s (12–17 frames @25) along the stroke path, ease linear
+  grow_in: 0.4–0.6 s per letter from 20 to 100 % with a ×1.05 bounce, adjacent letters overlap ≈50 %
+  slam: ≤ 2 frames for the whole text, hold ≥ 1.2 s
+  boil: full — new noise every 1–2 frames, contour points displaced by 0.5–1.5 % of the letter height; light — 0.2–0.5 %, ink density ±10 %
+  morph: a word every 0.45–0.5 s (hold 0.12–0.18 s, transition 0.3–0.36 s); a letter every 0.18 s
+  erase: smear 1 frame, the next word — in another place on the surface
+  safe_zone: 9:16 — top 12 %, bottom 20 %, right 12 % kept free; centered at x 0.5 or on the left with a margin ≥ 8 %
+when: |
+  Personal and warm: gratitude, a confession, a diary, "thank you", a note — written live on the hook or at the end;
+  travel and vlogs — the name of a place or a day by hand in the intro; music videos and fan edits — a boiling handwritten title of the song or a name;
+  explainer — words and diagrams on a board as the speech goes (a letter per frame, erasing between thoughts); UGC and humor — onomatopoeias
+  and captions "over real life"; on the drop — sweeping text as a slam. Limit: 1–3 handwritten texts per video, one
+  entry animation per series; morph and boiling — as short inserts of 1–4 s.
+avoid: |
+  Long handwritten paragraphs (unreadable); small handwriting in vertical below 3.5 % H; identical repeated letters —
+  they give away an ordinary font; several handwritings in one video; boiling on long text for more than 4–5 s — tiring;
+  writing slower than the speech; a busy background without a backing; an epic or premium tone — handwriting lowers the grandeur.
+sfx: |
+  A marker squeak or pen scratching over the whole writing (−18…−22 dB), a tap on every letter in fast writing; paper rustle
+  on a note change; erasing — a short swoosh; slam — a hit or a clap; morph — a quiet sweep; boiling — silent
+  or a light pencil rustle.
+genres: {travel: signature, ugc: allowed, calm: allowed, viral: allowed, fanedit: allowed, explainer: allowed, product: allowed, fashion: allowed, teaser: allowed, drama: allowed, motivation: allowed, clips: allowed, epic: forbidden}
+detect: |
+  OCR finds text with an uneven baseline (spread ≥ 4–5 % of the letter height), different shapes of the same letter
+  (correlation of identical glyphs < 0.8; ≈1.0 for a font) and an even marker stroke or a variable brush stroke.
+  Over time: writing — the ink area grows in steps (1 letter per 1–5 frames), the right edge of the line moves;
+  boiling — text-mask overlap of adjacent frames 0.1–0.7 with a static background (ed_motion: "no significant global
+  motion", no holds); morph — no clean cuts, the mask changes continuously (overlap 0.1–0.5), every 0.18–0.5 s
+  a new word or letter is readable; slam — text covering 10–20 % of the frame area appears within ≤ 2 frames.
+  Differences: type.margin_notes — small notes as a list next to a speaker, with strikethroughs; anim.scribble — scribbles
+  and lines, not words; type.kinetic — a typeset font with scale animation; type.diegetic — text on an object
+  or a surface of the scene, obeying its light; type.title_card — an even font, holds without boiling.
+engine: |
+  text(content, style={class:'hand_marker'|'hand_brush'|'hand_pen'|'chalk'|'bubble', size:0.17*H, color:'#111',
+       alternates=True, stroke=None|{w:0.05*size, color:'#000'}}, pos=[0.5, 0.45], safe_zone='tiktok')
+  writing: write_on(layer, mode='letter'|'stroke', rate=14|5 letters/s, font='single_stroke', ease='linear') — new
+          primitive: reveal along the stroke path (single-line font) or letter by letter with a left-to-right mask
+  letter growth: write_on(mode='grow', per_letter=0.5, overlap=0.5, overshoot=1.05)
+  boiling: boil(layer, amp=0.01*letter_h, every=1|2 fr, density_flicker=0.1, seed='per_frame') — new primitive
+  morph: text_morph(words=[...], per=0.48, hold=0.15, font='single_stroke', interp='path') — new primitive
+  erase: erase(kind='smear', dur=1fr) + the next word in another place; background: paper(texture='cream'|'crumpled')
+  in the sky or on a wall: track(kind='planar', region=sky|wall) + text(..., warp=homography) — as in type.diegetic
+  + sfx('scratch', at=t0, gain=-20dB) for the writing, sfx('click') per letter
+gen_hint: hand-lettered word written live in black marker on cream paper, letters appear one stroke at a time, slightly wobbly boiling lines, visible paper texture, static top-down shot, no other text
+commands: ["write 'thank you' live in marker at the end and draw a little heart", "a handwritten place name in the intro, let it jitter slightly", "handwritten words flow into one another in the chorus", "slam a red handwritten text on the drop"]
+related: [type.margin_notes, anim.scribble, type.kinetic, type.title_card, type.diegetic, type.intertitle, anim.doodle_overlay, anim.line_art]
+evidence: {examples: 24, sources: 15, measured: "writing 1 letter per frame @14.3 and @20, along an arc ≈5 letters/s, stop-motion ≈4 frames @14.3 (0.28 s) per letter with a background change, letter growth 2–3 frames @5 per letter (a word in 2.4 s), a heart in 9 frames @14.3, slam ≤ 2 frames @20; boiling — mask overlap of adjacent frames 0.12–0.15 (full) and 0.58–0.77, median 0.70 (light), ink density ±10 %; morph — a word per 7.7 frames @16.7 (0.46 s), a letter per 3.07 frames (0.18 s), loop of the liquid letters 1.54 s; sizes 0.43–0.84 H (word or letter), 0.15–0.19 H (title line), 0.06 H at a pitch of 0.10 H (quote), block 0.83 × 0.51 of the frame; 7 of 24 — notes from one source (they support type.margin_notes), 1 of 24 without text", confidence: medium}
+---
+id: type.intertitle
+family: type
+group: graphics
+level: A
+aliases: [intertitle, insert title, title card between scenes, chapter card, three days later, time skip card, supertitle, time and place caption, text card, on-screen prologue]
+what: a short authorial caption that states the time, place, chapter, a line of dialogue or a prologue — as a line over the first frame of a scene or as a separate text card between shots; it switches the viewer to a new stretch of the story
+frames: |
+  1. Function: a time skip ("three days later", "meanwhile"), a new place, a chapter number or name, a line of dialogue instead
+     of sound, a prologue from the narrator. It goes on the first frame of a new scene or between two shots.
+  2. Caption over a shot: one line of bold caps in a wide grotesque, 5.5–6.6 % of the height of a 2.39:1 frame (≈4–5 % H
+     in 16:9), width 48–64 %, centered horizontally; vertically — above the characters' heads (13–22 % H) or exactly
+     in the center (50 % H), right over the scene. Color golden yellow (≈#EEBB14) or orange, no shadow and no backing,
+     on a dark background (median brightness 14–52). Chapter — two lines: a large one (≈12 % H in 16:9) and a small one under it (≈6 %),
+     top center (7–35 % H).
+  3. Caption timing: it comes in on the cut together with the first frame of the shot (or is already there), holds for 1.3–2.9 s (32–72 frames
+     @25), disappears in 1 frame, and the shot goes on for another ≥1 s. With camera movement the caption hangs in the scene and travels
+     with the background (a pan of 2–5 % of the frame per frame) — it leaves past the edge or, once the camera stops, settles at the top;
+     the chapter's second line appears ≈0.5 s after the stop and holds for ≈6 s.
+  4. A text card between shots (background — black, a solid color or a texture):
+     dialogue line — one line in a monospace font ≈4 % H, cold light blue on black, on the left (x 0.15, y 0.34),
+     typed out letter by letter in ≈0.85 s (≈65 % of the width per second) and stays;
+     prologue — lines of bold caps 4.3–5.4 % H appear one at a time every 1.3–7.5 s (≈4 s on average, following the narrator's
+     voice), some lines slide into place over ≈2.5 s; the block grows like a staircase (23–70 % H, pitch 1.3 lines),
+     the card holds for up to 40 s;
+     trailer — phrases of 2–4 words fly in from a large scale in ≈0.4 s over a close-up or on black
+     and hold for 1.5–1.9 s, the card's second word comes 0.4–0.6 s after the first; in the title-card sample the cards
+     alternated with shots every 2.1–2.4 s. A retro silent-film frame — see type.vintage_title.
+variants:
+  - time and place over a shot — a line of bold caps above the heads or in the center, 1.3–2.9 s, disappears in 1 frame
+  - travels with the scene — the caption hangs in the shot's space and moves with the pan, leaves past the edge or settles at the top
+  - chapter over a shot — a large line with a number or a name and a small subline, top center, ≈6 s
+  - chapter card between shots — a chapter number or name, a phrase on a black or colored field
+  - typed dialogue line — one line in a monospace font is typed out letter by letter on black, like a message
+  - prologue — lines of the story appear one at a time under the voice-over and stack into a block on a textured card
+  - trailer cards — phrases of 2–4 words fly in from scale and alternate with shots on the bar
+  - comedic time skip — a card or caption stating with pointed precision how much time has passed, followed by a visibly changed scene
+status: code
+fallback: |
+  In code on any shot. If the scene has no calm area for the caption — a card between shots (black, a color from the video's
+  palette or a paper or wood texture). The travels-with-the-scene variant needs a shot with camera movement and background tracking;
+  without it — a static caption.
+params:
+  placement: over the first frame of the scene | a separate card between shots
+  type_class: bold wide grotesque in caps (captions, chapters, prologue); monospace (message-style dialogue line); on a card with a phrase longer than 3 words — serif or grotesque in lowercase
+  size: caption 4–5 % H in 16:9 (5.5–6.6 % H in a 2.39:1 frame); chapter ≈12 % + 6 % H; dialogue line ≈4 % H; prologue lines 4.3–5.4 % H; trailer phrase 15–25 % H (≈); no wider than 80 % of the frame
+  position: caption x = 0.5, y = 0.13–0.22 or 0.50; chapter — top center 0.07–0.35; dialogue line — left x 0.15, y 0.34; prologue — block 0.23–0.70; 9:16 — inside the safe zone (top 12 %, bottom 20 %)
+  color: golden yellow ≈#EEBB14, orange or white; dialogue line — cold light blue ≈#5aa0c8 on black; no shadow on a dark background (median brightness ≤ 55); on a light one — a thin 1–2 % H shadow
+  in: cut on the first frame of the shot | cut to a card | letter-by-letter typing ≈65 % of the width per second (dialogue line) | prologue lines one at a time following the voice | fly-in from scale ≈0.4 s (trailer)
+  hold: caption 1.3–2.9 s (32–72 frames @25); chapter ≈6 s; trailer card 1.5–1.9 s; card with a phrase 2–5 s; no shorter than 0.3 s per word + 0.5 s
+  out: disappears in 1 frame, the shot continues ≥1 s | leaves past the edge with the scene (anchor) | cut from the card to the shot
+  frequency: one caption per scene; chapter cards — no more than 1 per 15–30 s (≈); trailer cards — every other shot
+when: |
+  The start of a new scene after a time skip or a change of place; dividing a long video into chapters and stages; a line or
+  thought of the character without sound (dramatic — "text lines" in a pause in the music); a prologue under the narrator's voice at the start;
+  teaser — phrase cards between shots on the bar, building toward the reveal; travel and vlogs — "day 3", the city and the time;
+  comedy — an exact time skip before the "after".
+avoid: |
+  A caption on a busy background without contrast; holding it for less than 1.3 s; complex caption animation (jumps, springs, bouncing
+  letters) — that is kinetic type already, here only a cut, letter-by-letter typing or a line sliding in; a card in the middle of a drop or
+  fast cutting — it stops the rhythm; more than one caption per scene; a caption over the character's face for longer than 2 s;
+  paragraphs of more than 12 words on one card (prologue — only line by line with the voice).
+sfx: |
+  Caption — silent or with a soft tick; typed dialogue line — quiet key clicks per character; chapter card —
+  a pause or stop in the music for its duration, a hit on the return to the picture; prologue — the narrator's voice and a quiet music bed;
+  comedic time skip — a short bass hit or a whistle on the appearance; trailer cards — hits
+  on every fly-in and risers between them.
+genres: {drama: signature, teaser: signature, epic: allowed, calm: allowed, travel: allowed, fanedit: allowed, viral: allowed, explainer: allowed, clips: allowed, ugc: allowed, product: allowed, motivation: allowed, sport: allowed, fashion: allowed}
+detect: |
+  Caption: one line of text 4–7 % H (text detector), centered horizontally, in the upper third or in the center,
+  no backing, a single color (yellow, orange or white); appears on the first frame after a cut and disappears in
+  1 frame after 1.3–2.9 s while the shot continues; during a pan its shift matches the background's shift.
+  Card: frames with a median brightness < 20 (or solid, textured) with text, 1.5–5 s, between two different
+  shots (ed_motion: black frames and cuts at the card's edges). Dialogue line: the right edge of the line grows at ≈65 % of the width/s
+  and stops. Prologue: the number of lines grows in steps once every 1–8 s on a static card.
+  Differences: the title (type.title_card) — at the start of the video, larger (9–90 % H) and with the name; subtitles — at the bottom of the frame,
+  changing with the lines every 1–3 s; type.margin_notes — handwritten lines and captions next to the character, typed letter
+  by letter as the speech goes, and corrections; type.kinetic — words animate one by one to the rhythm.
+engine: |
+  caption: text(content, style='caps_bold_wide', size=0.045*H, pos=[0.5, 0.17]|'center', color='#EEBB14',
+               anim='cut', t=[shot_start, shot_start + 2.0]) — exit by cut (1 frame), the shot continues;
+           with camera movement: anchor=track(kind='planar', region=<sky or background above the heads>), after the stop — pos=[0.5, 0.12].
+  chapter: text([number, subtitle], size=[0.12*H, 0.06*H], pos=[0.5, 0.15]), second line after 0.5 s, hold 6 s.
+  dialogue: shape(kind='rect', color='#000', full=True) + text(content, style='mono', size=0.04*H, pos=[0.15, 0.34], align='left',
+           color='#5aa0c8', anim='typewriter', cps=22) + sfx('click', gain=-20dB) per character.
+  prologue: text_lines(lines, style='caps_bold', size=0.05*H, bg='texture(wood|paper)', reveal='line', at=word_ts of the narrator,
+          slide_in=2.5 s for individual lines) — new primitive for line-by-line reveal on the voice timestamps.
+  card: shape(kind='rect', color='#000', full=True) + text(content, style='serif'|'grotesk', size=0.08*H, pos='center')
+            between cut(a) and cut(b), dur 2–5 s; trailer: text(anim='slam_in(scale0=4, dur=0.4)') + beat_sync(cards, grid='1 bar').
+  sound: duck(music, depth=-12dB, t=card) + sfx('impact', at=return to the picture).
+gen_hint: establishing shot of <new location> at <time of day>, static or slowly panning camera, dark calm area above the characters' heads left free for an on-screen caption, no text
+commands: ["caption 'three days later' at the top of the first frame of #6", "a chapter card on black between #3 and #4", "the character's line typed letter by letter on black before #5", "a prologue line by line under the voice-over at the start", "trailer phrase cards between shots in time with the beat"]
+related: [type.title_card, type.vintage_title, type.margin_notes, type.subtitles, type.kinetic, type.diegetic, cut.jump, time.timelapse]
+evidence: {examples: 7, sources: 5, measured: "intertitles section (3 examples, 1 source): line 5.5–6.6 % of the height of a 2.39:1 frame, width 48–64 %, vertical center at 13 %, 22 % or 50 %; color RGB ≈237–241/187–191/18–31 on a background with a median of 14–52; holds 40 frames @20 (2.0 s), ≥32 frames @25 and ≥57 frames @20; disappears in 1 frame or travels up with a pan of 2–2.5 % of the frame per frame. General typography section (4 examples): chapter 15.5 + 8.5 % H in a 2.39:1 frame, during a pan the caption's shift ≈ the background's shift (2.0–3.7 % over 8 frames), second line ≈0.5 s after the stop, holds ≈6 s; dialogue line 3.9 % H, x 0.15–0.69, typed over 14 frames of 60 ms (0.84 s), RGB ≈81/140/165 on black; prologue — lines of 4.3–5.4 % H appear at 1.3, 8.8, 10.1, 12.6, 17.6, 22.7 and 30.2 s, line pitch ≈6.5 % H; trailer — fly-in over 6 frames of 70 ms (0.42 s), cards 1.5–1.9 s. The other 7 examples of the intertitles section are handwritten captions and notes, moved to type.margin_notes", confidence: medium}
+---
+id: type.karaoke
+family: type
+group: graphics
+level: B
+aliases: [karaoke captions, karaoke subtitles, karaoke, word highlight captions, word highlighting, active word highlight, highlighted subtitles, running highlight, word-by-word captions, animated captions]
+what: karaoke captions — a short line stays in place while the word being spoken is highlighted by color, a box, a bounce or a fill exactly as it is said; the eye follows the voice
+frames: |
+  1. Chunking: speech is split into pieces of 2–3 words in 9:16 and 3–6 words in 16:9 (≤ 2 lines); a boundary is a pause
+     ≥ 0.25 s, a punctuation mark or the character limit. A chunk appears whole 2 frames before its first word (cut or a pop
+     ×0.92 → ×1.0 over 3 frames @25 / 4 @30) and stays in one place while its words are spoken; a shot cut inside the chunk
+     does not reset it.
+  2. Highlight: on the frame where each word starts (1 frame early) the active word changes — color (white → yellow) within
+     0–2 frames; or a box slides under it over 3 frames @25 (4 @30, outCubic); or the word bounces ×1.10–1.15
+     over 3 frames and returns over 4 @25 (4 and 5 @30, outBack); in a song — color fills the word from left to right over exactly
+     its duration.
+  3. A word keeps the highlight until the next one starts; a short function word (< 3 frames) gets a minimum of 3 frames @25
+     (4 @30) borrowed from its neighbor. Spoken words return to the base color (current mode) or stay colored
+     (accumulate mode); words not yet spoken are at full brightness or semi-transparent at 40–50 % (ghost mode).
+  4. Chunk change — in place: the new one cuts in at the same position. Pause before the next chunk ≤ 0.6 s — the old one holds
+     (the last word keeps the highlight) until the new one appears, back to back, with no empty frame; pause > 0.6 s — the chunk goes out
+     4–6 frames @25 (5–7 @30) after the end of the last word.
+  5. The chunk's keyword (a number, an amount, a negation, the key word of the phrase) — in a second color or a box, and it stays
+     colored until the end of the chunk; no more than one per chunk.
+variants:
+  - active word color — a white line, the word being spoken is yellow or green, spoken words return to white
+  - running box — a rounded box in the accent color slides under the word being spoken over 3 frames, the text on it is black
+  - bounce — the word being spoken is slightly larger, ×1.10–1.15, with a bounce; often combined with a color change
+  - accumulate — spoken words stay colored, by the end of the chunk the whole line is colored
+  - ghost — the whole chunk is visible at 40–50 %, words light up to full brightness as they are spoken; a soft mode for a calm or dramatic tone
+  - song fill — color fills each word from left to right over its duration (classic karaoke), 1–2 lines, song lyrics from the user
+  - keywords in two colors — numbers and key words in a second color (green — good, red — bad), the rest follows the base scheme
+status: code
+fallback: |
+  Word-level timestamps are needed: speech recognition with word timecodes (edit-voice); for a song — lyrics from the user,
+  aligned to the vocal word by word; we do not put other people's song lyrics into the library. If the timestamps are inaccurate (offset
+  from the voice onsets > 2 frames for > 10 % of words) — ghost mode without hard switching, or regular subtitles
+  (type.subtitles). Translation: a translation has no timestamps of its own — after dubbing, transcribe the dubbed track again;
+  without dubbing, split the phrase in proportion to syllables or drop the highlight and use type.subtitles.
+params:
+  type_class: "grotesque 700–900 covering the caption language: rounded 800 — friendly UGC; condensed caps 800–900 — viral and motivation; neutral 700 in lowercase — explainer and clips; tabular figures for numbers; one typeface and one highlight style per video; font size = em size, cap height ≈ 0.7 × font size"
+  case: "caps — viral and motivation (the line is 15–20 % wider, fewer words per chunk); sentence case — explainer, UGC, clips"
+  size_9x16: "font size 4.2–5.5 % H (80–105 px @1080×1920), typically 4.6 % H; fast speech (> 4 words/s) — a chunk of 1–2 words up to 6.5 % H; line ≤ 76 % W (≈ 14 characters in caps in a wide grotesque, 18 in a condensed one, 20 in lowercase) — if it does not fit, first reduce the font size to 4.2 % H, then wrap; ≤ 2 lines, leading 1.05–1.15"
+  size_16x9: "font size 5.5–7 % H (59–76 px @1920×1080), typically 6 % H; ≤ 32–36 characters per line, ≤ 2 lines; width ≤ 80 % W"
+  position_9x16: "chunk center x 0.47, y 0.64–0.70 (typically 0.67, block within 0.58–0.78); talking head in close-up — under the chin, y 0.50–0.58; never cover the mouth and eyes (face mask → shift in steps of 2 % H); top 12 %, bottom 20 %, right 12 % — interface; one position for the whole video"
+  position_16x9: "x 0.5; block center 0.84–0.88 H, baseline of the bottom line ≤ 0.92 H; margins ≥ 5 %"
+  color: "base #FFFFFF; active word — yellow #FFE14A, green #45F06B or light blue #3FE0FF (one per video); box — accent color with #000 text (contrast ≥ 7:1) or purple #7A3CFF with white; ghost — words not yet spoken at 40–50 % opacity; keyword — a second color (green for good, red #FF4B4B for bad), ≤ 1 per chunk and ≤ 25 % of chunks"
+  stroke: "a #000 stroke 8–12 % of the font size thick, or a shadow — offset down by 4 % of the font size, blur 8 %, opacity 70 %; the box mode has no stroke"
+  box: "padding 0.28 × font size on the sides and 0.12 top and bottom, corner radius 0.22 × font size; slides to the next word over 3 frames @25 / 4 @30 (outCubic), resizing to the word's width; does not disappear between the words of a chunk"
+  bounce: "×1.10–1.15 around the word's center, growth 3 frames @25 / 4 @30, return 4 frames @25 / 5 @30 (outBack); do not push the neighbors apart — keep a word-space reserve of +0.1 × font size"
+  timing: "the chunk appears 2 frames before the first word (−80 ms @25, −67 ms @30); the highlight switches 1 frame before the word starts; minimum highlight 3 frames @25 / 4 @30 (time is borrowed from the neighbor, shift ≤ 2 frames); pause before the next chunk ≤ 0.6 s — back to back (the old one holds until the new one appears); > 0.6 s — a tail of +4–6 frames @25 / +5–7 @30 after the end of the last word, then empty"
+  fill_song: "fill from left to right over the word's duration (linear) with a soft edge of 0.08 × font size; on drawn-out sung words — by syllables; 1–2 lines, line breaks follow the vocal phrases"
+  chunking: "9:16 — 2–3 words (fast speech — 1–2), 16:9 — 3–6; boundary — a pause ≥ 0.25 s or a punctuation mark; chunk ≤ 2.5 s (9:16) / ≤ 4 s (16:9); line lengths within ±30 %; do not leave prepositions, conjunctions and particles (in, on, at, to, by, of, for, from, with, off, as, and, but, or, nor, so, yet, not, no) at the end of a line — a non-breaking space with the next word; do not split a number from its unit ('15 %', '3,000 USD')"
+  reading: "≤ 20 characters/s per chunk (the highlight guides the eye, so slightly higher than regular subtitles); speech 2.5–4 words/s"
+  sync_tol: "highlight start within ±1 frame of the word start for ≥ 95 % of words (checked against voice onsets); offset > 2 frames for > 10 % of words — re-alignment or ghost mode"
+when: |
+  Speech genres — the main caption style for short vertical videos: clips cut from a podcast or a stream, UGC ads,
+  motivation over voice-over, an explainer with a talking head — the whole video, from the first word of the hook to the CTA.
+  By part: hook (first 1–3 s) — larger (5–5.5 % H) and with a bounce; build (the "problem", explanation) — calmer, color
+  only; drop (the "solution", demo, main argument) — keywords and numbers in a second color; outro (CTA) — the call-to-action
+  word as the accent, a chunk of 1–2 words. Music videos with vocals — a fill along the song line in the chorus (fan edit;
+  calm in ghost mode), 1–2 lines, only if the user sent the lyrics; no captions on instrumental breaks or on a drop without
+  vocals. One highlight style and one accent color per video; keywords ≤ 1 per chunk and ≤ 25 % of chunks.
+avoid: |
+  A highlight that lags or leads the word by more than 2 frames — it looks broken; blinking (the chunk goes out and
+  comes back on pauses ≤ 0.6 s); more than 2 lines and 3 words per chunk in vertical; three or more colors, different highlight
+  styles in one video; bounce + color + box at once on every word; a jumping chunk position; text over the mouth
+  and eyes; the bottom 20 % and right 12 % in 9:16; a music video without vocals and a cinematic tone (epic, fashion,
+  phonk) — it looks like a podcast; a fake highlight on a translation without word-level timestamps — worse than none.
+sfx: |
+  No sound is needed — the captions follow the voice. Duck the music under the voice, duck(music, under=voice), by −12…−18 dB
+  so the words stay intelligible; on the hook's keyword you can add a quiet pop or tick (−20…−24 dB), no more than 1 per 5 s.
+genres: {clips: signature, ugc: signature, motivation: signature, explainer: allowed, viral: allowed, product: allowed, sport: allowed, travel: allowed, drama: allowed, fanedit: allowed, teaser: allowed, epic: forbidden, phonk: forbidden, fashion: forbidden, calm: forbidden}
+detect: |
+  Text detector in the caption band (9:16 — 0.45–0.80 H; 16:9 — 0.78–0.95 H): the chunk box stays in place (IoU of adjacent
+  frames > 0.9) for 0.6–2.5 s, and inside it one word differs from the rest — by color (its own hue peak: yellow
+  ≈50–60°, green ≈120–140°), by background (a solid rounded box behind the word) or by size (word box height
+  ×1.08–1.15). The differing word steps from left to right every 0.15–0.6 s (typically 0.25–0.35 s with speech at 3–4 words/s),
+  the steps coincide with word starts in the speech (voice onsets or VAD, ±2 frames); chunk change — a jump within 1 frame at a pause.
+  ed_motion: over one chunk's span overlay-mask 0.02–0.08 (static text on a moving shot), global
+  motion — same as the shot's; the caption survives cuts unchanged.
+  Differences: type.subtitles — the phrase holds without per-word color changes; type.kinetic — 1–3 large words (≥ 10 % H) replace
+  each other with scale animation, there is no line; type.beat_text — changes on the music's beat grid, not on speech;
+  type.margin_notes — letter-by-letter typing next to the subject; gfx.callout — the label is attached to an object.
+engine: |
+  subtitle(words=asr_words(lang)|lyrics_aligned(user_text), karaoke=True,
+           style={class:'grotesk_black'|'grotesk_rounded_bold'|'grotesk_condensed_caps', weight:800, caps:False|True,
+                  size:0.046*H (9:16) | 0.06*H (16:9), color:'#FFFFFF',
+                  stroke:{w:0.1*size, color:'#000'} | shadow:{dy:0.04*size, blur:0.08*size, a:0.7}},
+           highlight={mode:'color'|'box'|'bounce'|'fill'|'ghost', progressive:False, active:'#FFE14A', upcoming_alpha:1.0|0.45,
+                      box:{fill:'#FFE14A', text:'#000', pad:[0.28, 0.12], radius:0.22, slide:'3fr@25|4fr@30', ease:'outCubic'},
+                      bounce:{scale:1.12, grow:3fr, back:4fr, ease:'outBack'},
+                      keyword:{pick:'numbers|negation|llm', color:'#45F06B', max_per_chunk:1}},
+           chunk={words:[2,3] (9:16) | [3,6] (16:9), max_width:0.76*W | 0.8*W, max_lines:2, break_on_pause:0.25,
+                  max_dur:2.5|4.0, no_orphans='ru', keep_units:True, keep_across_cuts:True},
+           lead=-2fr, switch_lead=-1fr, min_on='3fr@25|4fr@30', join_gap=0.6, tail='4–6fr@25|5–7fr@30',
+           pos={x:0.47, center_y:0.67} (9:16) | {x:0.5, center_y:0.86} (16:9), avoid=track(face), safe_zone='tiktok')
+  — new subtitle parameters: highlight, switch_lead, chunk.no_orphans, chunk.keep_units.
+  song: karaoke_fill(word, t=[w0, w1], dir='ltr', ease='linear', soft=0.08) — new primitive; words — lyrics_aligned.
+  sound: duck(music, under=voice) −15 dB.
+  checks: qa_sync(highlights, voice_onsets, tol=1fr) — new; qa_text_safe_zone(layout='tiktok'); qa_reading_speed(max_cps=20);
+            qa_overlap(face).
+gen_hint: medium close-up of <person> talking straight to the camera in a bright tidy room, head and shoulders in the upper half of a vertical frame, clean uncluttered lower half left free for captions, natural light, static camera, no on-screen text
+commands: ["karaoke captions for the whole video: white, the spoken word yellow", "a running box under the word, like in podcast clips", "highlight the numbers in green and keep them colored", "song lyrics in the chorus with a word-by-word fill", "move the captions up under the chin in #2"]
+related: [type.subtitles, type.kinetic, type.beat_text, type.lower_third, address.direct, frame.interview, cut.jump, gfx.callout]
+evidence: {examples: 0, sources: 0, measured: "edit culture: parameters from editing practice; verify with a demo render", confidence: medium}
+---
+id: type.kinetic
+family: type
+group: graphics
+level: C
+aliases: [kinetic typography, kinetic text, animated text, motion typography, one word at a time, voice-synced text, word-by-word text, lyric text, text in rhythm]
+what: text becomes the main event of the frame — words and letters appear, jump, stretch, flip and replace each other in the rhythm of the voice or the music, 1–3 words per screen
+frames: |
+  1. Background: usually a solid color (black, dark, white, a saturated color) or a calm shot; the camera is static. Text — in the center
+     (line center at 46–50 % H vertically, x = 0.5) or as a block in a corner with letters running off the frame edge.
+  2. Word entry — on its syllable or beat, 0–2 frames before the sound: pop — scale ×0.9 → ×1.07 over 3 frames → ×1.0
+     by the 6th–7th frame (outBack), with no stroke or shadow on the first frame, they grow in over 2–3 frames; letter cascade — one
+     letter every 1–2 frames, each letter's baseline jumps by ±30 % of the line height and settles into place; decoder — random
+     characters and white plates for 6–25 frames per line, then clean text; stretch — the word grows out of a horizontal
+     line (height ×0.1 → ×1) or flips around the horizontal axis, with smear stripes.
+  3. Hold: at speech pace 8–13 frames @25 per word (0.32–0.52 s, on average ≈10 frames = 0.4 s); a phrase
+     builds up word by word ("word" → "word word" → the full phrase: 4 / 1 / 7 frames @32); in an ad list
+     ≈12 frames @32 (0.37 s) per item; in a music assembly — one word per 3–3.5 s (assembly ≈3 s + hold 0.45 s);
+     in a strobe — 1 frame @20 (50 ms) per state.
+  4. Exit: in 2/3 of the examples — a hard switch to the next word (0 frames); otherwise the letters scatter and fall out
+     over 3–5 frames, the letter spacing collapses or spreads over 8 frames @32 (0.25 s), a title leaves with a zoom
+     through a letter over 4–5 frames @20 (0.2–0.25 s) straight into the next shot.
+  5. Size (line height including ascenders and descenders, % H): one word per screen 31–47 % H (a long word — up to 90–96 % of the width,
+     the same font size for all words in a series); slogan phrase 9–14 % H; small captions and lists 4–12 % H; full-frame
+     strobe — a band of 29–36 % H jumping between the upper, middle and lower thirds, or letters 95–100 % H with cropped edges.
+variants:
+  - word by word with a pop — one bold rounded word ≈35 % H in the center, an extruded outline, changing every 8–13 frames @25 to speech or vocals
+  - phrase word by word — a small bold grotesque 10–12 % H (lowercase), words are added to the line, each enters with a shift of 10–12 % of the width over 3 frames; a list of product features
+  - letter cascade — letters fly in one at a time (12–25 letters/s, up to 60 in the fast version), each from its own height, then the tracking tightens; exit — the letters fall out downward and upward over 3–5 frames
+  - decoder — a tall condensed grotesque in small caps 7–11 % H, the lines cycle through random characters under running white plates, one column per ≈1 s; light variant — three rows of black role — name lines on light gray, the words emerge from black plates, arrows and arcs get drawn next to them, assembly ≈1 s
+  - display-font assembly — each word in its own typeface and color (serif, swash italic, blackletter, a ragged font) grows out of a stripe or flips 2–3 times over ≈3 s, holds 0.45 s and disappears in 1 frame
+  - strobe — huge words in a fiery gradient with horizontal smear change every frame, intercut with close-ups of a face for 1–5 frames
+  - flip between two words — a tall condensed grotesque 45 % H in the center on a colored background, the drum rotates for 0.5–0.7 s, the word holds 0.4–0.6 s, loop 2.7 s
+  - "countdown — digits 3-2-1 made of horizontal stripes slanted ≈10°, each ≈0.35 s (≈9 frames @25), continuously shrinking: 96 → 47 % H, 45 → 35 %, 33 → 23 % (outExpo)"
+  - lines into letters — colored route lines bend into the letters of a word in 0.75 s, the word holds 0.3 s and unravels back into lines
+  - breathing weight — letters shift in a wave from ultra-bold to hairline and back (variable font), loop ≈4 s
+  - breakthrough title — two lines of a harsh spiky font at ≈2 × 28 % H fly in as shards over 2–3 frames, hold 1.2 s, a zoom through a letter leads into the next shot
+  - dripping logo — a wordmark emerges through dripping pixel stripes over ≈2.8 s, the background switches from white to dark midway through the assembly
+  - weightless letters — the letters of a short phrase float and rotate individually (±30°, ±20 % scale) without forming a line
+status: code
+fallback: live textures (pixel drip, letters made of material, a volumetric drum) without 3D — a flat version in code (stripe shift, scaleY, sine remap) or a generated insert with an empty background; text over a face — move it to an empty part of the frame or onto a separate card
+params:
+  type_class: the base — bold grotesque (regular, rounded, tall condensed, wide oblique) ≈70 %; display faces (high-contrast serif, swash italic, blackletter, spiky hand-drawn) — for assemblies and titles; monospace or condensed small caps — for the decoder; no more than 1 typeface per series of words, except for the each-word-in-its-own-font technique
+  size_16x9: one word 31–47 % H (typically 35 %); phrase 9–14 % H; captions 4–12 % H; strobe 29–36 % H as a band or 95–100 % H cropped
+  size_9x16: compute the font size from the width — a word 70–86 % of the width (one word ≈10–14 % H, a two-line block 18–24 % H); captions ≥ 3.5 % H
+  position: x = 0.5, line center 0.46–0.50 H; poster variant — top-left corner, running off the edge; in 9:16 keep within y 0.12–0.80 and x 0.06–0.88 (interface zones — top 12 %, bottom 20 %, right 12 %)
+  color: white or one saturated color on dark (pinkish red, turquoise, yellow); dark on light for clean ads; a fiery gradient (orange → red → yellow) for the strobe; an extruded outline of 4–6 % of the font size for the pop
+  frames_per_word: speech 8–13 frames @25 (0.32–0.52 s), ad list 0.35–0.45 s, music assembly 3–3.5 s per word, strobe 1–2 frames; reading minimum — 0.3 s per word
+  in_pop: ×0.9 → ×1.07 over 3 frames → ×1.0 by frame 6–7 (0.24–0.28 s), outBack; stroke and shadow grow in over 2–3 frames
+  in_cascade: 1–2 frames per letter (12–25 letters/s), baseline offset ±0.3 of a line, settling outCubic; tracking +20 % → 0 over 8 frames
+  in_decode: 6–25 frames per line of random characters (changing every frame) + a white plate 30–100 % of the line length sliding off to the side
+  in_stretch: scaleY 0.1 → 1 over 8–20 frames with horizontal smear stripes; flip around the X axis 2–3 times in 3 s
+  in_shatter: shards → letters over 2–3 frames (0.1–0.15 s), motion blur
+  out: cut (0 frames) | scatter 3–5 frames | tracking 8 frames | zoom_through 4–5 frames @20 into the next shot (scale ×1 → ×6, radial blur)
+  strobe: a change every 1–2 frames, no longer than 1.5 s in a row, bright flashes ≤ 3 per second
+  loop: for background loops — 1–4 s (flip 2.7 s, weight breathing ≈4 s)
+when: |
+  Speech genres (motivation, explainer, clips, UGC) — 1–3 key words of the phrase, large, timed by word timecodes
+  from speech recognition; a hook in the first 1–2 s (a "question" in words across the whole screen). Music genres — a vocal line or
+  the track's slogan on the drop (fan edit, phonk), a 3-2-1 countdown on the last beats before the drop (≈0.35 s per digit),
+  a strobe of words for 0.5–1.5 s at the densest spot. Product — a list of benefits, 0.4 s each, between product
+  shots. Limit: kinetic text no longer than 30–40 % of the runtime; one entry animation per series of words;
+  strobe — no more than once per video.
+avoid: |
+  More than 3–4 words on screen — that is subtitles or a card already; a different animation for every word; text over a face or
+  a moving subject without a backing; words shorter than 0.3 s outside a strobe (unreadable); a strobe longer than 1.5 s and brightness
+  swings of more than 3 flashes per second (a risk for photosensitive viewers); small text below 3.5 % H in vertical;
+  a word entry off its syllable by more than 2 frames (noticeable to the eye); other people's logos and branded typefaces;
+  calm slow genres — there a pop or a strobe breaks the tone, only a soft fade-in.
+sfx: |
+  Pop — a short click or tap on every word entry (−14…−18 dB under the voice); cascade and decoder — a series
+  of quiet clicks or blips, 1 per 2–3 letters; stretch and flip — a short whoosh; countdown — a tick or hit on every
+  digit and a riser under the whole series, an impact on the drop; zoom through a letter — whoosh + impact on the first frame of the new shot;
+  strobe — glitch crackle for the whole length.
+genres: {motivation: signature, fanedit: signature, explainer: allowed, viral: allowed, clips: allowed, ugc: allowed, product: allowed, fashion: allowed, teaser: allowed, phonk: allowed, epic: allowed, sport: allowed, drama: allowed, travel: allowed}
+detect: |
+  Text boxes (text detector or OCR) change content every 8–13 frames @25 (word by word) or every
+  1–2 frames (strobe); on a word change — a jump in frame difference with a static background (ed_motion: cuts on a solid
+  background without camera movement); box width on the word's first frame ×0.88–0.93 of the final one, on frame 3–4 ×1.05–1.08 (pop);
+  box height grows ×3–10 over 0.3–0.6 s at constant width (stretch); letter boxes appear one by one (cascade).
+  No global camera motion (zoom/shift empty), there is 1 large box in the center, 30–47 % H.
+  Differences: type.subtitles — 1–2 lines at the bottom (lower 15–25 % H), 4–6 % H, changing with the phrase once every 1–3 s, without scale
+  animation; type.title_card — one block holds ≥ 1 s, enters with a fade-in; type.karaoke — the line holds, the highlight
+  moves; type.beat_text — changes strictly on the beat grid; type.repeat — the same word is multiplied and moves
+  in a loop; type.behind_subject — the letters are covered by the subject or go around their contour.
+engine: |
+  kinetic_text(words=asr_words|lyrics|beats, sync='words'|'beats', lead=-1fr,
+               style={class:'grotesk_bold_rounded'|'grotesk_condensed'|'display_mix'|'mono_caps', size:0.35*H (16:9) | fit_width(0.8) (9:16),
+                      color:'#ff1f4b', stroke:{w:0.05*size, color:'#000', grow:3fr}, pos:[0.5, 0.48]},
+               anim_in='pop(scale=[0.9,1.07,1.0], dur=7fr, ease=outBack)' | 'cascade(per_letter=1.5fr, jitter_y=0.3)' | 'decode(frames=6–25, plate=True)'
+                       | 'stretch(axis=y, from=0.1, dur=8–20fr, smear=True)' | 'flip_x(dur=0.6, hold=0.5)' | 'shatter_in(dur=3fr)',
+               hold='until_next_word', min_hold=0.3,
+               anim_out='cut' | 'scatter(dur=4fr)' | 'tracking(to=0, dur=8fr)' | 'zoom_through(scale=6, dur=5fr, blur=zoom)')
+  strobe: kinetic_text(..., anim_in='strobe(per=1–2fr, bands=['top','mid','bottom'], full_bleed=0.97*H, smear=directional(0.03*W))',
+         inserts=clip(face_cu, 1–5fr), max_flashes_per_s=3, t=[drop, drop+1.0]).
+  countdown: countdown(digits=[3,2,1], per=0.35, style='speed_stripes', slant=10°, scale=[0.96*H→0.47*H, 0.45→0.35, 0.33→0.23], ease=outExpo) + sfx('click') per digit.
+  variable font: text(..., font_axes={wght:[100, 900]}, wave(per_letter=2fr, period=4.0)).
+  words — from speech recognition (edit-voice: word timecodes), for music — beat_sync(event='beat'|'onset', grid='1/2').
+gen_hint: kinetic typography animation, bold white sans-serif words appear one at a time in the center of a solid black screen, each word pops in with a slight overshoot, clean modern motion graphics, no logos
+commands: ["kinetic text from the key words of the voice on the hook", "words one at a time in the center with a pop on #2–#4", "a strobe of huge words on the drop, half a second", "a 3-2-1 countdown before the drop", "a list of benefits in words between the product shots"]
+related: [type.subtitles, type.title_card, type.repeat, type.behind_subject, type.beat_text, type.karaoke, type.credits, type.diegetic, cut.flash, trans.zoom, type.hand_drawn]
+evidence: {examples: 18, sources: 8, measured: "pop ×0.91 → ×1.07 (frame 3–4) → ×1.0 (frame 6–7) @25, words of 8/9/9/11/13 frames @25 (0.32–0.52 s), line height 33–40 % H, a long word 90–96 % of the width; phrase 10–12 % H, items of ≈12 frames @32, entry by an 11 % width shift over 3 frames, tracking 44 → 36 % of the width over 8 frames; display assembly 59 frames @20 + hold 9 frames, word 31–39 % H × 55–65 % of the width; strobe — 1 frame @20 per state, band 29–36 % H, full frame 97 % H, face intercuts of 1 and 5 frames; flip 0.5–0.7 s, hold 0.4–0.6 s, word 45 % H; countdown ≈11–12 frames @33 per digit, 96 → 23 % H; decoder 7–11 % H, ≈1 s per column, a light layout of 3 rows (centers ≈16 / 50 / 83 % H) assembles in ≈1 s; cascade 4 letters over 8 frames @33 and 10 letters over 5 frames @33; title in shards 2–3 frames @20, hold 24 frames, zoom-through 5 frames; loops 2.7 and ≈4 s; 1 example from the section without text in the available version excluded", confidence: high}
+---
+id: type.lower_third
+family: type
+group: graphics
+level: A
+aliases: [lower third, name plate, speaker caption, name title, name tag, name strap, caption plate, location caption, location tag]
+what: a caption plate in the lower part of the frame — the speaker's name and role, a place or a topic — comes in half a second after their first shot, holds for 3–5 s and leaves neatly, without intruding on the interface zones or the subtitles
+frames: |
+  1. Trigger: the speaker's first appearance (a new voice per the speaker diarization + a face in frame), a new place or a new interview
+     topic. The plate comes in 0.5–1.0 s after the start of their shot or at the first pause in speech — not on the first frame after the cut.
+  2. Entry (classic, 13 frames @25 = 0.52 s / 16 @30): frames 0–3 — an accent bar 0.5 % W wide grows to the block's
+     height (outCubic); frames 2–10 — the plate opens to the right from it, width 0 → 100 % (outExpo); frames 4–10 —
+     the name slides out from under a mask by 2–3 % W and fades in; frames 7–13 — the role with the same motion (@30 all marks ×1.2:
+     0–4, 2–12, 5–12, 8–16).
+  3. Hold 3–5 s: no less than 2.5 s + 0.05 s for every character beyond 30. The block is anchored to the frame, not to the person, and stays
+     still (a text drift of 0.5 % W over the whole hold is acceptable).
+  4. Exit (8 frames @25 / 10 @30): reverse order — role, name, the plate collapses back to the bar (inCubic), the bar fades out;
+     or an overall fade of 6 frames @25 / 7 @30. The exit ends no later than 0.5 s before the cut to another shot.
+  5. Repeat: once per person in a video up to 60 s; in a long one — again if the person has not appeared for 60–90 s. One plate
+     on screen; two people in frame — two plates, each on its own side, the second entering 6 frames @25 / 7 @30 later.
+variants:
+  - classic — a semi-transparent dark plate with an accent bar on the left, the name in bold and the role under it; opens out from the bar
+  - minimal — no plate, white text with a soft shadow, an 8-frame fade-in with a 2 % W shift; documentary and premium tone
+  - color block — a solid plate in the accent color with black text, the role as a separate pill below, offset by 1–2 % W; slides in from the edge over 8 frames; UGC and product
+  - place and time — small letter-spaced caps reading "city · month year" with a pin icon, no plate; a statement phrase about a time skip at the start of a scene is type.intertitle
+  - topic or segment — one topic line above the subtitles for the duration of the answer block ("about money", "mistake no. 1"); interviews and clips
+  - author handle — @handle under the speaker in UGC and clips, without platform logos
+  - next to the subject — in vertical the plate sits by the speaker's shoulder (face tracking with smoothing) if the bottom of the frame is taken by subtitles
+status: code
+fallback: |
+  Names, roles and places come from the user (or from captions in the script); the engine does not invent them — without data it places a template
+  with empty fields and asks. The moment of appearance — from speaker diarization (who is speaking, edit-voice) and the face detector;
+  without diarization — the first appearance of a face in a shot longer than 2 s. A light, busy background — the plate is mandatory (or darken
+  the bottom of the frame with a 0 → 40 % gradient).
+params:
+  type_class: "name — grotesque 700 (semibold or bold), sentence case or caps with tracking +3–6 %; role — the same grotesque 400–500, optionally small caps with tracking +8 %; minimal style — grotesque 600 or serif 500 for a documentary tone; Cyrillic glyphs required; font size = em size"
+  size_16x9: "name — font size 4.0–5.0 % H (43–54 px @1920×1080), typically 4.5 %; role — 0.62–0.70 of the name's font size (≈ 2.5–3.5 % H, typically 3 %); plate — height 9–12 % H, width fitted to the text + padding, no wider than 45 % W"
+  size_9x16: "name — font size 2.8–3.6 % H (54–69 px @1080×1920), typically 3.2 %; role — 1.9–2.4 % H (no smaller than 1.8 % H); block width ≤ 70 % W"
+  text_limits: "16:9 — name ≤ 28 characters, role ≤ 36; 9:16 — name ≤ 20 characters, role ≤ 30; one line each; shorten a long role instead of wrapping it"
+  position_16x9: "left-aligned; left edge x 0.06–0.10 W (margin ≥ 5 %); block bottom y 0.84–0.88 H; with subtitles — block bottom ≤ subtitle top − 2 % H (≈ 0.78 H); a second person on the right — mirrored, right edge ≤ 0.94 W"
+  position_9x16: "left edge x 0.06–0.08, right edge ≤ 0.88 (the right 12 % are buttons); without subtitles — block at y 0.66–0.78 (bottom ≤ 0.80, the bottom 20 % is interface); with subtitles (0.62–0.78) — above them, y 0.48–0.60 if it does not touch the face, otherwise the top band y 0.13–0.24 (the top 12 % is interface)"
+  color: "name #FFFFFF; role #C9CDD2 or white at 75 %; plate #000 at 60–70 % opacity (or solid #111); accent bar — a color from the video's palette or #FFC400, width 0.4–0.6 % W; on a light frame — plate #FFFFFF at 90 % and text #111; contrast ≥ 4.5:1"
+  plate: "padding 0.6 × font size on the sides and 0.35 top and bottom; corner radius 0 (strict style) or 0.15–0.2 × font size (soft); leading 1.15–1.25"
+  in: "classic 13 frames @25 / 16 @30 — bar frames 0–3 (outCubic), plate 2–10 (outExpo), name 4–10 (mask + 2–3 % W shift, outCubic), role 7–13; @30 — 0–4, 2–12, 5–12, 8–16; minimal — fade-in 8 frames @25 / 10 @30 + 2 % W shift (outCubic), role 3 / 4 frames later"
+  hold: "3–5 s (75–125 frames @25 / 90–150 @30); rule ≥ 2.5 s + 0.05 s per character beyond 30"
+  out: "8 frames @25 / 10 @30 in reverse order (inCubic) or fade 6 frames @25 / 7 @30; the exit ends ≥ 0.5 s before the cut"
+  timing: "entry 0.5–1.0 s after the start of the speaker's shot or at the first pause in speech ≥ 0.2 s (from word-level timestamps); in a video with music — shift the entry to the nearest beat if it is within ±0.25 s"
+  frequency: "1 time per person in a video up to 60 s; one plate on screen (two people in frame — 2, the second entering after 6 frames @25 / 7 @30)"
+when: |
+  Speech genres: the first appearance of an expert, a guest, an interviewee or the author (explainer, clips, UGC review,
+  product with an expert, sport — a post-game interview); a place caption at the start of an episode (travel, documentary tone);
+  the block topic in a long interview. Place it 0.5–1 s after the start of the shot, on a pause in speech; in a music video — on the beat.
+  Hook (first 1–2 s) — usually no plate, it distracts from the hook; place it from 2–4 s on, once the viewer has stayed.
+  Outro — do not introduce new plates (a name at the end is not remembered; the team at the end — type.credits). In music
+  genres — only a minimal place or subject caption, in the build, not on the drop. Limit: 1 time per person, one plate
+  on screen.
+avoid: |
+  The bottom 20 % and the right 12 % in 9:16 (the buttons and the platform caption will cover it); overlapping subtitles, the mouth and the chin;
+  a plate that survives a cut to another shot (it jumps over the new frame); a long role in two lines; more than two
+  typefaces and three sizes; a broadcast package with a ticker and bugs — that is look.news; entering on the first frame after a cut
+  and leaving on the last one; invented names and job titles; platform and brand logos next to a handle; a plate on the drop and
+  in fast cutting; phonk — a documentary caption breaks the aggressive music-video tone.
+sfx: |
+  Usually silent. In dynamic editing — a soft short sfx.whoosh (−20…−24 dB under the voice) on the plate opening,
+  align='attack'; in a music video — entry on the beat, no separate sound needed.
+genres: {explainer: signature, clips: signature, ugc: allowed, product: allowed, sport: allowed, motivation: allowed, drama: allowed, travel: allowed, viral: allowed, epic: allowed, calm: allowed, teaser: allowed, fashion: allowed, phonk: forbidden, fanedit: forbidden}
+detect: |
+  Text detector: a block of 1–2 lines left-aligned at a 5–10 % W margin (or right-aligned at 90–95 % W) in the lower band
+  (16:9 — 0.72–0.90 H; 9:16 — 0.48–0.80 H or the top 0.13–0.24 H), the top line 1.4–1.6 times larger than the bottom one; often
+  a solid semi-transparent rectangle under the text (brightness under the plate 30–60 % lower than the surroundings) and a narrow
+  vertical accent-colored bar at the left edge. Over time: appears 0.5–2 s after a cut, the box width
+  grows over 6–12 frames (opening) or the alpha over 6–10 frames, holds still for 2.5–6 s and leaves before the cut;
+  repeats ≤ 1 time per person. ed_motion: over the hold overlay-mask 0.02–0.12 (static graphics on a
+  moving shot), global motion — same as the shot's; the same shot is usually frame.interview or address.direct.
+  Differences: type.subtitles — centered, changes with the lines every 1–3 s; type.intertitle — a phrase about time or place
+  at the top or in the center, no plate, enters on a cut; look.news — a full-width band of 15–22 % H with a ticker
+  and an on-air bug; type.credits — "role — name" lists at the end; gfx.callout — a line or an arrow to an object;
+  type.margin_notes — handwritten typing next to the subject (including a name above the head); type.title_card — a large title
+  in the center; type.vintage_title — a "name / as the role" introduction in a period typeface, 5–7 % H, no plate and no entry
+  animation; frame.interview — the interview framing itself, the plate is only its dressing.
+engine: |
+  lower_third(name, role=None, kind='plate'|'minimal'|'block'|'location'|'topic'|'handle', side='left'|'right'|'auto',
+              anchor='frame'|track(face, offset=[0.0, 0.18*H], smooth=0.2),
+              style={class:'grotesk', weights:[700, 450], name_h:0.045*H (16:9) | 0.032*H (9:16), role_ratio:0.66,
+                     color:'#FFFFFF', role_color:'#C9CDD2', plate:{color:'#000', alpha:0.65, pad:[0.6, 0.35], radius:0},
+                     accent:{color:accent_from_clip(clip)|'#FFC400', w:0.005*W}},
+              anim_in='bar_grow(fr=[0,3], outCubic)+plate_wipe(fr=[2,10], outExpo)+text_slide(name fr=[4,10], role fr=[7,13], dx=0.025*W, outCubic)',
+              hold='auto', anim_out='reverse(8fr, inCubic)'|'fade(6fr)',
+              t0=speaker_first_seen(person)+0.6 → snap_to_pause(0.3) → snap_to_beat(0.25),
+              pos=auto_lower_band(aspect, subtitles=bbox, faces=track(face)), safe_zone='tiktok')
+  — new primitive; animation frames are given @25 and for 30 fps are multiplied by 1.2 with rounding (13 → 16, 8 → 10, 3 → 4).
+  speaker_first_seen(person) — new: the first appearance from speaker diarization (edit-voice) and the face detector.
+  auto_lower_band(aspect, subtitles, faces) — new: picks the band in 9:16 (above the subtitles or the top one) without covering the face.
+  + sfx('whoosh', at=t0, gain=-22dB, align='attack') optional.
+  checks: qa_text_safe_zone(layout='tiktok'); qa_overlap(face|subtitles); qa_cut_crossing(layer, max=0) — new.
+gen_hint: documentary interview medium shot of <person> seated slightly off-center, looking just past the lens, soft window light, calm uncluttered lower third of the frame left free for a name caption, shallow depth of field, static camera, no on-screen text
+commands: ["a plate with the guest's name and role a second after they appear", "a minimal place caption at the bottom left on the first shot", "in vertical, move the plate above the subtitles", "the author's handle under them at 0:03", "the block topic 'about money' above the subtitles for the duration of the answer"]
+related: [frame.interview, type.subtitles, type.karaoke, type.intertitle, look.news, type.credits, gfx.callout, address.direct, type.margin_notes]
+evidence: {examples: 0, sources: 0, measured: "edit culture: parameters from editing practice; verify with a demo render", confidence: medium}
+---
+id: type.margin_notes
+family: type
+group: graphics
+level: B
+aliases: [margin notes, handwritten annotations, narrator's notes, handwritten notes, on-screen notes, on-screen annotations, on-screen calculation, crossed-out price, character introduction caption]
+what: the narrator's handwritten notes right in the frame — amounts, labels, a calculation with an arrow and a total are typed out letter by letter in time with the speech next to the subject, old values get crossed out and corrected; the viewer sees the scene's bookkeeping or who is who
+frames: |
+  1. Frame: the speaking subject in a medium shot is offset to one side (or centered); the notes take the empty side —
+     x 0.55–0.91 with the subject on the left, 0.09–0.45 with the subject on the right — or sit by the shoulder (x 0.61–0.86, y 0.54–0.63) when
+     the face is centered. The background is dark (median brightness ≈40), so the text has no backing and no shadow.
+  2. Font — a handwritten marker style with an uneven line, lemon yellow (≈#DBDB40). A line is 5.6–9 % of the height of a 2.39:1 frame
+     (≈4–7 % H in 16:9), left-aligned, line pitch 1.2–1.5 × the line height; the list grows from top to bottom (y 0.12 → 0.87).
+  3. Typing: each line appears character by character from left to right — 10–26 characters per second (27–60 % of the frame width per second;
+     digits faster, words slower), 0.4–0.5 s for a short line and up to 2.1 s for a long one; a new line — roughly
+     every 0.7 s, exactly when the subject names a number or an item.
+  4. Correction: the old value is struck through with a horizontal line in ≈0.3 s; ≈0.6 s later the new value is typed one line below,
+     shifted right by ≈3 % of the width (≈0.5 s). Link: an arc-shaped arrow is drawn in ≈0.5 s
+     from the line to the total.
+  5. Punchline finale: a separate word with a question or exclamation mark, 2–3 times larger than the list lines, is typed in
+     ≈0.27 s in another place — above the subject's gesture.
+  6. The notes stay until the end of the scene and survive cuts: when cutting to the other person, the same list jumps
+     to the free side of their frame.
+variants:
+  - calculation — a label, an amount, "plus", a rate, "equals", a total; the lines are typed as the conversation goes, an arrow leads to the total
+  - correction — an amount is crossed out, the corrected one is typed under it with an offset; "before — after"
+  - by the shoulder — one large line next to the speaker's face, then a correction
+  - introduction caption — the subject's name is typed above their head in an upper corner of the frame (a line of 2.8–5.7 % H) and holds for the whole shot; in a collage treatment — cut-out letters ≈12 % H assemble two at a time, on twos, by the subject in the lower third
+  - object caption — 2–3 lines of "what it is, where it's from, what it costs" next to the item or above it (top-down view), holding ≥5 s
+  - punchline — one large word with a question mark over a gesture at the end of the list
+status: code
+fallback: |
+  In code on any shot with an empty side of the frame; if there is no free space — crop with room to spare (reframe that
+  shifts the subject toward the edge) or reduce the font size to 3.5 % H. Line timing — from the word-level timestamps of speech
+  recognition (numbers and key words).
+params:
+  font: handwritten marker or pen (OFL), uneven line, one color
+  color: lemon yellow ≈#DBDB40 (RGB 214–219 / 207–221 / 64–68); on a light background — the same color with a 1–2 % H shadow, or black
+  line_h: 4–7 % H in 16:9 (5.6–9 % H in a 2.39:1 frame); introduction caption 2.8–5.7 % H; punchline ×2–3
+  layout: left-aligned; line pitch 1.2–1.5 × line height; block 26–36 % of the width in the free half of the frame; margins ≥ 5 %
+  side: the side opposite the face (x 0.55–0.91 or 0.09–0.45); by the shoulder — x 0.61–0.86, y 0.54–0.63; on a cut to the other person — mirrored
+  type_on: 10–26 characters/s (names and labels ≈10–13, numbers ≈26); a short line 0.4–0.5 s (10–12 frames @25)
+  line_rhythm: a new line ≈ every 0.7 s — on the number word in the speech (±2 frames)
+  strike: a horizontal line through the middle of the text line, thickness ≈ 10 % of the line height, drawn in ≈0.3 s (8 frames)
+  correct: ≈0.6 s after the strikethrough, one line below, shifted +3 % of the width, typed in ≈0.5 s
+  arrow: an arc from the line to the total, drawn in ≈0.5 s (12 frames), same thickness as the letters
+  punch: a word ×2–3, typed in ≈0.27 s (7 frames), above the gesture or in the lower third
+  persist: until the end of the scene; across cuts — the same list, rearranged to the free side of the new shot
+when: |
+  Conversations about money, deadlines, quantities — the numbers appear as they are spoken; "before — after"
+  in a product video and UGC (the old price crossed out, the new one under it); an explainer video — a calculation or a list
+  of arguments next to the speaker; introducing characters with a caption above their heads; a caption for an object or a place.
+  Usually one scene with a list for 3–8 s; the correction is the scene's climax, the punchline is its full stop.
+avoid: |
+  A busy or light background without contrast; more than 7–8 lines at once; typing faster than the speech (the viewer cannot keep up)
+  or far behind it; notes over a face; different colors and fonts in one list; a serious tragic moment —
+  the device is ironic; in 9:16 — a right-hand column under the interface buttons (the right 12 %).
+sfx: |
+  Quiet clicks or a marker rustle during typing (−20 dB under the speech); a sharp pen squeak on the strikethrough; on
+  the punchline — a pause in the music or a short hit.
+genres: {explainer: signature, ugc: allowed, product: allowed, clips: allowed, viral: allowed, sport: allowed, motivation: allowed, epic: forbidden, fanedit: forbidden}
+detect: |
+  ed_motion: static camera (jitter < 0.1 %), no events; overlay-mask 0. Own checks: small text 4–9 % H
+  in one saturated color appears piece by piece — the right edge of the line grows in steps at 27–60 % of the width/s, new
+  lines are added below every 0.5–1 s; a horizontal line appears over an existing line (strikethrough);
+  the block sits on the side opposite the face (face detector) and survives a cut with a mirrored rearrangement.
+  Differences: subtitles — bottom center of the frame, replaced entirely with each line of dialogue; kinetic text — large words
+  one at a time, animated, and they leave; callout (gfx.callout) — a plate or an arrow attached to an object; intertitle —
+  one line of time or place, disappears entirely after 1.3–2.9 s; type.hand_drawn — large handwritten text
+  that is written stroke by stroke or boils, not a list of notes typed in a handwriting font.
+engine: |
+  new primitive margin_notes(items=[{op:'write', text, at=word_ts}, {op:'strike', i}, {op:'correct', i, text},
+      {op:'arrow', from_i, to_i}, {op:'punch', text, anchor=track(person:hands)}], side='auto' (the free side per the
+      face detector), font='handwriting_marker', color='#DBDB40', line_h=0.05*H, pitch=1.35, cps=18,
+      strike_dur=0.3, correct_delay=0.6, correct_indent=0.03*W, arrow_dur=0.5, persist_across_cuts=True, mirror_on_cut=True)
+    = text(anim='typewriter', cps) per line + shape(kind='strike'|'arrow', draw_on=dur).
+  introduction caption: text(name, style='handwriting_marker', size=0.04*H, anchor=track(person:head), offset=[0, -0.12*H], anim='typewriter', cps=12).
+  sync: subtitle-ASR provides word-level timestamps — write at the start of the number word; sfx('click', gain=-20dB) per character.
+gen_hint: medium shot of a person talking to someone off-camera in a dim room, subject on the left third, large clean dark negative space on the right side of the frame, static camera, no text
+commands: ["next to the subject, type out the amounts they name and the total with an arrow", "cross out the old price and type the new one under it at 0:12", "label the characters in handwriting above their heads in #2", "at the end of the list, a large word with a question mark above their hands"]
+related: [type.intertitle, type.hand_drawn, type.kinetic, type.subtitles, gfx.callout, gfx.counter, gfx.floating_ui, type.title_card]
+evidence: {examples: 8, sources: 2, measured: "color RGB 214–219/207–221/64–68 on a background with a median of ≈40; lines 5.6–9.1 % of the height of a 2.39:1 frame, pitch 9.8–12.6 % (1.2–1.5 lines); block x 0.55–0.91 or 0.09–0.45 depending on the subject's side, a single amount by the shoulder x 0.61–0.86 / y 0.54–0.63; typing 27–60 % of the width/s (11 digits in 14 frames @33 = 0.42 s; a long line in 2.1 s); a new line every ≈24 frames @33 (0.72 s); strikethrough in ≈11 frames @33 (0.33 s), correction 0.6 s later with a +3 % width shift over 16 frames (0.48 s); arrow ≈0.48 s; punchline ×2–3 in 9 frames @33 (0.27 s); the list moved to the free side after the cut to the other person (x 0.09–0.45 → 0.55–0.91); captions above the subject 2.8–5.7 % H and for objects 2–3 lines ≥5 s (7 examples from one source); from the general typography section — a name in cut-out letters ≈12 % H, letters added every other frame @25 (on twos), x 0.07–0.50, y 0.60–0.98", confidence: medium}
+---
+id: type.repeat
+family: type
+group: graphics
+level: B
+aliases: [text repeat, echo text, text repeater, word stack, text pattern, typographic pattern, typographic loop, full-screen word]
+what: one word or a short phrase multiplies — as an echo stack, in rows, as a full-frame grid, as rays, on the surface of a cylinder — and the whole construction lives as a 1–4 s loop; the text becomes a pattern and a graphic insert
+frames: |
+  1. Source — 1–3 words in one bold grotesque (tall condensed, wide oblique, letter-spaced small caps); white on
+     black, dark on a gradient or light on a saturated color. At first there is one line in the center of the frame (10–60 % H).
+  2. Multiplication over 0.15–0.9 s: echo stack — 5–6 copies downward at a pitch of 0.85 × the line height (≈8.6 % H), the copies at ≈60 %
+     of the main line's brightness with a gradient inside, while the main line rises (center 49 → 38 % H) so that the stack
+     stays centered; row — 1 → 3 → 5 copies horizontally; recursion — 1 line ≈59 % H → 3 lines of 27 % →
+     8 lines of 10–16 % → 20–40 lines as a texture, a new step every 2–5 frames @16 (0.13–0.3 s); echo tunnel —
+     concentric copies grow outward over ≈25 frames @33 (0.75 s), the front layer darkens and reads on top.
+  3. Life of the loop: the stack holds ≈1.1 s and retracts in ≈0.8 s; wallpaper rows drift sideways at 4 % of the width/s,
+     the letters boil vertically; a ribbon of rows jerks and brakes (10 → 3.5 → 1.3 % of the width per each 0.2 s);
+     a cylinder surface tilted ≈20° rotates, the pattern repeats every ≈0.64 s; 3–6 ray copies spin around
+     the center, fold like a fan and spread out again; a sine wave and a color wave run through 7 rows (4.7 % H, pitch 7.8 % H).
+  4. The loop seam is invisible: the last frame matches the first; loop length 1.0 / 2.1 / 2.7 / 3.9 / ≈4 s.
+variants:
+  - echo stack — the line leaks downward in 5–6 stepped copies and retracts back; growth 0.9 s, hold 1.1 s, return 0.8 s
+  - row → ribbon → wave — the word is copied into a row of 3–5, the rows line up into a 3D wave and twist into a ribbon
+  - wallpaper — two words alternate in rows across the whole frame (pitch ≈10 % H), the rows slowly slide, the letters jitter vertically
+  - recursion — the phrase splits into ever smaller lines until it becomes a gray texture, in ≈1.5–2 s
+  - cylinder and wave — repeats of the phrase are wrapped around a rotating tilted cylinder or a curved ribbon, dark text on a gradient; a slow loop of 5–24 s
+  - rays — 3–6 copies of a short word as rays around the center, rotating and folding like a fan, small utility captions in the corners
+  - window rows — a 2-letter monoblock repeated in stripes, windows with photos and video in the gaps between the letters, the stripes slide sideways and brake, loop 3.9 s
+  - echo tunnel — after being typed letter by letter, the phrase is extruded as concentric outline copies to the edges of the frame, gradient yellow → turquoise
+  - a line of identical letters — a new letter assembles from geometric shapes (stripes, dots, a grid, an outline) in ≈1 s, the row shifts by one letter, loop 1.0 s
+  - three copies with a stretch — the middle copy stretches vertically ×3.4 in ≈0.6 s, then the whole line bulges like a lens
+status: code
+fallback: 3D variants (cylinder, ribbon, tunnel) without a 3D engine — coordinate remapping by sine and circle (numpy) or a stack of scaled copies; window rows — the same pattern as a mask over the user's clips (text_matte); if a material-like letter texture is needed — generate a loop on a solid background
+params:
+  text: 1–3 words, up to 18 characters; one typeface; bold grotesque (tall condensed for rows and masks, wide for the stack and the tunnel)
+  base_size: source line 10–60 % H (stack ≈10 %, window rows 15–20 %, recursion starts at ≈59 %)
+  echo_stack: copies 5–6, pitch 0.85 of a line, copy opacity 0.6 + a vertical gradient 0.2 → 1 inside each copy; grow 0.9 s (22 frames @25) outCubic, hold 1.1 s, retract 0.8 s inCubic; the stack center is compensated upward by (copies·pitch)/2
+  rows: row pitch 7.8–10 % H; drift 2–5 % of the width/s or a jerk with braking 50 → 6 % of the width/s over 0.6 s; adjacent rows offset by half a word
+  recursive: divisor 2–3 per step, a step every 2–5 frames @16 (0.13–0.3 s), 4–6 steps until the texture
+  cylinder: axis tilt 15–25°, 5–7 visible turns, pattern period 0.6–0.7 s (fast) or 5–24 s (slow); the far side 40–60 % darker
+  radial: 3–6 copies, rotation ≈60–120°/s (≈), fan folding over 0.4–0.6 s
+  tunnel: 12–20 outlines, growing outward over 0.75 s, color along a gradient from the center to the edge, the front layer — black or white
+  wave: amplitude 0.3–0.6 of the line height, wavelength 4–8 letters, speed 1 period per 1–2 s
+  loop: 1–4 s (typically 2–3 s), last frame = first
+  safe_zone_9x16: the pattern may fill the whole frame, but the readable main line stays within y 0.12–0.80, x 0.06–0.88
+when: |
+  A graphic insert or background: an intro under the title, a bumper between blocks or chapters, 1–2 bars on the drop as
+  a "graphic pause", a final loop with a slogan or a title (for the video replaying in a loop). Product — the slogan repeated
+  behind the cut-out product or around it. Echo stack — on a hit (growth on a beat, retraction on the next downbeat).
+  Window rows — a way to show many of the user's shots in 2–4 s. Limit: 1–2 times per video, 1–4 s each.
+avoid: |
+  Phrases longer than 2–3 words — unreadable in a pattern; thin serifs and hairlines in a fine grid — moiré and mush after
+  video compression; a fine pattern in vertical (lines below 3.5 % H — only as texture, not as text); a pattern over a busy
+  shot without darkening; at the same time as subtitles; a loop with a visible jump at the seam; several different repeats in one video.
+sfx: |
+  Under the whole loop — a steady hum or a synth drone; stack growth — a downward whoosh on the beat, retraction — a reverse whoosh;
+  recursion — clicks on every division step, speeding up; tunnel — a 0.75 s riser and a hit when the frame fills;
+  rays — short swishes on every turn.
+genres: {fashion: signature, teaser: allowed, product: allowed, motivation: allowed, fanedit: allowed, phonk: allowed, viral: allowed, epic: allowed, sport: allowed, explainer: allowed}
+detect: |
+  OCR or a text detector finds the same line ≥ 3 times in the frame; image autocorrelation gives a strong peak
+  at the line pitch (stack, rows, recursion) or by angle (rays); after 1–4 s the frame almost matches the first one (mean
+  difference < 5 of 255) — a loop. ed_motion: for rows — steady horizontal SHIFT of 2–10 % of the width/s without zoom, for a cylinder —
+  high nonrigid with no shift; for a stack — the text area grows ×3 over 0.9 s at constant width.
+  Differences: type.kinetic — different words replace each other; type.title_card — one static block; type.behind_subject —
+  the repeat follows the contour of the subject or an object and is covered by it; look.maximalism and gfx.collage — a pattern of objects and photos,
+  not of words; fx.kaleidoscope — mirrored sectors of the frame itself.
+engine: |
+  text_repeater(text, font='grotesk_condensed_black'|'grotesk_extended_bold', size=0.10*H, color='#ffffff', bg='#000'|gradient,
+                layout='echo_stack'|'rows'|'grid'|'recursive'|'cylinder'|'radial'|'tunnel'|'wave_ribbon',
+                copies=6, pitch=0.85, opacity=0.6, inner_gradient=[0.2, 1.0],
+                motion={grow:0.9, hold:1.1, retract:0.8} | {drift:-0.04*W/s} | {scroll:[0.5,0.06]*W/s, ease:'outExpo'}
+                       | {rot_axis_tilt:20°, period:0.64} | {spin:90°/s, fan:0.5} | {wave:{amp:0.4, len:6, period:1.5}},
+                loop=2.0, seamless=True, t=[t0, t0+loop*n])
+  window rows: text_matte(text='AB', layout='rows', size=0.18*H, fill=clips[], scroll=[0.5,0.06]*W/s, loop=3.9) — the clips are visible inside the letter mask or in the gaps.
+  recursion: text_repeater(layout='recursive', divisor=2, step=3fr@16, steps=5) + sfx('click') per step.
+  on the drop: beat_sync(event='downbeat') to start the stack growth; the loop is a multiple of a bar (2 s at 120 BPM).
+gen_hint: seamless looping kinetic typography, a single bold condensed word repeated in stacked rows that ripple like a slow wave, white letters on a black background, minimalist motion design, no logos
+commands: ["an echo stack of the slogan on the drop", "the word multiplies across the whole screen and dissolves into texture between #3 and #4", "a cylinder of a repeating phrase behind the ending", "rows of two letters with my shots in the gaps at 0:10"]
+related: [type.kinetic, type.title_card, type.behind_subject, mask.silhouette_window, look.maximalism, fx.kaleidoscope, zoom.infinite, time.echo_trail]
+evidence: {examples: 12, sources: 5, measured: "echo stack: 6 copies at a pitch of 8.6 % H (0.85 of a 10.4 % H line), copies ≈60 % of the main line's brightness, growth 22 frames @24 (0.9 s), hold 26 frames (1.1 s), retraction 20 frames (0.8 s), main line center 49 → 38 % H; recursion 59 % H → 3 × 27 % → 8 × 10–16 % → 40+ lines, a step every 2–5 frames @16; window rows — shift 10 → 3.5 → 1.3 % of the width per each 0.2 s, loop 3.9 s; wallpaper — drift ≈4 % of the width/s (0.8 % per 0.21 s), row pitch ≈10 % H; cylinder — pattern period ≈0.64 s, slow wave ≈24 s @6 fps; 7 rows of 4.7 % H at a pitch of 7.8 % H, cycle ≈2.1 s; line of letters — cycle 1.0 s (25 frames); tunnel ≈25 frames @33; stretch ×3.4 over ≈20 frames @33; ray speed — by eye (≈)", confidence: medium}
+---
+id: type.subtitles
+family: type
+group: graphics
+level: B
+aliases: [subtitles, captions, burned-in subtitles, burned-in captions, open captions, speech captions, on-screen lyrics, lyric captions, subs]
+what: a line of text conveys speech or vocals in sync with the sound — at the bottom center or as lyrics in the middle of the frame, with changing phrases; the subtitle style (font, color, outline, position, delivery) itself becomes part of the video's aesthetic
+frames: |
+  1. Position: classic — 1 line (less often 2–3) centered horizontally (center 0.46–0.52 of the width), baseline at 90–96 % H
+     (median ≈ 93 %), 3–9 % H to the bottom edge. Lyrics — in the middle of the frame: baseline at 49–55 % H, often on vertical
+     4:5 video. A game-style dialogue window — by the speaker's head, at 55–66 % H.
+  2. Size (line height from ascender to descender): classic 2.1–6.2 % H, typically 3.5–5.5 % H (capitals 3.8–4 % H);
+     line width 10–60 % of the frame, up to 89 % on a square (3 lines of ≈6 % H). Lyrics — small: 1.5–3.7 % H (x-height 1–1.9 % H).
+  3. Entry and exit — a hard switch within 1 frame (in all measured cases the count of text pixels goes 0 → full within a frame); a phrase
+     holds 1.3–5.5 s in dialogue, 0.36–1.7 s (median ≈ 0.7 s, 2–4 words) in lyrics, a single exclamation 0.8–1.9 s;
+     the pause between phrases 0–1 s. Phrase changes follow the speech, not the cut: a caption can outlive a cut by
+     5–7 frames; if a cut breaks a phrase — two halves with an ellipsis at the end and at the start.
+  4. Special deliveries: typewriter — letters appear one at a time, 9–15 characters/s (≈1.7–2.8 frames @25 per character), pauses
+     of 0.2–0.5 s between words, the line holds 1.7 s and then all words disappear except one key word (another ≥ 1.4 s);
+     stretched scream — the word grows from the center while the sound is drawn out: +24 % of the frame width in 1.2 s (≈12 letters/s), new
+     letters fade in over 2 frames.
+variants:
+  - classic dialogue — white or yellow bold grotesque (often italic) with a thin black outline or shadow, 1–2 lines at the bottom center, changing by phrase
+  - elegant commercial — a thin geometric grotesque in cream without an outline, small (≈3–3.5 % H per line), at 87–91 % H, under a voice-over
+  - lyrics mid-frame — a small pale-yellow serif without an outline, 2–4 words per phrase, 0.36–1.7 s each, over atmospheric city shots in 4:5
+  - typewriter — a monospace typewriter serif, pale yellow, centered; typed letter by letter, survives cuts and split-screen panels; ending — one word remains
+  - stretched scream — white capitals, letters are added symmetrically from the center while the sound lasts
+  - off-screen line — a phrase in square brackets in bold italic with an outline (a voice from a speaker, a machine, the narrator)
+  - single exclamation word — bold yellow capitals with an outline by the speaker's chin, leaves with the cut
+  - dialogue window — a pixel font in a rectangular box with a border by the character's head, like in a game
+  - place caption — a small white "city, country" line at the bottom center (≈2.6 % H) on the first shot of an episode
+  - word collage — the words of a sung line appear one at a time (≈4 frames @20 per word) along the frame diagonal, each in its own display font and color, and stay until the end of the line
+  - lyrics on black — words one at a time on a black field around a small window with the clip, color per performer, exit with a bend (kinetic variant — type.kinetic)
+status: code
+fallback: no speech text — speech recognition with word timecodes (edit-voice); translation — replace the subtitle layer; burned-in subtitles in someone else's video cannot be erased in code — cover them with a plate in your own style or get a version without text; lyrics need the song text from the user (do not transcribe other people's songs into the library)
+params:
+  type_class: grotesque ≈ 70 % (bold or bold italic for dialogue, thin geometric for ads); serif — for lyrics; monospace typewriter — for a documentary tone; pixel — for game stylization; no more than 1 typeface per video
+  size_16x9: line height 3.5–5.5 % H (font size ≈ 4.5–6 % H, capitals ≈ 3–4 % H); lyrics 2.5–3.5 % H; up to 42 characters per line, up to 2 lines
+  size_9x16: font size 3.5–4.5 % H (capitals ≈ 2.6–3.2 % H, 50–60 px at 1920), bold; up to 22–26 characters per line, up to 2 lines; lyrics — x-height no less than 1.8 % H
+  position_16x9: x = 0.5; baseline 0.90–0.95 H (bottom margin ≥ 5 % H); lyrics and typewriter — line center 0.45–0.55 H
+  position_9x16: the whole block within y 0.62–0.78 H (the bottom 20 % is platform interface), x 0.06–0.88; lyrics — 0.45–0.55 H; never cover the face (move up or down using the face mask)
+  color: "white #ffffff or yellow #f0c828 with a black outline of 0.25–0.35 % H (or a 0.3 % H shadow, 60–80 %); cream #e3cba8 and pale yellow #e0d79c without an outline for quiet styles; contrast to the background ≥ 4.5:1, otherwise a #000 backing at 40–60 % transparency"
+  in_out: cut within 1 frame (default); soft style — fade 2–3 frames
+  timing_speech: a phrase from the start of the first word −1…−2 frames to the end of the last +6 frames; 0.8 ≤ duration ≤ 6 s; reading speed ≤ 15–17 characters/s; pause between phrases ≥ 2 frames or back to back
+  chunking: dialogue — by phrases of up to 2 lines; social media and lyrics — 2–4 words, 0.35–1.7 s (typically 0.7 s); do not hold a caption across a cut for longer than 0.3 s, otherwise split the phrase and add an ellipsis
+  typewriter: 9–15 characters/s, pauses between words 0.2–0.5 s, no cursor or a 2 Hz cursor; ending — keyword_isolate (the other words disappear within 1 frame)
+  stretch: growth of 20–25 % of the width/s from the center (≈12 letters/s), each new letter fades in over 2 frames
+when: |
+  Speech genres — always (clips, explainer, UGC, interviews): videos are watched without sound, subtitles hold
+  the viewer. Translating a finished edit — replacing the subtitle layer. Lyrics of 2–4 words — atmospheric edits to a song
+  (calm, fan edit, dramatic): a vocal line over slow shots. Typewriter — an opening statement
+  in a "documentary" tone (place, year, prologue), teaser and drama. Dialogue window — game-style and parody videos.
+  One style per video; lyrics — only on vocal phrases, not on instrumental breaks.
+avoid: |
+  The bottom 20 % and the right 12 % of the frame in vertical (the interface covers them); text over the speaker's face and mouth;
+  more than 2 lines and 42 characters per line (26 in vertical); a phrase shorter than 0.8 s outside lyrics; an offset from the word of more than
+  2–3 frames; a thin small font without an outline on a busy or light background; animating every phrase (that is
+  kinetic text already and hinders reading); a style change in the middle of the video; other people's song lyrics in the library; duplicating
+  with subtitles text that is already in the frame.
+sfx: |
+  Subtitles need no sound — they follow the speech or vocals. Typewriter — a key click on every letter
+  (−18…−22 dB under the voice) and a bell or a hit on the last letter; stretched scream — the sound itself; dialogue window —
+  short beeps as the text appears.
+genres: {clips: signature, explainer: signature, ugc: signature, motivation: allowed, viral: allowed, drama: allowed, fanedit: allowed, calm: allowed, travel: allowed, product: allowed, fashion: allowed, teaser: allowed, sport: allowed, epic: allowed}
+detect: |
+  Text detector (or OCR) in the band 0.85–0.97 H or 0.44–0.56 H: 1–3 lines, center |x − 0.5| ≤ 0.04, line height
+  2–6 % H, position unchanged between changes; a content change — a jump within 1 frame without layer motion, the change rate
+  matches the pauses in speech or vocals (by speech onsets ±3 frames). Color — white, yellow or cream; bold
+  styles have a dark 1–2 px ring around the letters (the ring's brightness lower than the nearby background). Typewriter — the right edge
+  of the line grows in steps of ≈ 1.5 % of the width per character, 9–15 characters/s. ed_motion: low overlay-mask (the text is small),
+  global motion — same as the shot's; the caption survives cuts unchanged.
+  Differences: type.kinetic — 1–3 large words (≥ 10 % H), animated entry, changes to the rhythm; type.karaoke — the line holds
+  while a highlight runs across the words; type.title_card — one block ≥ 7 % H for 1–6 s with no link to speech; type.credits —
+  lists of names and roles; gfx.floating_ui — interface bubbles by the subject.
+engine: |
+  subtitle(words=asr_words(lang)|lyrics_aligned, style={class:'grotesk_bold_italic'|'grotesk_light_geo'|'serif_book'|'mono_typewriter'|'pixel',
+           size:0.05*H (16:9) | 0.04*H (9:16), color:'#ffffff'|'#f0c828'|'#e3cba8', stroke:{w:0.003*H, color:'#000'} | shadow:{d:0.003*H, a:0.7} | box:{a:0.5}},
+           pos={x:0.5, baseline:0.93} (16:9) | {block:[0.62, 0.78]} (9:16) | {center_y:0.52} (lyrics),
+           chunk={max_chars:42|26, max_lines:2, min_dur:0.8, max_dur:6.0, cps_max:17, words:[2,4] (lyrics), split_on_cut:0.3, ellipsis:True},
+           lead=-2fr, tail=+6fr, anim_in='cut'|'fade(2fr)', avoid=track(face), safe_zone='tiktok', karaoke=False)
+  typewriter: typewriter(text, cps=12, word_pause=0.3, cursor=False, then=keyword_isolate(word_index, hold=1.5)) + sfx('click', per_char=True, gain=-20dB).
+  stretched scream: word_stretch(word, anchor='center', rate=0.22*W/s, fade_in=2fr, until=voice_offset).
+  dialogue window: text(style='pixel', box={fill:'#5a6fb0', border:'#1c2140', pad:0.012*H}, anchor=track(person:head), offset=[0, -0.12*H]).
+  translation: the same subtitle(...) with words=translate(asr_words, target) — the layer is replaced entirely.
+  checks: qa_text_safe_zone(layout='tiktok'), qa_reading_speed(max_cps=17), qa_overlap(face).
+gen_hint: medium close-up of <person> speaking toward the camera in a calm interior, clean lower part of the frame with no busy details for subtitles added later, natural light, static camera, no on-screen text
+commands: ["subtitles from the voice's words for the whole video, white with an outline", "in vertical, move the subtitles up above the interface", "lyrics 2–3 words at a time mid-frame, small and pale yellow", "typewrite the place and year on the first shot and leave one word", "translate the subtitles into English"]
+related: [type.karaoke, type.kinetic, type.title_card, type.credits, type.intertitle, gfx.floating_ui, address.direct, look.video_game, layout.split_screen, type.margin_notes]
+evidence: {examples: 22, sources: 17, measured: "classic baseline 90.0–96.2 % H (median ≈ 93 %), center x 0.46–0.52; line height 2.1–6.2 % H (bold yellow 5.3 %, italic in brackets 5.3 %, 3 lines on a square at 5.7–6.3 % H each and up to 89 % of the width, thin commercial 3.1–3.5 %); lyrics — baseline 54.5–55 % H, line 1.5–3.7 % H, phrases 0.36 / 0.5 / 0.65 / 0.69 / 0.75 / 1.35 / 1.68 s; dialogue 1.3–5.45 s, exclamation 0.8–1.85 s, pause between phrases 0.96 s; entry and exit within 1 frame (text pixels 3 → 34 and 25 → 0); typewriter 15 characters/s (47.5 % of the width in 2.0 s) and ≈9 characters/s with pauses of 0.2–0.5 s, the final single word 1.4 s; stretched scream 9 → 33 % of the width in 1.2 s @25; colors: white 5 sources, yellow ≈(235, 200, 40) 4, cream and pale yellow 5; outline on 4 bold styles; word collage ≈4 frames @20 per word", confidence: high}
+---
+id: type.title_card
+family: type
+group: graphics
+level: B
+aliases: [title card, main title, opening title, title drop, title sequence, on-screen title, title caption]
+what: the main title — the name of the video, the song or the subject, large, for 1–6 s, over a calm opening shot or on a separate card (black, colored, textured); a cover that announces the start or puts a full stop at the end
+frames: |
+  1. Placement: after the first hook shot or a cold open (0.5–10 s from the start), entry on a downbeat or a hit;
+     less often — a final card. The camera under the title is static or moves slowly (push-in ≤ ×1.3 over 3 s, pan ≤ 1 % of the frame per frame).
+  2. Background: (a) an opening shot with a calm area — sky, horizon, water, a wall, a dark interior, a symmetrical subject;
+     (b) a separate card — black (median brightness < 10), a solid color, paper or a grunge texture, a slowly breathing
+     gradient. In 21 of 24 examples the block is centered horizontally (x = 0.50 ± 0.02).
+  3. Composition (size — line height including ascenders and descenders, in % of the frame height H):
+     classic block — title 9–20 % H across 37–66 % of the width, small lines of 1.3–2.8 % H above and below it (performer,
+     "director"), block center at 39–51 % H; poster — title 29–37 % H across 68–89 % of the width plus a "billing block" of 2–4 lines
+     of 0.7–1.7 % H at the bottom edge (82–95 % H); giant word — 36–91 % H across 70–97 % of the width; "frame" — two
+     letter-spaced lines of 15–18 % H at the top (15–34 % H) and bottom (79–94 % H) edges, the object between them; lower block —
+     7.7 % + 2.8 % H under the subject's face (59–78 % H); "sky" italic — 16–29 % H in the upper third (3–43 % H);
+     "cover" — an image or a face in the center on black, the name and the title on the sides in one line by the margins (≈4–5 % H).
+  4. Entry (fully visible in 10 of 24; in the rest the title is already there in the example's first frame): a cut;
+     a fade-in of 0.4–0.75 s (10–19 frames) — linear or with a fast start; from defocus 1.4–1.6 s (blur ≈3 % H → 0,
+     sharpness increasing toward the end); by color — dark red → red → ochre → white over 0.6–1.1 s, after which the picture emerges
+     from black in ≈0.5 s; a reveal from the center to the edges in 0.6 s; a fly-in from a scale of ≈×6 to ×1 over 0.18–0.7 s
+     (4–17 frames) with a ±5 % settle; word by word — the title's words pop in on cuts every 0.16–0.5 s and stay;
+     a 12–15 Hz strobe for ≈0.5 s with the word flipped 180°, which turns upright after 0.2 s and glows steadily
+     without flicker for another ≈0.4 s; an underline drawn on from left to right in 0.32 s (8 frames); final card — a glow around
+     the letters builds over 0.15 s, then the background flashes from black to a saturated color in 0.2 s.
+  5. Hold 1–6 s: classic — 3.5–4.5 s at full opacity; giant word ≈1 s; word by word —
+     0.64 / 0.56 / 0.48 s (each next one 2 frames shorter); inserted cards 2.1–2.4 s; music video — title
+     ≥1.25 s, pause 0.65 s, "director" block 1.4 s, both by cuts over one shot. The title is static, or it is
+     set into the scene by tracking and travels with the background, or it pulses to the beat ×0.75–1.15 with a period of ≈0.36 s.
+  6. Exit: a 0.9 s dissolve (≈22 frames) while the shot continues; disappearing in 1 frame while the shot goes on;
+     a cut to the next card ("director" as a separate line of 5–6 % H) or a shot; graphic exit — the letters one by one
+     turn into colored circles, the circles into full-height stripes (1 letter per 2 frames, ≈1 s), the stripes cover the frame
+     and a cut follows; the letters shatter into shards in 0.1–0.2 s; zoom through the letters — the scale grows with acceleration (×1.2 in
+     0.4 s, ×2 in 1.6 s, ×3 in 2.1 s), for another ≈0.7 s the letters cover the frame and fly past, revealing the shot (≈2.8 s).
+variants:
+  - classic — Roman capitals or a thin grotesque 9–12 % H, white, centered on the horizon or the sky, fade-in 0.5–0.75 s, dissolve 0.9 s
+  - poster — a calligraphic italic or a high-contrast serif 29–37 % H with small lines above and below, a billing block at the bottom edge, like a film poster over the shot
+  - giant word — a condensed extra-bold grotesque or a pixel font 36–91 % H fills the frame, holds 0.5–1.2 s, often on a hit
+  - "behind the subject — a giant word stands between the background and the person: a raised hand, the head, the shoulders cover the letters (other forms of text in depth — type.behind_subject)"
+  - in the scene — the title is tracked to the shot and travels with the background when the camera moves, as if hanging in the air (text on surfaces with perspective — type.diegetic)
+  - cover — an image or a face in the center on black, the name and the title symmetrically on the sides, holds still
+  - pop logo — a rounded bold font in an arc or slanted, with little stars and sticker badges around it; entry by a cut or a fly-in, pulse to the beat
+  - frame layout — two wide letter-spaced lines at the top and bottom, the subject or a building between them
+  - lower block — the title under the subject's face, a strictly symmetrical portrait; small details are alive (a counter digit flips, a line erases letter by letter)
+  - interleaved cards — black cards with a lowercase condensed grotesque 38–50 % H alternate with shots, 2.1–2.4 s each
+  - word by word — 2–3 full-frame words change over one shot on the beats, each next one shorter
+  - strobe title — every 2–4 frames a new font, color and background (rays, concentric rings, neon, outline, glitch) with the same word
+  - material — letters of liquid, chrome, ice assemble over 1.5–2 s during a slow camera pull-out (3D or generation)
+  - handmade — the letters are printed, cut out or assembled and boil every frame; paper and objects in the composition (hand-drawn ones — type.hand_drawn)
+  - graphic exit — the letters turn into dots and stripes in the gradient's colors, which open the next shot like a wipe
+  - zoom through the letters — the title grows with acceleration and flies past the camera, revealing the shot
+  - final slogan card — a phrase and a logo mark on black, the glow around the letters builds, the background flashes with color; a full stop at the end of the video
+status: code
+fallback: |
+  Text, entry, exit and the background card — in code on any footage. Behind the subject — hybrid: a person mask
+  (mediapipe or remove_background) over the title layer. In the scene — background tracking with optical flow. If there is no
+  calm shot with a free area — a card on black or a gradient, or generate an opening wide shot
+  with an empty sky or wall (with the user's consent). Material letters (liquid, chrome, ice) and handmade ones
+  (paper, objects) — generation or 3D; without them — the same font with a texture and a soft highlight.
+params:
+  type_class: grotesque ≈45 % (condensed extra-bold, wide letter-spaced, geometric, rounded); serif ≈20 % (Roman capitals, high-contrast, bold with an outline); italic and calligraphy ≈15 %; display ≈12 % (pixel, blackletter, ornamental); hand-drawn ≈5 %; no more than 2 typefaces per block
+  layout: center_block | poster | fill | frame_top_bottom | lower_block | sky_top | cover_triptych
+  size_title: classic 9–20 % H (typically 10–12 %); poster 29–37 % H; giant 36–91 % H; frame layout 15–18 % H per line; lower block 7.7 % H
+  size_secondary: 1.3–2.8 % H above and below the title; a separate director card 5–6 % H; billing block 0.7–1.7 % H per line
+  width: title 37–89 % of the width; giant 70–97 %; letter spacing in the frame layout 30–60 % of the font size
+  position: x = 0.5; block center 0.39–0.51 H; sky 0.15–0.43 H; lower block 0.59–0.78 H; margins ≥ 5 % at the edges
+  vertical_9x16: the block inside the safe zone (top 12 %, bottom 20 %, right 12 %); compute the font size from the width — a line 70–86 % of the width; giant word — stacked, one word per line
+  color: white or cream (8 of 24), red or crimson (4), orange (3), yellow (2), gradient (2), chrome (2), black on paper (1); contrast to the background ≥ 4.5:1; outline or shadow only in pop styles
+  in: cut | fade 0.4–0.75 s (10–19 frames @25), linear or outQuad | blur_in 1.4–1.6 s, r 3 % H → 0 | color_reveal 0.6–1.1 s + background from black 0.5 s | reveal_center_out 0.6 s (15 frames) | slam_in ≈×6 → ×1 over 0.18–0.7 s (4–17 frames), outExpo, settle ±5 % over 0.15 s | words_build — a word every 0.16–0.5 s | glow_up 0.15 s + background from black to color in 0.2 s | strobe_in 12–15 Hz ≈0.5 s, flip 180° → 0° after 0.2 s, then steady | draw_on of the underline 0.32 s (8 frames)
+  hold: 1–6 s; classic 3.5–4.5 s; giant 0.5–1.2 s; word by word 0.48–0.64 s per word; inserted cards 2.1–2.4 s; strobe — 80–160 ms per design
+  out: dissolve 0.9 s (22 frames) | disappear in 1 frame | cut together with the shot | glyph_wipe ≈1 s (1 letter per 2 frames) | shatter 0.1–0.2 s | zoom_through ≈2.8 s (×1 → ×3 over 2.1 s with acceleration, then a 0.7 s fly-past)
+  during_hold: static | background tracking (title shift = background shift within 0.6 % of the frame) | pulse to the beat ×0.75–1.15, period ≈0.36 s | slow drift ×0.87 over 0.6 s
+  reading_time: no shorter than 0.3 s per word + 0.5 s (2 words ≥ 1.1 s), except the strobe and word by word
+  aspect_note: sizes are in % of the frame height of the example itself (examples 1.33–2.39:1); for 16:9 multiply sizes from a 2.39:1 frame by 0.75, from 4:3 — by 1.33; in 9:16 compute by width
+when: |
+  Intro: right after the hook shot or a cold open, entry on the first downbeat or the hit of the drop ("title drop").
+  Music video — title + performer + author for 3–6 s over the opening wide shot. Teaser — a final
+  card with the title (and a date) on the last hit. Travel and calm — italic above the sky or water. Fashion — a poster
+  with a high-contrast serif or a strobe title. Epic and fan edit — a giant word or word by word on the drop.
+  Limit: one main title per video (plus a final card); strobe title — no longer than 1.5 s.
+avoid: |
+  A title over a busy or high-contrast background without a backing (contrast < 4.5:1); holding the title for less than 1 s;
+  more than 2 typefaces and 3 sizes in a block; intruding on the interface zones in 9:16 (top 12 %, bottom 20 %, right 12 %);
+  covering a face (except the intentional behind-the-subject version with a mask); fade-ins longer than 1 s in fast genres; a strobe
+  with brightness swings of more than 3 flashes per second — a risk for photosensitive viewers; other people's logos and
+  branded typefaces. In UGC ads a main title breaks the native feel — use a hook text in subtitle style there.
+sfx: |
+  Title drop — a dull hit (impact or sub_drop) exactly on the frame of appearance, preceded by a 1–2 s riser; classic
+  fade-in — silence or a soft swell over the whole fade-in; fly-in — a short whoosh + impact on landing;
+  strobe and flip — glitch clicks on every change; underline draw-on — a marker rustle; graphic exit —
+  a series of short clicks per letter and a whoosh on the wipe.
+genres: {teaser: signature, fashion: signature, epic: allowed, drama: allowed, calm: allowed, travel: allowed, fanedit: allowed, viral: allowed, product: allowed, phonk: allowed, sport: allowed, motivation: allowed, explainer: allowed, clips: allowed, ugc: forbidden}
+detect: |
+  Frame: a text block (EAST/DB text detector or OCR boxes) whose largest line is ≥ 7 % H, centered
+  (|x − 0.5| ≤ 0.05), holding ≥ 1 s; appears in the first 10 s of the video or in the last 5 s. On a card — median
+  brightness < 30 (or a solid background), the text takes 2–50 % of the area.
+  ed_motion: the camera is static or moves slowly; overlay-mask 0.3–0.8 with a moving background; on cards — black frames
+  and cuts on card changes; strobe title — cuts every 2–4 frames and flash frames.
+  Time: the alpha of the text zone grows over 10–19 frames (fade-in) or jumps 0 → 1 (cut); the zone's sharpness grows
+  (Laplacian variance ×30, maximum gradient ×4) over 1.4–1.6 s — from defocus; the zone's mean color shifts
+  in hue — a color reveal.
+  Variants: in the scene — the text zone's shift matches the background's shift within 0.6 % of the frame per step; behind the subject — the letters
+  are covered by a person mask; giant — the text zone ≥ 20 % of the area.
+  Differences: subtitles — the bottom 15–25 % H, 4–6 % H, changing with the lines every 1–3 s; kinetic text — words
+  animate one by one to the rhythm of speech; intertitle — a card in the middle of the video with a phrase or a chapter; credits —
+  lists of names in a small font size; retro title — a typeface and texture of old film; type.behind_subject — text around and behind
+  the subject without the role of a main title; type.diegetic — text on an object or a surface with its perspective and light;
+  type.repeat — one word multiplied into a pattern.
+engine: |
+  title_card(lines=[{role:'kicker'}, {role:'title'}, {role:'credit'}], layout='center_block'|'poster'|'fill'|'frame_top_bottom'|'lower_block'|'sky_top',
+             type_class='serif_caps'|'didone'|'script'|'grotesk_condensed_black'|'grotesk_extended'|'pixel',
+             size={title: 0.10*H, kicker: 0.022*H, credit: 0.022*H}, color='#f2ede4', bg='picture'|'#000'|'gradient_anim'|'texture(paper)',
+             anim_in='fade(0.6, linear)', hold=4.0, anim_out='dissolve(0.9)', safe_zone='tiktok', t0=beat('downbeat'))
+    = text(...) per line + shape(kind='underline'|'plate') as needed.
+  entries: fade(0.4–0.75) | blur_in(dur=1.5, r0=0.03*H, ease='inCubic') | color_reveal(from='#6a090e', to='#f0e8e4', dur=0.8) + fade(bg, from='#000', dur=0.5)
+         | reveal_center_out(dur=0.6) | slam_in(scale0=6, dur=0.18, ease='outExpo', settle=0.05) | strobe_in(hz=12, dur=0.35, flip=180) | draw_on(shape='underline', dur=0.32)
+  hold: anchor=track(kind='planar', region=<title zone>) — in the scene; beat_pulse(scale=[0.9, 1.15], every='1/2') — pulse.
+  behind the subject: composite(layers=[clip, text(...), clip × mask('mediapipe_person'|'hf_remove_background', feather=2px)]).
+  exits: transition('dissolve', 0.9) on the layer | cut | glyph_wipe(order='ltr', per_letter=2fr, stages=['dot','bar','full']) + cut
+          | transform(scale=[1, 12], center=[0.5, 0.5], t=[t1-2.8, t1], ease='inExpo') on the title layer — zoom through the letters.
+  final card: glow(threshold=0.8, radius=0.02*H → 0.05*H, t=0.15) + color(bg '#000' → '#ff7d00', dur=0.2).
+  strobe: title_strobe(text, per=[2, 4] frames, styles=8–12 classes, bg=['#000','rays','rings','neon','outline'], max_luma_flashes=3/s).
+  interleaved cards: cut(clip) ↔ text(bg='#000', style='grotesk_condensed_lower', size=0.3*H), step 2.1–2.4 s (1 bar).
+  sound: sfx('impact', at=t0) + sfx('riser', at=t0-1.5) for the title drop.
+gen_hint: calm wide establishing shot of <place>, static camera or very slow push-in, large empty negative space in the <upper third|center> reserved for a title, soft even light, no text, no letters, cinematic
+commands: ["centered title on the first frame, half-second fade-in", "a poster title with the name and credits over #1", "a huge full-frame word on the drop", "the title behind the subject — the hand covers the letters", "black title cards between #2, #3 and #4"]
+related: [type.vintage_title, type.intertitle, type.kinetic, type.behind_subject, type.diegetic, type.repeat, type.hand_drawn, type.credits, type.subtitles, trans.dissolve, fx.letterbox, mask.silhouette_window]
+evidence: {examples: 32, sources: 31, measured: "title section (24 examples): horizontally centered in 21 of 24; classic title 9.4–20 % H (Roman capitals 9.4 %), poster 29–37 % H across 68–89 % of the width, giant 36–91 % H, frame layout 15.5–18 % H at the top and bottom, lower block 7.7 % + 2.8 % H, small lines 0.7–2.8 % H; fade-in 7–8 frames @20 (0.4 s, fast start), 10 frames @20 (0.5 s, linear), 14–16 frames @20 (0.75 s); dissolve 18 frames @20 (0.9 s); disappearance in 1 frame after 3.5 s; from defocus 32 frames @20 (1.6 s, Laplacian variance ×33); color reveal 0.6–1.1 s (RGB 103,9,14 → 240,232,228) and background from black ≈0.5 s; reveal from the center 12 frames @20; fly-in ×6 → ×1 over 6 frames @33 + settle ±5 %; pulse ×0.75–1.15 with a period of ≈0.36 s; strobe 12–15 Hz ≈18 frames @33 (0.54 s), 180° flip for 7 frames; underline 4 frames @12.5 (0.32 s); word by word 16/14/12 frames @25; inserted cards 2.1–2.4 s; in-scene tracking — the title shift equals the background shift (within 0.6 % of the frame per step); graphic exit 26 frames @25. General typography section (8 examples): fly-in over 17 frames @25 (0.7 s); title words one at a time every 4–12 frames @25; music video — title ≥1.25 s, pause 0.65 s, director block 1.4 s (lines 3.1 / 9.4 / 3.1 % H); zoom through the letters — text area ×1.4 in 0.4 s, ×4 in 1.6 s, ×9 in 2.1 s, fly-past another 0.7 s; final card — glow +70 % halo brightness over 3 frames @20, background 0 → RGB 254,125,1 over 4 frames @20; pop logo in an arc 16.5 + 29.6 % H, entry by a cut. Strobe, tracking, behind the subject, graphic exit, cover and zoom through the letters — one example each", confidence: high}
+---
+id: type.vintage_title
+family: type
+group: graphics
+level: B
+aliases: [retro title, vintage title, old-film-style title, old movie title, period title, retro intro, 50s–70s titles]
+what: a main title or a character introduction title in the manner of 1920s–1970s cinema — the typeface, color, size and delivery of its era over the picture, often with film grain and gate weave; instantly sets an old-movie feel and the genre
+frames: |
+  1. Static delivery: the title appears on a cut or with a fade-in over 0.5–0.65 s (12–16 frames @25) and holds for the whole shot,
+     3.5–7 s; it leaves together with the shot via a 0.9 s dissolve (≈22 frames), less often on a cut.
+  2. Large size: a title line is 18–22 % of the frame height, a 2-line block — 44–47 % of the height and 46–51 % of the width;
+     a one-word poster title — one line 46 % of the height across the full width; introduction captions — 5–7 %.
+  3. Placement: centered (two lines, center-aligned), the lower half of the frame (52–95 % of the height) with the lines slanting
+     up to the right, or the lower left corner for "name / as the role" (two size steps, the second one 2–3 times
+     larger).
+  4. Color: saturated red or yellow with a black shadow or outline over a B&W or tinted frame;
+     a soft cream-gold italic with a shadow over a sunny wide shot; a light gray serif inside
+     an ornamental frame on black (silent film); thin turquoise small caps slowly crawling up
+     (≈ 17 % of the height per second) over an aerial flyover.
+  5. Film texture: grain, dust specks, gate weave (σ 0.14 % of the width and 0.32 % of the height, jolts up to 0.9 %),
+     brightness flicker ≈ 1.2 %; colors slightly faded.
+variants:
+  - 50s genre film — a bold condensed slanted sans-serif, red or yellow, black shadow, two lines in the center or at the bottom
+  - silent film — a light serif in an ornamental frame on black, a long hold of 5–10 s, a final end card
+  - 70s TV style — a soft bold italic in cream gold, appearing with a 0.6 s fade-in, "name / as the role" captions
+  - thin small caps — a small turquoise or white line crawls up over a landscape
+  - poster fly-in — a huge bold grotesque flies into place from a larger size (×2) in 0.5 s, decelerating, the second line hits right after
+  - graphic break-up — a giant full-frame word over a B&W portrait, then it is sliced into stripes that slide apart
+  - secret dossier — typewritten red plates, the lines multiply and fill the screen
+  - 50s–60s trailer — phrases in a bold condensed grotesque in caps with an exclamation mark fly in from a large scale in ≈0.4 s over a close-up or on black and hold for 1.5–1.9 s; at the end the title grows over the subject's face
+status: code
+fallback: a suitable period font from the engine's library (no third-party branded typefaces); if hand-drawn 50s lettering is needed — generate a title image with a transparent background
+params:
+  type_class: 50s — a bold condensed grotesque slanted 8–12°; silent — a decorative serif; 70s — a soft bold italic with rounded serifs; dossier — a typewriter monospace
+  size: title 18–22 % of the height per line (up to 46 % for a single word); introduction — 5–7 %; the as-role line 2–3 times larger than the name
+  position: center | lower half with slanted lines | lower left corner (margins 4–8 % of the frame)
+  color: "red #e01b1b / yellow #ffd21a with a #000 shadow (offset 1–1.5 % of the height); cream gold #f0d9a0 with a soft shadow; light gray #c8c8c8 on black inside a frame"
+  in: cut or fade-in 0.5–0.65 s (12–16 frames @25); fly-in ×2 → ×1 over 0.5 s outCubic
+  hold: the whole shot, 3.5–7 s; silent card 5–10 s
+  out: dissolve together with the shot 0.9 s (≈22 frames) or a cut
+  crawl: slow rise ≈ 17 % of the height/s for thin small caps
+  film_texture: grain 0.08–0.15; weave σ 0.15–0.3 % (jolt up to 0.9 %); flicker 1–1.5 %; dust specks 2–6 per frame
+when: the intro and the video's main title, introducing characters as "name — as the role" at the start, parody and retro stylization, a teaser styled like an old movie trailer, a silent dialogue card between scenes in a comedy, a final end card; 1 main title + up to 3–5 introductions per video
+avoid: mixing eras in one video (a silent-film frame + a 70s italic); animated modern entrances (letter by letter, glitch) in a retro font; small text over a busy background without a shadow; other people's logos and branded typefaces; holding a title for less than 2 s — unreadable
+sfx: main title — an orchestral hit or a chord on the cut; silent card — projector crackle and piano; fly-in — whoosh + impact on landing; character introduction — a short jingle or a freeze-frame click
+genres: {teaser: signature, fanedit: allowed, drama: allowed, epic: allowed, explainer: allowed, viral: allowed, fashion: allowed, calm: allowed, ugc: forbidden}
+detect: |
+  frame: large text of 18–22 % of the height per line (or 46 % per word), holding for the whole shot without letter animation;
+  text color — pure saturated (red, yellow) with a black shadow, a cream italic or a light serif on black;
+  high text-to-background contrast, edges softened by the film.
+  time: appearance — a cut or a 0.5–0.65 s fade-in; exit — a ≈ 0.9 s dissolve together with the frame.
+  texture: ed_motion on a static card — fine jitter (jitter 0.1–0.3 %), brightness flicker 1–1.5 %, grain.
+  differences: modern kinetic text — animation by words and letters, rhythm to the beat; subtitles — lower third,
+  4–6 % of the height, change with the lines; handwritten title — an uneven line and drawing live on screen.
+engine: |
+  text(content, style='retro_50s'|'silent_card'|'retro_70s_italic'|'dossier_mono', size=0.2*H, pos='center'|'lower_slant'|'lower_left',
+       color='#e01b1b', shadow={'dx':0.01*H,'dy':0.01*H,'color':'#000'}, anim='cut'|'fade_in(0.6)'|'fly_in(scale=[2,1], dur=0.5, ease=outCubic)',
+       t=[t0, t0+4.5]) + film_look(grain=0.1, weave=0.002, flicker=0.012, dust=4)
+  silent card: shape(kind='ornament_frame', inset=0.08) + text(style='silent_card', size=0.19*H, color='#c8c8c8', bg='#000')
+  exit: transition('dissolve', dur=0.9) together with the frame; introduction: text(['name','as the role'], scale=[1, 2.5], pos='lower_left')
+gen_hint: retro 1950s movie title lettering of <title words>, bold condensed slanted letters in saturated red with a black drop shadow, superimposed on a black-and-white film still, film grain and slight gate weave
+commands: ["an old-movie-style title on the first frame", "introduce the characters as 'name — as the role' like in the 70s", "a silent card with a line of dialogue between #3 and #4", "the title flies in like a poster on the drop"]
+related: [type.title_card, type.intertitle, type.credits, look.film, glitch.film_damage, look.retro_graphics, trans.iris]
+evidence: {examples: 12, sources: 12, measured: "title line 18–22 % of the height (2 lines = 44–47 % × 46–51 % of the width), one-word title 46 % of the height, captions 5–7 %; appearance with a fade-in of 12–16 frames (0.5–0.65 s); dissolve together with the shot 0.9 s; fly-in ×2 → ×1 over 14 frames with deceleration; card weave σ 0.14 % of the width / 0.32 % of the height, jolts up to 0.9 %, flicker 1.2 %; crawling line ≈ 17 % of the height/s", confidence: medium}

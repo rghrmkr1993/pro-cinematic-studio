@@ -1,0 +1,321 @@
+id: focus.attention_shift
+family: focus
+group: optics
+level: C
+aliases: [attention shift, in-frame attention hand-off, subject change without a cut, shifting the focus of attention, pass-off shot, single-shot hand-off]
+what: within one continuous shot the main subject changes — focus, camera or blocking lead the viewer's eye from character A to character or object B without an edit cut
+frames: |
+  1. Hold on A: for 0.7–1.8 s the frame "belongs" to A — in focus, centered or in motion; B is already
+     in the frame (blurred on another plane, small, at the edge) or is about to appear.
+  2. Trigger: A turns away, drives past, leaves the frame; B rises into the frame, enters, takes off a mask;
+     in the audio — a line of dialogue or a hit.
+  3. Hand-off — by one of three means (often combined):
+     a) focus: sharpness flows from A's plane to B's plane — a snap over 3–6 frames (0.12–0.24 s)
+        or smoothly over 0.5–1.0 s; zone B becomes 2–10 times sharper, zone A 2–3 times softer;
+     b) camera: a pan or tracking move across 110–150 % of the frame width in 1.6–2.2 s, or a push-in ×2.2–4.5
+        over 1.9–2.8 s slowing toward the end — the frame comes to rest already on B;
+     c) blocking: A leaves the frame or B steps into the foreground while the camera stays static.
+  4. Landing: at least 1 s on B. The whole shot 2.2–6.6 s (typically 3–4 s).
+variants:
+  - focus there-and-back: snap to the background, 1.2 s hold, snap back to the near character
+  - passing object: an in-focus car crosses the foreground, after it the focus goes to the scene of the action
+  - entering the frame: a blurred character rises or steps into the foreground, focus shifts to them
+  - follow shot: the camera follows one character, they leave — the camera stays on a meaningful place or object
+  - pan with a push-in: from a couple in the foreground to a lone figure in the distance
+  - action: the character takes off a mask or costume — attention shifts to the revealed face
+status: footage
+fallback: code simulation — animate the blur from A to B using a mask or depth map (mediapipe / depth model); a digital pan or zoom-in between two subjects in a wide 4K frame; without source footage — generation of a single shot with a focus shift (with consent)
+params:
+  shot: 2.2–6.6 s (55–165 frames @25 fps), typically 3–4 s
+  hold_a: 0.7–1.8 s before the hand-off
+  rack: snap 0.12–0.24 s (3–6 frames) or smooth 0.5–1.0 s (12–25 frames), ease inOutCubic
+  rack_strength: sharpness of B ×2–10, A ×0.3–0.5; blur of the out-of-focus plane 6–14 px at 1080p
+  camera: pan across 110–150 % of the width in 1.6–2.2 s; push-in ×2.2–4.5 over 1.9–2.8 s, ease-out
+  hold_b: at least 1 s after landing
+  return: optional shift back after 1–1.5 s
+when: dialogue or a pair of characters without a cut; revealing a second character or a threat in the background; hinting at an important object or place (the camera stays after the character has left); an "object → person" link in product edits; establishing the place after a drive-by. Lands well on a change of phrase or on a downbeat; 1–2 times per minute
+avoid: fast cutting with shots shorter than 2 s — the hand-off can't be read in time; deep focus with no separation of planes when simulating in code; a mask or depth map that "jitters" on hair and edges; two shifts in a row without a hold
+sfx: a quiet rise of the ambience or an "inhale" on the hand-off; on a focus snap — a short click or whoosh; on a follow shot — footsteps and the location's ambience; the landing on B can be accented with a hit
+genres: {drama: signature, teaser: allowed, product: allowed, calm: allowed, epic: allowed, travel: allowed, fashion: allowed, explainer: allowed, motivation: allowed}
+detect: |
+  No cuts (ed_motion cuts are empty or only false ones on a fast pan), yet the main subject changes. Signatures:
+  (1) focus — the camera is almost static (no events, or shake <1 %), but the sharpness map flips: cell A's Laplacian
+  energy falls ×0.3–0.5, cell B's grows ×2–10 within 0.12–1.0 s, the frame histogram barely changes;
+  (2) camera — a long SHIFT of 100–150 % of the frame or a ZOOM-IN ×2–4.5 with ease-out, after which the motion dies down on the new subject;
+  (3) blocking — a static frame with a large local change (a subject exits or enters), often together with (1).
+  Difference from focus.rack: there the optical shift itself is the point, here — the change of subject by any means.
+  From an ordinary pan: at the end of the movement the frame has a different center of meaning, and the camera stops on it.
+engine: |
+  focus: depth_map(model='depth_anything') | mask(method='mediapipe_person')
+  → focus_pull(from=track(A), to=track(B), t=[t0, t0+0.6], ease='inOutCubic', max_blur=10)
+  camera: transform(center=track(A)→track(B), scale=[1, 2.5], t=[t0, t0+2], ease='outCubic') on a 4K or wide source
+  blocking: only shot selection (detect) and a music landing point at the moment A exits
+  put the hand-off landing on a beat or on the start of B's line.
+gen_hint: single continuous shot with shallow depth of field, focus starts on <subject A> in the foreground, then <A turns away / drives out of frame> and the focus smoothly racks to <subject B> in the background, camera holds still, cinematic
+commands: ["shift attention from him to her within one shot on #6", "no cut: focus from the car to the sign", "follow the waitress and stay on the family at the table", "on the drop, focus from the foreground to the character behind"]
+related: [focus.rack, focus.shallow, focus.split_diopter, track.follow, zoom.in]
+evidence: {examples: 12, sources: 12, measured: "whole shot 2.2–6.6 s; there-and-back focus snap 3–6 frames, hold 1.2 s; smooth shifts 0.75–1.0 s, background sharpness ×2.1–10; follow shots −110…−150 % of the frame over 1.6–2.2 s, push-ins ×2.2–4.5 over 1.9–2.8 s with ease-out; 5 of 12 with a focus shift, 6 with camera movement, 6 with a character exiting or entering (often combined)", confidence: medium}
+---
+id: focus.bokeh
+family: focus
+group: optics
+level: B
+aliases: [bokeh, defocus into lights, bokeh circles, out-of-focus lights, defocus transition]
+what: out-of-focus point lights turn into soft glowing discs — a background behind the character, an abstract backdrop, or a transition through defocus
+frames: |
+  1. Discs: diameter 3–30 % of the frame width, typically 6–12 %; on pure abstract backdrops 12–23 %,
+     "giant" ones — up to 30 %. Soft edges, the circles are almost regular (aspect ratio >0.6), the colors of the lights
+     are preserved, bright discs overlap and add up in light.
+  2. Portrait on bokeh: the character is sharp, behind or in front of them 1–8 large discs; in slow-motion footage
+     of a walking character the discs slowly drift.
+  3. Defocus transition: sharpness of the whole frame drops by 80–90 % over 1–2 s (almost linearly or with a fast
+     start), city lights become a scatter of discs 2–5 % of the width (up to 8 per frame); there is also the reverse
+     move — focus gathering back over 0.9–1.5 s.
+  4. Pulse: in focus → defocus over ≈1.9 s → hold blurred for 2–2.5 s → back into focus over ≈1.5 s.
+variants:
+  - portrait on bokeh — the face is sharp, large colored discs to the side or behind
+  - through bokeh — the character behind a blurred colored "veil" in the foreground
+  - pure backdrop — only discs of light without a subject, 1–3 s
+  - defocus into lights — a night street or club smoothly dissolves into discs (ending, transition)
+  - pulse — defocus and return within one shot
+  - macro detail on a creamy background — the object is sharp, the background uniform with 1 disc
+status: code
+fallback: the lights must be in the frame itself — without point sources defocus only gives "mush"; a portrait on bokeh without source footage — a mask of the character + an overlaid backdrop of lights, or generation; the backdrop can be a separate clip
+params:
+  disc: diameter 6–12 % of the width (backdrops 12–25 %, accent up to 30 %); kernel — a disc, a slight "cat's-eye" shape toward the edges optional
+  highlights: before blurring, boost highlights above 0.85 brightness ×2–4, otherwise the discs are dull
+  defocus: 1–2 s (25–50 frames), linear or outCubic; return 0.9–1.5 s, inOutCubic
+  pulse: 1.9 s out of focus, 2–2.5 s hold, 1.5 s back
+  plate: 1–3 s of backdrop under a title or between scenes
+  motion: discs drift 0.5–2 % of the frame per frame — a camera move or a "breathing" zoom
+when: intros and endings (dissolving into lights), a transition between scenes (defocus → cut → focus), a backdrop under a title or song lyrics, night, festive, club and romantic scenes, a memory or a "floating" state; a glamour walk of the character in slow motion. Once per section, no more often
+avoid: daytime shots without point lights; small high-contrast text over busy discs; a long defocused pause without music; a cheap overlaid backdrop that doesn't match the frame in color and perspective
+sfx: on the defocus — a soft swell or whoosh, the music can be "taken underwater" with a low-pass in step with the blur; on the focus return — a reverse sweep or a click
+genres: {fashion: signature, teaser: allowed, drama: allowed, calm: allowed, product: allowed, travel: allowed, fanedit: allowed, motivation: allowed, epic: allowed, viral: allowed}
+detect: |
+  Bright spots (above the 92nd percentile and 150/255) — round (aspect ratio >0.6, bounding-box fill 0.6–0.9),
+  diameter 3–30 % of the width; overall frame sharpness is low. Transition: Laplacian energy of the whole frame falls by 80–90 %
+  over 1–2 s at constant brightness and without global motion (ed_motion — no events), the histogram doesn't jump;
+  pulse — a fall and a rise within one shot. Difference from halation/glow: there the glow surrounds a sharp source, no discs;
+  from focus.rack: the whole frame goes out of focus, there is no new plane of sharpness; from motion blur — the spots are round, not stretched.
+engine: |
+  blur(kind='lens', kernel='disc', radius=curve([[t0, 0], [t0+1.5, 0.05]]), highlight_boost=3, threshold=0.85)
+  — defocus transition; transition(kind='defocus', dur=1.0, params={radius: 0.05}) between clips.
+  Portrait on bokeh: mask(method='mediapipe_selfie') → background blur(kind='lens', radius=0.04, highlight_boost=3) → composite.
+  Backdrop: the same blur on a night shot with lights, radius 0.06–0.12, slow transform(scale=[1, 1.05]).
+gen_hint: dreamy night scene dissolving into large soft circular bokeh, colorful out-of-focus city lights, <subject> sharp in the foreground, 50mm f/1.2, slow drifting light orbs
+commands: ["dissolve into lights at the end", "defocus transition between #5 and #6", "bokeh backdrop under the text in the intro", "blur the background into colored circles on the close-up"]
+related: [focus.shallow, focus.rack, light.halation]
+evidence: {examples: 9, sources: 9, measured: "disc diameter 3–30 % of the width, per-clip median 3.2–30 % (typically 6–12 %), backdrops 12–23 %; defocus into lights over ≈2 s, final discs 2–5 % of the width, up to 8 per frame; pulse 1.9 s out of focus, return ≈1.5 s; reverse focus gathering 0.9 s; shots 0.8–6.2 s", confidence: medium}
+---
+id: focus.rack
+family: focus
+group: optics
+level: B
+aliases: [rack focus, focus shift, refocus, focus pull, follow focus, snap focus]
+what: within one shot the plane of focus travels from one subject to another — the foreground blurs, the background turns sharp (or vice versa); guides the eye without a cut
+frames: |
+  1. Hold: for 0.4–1.6 s subject A (a face, hands, an object) is in focus, B on another plane is blurred.
+  2. Shift: B's sharpness grows, A melts away; the B/A sharpness ratio flips by a factor of 6–40.
+     Speed — three modes: a snap of 0.24–0.27 s (6–7 frames @25 fps, almost linear),
+     normal 0.6–0.7 s (15–17 frames), slow 1.2–1.4 s (30–35 frames, S-curve: slow
+     start, fast middle, soft landing).
+  3. Lens "breathing": the frame scale changes in sync by 3–8 % — when shifting to the far plane
+     the picture shrinks slightly (×0.93–0.95), to the near plane — it enlarges (×1.05–1.16).
+  4. Landing: at least 0.6 s on B; in the there-and-back variant — 2–2.5 s on B and a return over 0.6–3.4 s.
+     The camera is usually locked off or drifts slightly (shake <1 % of the frame).
+variants:
+  - background reveal — the large foreground character melts away, behind them a crowd or a hall snaps sharp
+  - to the near plane — from the far conversation partner to the near one, from banknotes to a scoreboard, from the background to a hand
+  - following an object — focus follows a weapon or an object being brought toward the lens, and returns to the face
+  - there-and-back — shift to the far plane, hold, return to the character, who has turned around again
+  - the "breath" — the same subject drifts out of focus and comes back (0.3 s out, 1.4 s back) as a rhythmic accent
+status: footage
+fallback: simulation — a depth map (depth model) or two masks A and B, A's blur grows, B's falls along a curve + 3–5 % scale for the "breathing"; works if A and B are on different planes; a single-plane frame cannot be racked — generation with consent or another shot from the source footage
+params:
+  duration: snap 0.25 s (6 frames), normal 0.65 s (16 frames), slow 1.3 s (32 frames); return 0.6–3.4 s
+  ease: inOutCubic for ≥0.5 s, linear for a snap
+  hold_before: 0.4–1.6 s
+  hold_after: at least 0.6 s; there-and-back — 2–2.5 s on the second plane
+  blur: out-of-focus plane σ ≈0.5–1.5 % of the frame width, disc kernel
+  breathing: scale ×0.95 when shifting far, ×1.05 when shifting closer, in sync with the focus curve
+  swing: B/A sharpness changes by a factor of 6–40
+when: revealing a threat, a crowd or a place behind the character; dialogue without a cut (from the speaker to the listener); an "object → person" link in product and drama edits; a reaction; a focus snap on a downbeat or a hit in the music; 1–3 times per minute, snaps — as a series in a verse
+avoid: deep focus with no separation of planes; a shift between subjects at almost the same distance — no visible difference; unmotivated focus "hunting"; fast cutting shorter than 1.5 s; a simulation with a ragged mask and equal sharpness across the whole depth
+sfx: on a snap — a quiet click or tick; on a slow shift — a swell; a "sound rack" — together with the focus, bring up the sound of the new plane (crowd, location noise) and duck the old one
+genres: {drama: signature, teaser: allowed, product: allowed, calm: allowed, fashion: allowed, epic: allowed, explainer: allowed, travel: allowed, motivation: allowed, ugc: allowed}
+detect: |
+  The camera is almost static (ed_motion without large events, shake <1 %), but two zones of the sharpness map swap places:
+  Laplacian energy (normalized by contrast) falls in zone A and rises in zone B, the B/A ratio changes by a factor of 6–40
+  within 0.24–1.4 s; the histogram is stable, no cut. Breathing signature: a synchronous small ZOOM ×0.92–0.95 or ×1.05–1.16
+  centered near the middle of the frame with nonrigid <0.35. Difference from focus.bokeh (defocus): a new plane becomes sharp,
+  rather than the whole frame going soft; from zoom.in — the scale changes by less than 10 %, while sharpness is redistributed;
+  from focus.attention_shift — that one is broader: attention can be handed off by the camera and by blocking as well.
+engine: |
+  focus_pull(from=track(A), to=track(B), t=[t0, t0+0.65], ease='inOutCubic', depth='depth_anything',
+  max_blur=0.012, kernel='disc', breathing=0.04)
+  — internally: blur by |depth − focus depth(t)| + transform(scale=[1, 0.96]) in sync when shifting far.
+  Snap on the beat: focus_pull(..., t=[beat−0.12, beat+0.12], ease='linear'). There-and-back — two focus_pull calls with a 2 s hold.
+gen_hint: rack focus shot, <subject A> sharp in the foreground with <subject B> blurred behind, then focus smoothly pulls to <subject B> as A turns away, shallow depth of field, locked-off camera, subtle lens breathing
+commands: ["rack focus from the foreground to the crowd on #7", "shift focus from the bottle to the face on the drop", "focus snap on every downbeat in the verse", "focus there and back in the dialogue at 0:42"]
+related: [focus.attention_shift, focus.shallow, focus.bokeh, focus.split_diopter, zoom.in]
+evidence: {examples: 12, sources: 12, measured: "shifts within the fragment in 10 of 12 (2 — an already held end frame): snaps 0.24–0.27 s, normal 0.6–0.7 s, slow 1.2–1.4 s with an S-curve, very slow returns up to 3.4 s; hold before the shift 0.4–1.6 s, there-and-back — 2–2.5 s on the second plane; B/A sharpness ×6–40; breathing ×0.93–0.95 far and ×1.05–1.16 closer; camera static, shake 0.03–1 %", confidence: high}
+---
+id: focus.shallow
+family: focus
+group: optics
+level: B
+aliases: [shallow depth of field, shallow DOF, blurred background, portrait mode, cinematic blur, shooting through the foreground]
+what: shallow depth of field — only the character or object is sharp, the foreground and background are softly blurred; isolates the subject and guides the eye without editing
+frames: |
+  1. Sharp zone — 20–45 % of the frame area (a face, hands, an object); the rest is soft: blur ≈ a Gaussian with
+     σ 0.5–1.5 % of the frame width (≈10–30 px at 1920), on macro details up to ≈3 % (≈60 px).
+  2. Three depth schemes (8 examples):
+     a) the character sharp against a blurred background, background highlights — discs (1);
+     b) the character behind a blurred foreground — foliage, the edge of furniture, another person's head,
+        soft "dirt" covers 40–60 % of the frame, a peeping point of view (4);
+     c) a sharp object in the foreground, the person behind it blurred — the detail matters more than the face (3).
+  3. The camera is static or drifts slowly; in a lateral tracking move the blurred foreground "flies past"
+     across 100–130 % of the width in 2.7 s while the character almost stands still — strong parallax.
+  4. Shot 2.1–4.5 s; a blurred foreground object may leave the frame and reveal the character.
+variants:
+  - portrait isolation — the face is sharp, the background with disc highlights
+  - through the foreground — the character seen through blurred foliage, glass, objects
+  - object first — a badge, a glass, souvenirs are sharp, their owner behind them blurred
+  - reveal — a blurred head or figure in the foreground moves away and reveals the sharp character
+status: hybrid
+fallback: real shallow DOF from the source footage is better (detect); simulation — a person mask or a depth map + disc blur of the background; a blurred foreground can't be created in code — look for a shot through objects or generate one
+params:
+  focus_area: 20–45 % of the frame area
+  bg_blur: σ ≈0.5–1.5 % of the width (10–30 px @1920), macro up to ≈3 %; kernel — a disc (highlights into circles), not a Gaussian
+  fg_blur: blurred foreground 40–60 % of the frame, stronger than the background (σ from 1.5 % of the width)
+  falloff: blur grows with distance from the plane of focus — via a depth map, not a binary mask
+  mask_feather: 1–2 % of the width along the character's edge, hair — with a separate soft mask
+  shot: 2–4.5 s (50–110 frames @25 fps)
+  camera: static or a drift of ≤1 % of the frame per frame; a tracking move along the foreground adds depth
+when: emotional close-ups and intimate moments; singling out an object or a product; peeping through the foreground; details and B-roll; interviews and talking heads; calm and "cinematic" stretches between dynamic ones. Works almost anywhere; contrast with the deep focus of neighboring shots strengthens the effect
+avoid: when the location or a group of people is itself the subject of the frame; fast action where focus misses; a simulation with ragged mask edges on hair; the same blur across the whole depth (gives the fake away); titles and numbers in the blurred zone
+sfx: no sound of its own; "sound focus" — duck the ambience and music (low-pass, −3…−6 dB), leaving the voice or the sound of the in-focus object clean
+genres: {product: signature, fashion: signature, drama: signature, calm: allowed, travel: allowed, epic: allowed, explainer: allowed, ugc: allowed, motivation: allowed, teaser: allowed, fanedit: allowed}
+detect: |
+  Sharpness map of 16×9 cells (Laplacian energy normalized by the cell's contrast): the sharp area is a compact
+  spot of 20–45 % of the frame, the energy ratio of sharp cells to soft ones 2.3–5.1; blur estimate from the strongest edge
+  in a cell: sharp ≤0.15 % of the width, soft ≥0.5 %. Bright points in the soft zone are round discs.
+  ed_motion: camera static or a slow SHIFT; if a blurred foreground dominates — a large SHIFT
+  (100 %+ of the frame) while the character stays still. Compare with neighboring shots: with deep focus, sharpness is even across the frame.
+  Difference from focus.tilt_shift: the sharpness is a spot around the subject, not a horizontal band; from focus.rack — the plane
+  of focus doesn't move; from lens.vignette — the edges are soft in sharpness, not in brightness.
+engine: |
+  dof(focus=track(face|object:<name>), depth='depth_anything', kernel='disc', max_blur=0.012, fg_blur=0.02,
+  highlight_boost=2) — synthetic DOF; without a depth model: mask(method='mediapipe_selfie', feather=0.015)
+  + blur(kind='lens', amount=0.01) on the background only + composite. On a 4K source, blur before downscaling.
+gen_hint: cinematic shot with very shallow depth of field, <subject> in sharp focus, foreground <leaves/objects> and background melted into soft bokeh, 85mm lens wide open at f/1.4
+commands: ["blur the background on #3, keep the character sharp", "make a shallow depth of field shot on the product", "as if shot through foliage in the intro", "portrait mode on all close-ups"]
+related: [focus.bokeh, focus.rack, focus.attention_shift, focus.tilt_shift, focus.split_diopter]
+evidence: {examples: 8, sources: 8, measured: "sharp zone ≈20–45 % of the frame; sharp/soft energy ×2.3–5.1 (through foliage ×1.7); blur of the soft zone ≈0.3–1.3 % of the width, macro ≈3 % (edge-based estimate, calibrated on synthetic data, large values underestimated); shot 2.1–4.5 s; foreground during a tracking move −132 % of the frame over 2.7 s; schemes: background 1, foreground 4, object first 3", confidence: medium}
+---
+id: focus.split_diopter
+family: focus
+group: optics
+level: B
+aliases: [split diopter, double focus, two planes in focus, split focus]
+what: a half lens keeps two planes sharp at once — a close-up face at the edge of the frame and a distant figure in the other half; a soft vertical seam between them
+frames: |
+  1. Composition: a close-up face (60–100 % of the frame height) takes up 40–55 % of the width at the right (6 of 10)
+     or left (4 of 10) edge; in the other half — a distant subject: a full figure, a couple of people, a swimmer
+     in the sea, a window with a passer-by (from 5 to 80 % of the frame height). Both are sharp, although meters of distance separate them.
+  2. Seam: a vertical (less often slightly slanted) soft band 5–15 % of the frame width wide, at 0.40–0.60 W;
+     everything in it is blurred. The seam is hidden along a vertical — a door frame, the edge of a curtain, a post, the edge of hair.
+  3. The camera is locked off (8 of 10, jitter ≤0.11 % of the frame; otherwise the seam "slides"), movement only within the frame:
+     the far character enters, speaks, leaves; the near one reacts, barely moving.
+  4. Shot 2.6–3.5 s (65–90 frames @25 fps), from 1 to 6 s.
+variants:
+  - face on the right, distant figure on the left — the most common variant
+  - face on the left, event on the right — a window, a street, a threat behind their back
+  - diagonal seam — the boundary runs at a slant along the edge of hair or a shoulder
+  - threat in the depth — the distant subject "closes in", the near character doesn't see it
+  - surreal — the far plane is almost as sharp as the face despite a huge difference in distance
+status: footage
+fallback: simulation from two takes with a static camera — one focused on the face, the other on the far plane — joined by halves with a soft seam 6–10 % of the width; or from one deep-focus frame (phone, wide angle) — blur the seam band and the intermediate depth via a depth map; without source footage — generation with consent
+params:
+  near_face: 60–100 % of the frame height, 40–55 % of the width, at the edge
+  far_subject: in the other half, 5–80 % of the height
+  seam: x 0.40–0.60 W, width of the blurred band 5–15 % W (typically 8 %), Gaussian feathering
+  seam_blur: σ within the band ≈1–2 % of the width
+  angle: 0° (vertical), up to ±15° along the edge of hair or a shoulder
+  camera: static, jitter ≤0.1 % of the frame
+  shot: 2.6–3.5 s (65–90 frames @25 fps)
+when: tension and suspense (the character doesn't notice the threat behind them); two characters in one thought or conflict without a cut; the near one's reaction to what the far one is doing; retro thriller, noir, a pastiche of 70s cinema; 1 per scene — the device is noticeable
+avoid: a moving camera; faces at the same distance — no effect; a seam through a face or an important object; frequent repetition; calm, everyday videos without dramatic tension
+sfx: silence or a low drone; the sound of the far plane (footsteps, a voice) is heard as clearly as the near one's breathing — "double hearing"
+genres: {drama: signature, teaser: allowed, fashion: allowed, fanedit: allowed, epic: allowed, calm: forbidden, explainer: forbidden}
+detect: |
+  ed_motion — static (no events, shake ≤0.1 %). Column-wise sharpness map: two sharp areas at the sides and a dip
+  in Laplacian energy in a vertical band 5–15 % of the width between them (energy in the band 0.4–0.8 of the sides);
+  in one half a large face (face ≥60 % of the height), in the other — small sharp details of the far plane.
+  Difference from focus.shallow: there one spot is sharp, not two planes at different distances; from split screen: no hard
+  border, the background continues through the seam; from deep focus: the middle depth (floor, walls between the characters) is blurred.
+engine: |
+  split_focus(near=clip_a(focus='near'), far=clip_b(focus='far'), seam_x=0.5, seam_width=0.08, angle=0, feather='gauss')
+  — two takes with a static camera; a single deep-focus frame: depth_map → blur(kind='lens', amount=0.015) through the mask
+  "seam band + middle depth", the face and the far plane without blur.
+gen_hint: split diopter shot, extreme close-up of <person A> on the right edge and <person B> standing far in the background on the left, both in perfect sharp focus, soft blurred vertical seam between them, locked-off camera, 1970s thriller look
+commands: ["make a split diopter — face on the right, her in the distance on the left", "on #4 two planes in focus with a soft seam", "join two takes into a double focus"]
+related: [focus.shallow, focus.rack, focus.attention_shift, frame.two_shot, layout.split_screen]
+evidence: {examples: 10, sources: 10, measured: "face 40–55 % of the width at the right edge in 6, at the left in 4; seam ≈0.40–0.60 W, blurred band ≈5–15 % W (energy in the seam 0.37–0.80 of the sides, estimate partly visual); static in 8 of 10 (shake 0.02–0.11 %), in 2 — 0.5–0.65 %; shot 0.95–6 s, typically 2.6–3.5 s", confidence: high}
+---
+id: focus.tilt_shift
+family: focus
+group: optics
+level: B
+aliases: [tilt-shift, miniature, scale-model effect, miniature faking, toy world, fake tilt-shift]
+what: a sharp horizontal band across the middle of a high-angle wide shot, everything above and below smoothly blurred, colors saturated, motion sped up — a real city or landscape looks like a toy scale model
+frames: |
+  1. Source: a wide shot from a high vantage point or from a drone angled 30–60° down — a city, a port, a construction site,
+     a village, a landscape; the objects are small (people and cars 1–5 % of the frame height).
+  2. Sharpness band: horizontal, centered at 0.45–0.55 H (sometimes lower, down to 0.7 H — following the main subject),
+     height 20–30 % H; the blur grows smoothly toward the top and bottom — from ≈0.05–0.1 % of the width in the band to 0.5–1 %
+     (and more) at the edges; the band is 2–6 times sharper than the edges.
+  3. Color: saturation raised (in 6 of 8 the median S is 95–195 of 255), higher contrast, often a warm shift —
+     "toy paint".
+  4. Motion: the camera is locked off (5 of 8) or drifts slowly — an orbit turning ≈18°/s, a push-in ×1.37 over 2.5 s;
+     objects inside are sped up (timelapse ≈×4–20): a ship crosses half the frame in 1.5 s, machinery "jerks"
+     at 7 fps, cuts every 1.7–3.4 s.
+  5. Shot 1.5–4.8 s; a series of timelapses — up to 14 s.
+variants:
+  - static timelapse of a city or port with the band on a road or an embankment
+  - drone orbit — the band holds on the main subject, the frame edges swim
+  - construction site or production — sped-up machinery, cuts every 2–3 s
+  - a "game" world — computer graphics or a game with simulated tilt-shift
+  - opening shot under a title — a calm landscape with a small house in the band
+status: code
+fallback: needs a high-angle wide shot with small objects — look in the source footage for drone shots, rooftops, viewpoints (detect by high angle); on an eye-level shot the effect doesn't read; without source footage — generation of an aerial shot or stock timelapses
+params:
+  band_center: 0.45–0.55 H (move it onto the main subject, up to 0.7 H)
+  band_height: 20–30 % H, transition to blur 15–25 % H on each side
+  max_blur: 0.6–1.5 % of the frame width at the edges (σ ≈12–30 px at 1920), kernel — a disc
+  angle: 0° (horizontal), up to ±10° along the line of a road or shore
+  saturation: +20–40 %, contrast +10 %, a slight warm shift
+  speed: ×4–12 (timelapse) or frame-step down to 8–12 fps for "puppet-like" motion
+  camera: static, or a slow orbit, or a push-in ≤×1.4 over 2.5 s
+  shot: 1.5–5 s (38–125 frames @25 fps)
+when: an establishing shot of the place at the start of the video or a chapter; travel and city — "look from above"; an ironic display of bustle (construction, traffic, a crowd); an intro under a title; a transition between locations; a childlike, playful tone; 1–3 shots in a row in one section
+avoid: close-ups and people near the camera — the effect doesn't read; an eye-level frame or a centered horizon without depth; the band cuts through the main subject; equal blur at the top and bottom with strong upward perspective; dramatic and serious moments — the effect is toy-like
+sfx: a light toy-like or musical texture (celesta, xylophone, a wind-up mechanism), sped-up city noise; clicks and a "tick-tock" under the sped-up motion
+genres: {travel: signature, viral: allowed, explainer: allowed, product: allowed, calm: allowed, ugc: allowed, fanedit: allowed, teaser: allowed, drama: forbidden}
+detect: |
+  Sharpness profile across horizontal bands (Laplacian energy normalized by contrast): a peak in one band
+  20–30 % of the height near the middle, a 2–6 times falloff toward the top and bottom; the edge-based blur estimate rises monotonically from the band
+  to the edges (≈0.05 → 0.5–1 % of the width). High angle, small objects, saturation above the video's average.
+  ed_motion: static or a slow ZOOM/ROTATE (orbit), often cuts every 1.7–3.4 s and a low frame rate (7–14 fps)
+  in timelapses; objects move too fast for their scale.
+  Difference from focus.shallow: what is sharp is not a spot around the subject but a horizontal band across the full width; from vignette and
+  haze — the top and bottom are blurred, not the corners or the whole frame.
+engine: |
+  tilt_shift(center_y=0.5, band=0.25, transition=0.2, max_blur=0.01, angle=0, kernel='disc')
+  + color(params={saturation: 1.3, contrast: 1.1, warmth: 0.05}) + speed(rate=6, interp='drop') or step_print(hold=2)
+  ffmpeg: two copies — gblur(sigma≈20 at 1920) and the original, alphamerge along a vertical gradient mask; then eq=saturation=1.3.
+gen_hint: tilt-shift miniature effect, high angle aerial view of <a busy town / harbor / construction site>, narrow horizontal band of sharp focus in the middle, strong blur at top and bottom, saturated toy-like colors, time-lapse motion
+commands: ["tilt-shift on the drone shot at the start", "scale-model effect on all wide shots of the city", "miniature with a speed-up on the construction site", "toy city under the title in the intro"]
+related: [focus.shallow, drone.aerial, time.speed_ramp, time.timelapse, scene.diorama]
+evidence: {examples: 8, sources: 7, measured: "sharpness band at 0.41–0.69 H (typically 0.44–0.53), height 0.25–0.5 H; band sharpness ×1.5–5.8 relative to the edges; blur on large frames grows from 0.03–0.11 % to 0.5–1.04 % of the width at the edges (edge-based estimate, large values underestimated); saturation 92–195 of 255 in 7 of 8; static 5 of 8, orbit 66° over 3.8 s, push-in ×1.37 over 2.5 s; timelapse 7 fps with cuts every 1.7–3.4 s", confidence: high}

@@ -1,0 +1,60 @@
+id: parallax.photo
+family: parallax
+group: camera
+level: B
+aliases: [2.5D parallax, 3D photo, living photo, photo parallax, layered push-in]
+what: a still image (a photo, an illustration, a poster) is cut into 2–5 depth layers, and a virtual camera moves so that near layers travel faster than far ones — a flat picture gains volume
+frames: |
+  1. The source is a still image: people and objects don't move, there is no motion blur; sometimes particles fly on top
+     (rain, fog, dust) in their own layer.
+  2. The virtual camera slowly pushes in: on average ×1.1–1.7 over 3–4.5 s (6–13 % of scale per second), almost
+     evenly, less often with acceleration. The front layer (people, a figure, a rock) grows 1.1–1.6 times faster than the background:
+     a couple under an umbrella ×1.3 against a background of ≈×1.1 over 3.8 s; people on an archive photo ×1.10 against a wall of ×1.03–1.05 over 4.5 s.
+  3. Orbit variant: the layers shift in opposite directions — the front to the right, the mountains to the left, a difference of ≈22 % of the frame
+     width over 3.4 s (≈6.5 % per second); it seems the camera is circling the subject along an arc.
+  4. End: either a cut to the next photo after 3–5 s, or a "fly into the picture" — a push-in ×7 over 3.5 s, the figures
+     of the illustration separate from the clouds and fly past, leading into the next scene.
+variants:
+  - push-in on an archive photo: people in the foreground slowly grow faster than the background, 4–5 s
+  - orbit: the front and back layers move toward each other, a pseudo-arc around the subject
+  - with particles: rain, fog, sparks in a separate layer in front of the subject add depth
+  - fly into the picture: a strong ×5–7 push-in into an illustration or a map, the layers fly past — a transition to a new scene
+  - layered poster: the frame, the photo and the text scale at different speeds, the text slides off past the edge
+  - photo reel: small photos in a black frame for 1–2.5 s each; the parallax is barely noticeable, works as an intro
+status: hybrid
+fallback: |
+  You need a foreground mask (remove_background or mediapipe) or a depth map; holes behind the subject — inpaint/outpaint.
+  If the mask doesn't work (hair, glass, smoke) — a simple push-in on the whole photo (zoom.slow) without layers. If a "live"
+  shot is needed — image-to-video generation with a slow push-in on the photo, with the user's consent.
+params:
+  duration: 3–5 s per photo (75–125 frames @25 fps); photo reel 1–2.5 s; fly into the picture 3–3.5 s
+  camera_push: ×1.1–1.7 per shot-scene (6–13 %/s), fly into the picture ×5–7 (≈60–70 %/s)
+  layer_ratio: the front layer grows 1.1–1.6 times faster than the background; orbit — opposing shifts of ±10–11 % of the width over 3.4 s
+  layers: 2–3 (subject / background / particles), up to 5 for illustrations
+  ease: linear or a soft inOutQuad; inQuad for the fly-in
+  particles: rain, dust, fog — a separate layer with its own speed of 1.5–3× the background
+  fill: inpaint the background behind the mask + a 10–15 % margin at the edges (outpaint) so there are no empty corners
+  resolution: photo ≥ 1.3 × the frame per side, otherwise the push-in turns soft
+when: |
+  Archive photos in explainer and documentary videos, trip photos in travel, photos of the subject in a tribute or a
+  fan edit, a poster or a cover in the intro, a product in a photo. Each photo 3–5 s with different directions of movement;
+  photo change — on a downbeat. Fly into the picture — a transition to the next chapter.
+avoid: hair, fur, glass, smoke without a good mask — ragged edges show; too strong a parallax (the subject looks like "cardboard", the background stretches); a face on the boundary between layers — gets distorted; a small photo with a push-in beyond ×1.3; the same orbit on every photo in a row
+sfx: a soft swell or whoosh on the push-in; the photo's ambience (rain, street, hall) so the photo "comes alive"; on the fly-in — a riser and a whoosh on the way out
+genres: {explainer: signature, travel: allowed, drama: allowed, calm: allowed, motivation: allowed, fanedit: allowed, teaser: allowed, epic: allowed, product: allowed, viral: allowed, ugc: allowed, clips: allowed}
+detect: |
+  ed_motion: a nearly linear ZOOM-IN ×1.1–1.7 (or SHIFT) with low nonrigid 0.05–0.2 — like a digital zoom,
+  but there is no local motion at all in the frame: people are frozen, no motion blur and no light changes.
+  Own measurement (two motion models over LK points, sequential RANSAC): a second consistent layer is found
+  with 5–35 % of the points, its zoom 1.06–1.6 times faster than the main one, or a shift in the opposite direction (a difference of up to 22 % of the width).
+  Differs from a real dolly push-in: there the parallax is smooth across the whole depth and nonrigid > 0.25, the people are alive.
+  From zoom.slow (a slow push-in on a flat photo): one layer, nonrigid < 0.05. From cinemagraph: there part of the picture moves while the camera stands still.
+engine: |
+  hybrid: parallax_layers(image, layers=mask(method='hf_remove_background')|depth_map(model='midas', n=3),
+  cam={scale: [1, 1.3], shift: [[0, 0], [0.04, 0]]}, depth_gain=[1.0, 1.25, 1.5], fill='inpaint', t=[t0, t0+4],
+  ease='linear') + particles(kind='rain'|'dust', layer='front') optionally; fly-in — scale [1, 6] with ease 'inQuad'
+  and chain_zoom to the next clip. Photo change — cut on the beat.
+gen_hint: slow cinematic push-in on a still photo of <subject> with 2.5D parallax, the subject separates from the background and grows slightly faster, subtle depth, everything else frozen
+commands: ["bring the archive photos to life with parallax", "2.5D push-in on photo #3", "an orbit around the subject on the trip photo", "fly into the picture at the end of the intro"]
+related: [zoom.slow, truck.lateral, fx.wigglegram, zoom.infinite, mask.double_exposure]
+evidence: {examples: 7, sources: 7, measured: "push-in ×1.10–1.66 over 0.9–4 s (6–13 %/s), fly-in ×7.2 over 3.5 s; nonrigid 0.05–0.21; a second layer found in 5 of 7: zoom 1.06–1.56 times faster than the background, for the orbit opposing shifts differing by 21.9 % of the width over 3.4 s; visually: couple ×1.33 against a background of ≈×1.1, people in the photo ×1.10 against a wall of ×1.03–1.05; 1 example — a photo reel with almost imperceptible motion", confidence: medium}

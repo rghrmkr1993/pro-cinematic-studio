@@ -1,0 +1,128 @@
+id: tilt.basic
+family: tilt
+group: camera
+level: A
+aliases: [tilt, tilt up, tilt down, vertical pan, pan up, pan down, camera tilt, tilt reveal]
+what: the camera stays in place and tilts up or down — the eye glides from one point of interest to another and reveals it (detail → face, top → people, face → hands)
+frames: |
+  1. Start: 0–0.6 s of stillness on the first point — an object, shoes, the floor, the ceiling, the sky or a face.
+  2. Tilt: the picture travels strictly vertically by 0.35–1.7 of the frame height (typically 0.6–1).
+     A slow tilt — 10–32 % of the frame height per second (at the peak 0.5–2 % per frame @25 fps), lasts 3–3.5 s.
+     A fast one — 65–270 %/s (at the peak 6–18 % per frame), 0.6–1 s, with vertical motion blur: sharpness in the middle
+     drops to ×0.35–0.45. The curve — an S (acceleration and deceleration) or acceleration with a hard stop on the target.
+  3. Landing: the frame settles on the second point — a face, a group of people, a window, hands — and holds for 0.6–1.5 s.
+  The camera position doesn't change, so there is no parallax; only the perspective changes: verticals converge,
+  and on an ultra-wide lens the picture also "pulls out" along the way (×0.6–0.7) and rotates by up to 50°.
+variants:
+  - up "detail → face": from an object in the hand or the shoes to the character's face, fast (0.6–0.9 s), landing on a close-up or medium shot
+  - down "top → onlookers": from a figure or object above to the people looking at it; reveals the reaction
+  - down "face → hands": a slow (≈3 s) move from the face to what the hands are doing
+  - slow reveal of the space: ≈10 %/s from the floor to a window or the horizon, then a long hold
+  - wide-angle: a tilt on an ultra-wide lens with roll and a "pull-out" — more dynamic, suits interiors
+status: footage
+fallback: |
+  Code simulation — a crop with vertical headroom: the source must be taller than the frame by a factor of (1 + shift) —
+  a vertical video or photo in a horizontal video (×3 headroom), 4K → 1080p (×2 headroom), a panorama.
+  Without perspective change a digital tilt is honest only on a short shift (≤0.3 of the frame) or a telephoto shot;
+  for a wide angle — a slight vertical keystone. No source — generation with the user's consent.
+params:
+  direction: up | down
+  travel: 0.35–1.7 of the frame height (typically 0.6–1.0)
+  speed_slow: 10–32 %/s (0.4–1.3 % per frame @25 fps, peak up to 2 %), duration 3–3.5 s (75–88 frames)
+  speed_fast: 65–270 %/s (2.6–11 % per frame, peak 6–18.5 %), duration 0.6–1 s (15–25 frames)
+  ease: inOutCubic (main); fast to a detail — inCubic with a hard stop; slow — almost linear with a soft outQuad landing
+  hold_before: 0–0.6 s (0–15 frames)
+  hold_after: 0.6–1.5 s (15–38 frames) on the target
+  motion_blur: only on the fast one — vertical directional motion blur ∝ speed; off on the slow one
+  target: the final point — a face in the upper third or a group of people in the center
+  digital_reserve: source height ≥ (1 + travel) × frame height; upscale ceiling ×1.5
+when: |
+  Reveal who a detail belongs to (object → face), show the onlookers' reaction (object above → onlookers),
+  connect a face and an action (face → hands), show the full look (shoes → face), the scale of a place (from a person upward).
+  Intro and hook — a fast tilt landing on a downbeat; build and calm parts — a slow one.
+  No more than one tilt reveal per scene; a fast one — no more often than once every 4–8 bars.
+avoid: |
+  No second point of interest — the camera "runs into" an empty wall or sky; a landing that misses the target (face cut off
+  or drifting out); a cut in the middle of a slow tilt; tilting straight back; a digital tilt without vertical headroom
+  (mush from upscaling); a slow tilt in choppy editing with shots shorter than 1.5 s — it doesn't have time to read.
+sfx: slow — no SFX, or a pad / soft riser on the way up; fast — a short whoosh on the snap and an accent (impact, bass) on the landing
+genres: {fashion: signature, travel: signature, epic: allowed, drama: allowed, calm: allowed, product: allowed, ugc: allowed, teaser: allowed, motivation: allowed, explainer: allowed, clips: allowed, sport: allowed, viral: allowed}
+detect: |
+  ed_motion: SHIFT "content moves UP (camera tilts down)" or "content moves DOWN (camera tilts up)" by 35–170 %
+  of the frame; horizontal shift no more than a third of the vertical; nonrigid 0.09–0.18 (camera rotation, no parallax).
+  On an ultra-wide lens the shift comes with a ZOOM-OUT ×0.6–0.7 and a ROTATE of up to 50° — this is distortion, not
+  separate moves. Fast variant: peak 6–18 %/frame, sharpness ×0.35–0.45.
+  Difference from a vertical camera lift (pedestal, crane): there the foreground moves faster than the background, nonrigid > 0.3.
+  Difference from tilt.whip: a whip peaks above 20 %/frame @25 fps and 2–5 consecutive frames are unreadable (sharpness < ×0.3,
+  tracking is lost — ed_motion marks "cuts" there); a fast tilt with ×0.35–0.45 blur remains readable.
+  A digital "tilt" by cropping: verticals stay parallel, nonrigid < 0.05.
+engine: |
+  footage: find a shot with vertical shift in the source footage (ed_motion SHIFT along Y, nonrigid < 0.2) and cut it by
+  hold_before / hold_after; place a fast tilt so that the landing falls on a beat.
+  code: transform(scale=[S, S], shift=[[0, +a], [0, -a]], t=[t0, t0+D], ease='inOutCubic') — shift in fractions of the frame,
+  2a = travel, S ≥ 1 + travel in height; fast — + blur(kind='directional', angle=90, amount∝speed);
+  for a wide-angle look — keystone(axis='v', amount=0.05–0.12, t) in sync with the shift.
+gen_hint: smooth cinematic tilt up from <detail, e.g. shoes on a wooden floor> to reveal <subject's face>, camera stays in place and only rotates vertically, gentle start, settles and holds on the face
+commands: ["tilt up from the shoes to the face at the start of #2", "slow pan down from the sky to the people in the intro", "camera tilt from the face to the hands at 0:14", "fast tilt to the character on the drop"]
+related: [tilt.whip, zoom.in, zoom.slow]
+evidence: {examples: 6, sources: 6, measured: "shift 0.34–1.7 of the frame height; 3 up, 3 down; slow ones 10–32 %/s over 3.2–3.5 s, fast ones 65–270 %/s over 0.6–1 s (peak 6–18.5 %/frame @25 fps, sharpness ×0.35–0.44); S-curve in 3 of 6, acceleration with a hard stop in 1; hold afterwards 0.6–1.5 s; nonrigid 0.09–0.18; wide-angle example — ×0.68 and a 52° roll over 3.2 s", confidence: high}
+---
+id: tilt.whip
+family: tilt
+group: camera
+level: B
+aliases: [whip tilt, swish tilt, vertical swish, snap tilt, camera whip up, camera whip down, vertical whip]
+what: a lightning-fast camera whip up or down with solid vertical motion blur — in half a second it throws the eye to a target above or below, or takes it out of the scene
+frames: |
+  1. Hold of 0.3–2.2 s on the first subject (a hand on a ring, the horizon, the character); sometimes a slow pull-out runs on top.
+  2. Acceleration over 2–5 frames: vertical speed grows 2 → 6 → 13 → 18 % of the frame height per frame.
+  3. Core of 2–5 frames (0.1–0.25 s): solid vertical motion blur, the picture is unreadable, sharpness ×0.03–0.3 of the static value,
+     speed 16–35 % of the frame height per frame (@20 fps; 13–28 % @25 fps). Brightness may jump — sky or lamps flying past.
+  4. Deceleration over 3–6 frames with residual blur (11 → 7 → 5 %/frame) and a hard stop on the new target: a person
+     above, a street or a threat below. Then a hold of at least 1 s. Total travel 0.8–3 frame heights in 0.5–0.65 s.
+  Exit variant: the whip goes into darkness or the sky and the clip cuts off in the blur — the next shot enters with the same whip.
+variants:
+  - reveal up: from a detail (hands, an object) to the person above it, a hard landing on a low angle
+  - reveal down: from a calm top (the horizon, the character) to what is below — a street, a crowd, a threat
+  - scene exit: a whip up into the ceiling or the sky → darkness → cut; the pair "exit upward — enter from above" changes the location
+status: code
+fallback: |
+  Code: a vertical whip transition between two shots — the outgoing shot accelerates with blur, the cut lands at the blur peak,
+  the incoming one decelerates from the same direction; reads as a single camera whip if the second shot "lies" above or below the first.
+  A whip within one shot — footage (search by the blur signature) or a tall source: vertical video, a 4K crop.
+  Generation — only if a reveal is needed that the source footage doesn't have.
+params:
+  direction: up (the picture moves down) | down (the picture moves up)
+  duration: 0.5–0.65 s in total (12–16 frames @25 fps); blur core 2–5 frames (0.1–0.25 s)
+  travel: 0.8–3 frame heights (in code 0.6 of the height per shot is enough)
+  peak_speed: 13–28 % of the frame height per frame @25 fps (≈ ×2 or more of a fast tilt)
+  ease: acceleration inExpo 2–5 frames → deceleration outExpo 3–6 frames, no bounce
+  blur: directional vertical, length at the peak ≈ 20–50 % of the frame height; sharpness ×0.03–0.3
+  cut_at: in a transition — on the frame of maximum blur (the middle of the core)
+  hold_before: 0.3–2 s
+  hold_after: at least 1 s on the target; on an exit — cut right in the blur
+when: |
+  Revealing a character or a threat above/below on a downbeat or the drop; an energetic vertical scene change
+  ("went up into the sky — came down from the sky in a new place"); a final exit from the scene. No more than 1–2 times per minute;
+  in a series of transitions keep one direction.
+avoid: calm and contemplative videos; a landing that misses the target; whips in random directions in a row; 24–30 fps source without motion blur — without blur the whip strobes, add the blur in code; a long hold before the whip in fast-paced editing
+sfx: a whoosh peaking in the middle of the blur; on the landing — a hit or bass; a whip up — a rising whistle, down — a falling whoosh or sub_drop
+genres: {viral: allowed, phonk: allowed, fanedit: allowed, sport: allowed, travel: allowed, teaser: allowed, clips: allowed, ugc: allowed, epic: allowed, calm: forbidden}
+detect: |
+  ed_motion: before the whip a SHIFT along Y with growing speed (6 → 18 %/frame), then 1–3 pairs marked as "cuts"
+  (tracking loses points in the blur), after that a SHIFT in the same direction with decreasing speed; or the clip ends in the blur.
+  Own measurement: 2–5 consecutive frames with sharpness < ×0.3 of the static value; gradient anisotropy Gy/Gx drops to ×0.3–0.65
+  of its static value (the blur is vertical; for pan.whip it is Gx/Gy that drops). A brightness jump in the blur — sky or a light flying past.
+  Difference from tilt.basic: there all frames are readable, peak ≤ 18 %/frame. From zoom.crash: the blur is radial, there is a ZOOM ×2.5+.
+  From a cut with a flash: the blur shows streaks, not a white field.
+engine: |
+  transition: transition(kind='whip', dur=0.4, params={dir: 'up'|'down', axis: 'v', travel: 0.6, blur: 'directional',
+  angle: 90, cut_at: 'peak'}) = A: transform(shift=[[0, 0], [0, ±0.6]], t=[tc-0.2, tc], ease='inExpo')
+  + blur(kind='directional', angle=90, amount∝speed) → cut at tc → B: transform(shift=[[0, ∓0.6], [0, 0]],
+  t=[tc, tc+0.24], ease='outExpo') + decreasing blur; sfx('whoosh', at=tc, align='peak') + sfx('impact', at=tc+0.24).
+  Put tc on a beat; the landing of B — on the next downbeat or earlier.
+  footage: search the source footage by the signature from detect and cut with hold_before ≤ 0.5 s.
+gen_hint: fast whip tilt up from <a hand gripping something> to reveal <a person above>, the camera snaps vertically with heavy vertical motion blur for a few frames, then stops hard and holds on the subject
+commands: ["snap tilt up to the character on the drop", "whip tilt between #3 and #4", "whip up into the sky at the end of #6 and come in from above in #7", "camera whip down to the threat at 0:21"]
+related: [tilt.basic, pan.whip, trans.whip, zoom.crash]
+evidence: {examples: 4, sources: 4, measured: "whole whip 0.5–0.65 s (10–13 frames @20 fps), blur core 2–5 frames; peak 16–35 % of the frame height per frame @20 fps; travel 0.8–3 frame heights; sharpness in the core ×0.03–0.3; Gy/Gx drops to ×0.3–0.65; 2 up, 2 down; 3 — a reveal within the shot with a hard landing and a hold of ≥1 s, 1 — going into darkness as a scene exit", confidence: medium}

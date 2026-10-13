@@ -1,0 +1,399 @@
+id: pov.animal
+family: pov
+group: angle
+level: B
+aliases: [pet POV, dog POV, pet cam, pet's-eye view, through a dog's eyes, through a cat's eyes, animal POV]
+what: a "pet's-eye" view — the camera at a height of 20–60 cm trots along, people are visible up to the waist or lean straight down to the lens; the world from below, from the animal's side
+frames: |
+  1. The camera is at the animal's height (≈20–60 cm): the floor, a path or grass fills the lower half of the frame, the horizon is level
+     (median roll ≤3° in 6 of 7 examples); people nearby are visible only up to the waist, their legs walk ahead.
+  2. Trotting motion: a fast vertical bob at 3–3.8 Hz (a human's is 1.5–2.4 Hz), jitter 0.2–3 % of the frame;
+     in a chase or an attack, lunges, jerks, rotation of up to ±36° and jitter of up to 10 %.
+  3. People address the "pet": they lean down and look from above straight into the lens, reach out their hands; faces take 26–32 % of the frame height,
+     shot from below, with the ceiling and lamps behind their heads. In the foreground there is often a barrier: the mesh of an enclosure, the door of a carrier.
+  4. Shot 1.7–5 s (42–125 frames @25 fps); around it, cuts to the pet itself, so it is clear whose eyes these are.
+variants:
+  - following the owner's legs along a path or down a corridor right at floor level (2 of 7)
+  - people bend down to the lens and talk to it — looking up from below, roll up to 10–20° (2 of 7)
+  - through a barrier — fence mesh with a sideways glide, a carrier door that hands reach toward (2 of 7)
+  - attack or chase — a lunge at a person, a fall, chaotic turns (1 of 7)
+  - a look into the distance across a lawn — a figure walks away, grass in the lower third (1 of 7)
+status: footage
+fallback: the camera cannot be "lowered" in code, so take low shots from the source footage (camera at floor level, on the pet's harness, on a stick near the ground) and add the trot in code — a 3–3.5 Hz bob, a light barrel, breathing sounds; if there are no low shots, generation with consent
+params:
+  camera_height: 0.2–0.6 m; the floor or ground fills 40–60 % of the frame from the bottom, strong perspective near the lens
+  horizon: level, roll ≤4°; when looking up at people, up to 10–20°
+  bob: vertical 3–3.8 Hz (trot), amplitude 1–3 % of the frame height; at a walk, 2–2.5 Hz
+  people: legs and waist at full size, heads beyond the top edge; when they lean in, the face is 25–35 % of the height, looking down into the lens
+  foreground: optionally mesh or a carrier door over 20–40 % of the frame, out of focus
+  duration: 1.7–5 s (42–125 frames @25 fps)
+  colour: natural in the examples; a "dog vision" stylization (blue-yellow, no red) is optional, not from the examples
+when: pet videos ("a day through the dog's eyes", greeting the owner at the door), comedy with people baby-talking straight into the camera, ads for pet products, family and children's stories; thriller, "someone is watching from below" before the reveal; a chase with a dog. 1–2 shots in a row, then a cut to the pet itself
+avoid: a camera height above 0.8 m reads as a human; long chaotic shake; without a shot of the animal itself nearby it is unclear whose view this is; human hands at the bottom of the frame make it a human's view
+sfx: fast panting, sniffing, claws clicking on the floor, the collar tag jingling in time with the trot, people's voices from above slightly muffled and "baby-talking"; on a lunge, a bark or a growl
+genres: {ugc: signature, viral: allowed, product: allowed, teaser: allowed, drama: allowed, calm: allowed}
+detect: |
+  Low position: the floor or ground in the bottom 40–60 % of the frame with strong perspective near the lens, people visible by their legs and waist,
+  heads beyond the top edge; faces appear only when a person leans down (face in the upper half, looking down
+  into the lens, chin and nostrils visible). ed_motion + the spectrum of vertical displacement: a peak at 3–3.8 Hz (trot) with a share of ≥0.25,
+  jitter 0.2–3 %, the horizon almost level. Differences: pov.first_person is at eye height, bobs at 1.5–2.4 Hz, with one's own hands at the bottom;
+  a low ground-level angle (angle.ground) has the camera static or moving smoothly without a trot; a low tracking shot following legs is smooth, without
+  bobbing and without looks into the lens.
+engine: |
+  footage: find_shot(height='ground', bob_hz=[2.8, 4.0], faces_from_above=True) → cut(at); next to it, a shot of the pet itself.
+  Imitation from a low shot: transform(scale=[1.08, 1.08]) + destabilize(profile='trot', bob_hz=3.3, amp=0.015, roll=2)
+  + lens_distort(k=-0.1) + sfx('panting') with paw clicks in time with bob_hz.
+  Optional "dog vision": color(params={red→yellow/brown, sat=0.6}).
+gen_hint: point of view of a small dog at ground level, camera about 30 cm above the floor trotting forward with a bouncy motion, only the legs of people visible, the owner leans down and talks straight into the lens, wide lens, natural colours
+commands: ["a day through the dog's eyes, cut together the low bobbing shots", "make #2 look like a cat watching from below", "the greeting at the door through the pet's eyes", "find low floor-level shots in the source footage"]
+related: [pov.first_person, angle.ground, pov.object, track.follow, handheld.shaky]
+evidence: {examples: 7, sources: 1, measured: "all 7 from one source; bob at 3–3.8 Hz in 3 of 7 (peak share up to 0.74), 2.2–2.4 Hz at a walk in 2; jitter 0.2–2.7 %, 9.8 % in the attack; median roll ≤3° in 6 of 7; faces of people leaning down 26–32 % of the height; shots 1.7–5.1 s; camera height ≈0.2–0.6 m is a visual estimate", confidence: low}
+---
+id: pov.dialogue
+family: pov
+group: angle
+level: B
+aliases: [POV dialogue, first-person conversation, speaker looks into the lens, subjective dialogue, POV reverse shot, POV — you're …]
+what: the other person looks and speaks straight into the lens because the lens is another character's eyes; the viewer becomes the one being addressed and receives an order, a toast, a confession or a threat
+frames: |
+  1. (opt.) Entry: a cut from the character being addressed, or from a wide shot of the scene; from then on the camera takes their place.
+  2. The speaker stands in the center (face center x 0.48–0.56), frontal, the nose exactly between the eyes (offset ≤0.07 of the interpupillary distance
+     in 6 of 8), looking into the lens; framing from a waist-up medium shot to a close-up (face 24–64 % of the height, eyes at 0.22–0.47).
+  3. The camera is static (5 of 8, jitter ≤0.22 %) or breathes slightly in the hands; the height of "our" character sets the camera height: looking up
+     at someone above us, looking down if we are in the saddle.
+  4. Signs of "us" in the frame: an animal's ears under the lens, a basketball hoop, a glass or a ball held right out to the camera,
+     the edge of a table; people around react in the same direction.
+  5. It lasts one line, 1.5–4.5 s (38–110 frames @25 fps); the reply of "our" character sounds off-screen or comes as a reverse cut.
+variants:
+  - the other person across a table — a business talk, a date, an interrogation (2 of 8)
+  - a toast or a handover — glasses or a ball held out to the lens, a group of friends around (2 of 8)
+  - an order or a threat — a large face, a hard stare, completely static; in horror, a flash of inserts with weapons (2 of 8)
+  - looking up — the character is "above us", a crowd on the walls behind them (1 of 8)
+  - looking down from the saddle — an animal's ears at the bottom, the other person frowns and turns away (1 of 8)
+  - a host at the microphone speaks to "us" as the listener (1 of 8)
+  - meme format "POV — you're my …": the creator talks to the camera, the caption assigns the viewer a role (a social media trend, not from the examples)
+status: footage
+fallback: 'any shot where a person speaks into the lens will do; context turns it into POV: a reverse cut to the listener, a "POV: …" caption or a foreground of "our" character (hands, an object at the edge of the frame, a hybrid composite); if the needed take does not exist, generation with consent'
+params:
+  face_x: 0.48–0.56 of the width (tolerance up to 0.59)
+  frontal: nose offset from the midpoint between the eyes ≤0.12 of the interpupillary distance in ≥60 % of frames; looking into the lens
+  face_h: 24–64 % of the frame height (waist shot … close-up), eyes at 0.22–0.47
+  height_cue: (nose − eye line) / interpupillary distance ≈0.55–0.6 at eye level; ≤0.5 means the camera is below the face (we are shorter, sitting, lying down); ≥0.7 means above
+  camera: static (jitter ≤0.2 %) or light handheld up to 0.8 %
+  duration: 1.5–4.5 s (38–110 frames @25 fps) per line
+  foreground: optionally 10–30 % of the frame at the bottom edge or at the sides — hands, an object, an animal's ears
+  reverse: a reverse shot of "our" character or their hands, 0.8–2 s between lines, optional
+when: 'the viewer is a participant in the scene: they are given an order, toasted, confessed to, threatened; the climax of a conflict "eye to eye"; ads where a salesperson or an expert speaks to "you"; UGC sketches "POV: you …", the main format of the genre; an introduction at the start of the video from the point of view of the character. Usually 1–3 lines in a row, then a reverse cut or a wide shot'
+avoid: if a person addresses the viewer as a viewer (a narrator, the host of the video), that is address.direct, do not mix them up when tagging; a monologue longer than 6 s without POV cues reads as an interview; a gaze past the lens or a face in profile loses the contact; several people looking in different directions
+sfx: the speaker's voice dry and close, an even room tone; "our" reply off-screen, quieter and closer, or a silent pause; on a toast, clinking glasses; in a threat, a low drone under the line
+genres: {ugc: signature, viral: signature, drama: allowed, product: allowed, teaser: allowed, fanedit: allowed, explainer: allowed}
+detect: |
+  A face in the center (x 0.45–0.58), frontal (nose offset ≤0.12 of the interpupillary distance in ≥60 % of frames), pupils centered in the eyes, i.e. looking
+  into the lens; ed_motion: "no significant global motion" or jitter ≤0.8 %. POV context (separates it from addressing the viewer):
+  the scene has a reverse shot of the listening character or their hands, replies come from off-screen, the frame has a foreground of "our"
+  character, or people around react to the camera. The height of "our" character comes from (nose − eyes)/interpupillary distance: ≤0.5 from below, ≥0.7 from above.
+  Differences: address.direct is the same picture but addresses the viewer, with no reverse shots or replies; an interview has the gaze
+  slightly past the lens, at the interviewer; pov.first_person has a moving camera with one's own hands at the bottom; pov.object has the blurred frame of an object.
+engine: |
+  footage: find_shot(gaze='lens', face_x=[0.45, 0.58], frontal=True, camera='static') → cut(at).
+  Building the dialogue: cut(speaker into the lens) ↔ cut(reverse shot or the hands of "our" character) at the joins between lines; duck(music, under=voice).
+  Meme: text('POV: …', style='caption', anim='pop', t=[0, 2.0], safe_zone='tiktok') over the first shot.
+  Foreground (hybrid): composite(layers=[fg(hands|glass|object), plate], blend='normal') at the bottom edge, 10–30 % of the frame, out of focus.
+gen_hint: point-of-view shot as seen by <listener>, <speaker> faces the camera dead center and talks directly into the lens as if to the listener, frontal, eye-level (or slightly low / high to match the listener), static camera, <foreground hint such as hands or a glass at the bottom edge>
+commands: ["make a POV dialogue: the salesperson talks to the camera, with the buyer's hands between the phrases", "a \"POV: you're my brother\" caption for the first 2 seconds", "find shots where people talk straight into the lens", "a first-person toast for the ending"]
+related: [pov.first_person, address.direct, frame.central, shot.medium_close_up, pov.object]
+evidence: {examples: 8, sources: 8, measured: "face center x 0.48–0.59 (median 0.51); frontal: nose offset 0.03–0.07 of the interpupillary distance in 6 of 8 (share of frontal frames 0.84–1.0); face 24–64 % of the height, eyes 0.22–0.47; static in 5 of 8 (jitter 0.02–0.22 %), light handheld 0.4–0.8 % in 2, 1 with 3.9 % shake; (nose − eyes)/interpupillary distance 0.45 when shot from below, 0.86 from above, 0.54–0.59 at eye level; lines 1.5–4.4 s", confidence: high}
+---
+id: pov.first_person
+family: pov
+group: angle
+level: B
+aliases: [first-person POV, POV, point of view shot, first-person view, through the character's eyes, subjective camera]
+what: the camera becomes the character's eyes — their hands enter the frame from below, the frame sways in time with the steps and turns like a head; the viewer "lives through" the action themselves
+frames: |
+  1. (opt.) Entry: the eyes open, 2–3 frames of black, then a murky picture with darkened edges for 0.3–0.7 s,
+     then focus; or a cut from the character who is looking to what they see.
+  2. The frame is at eye height (standing ≈1.5–1.7 m, sitting ≈1.1–1.3 m), a wide lens, looking slightly down, so one's own hands,
+     forearms, handlebars, food or a tool enter from below or from the lower corners (7 of 8 examples).
+  3. Head-like motion: a walking bob of 1.5–2.4 Hz, jitter 0.4–9 % of the frame, bursts of roll of 2–36°, sharp
+     turns shifting 50–150 % of the frame over 1–2 s (peaks 5–18 %/frame) with motion blur; walking forward gives a push-in with parallax.
+  4. Other people react to "us": they look into the lens, reach out a hand, hug, hand over an object (2 of 8).
+  5. The shot is continuous, 1.3–5 s (33–125 frames @25 fps); the exit is a cut to the character seen from outside or a blink into black.
+variants:
+  - first-person walk or run — stairs, a door, a corridor, a stadium; strong shake and turns (4 of 8)
+  - at a table — hands with food at the bottom, the person opposite looks into the lens (1 of 8)
+  - vehicle — hands on bicycle handlebars, smooth forward motion, fine vibration at 3–3.5 Hz (1 of 8)
+  - an object in the hands leads the frame — tongs with food, a tool; the camera moves with it (1 of 8)
+  - eyes opening — from black through a blurred spot with a vignette to a sharp frame, the hands rise in a gesture (1 of 8)
+  - meme format "POV — you're …": the caption assigns the viewer a role, and the shot may be an address into the lens — see pov.dialogue (not from the examples, a social media trend)
+status: footage
+fallback: search the source footage using detect (an action camera on the head or chest, handheld shooting at eye level); imitation in code from a handheld shot — walking bob, roll, vignette, a light barrel, blinking and breathing, but without one's own hands in the frame it reads weakly; a shot with hands via generation with consent
+params:
+  camera_height: eye level, with the horizon at 0.40–0.55 of the frame height; when sitting, 0.3–0.5 m lower
+  pitch: down 10–30° so the hands get into the frame
+  hands: hands and forearms from the lower corners, 10–35 % of the area, wrists at the bottom edge
+  lens: wide, ≈14–24 mm equivalent (field of view 85–110°), barrel distortion acceptable
+  bob: vertical bob at 1.5–2.4 Hz (step rate), amplitude 1–4 % of the frame height; running, up to 6–8 %
+  roll: bursts of ±2–10° per step, up to 30°+ on a sharp turn
+  turns: head turn of 50–150 % of the frame over 1–2 s, peak 5–18 %/frame with motion blur
+  duration: 1.3–5 s (33–125 frames @25 fps), no cuts inside
+  blink: eyelids closing from top and bottom over 3–4 frames, black for 2–6 frames, opening over 4–8 frames with blur
+when: a "you are the hero" hook (a jump, a ride, walking out on stage); product demos and hands-on tutorials, what to do and how it looks from the user's side; a travel walk along a street or a trail; sport and extreme action from an action camera; horror and thriller, what is around the corner; drunkenness, dizziness, waking up; a dialogue where the other person speaks directly to "us". 1–2 such shots per video or a short series on the drop
+avoid: longer than 5–6 s with strong shake causes motion sickness; mixing with objective shots without a clear entry leaves the viewer unsure whose eyes these are; POV without hands and reactions reads as an ordinary handheld camera; a low frame rate plus shake looks jerky; explainer videos, where a stable picture matters
+sfx: breathing and footsteps in time with the bob (1.5–2.4 Hz), a heartbeat in tense moments, close hand foley (grabbing, clicking, rustling), the surroundings slightly muffled; the character's own voice dry and close, as if from inside the head; on a blink, a short muffled "inhale"
+genres: {ugc: signature, travel: signature, sport: signature, viral: allowed, product: allowed, explainer: allowed, drama: allowed, teaser: allowed, fanedit: allowed, motivation: allowed, epic: allowed, calm: allowed}
+detect: |
+  Hands: a hand detector (mediapipe hands) finds a wrist in the bottom 15 % of the frame or in the lower corners, fingers pointing
+  away from the viewer, in ≥20 % of frames; the hands hold handlebars, food, a tool. ed_motion: jitter 0.4–9 %, frequent ROTATE 2–36°,
+  long SHIFT of 50–150 % of the frame over 1–2 s (head turns), ZOOM-IN with nonrigid >0.15 (walking forward, parallax);
+  the spectrum of vertical displacement peaks at 1.5–2.4 Hz (steps). People in the frame look into the lens and act toward "us".
+  Wide angle: strong barrel distortion, field of view ≥85°. Differences: handheld.shaky shows the character from outside, with no own hands;
+  drone.fpv is a smooth fast flight above human height; pov.object is a static camera with the blurred frame of an object;
+  address.direct is a static shot with a person talking to the viewer; pov.dialogue is the other person talking to the character-camera.
+engine: |
+  footage: find_shot(hands_from_below=True, motion='handheld', fov='wide', gaze='lens'|any) → cut(at).
+  Imitation from a handheld shot: transform(scale=[1.12, 1.12]) (margin for the sway) + destabilize(profile='walk', bob_hz=1.9,
+  amp=0.02, roll=3) + lens_distort(k=-0.12) + vignette(0.25) + sfx('breath') and footsteps in time with bob_hz.
+  "Eyes opening" entry: blink(t=0, mode='open', dur=0.5) + blur(kind='gaussian', amount=8→0, t=[0, 0.6]).
+  Exit: blink(t=end-0.2, mode='close', dur=0.16) → cut to an outside shot of the character.
+gen_hint: first-person POV shot through the eyes of <character>, own hands and forearms visible at the bottom of the frame <doing the action>, eye-level wide-angle lens, natural head bob while walking, people around look directly into the lens, immersive handheld feel
+commands: ["a first-person intro where the eyes open", "a POV with hands for the product demo", "insert a first-person walk before the drop", "find first-person shots in the source footage"]
+related: [pov.dialogue, pov.animal, pov.object, handheld.shaky, drone.fpv, address.direct]
+evidence: {examples: 8, sources: 8, measured: "hands or an object in the hands enter from below or from the side in 7 of 8 (≈, visually; skin tone via YCrCb is unreliable); jitter 0.4–8.7 %; vertical bob peak at 1.5–2.4 Hz in 6 of 8, bicycle 3.5 Hz; turns of 50–150 % of the frame over 1–2 s in 5 of 8; roll in bursts of 2–36°, an 82° turn in 1.35 s; the other person looking into the lens in 2 of 8; eyes opening from black in 1; shots 1.3–5 s", confidence: high}
+---
+id: pov.mirror
+family: pov
+group: angle
+level: B
+aliases: [mirror POV, the mirror's view, camera as mirror, from behind the mirror, behind-the-mirror camera, get ready with me shot]
+what: "the viewer sits behind the glass: someone getting ready or rehearsing meets the lens eye to eye, though in their world it is their own reflection"
+frames: |
+  1. (opt.) Lead-in: 0.5–1.5 s from behind the character, the back of the head against the mirror, then a cut to the reverse angle "from the mirror".
+  2. Frame: the camera at eye level, strictly frontal, the character in the center (x 0.45–0.55). The face is 20–25 % of the frame height (medium
+     shot or medium close-up), eyes at 30–40 % of the height, with headroom above. At the bottom, a strip of sink, shelf or countertop
+     (10–30 % of the height) with jars and brushes; at the sides, the edges of a cabinet (up to 20 % of the width) or a dark rounded
+     frame; behind, the room: a door, a wall, a coat rack, a lamp overhead.
+  3. Action: looking into the lens but "at oneself", the eyes roam over one's own face, the hands at the hair and mouth for most of the shot:
+     fixing the hair, checking the teeth, trying out facial expressions, giving oneself a pep talk.
+  4. The camera is static (jitter ≤0.25 %) or slowly pushes in ×2–2.6 over 5–7 s from a wide shot of the cabinet to the face.
+  5. Shot length 2–8.7 s; the ending: the character turns away and leaves, or the reflection "separates", with a semi-transparent
+     shifted double showing through.
+variants:
+  - morning routine: hair, teeth, makeup — static, medium shot, 4–9 s
+  - talking to oneself: a pep talk or a threat to oneself, a slow push-in to a medium close-up over ≈6 s
+  - try-on: handheld camera from below with a roll of ≈20–25°, push-in ×1.8 over 0.7 s, the outfit changes exactly every 3 frames (120 ms) while the camera move and the pose continue uninterrupted
+  - double: after 1–1.5 s a semi-transparent shifted copy shows through over the face — a "split" personality
+  - pair "from behind → from the mirror" via a cut
+status: footage
+fallback: |
+  1) search the source footage: frontal shots looking into the lens with hands near the face (a selfie on the front camera,
+     a phone propped against a mirror, which is essentially this move already);
+  2) imitation in code: reframe a frontal shot to full face with headroom + a blurred countertop strip at the bottom
+     (a generated plate with alpha) + a rounded vignette; build the try-on from takes of one movement;
+  3) generation via gen_hint with the user's consent.
+params:
+  duration: 2–8.7 s (50–217 frames @25 fps), typically 4–7 s
+  angle: eye level, frontal, level horizon; for a fashion try-on, from below with a 20–25° roll
+  face: 20–25 % of the frame height (up to 45–50 % in a fashion close-up), center x 0.45–0.55, eyes at 0.30–0.40 of the height
+  foreground: a sink/shelf strip at the bottom, 10–30 % of the height; cabinet edges at the sides up to 20 % of the width; or a dark rounded vignette
+  camera: static (jitter ≤0.25 %/frame); slow push-in ×2–2.6 over 5–7 s (≈×1.014/frame, linear); the try-on is handheld, jitter ≈3.5 %
+  gaze: into the lens but at oneself; hands at the face or hair in ≥50 % of frames
+  outfit_swap: every 3 frames @25 fps (120 ms), 10–15 swaps in a row, the camera move and the pose are not interrupted
+  double: the double shows through after 1–1.5 s, transparency ≈40–60 %, shift ≈5 % of the height (≈)
+when: |
+  UGC "get ready with me", beauty and fashion: getting ready to go out, a try-on, "before / after". A defining moment for the character:
+  talking to oneself before a decisive step; place it before the drop or the climax. Fashion edit: a series of outfit changes on one
+  movement to a fast beat (a change on every 1/8). 1–2 times per video, usually at the start (setup) or before a turning point.
+avoid: |
+  The character talks to the viewer without any actions "on themselves": that is direct address, not a mirror. The camera above or below the eyes for no reason,
+  an asymmetric composition: a mirror centers. Longer than 8–9 s without action. Outfit changes on shaky takes where the pose
+  does not match: instead of a "flash of looks" you get a mess.
+sfx: |
+  A quiet small room: a tap, ventilation, rustling clothes, a short bathroom reverb on the voice. A light switch click
+  or a creaking cabinet door at the entry. Try-on: fabric rustle or a click on each change, strictly on the beat.
+genres: {fashion: signature, ugc: signature, viral: allowed, product: allowed, drama: allowed, motivation: allowed, fanedit: allowed}
+detect: |
+  ed_motion: no events, jitter ≤0.25 % (4 of 6) or a slow ZOOM-IN of ≈×1.01/frame over 5–7 s; the try-on has handheld
+  shake ≈3.5 %, ROTATE up to 26°, and ed_motion sees no cuts in it.
+  Visually: frontal, the face centered (x 0.45–0.55), eyes at 0.30–0.40 of the height, eye-level angle; at the bottom a strip
+  of sink or shelf with jars, a lamp overhead, a door or a wall behind; hands at the face and hair.
+  Try-on: the color histogram of the clothes jumps with a period of exactly 3 frames during continuous motion, 12 changes in a row.
+  Difference from pov.object: there the angle is from below with the blurred frame of an object, and the character looks at the object; here it is a level frontal view
+  and a look at oneself. From address.direct: there it is talking to the viewer without everyday actions at the face. From reflect.mirror: there
+  the mirror is visible in the frame as an object, with the reflection inside it.
+engine: |
+  footage: find_shot(gaze='lens', angle='eye_level', frontal=True, hands_near_face>=0.5) → cut(at).
+  imitation: reframe(aspect, target=track(face), headroom=0.30) + fg_frame(shape='bottom_strip', coverage=0.15,
+            blur=8px, source='generate') + vignette(0.35) for an "old mirror".
+  talking to oneself: transform(scale=[1, 2.5], center=track(face), t=[t0, t0+6], ease='linear').
+  try-on: jump_cut(takes[], every=3fr, align=track(person)) — takes of one movement in different outfits,
+            aligned by the figure; beat_sync(event='swap', grid='1/8') + sfx('click', at=each change, gain=-12dB).
+  double: composite([clip, clip.shift(dy=-0.05).delay(0.2)], blend='screen', opacity=0.5, t=[t0+1.2, end]).
+gen_hint: camera placed behind a bathroom mirror looking straight at <person> standing at the sink, they study their own reflection, fix their hair, check their teeth and talk to themselves; frontal eye-level medium close-up, perfectly centered, sink and toiletries along the bottom edge, warm practical light above, locked-off camera
+commands: ["a shot from the mirror: the character gets ready to go out", "outfit changes on #4 every 3 frames, like in a fitting room", "a slow push-in through the mirror on the talk with oneself", "start the video with a \"get ready with me\" from the mirror"]
+related: [pov.object, pov.screen, pov.dialogue, address.direct, reflect.mirror, cut.jump, trans.double_exposure]
+evidence: {examples: 6, sources: 6, measured: "static in 4 of 6 (jitter 0.09–0.24 %); slow push-in ×2.6 over 6.2 s, almost linear (1); try-on: handheld camera 3.5 %, push-in ×1.85 over 0.72 s, roll 26°, outfit change exactly every 3 frames @25 fps, 12 changes in a row (1); face 20–25 % of the height in 5 of 6, center x 0.45–0.5, eyes at 0.30–0.40 (by grid, ≈); shot 2–8.7 s", confidence: medium}
+---
+id: pov.object
+family: pov
+group: angle
+level: C
+aliases: [inside POV, camera as an object]
+what: "the lens stands in for an everyday thing (say, a fridge or a bag), so whoever is busy with it ends up meeting the viewer eye to eye"
+frames: |
+  1. (opt.) Lead-in: 0.5–1 s of an outside shot of the object itself (a phone on a table, a round door), then a cut
+     to its "view", the classic pair "shot → reverse angle".
+  2. Setup: the camera is static (jitter ≤0.15 % of the frame) where the object lies or stands, usually below the character's
+     eyes, looking up or straight from shelf level. The frame edges are covered by the blurred "frame" of the object itself:
+     shelves and groceries, lips and teeth, the edges of a bag, the rim of a porthole, the bottom of a glass, the sides of neighboring products.
+     This frame takes up 30–60 % of the area, sharpness around the perimeter is 3–50 times lower than in the center; in the center, a lit opening.
+  3. Action: within the first 0.5–1 s the character enters the opening or leans toward it. The face is 20–40 % of the frame height,
+     centered horizontally, eyes at 40–50 % of the height. Looking into the lens (±10 % of the frame), but motivated
+     by the object: examining food, a screen, the contents, working with a tool, reaching a hand toward the lens to take it.
+  4. Ending: the character leaves the opening, or the opening closes: a door, a lid or a palm covers the lens over
+     9–15 frames (0.35–0.6 s), brightness drops 3–7 times, then from 0.4 s of black on, a ready cut point.
+  Shot length 1.1–6.7 s, typically 2–3 s.
+variants:
+  - from storage: a fridge, a cupboard, a car trunk, a store shelf — a rectangular opening, items and groceries in the foreground
+  - from packaging or a bag: a soft ragged opening, a hand reaches inside and covers the lens
+  - from the mouth: an oval frame of lips and teeth, a tool is brought up to the lens
+  - from an object in the hands: a glass, a prosthesis, a toy — the camera moves with the object, a round or strip-shaped frame, handheld shake up to 1 %
+  - from a tabletop: the camera in place of a ball, a phone, a plate — a low angle, a hand reaches to take it
+  - group over an object: several faces bend over a phone or a find, all looking down into the lens
+status: footage
+fallback: |
+  1) search the source footage for the cues from detect (looking into the lens + blurred edges + a static camera);
+  2) imitation (hybrid): a shot where a person looks into the lens from below (a selfie, a phone on a table or at chest height), plus on top
+     a blurred frame (a drawn mask of the opening or a generated plate with alpha: shelves, bag edges), a cast of light
+     "from inside" and muffled sound; without the frame the imitation reads as direct address to the viewer;
+  3) generation via gen_hint with the user's consent.
+params:
+  duration: 1.1–6.7 s (28–168 frames @25 fps), typically 2–3 s (50–75 frames)
+  camera: static (jitter ≤0.15 %/frame); handheld up to 1 % only if the object is being carried or held
+  height: the object's level, below the eyes with an upward tilt of ≈10–30°, or straight from a shelf
+  frame_coverage: the frame covers 30–60 % of the area around the perimeter, edge sharpness ≤0.3× the center (typically 0.1–0.2)
+  frame_luma: a dark frame has an edge 1.5–3 times darker than the center; a light one (fridge, packaging) has an edge 10–20 % brighter
+  aperture: rectangle (door, shelf) | oval (mouth) | circle (glass, porthole) | ragged diamond (bag) | two side wings (products)
+  face: 20–40 % of the frame height (typically 25–35 %), center x 0.45–0.55, eyes at 0.40–0.50 of the height; small (5–10 %) when the lit opening is the main thing
+  gaze: into the lens ±10 % of the frame, motivated by an action with the object
+  entry: the character enters or leans in within the first 0.5–1 s (12–25 frames)
+  block_out: the lens is covered over 9–15 frames (0.35–0.6 s), brightness ×0.15–0.3, then ≥0.4 s of black
+  intro_insert: (opt.) 0.5–1 s of an outside shot of the object before the cut to its view
+when: |
+  Hook and setup: "what the fridge / bag / phone sees" is funny and clear without words. Product video: a hand
+  takes the product off a shelf or out of a bag, the product's view of the buyer. A group's reaction to a screen or a find.
+  End of a scene: the door closes into black, a cut to the next part on a downbeat or a pause in the music.
+  1–2 times per video; best in a quiet part of the track or in the bridge, where the "inside" sound can be heard.
+avoid: |
+  The character does not look into the lens, or looks into it for no reason, which reads as direct address to the viewer. No frame of the object: the move
+  does not read. The camera where the object could not be. Longer than 4–5 s without action. Two in a row: the technique becomes
+  a gimmick. Dense rhythmic cutting with no pause: the move needs a 2–3 s "breath".
+sfx: |
+  Sound "from inside": a muffled room (high cut at ≈1–1.5 kHz), the hum of a fridge, rustling packaging. A click or a creak
+  of opening as the character enters; a dull thud of the door or the rustle of a palm exactly on the frame the lens is covered, then 0.3–0.5 s of silence.
+genres: {product: signature, ugc: signature, viral: allowed, teaser: allowed, drama: allowed, fanedit: allowed, explainer: allowed}
+detect: |
+  ed_motion: no events, jitter ≤0.15 % (8 of 10) or slight handheld shake up to 0.6 %; when the opening closes, black
+  frames at the end and a 3–7× drop in brightness over 0.35–0.6 s; sometimes a cut at the start (an outside shot of the object).
+  Custom checks: sharpness of the edge band (18 % of width/height) ≤0.3× the central zone, i.e. a blurred foreground around the
+  perimeter (9 of 10); a face in the sharp central zone, frontal, pupils centered in the eyes, i.e. looking into the lens;
+  an angle from below or from shelf level; a dark frame (the edge 1.5–3 times darker than the center) or shelves and packaging.
+  Difference from address.direct: there is no frame of an object there, the camera is at eye level, the person talks to the viewer; here it is
+  an action with an object (looks inside, reaches, takes, closes). From pov.dialogue: there the lens is the eyes of the other person, who is being spoken to. From pov.first_person: there the camera is the character's eyes,
+  their hands are visible at the bottom, the frame moves with the steps. From frame.voyeur: the person being watched does not look into the lens.
+  From pov.screen and pov.mirror: there the object is a screen (cold flickering light on the face) or a mirror (the person fixes their appearance).
+engine: |
+  footage: find_shot(gaze='lens', border_sharp_max=0.3, camera='static', angle='low|level') → cut(at) into the move's slot.
+  imitation: fg_frame(shape='shelves'|'oval'|'ring'|'tear'|'side_wings', coverage=0.4, blur=15px, luma=0.4,
+            source='draw'|'generate') + color(cast='cool'|'warm' — light from inside the object) + vignette(0.3)
+            + muffle(cutoff_hz=1200, t=the whole shot).
+  ending: transition(kind='wipe(shape=door|hand)', dur=0.4, to='black') + sfx('impact', at=the moment the lens is covered, gain=-6dB),
+         cut after 0.4 s of black on a downbeat.
+  "outside → inside" pair: cut(at) from a 0.5–1 s shot of the object straight to its view.
+gen_hint: POV shot from inside a <refrigerator / shopping bag / mailbox>, the camera is the <object>; <person> opens it and leans in, looking straight into the lens as if inspecting the <object>, then reaches toward the camera; blurry out-of-focus <shelves / packaging edges> frame the shot, low angle, locked-off camera, light spilling in through the opening; ends as the <door closes / hand covers the lens> to black
+commands: ["the view from inside the fridge before the drop", "make #3 look as if it was shot from inside a bag, with a hand taking out the product", "the friends' reaction through the phone's eyes at 0:12", "end the scene: the door closes into black, then a cut"]
+related: [pov.mirror, pov.screen, pov.first_person, pov.dialogue, address.direct, frame.voyeur, angle.trunk]
+evidence: {examples: 10, sources: 10, measured: "camera static in 8 of 10 (jitter 0.03–0.13 %), handheld up to 0.6 % for objects held in the hands; edge sharpness 0.02–0.38 of the center (median 0.16); face 20–40 % of the height in 7 of 10, center x 0.45–0.55; gaze into the lens or near its edge in 8 of 10; lens covered in 2 of 10, over 0.36 and 0.6 s, brightness ×0.15–0.3; shot 1.1–6.7 s; face and gaze measured by grid on frames (≈)", confidence: high}
+---
+id: pov.screen
+family: pov
+group: angle
+level: B
+aliases: [phone POV, camera inside the phone, view from the screen, the phone's view, livestream frame]
+what: the camera stands in place of a screen (a phone, a monitor, a scoreboard) — the person looks into the lens while a mirrored semi-transparent interface glows over their face, as if we were looking from inside the glass
+frames: |
+  1. (opt.) Lead-in: a side shot of the character with the device, then a cut "into the screen".
+  2. Frame: a phone in hand gives a low angle (camera below the chin, tilted up ≈15–30°), the face is 25–50 % of the height
+     in the upper half of the frame, eyes at 0.25–0.45 of the height, the top of the head is often cut off; a screen on a table or a wall gives
+     eye level or slightly below. The camera is static (jitter ≤0.25 %) or "breathes" slightly with the hand.
+  3. Interface layer: everything on the screen is drawn mirrored (text and icons reversed), semi-transparent
+     (≈40–70 %) and glowing: a status bar in the top 3–5 %, an icon or button at bottom center (≈15 % of the frame),
+     message bubbles and photo previews at the edges, large counter digits up to 40 % of the height in the lower half.
+     The face is lit by the screen.
+  4. Action: the eyes read just below the lens; a finger reaches toward the lens, a tap, and the interface responds within 1–3
+     frames (an icon pulses, a window opens, a counter counts up); a reaction on the face.
+  5. Ending: a cut to the reaction, or the phone goes into a pocket: the frame tumbles for ≈0.5 s (12 frames) with motion blur and roll,
+     then the darkness of the fabric (brightness ×0.3).
+  Shot length 1.2–4.5 s.
+variants:
+  - phone in hand: from below, a mirrored status bar, icons and chat; the ending goes into the pocket
+  - scoreboard or machine: large mirrored counter digits in the lower half, the character waits for the result
+  - text on the screen: mirrored lines over the face (the face shows through); sometimes a diptych, with the same face beside it without text
+  - livestream: the frame is the device's camera feed, the interface reads normally — a live badge at top left, a timer at bottom left, a chat column on the left, pop-up reactions on the right; the characters address the "viewers"; sometimes a window frame with a thin border over a darkened background
+status: footage
+fallback: |
+  1) search the source footage: front-camera phone footage where the person looks at the screen is exactly the right
+     angle; search by the detect cues;
+  2) imitation in code on such a shot: a mirrored semi-transparent interface (neutral, no real logos),
+     a cool cast on the face, a flash on the tap; for a livestream, a readable live-broadcast interface;
+  3) generation of the base shot via gen_hint (add the interface in code, generators draw mirrored text poorly).
+params:
+  duration: 1.2–4.5 s (30–113 frames @25 fps), typically 1.5–3 s
+  angle: phone, from below ≈15–30°; a screen on a table or a wall, eye level
+  face: 25–50 % of the frame height, eyes at 0.25–0.45 of the height, center x 0.45–0.55
+  camera: static (jitter ≤0.25 %/frame) or a slight "breathing" of the hand
+  ui_mirror: the interface is flipped horizontally for the view "from the screen"; not flipped in livestream mode
+  ui_opacity: ≈40–70 %, a soft glow of ≈4–8 px
+  ui_layout: status bar in the top 3–5 %; icon or button at bottom center, ≈15 % of the frame; bubbles in the bottom quarter; counter digits up to 40 % of the height at the bottom
+  tap: the interface responds within 1–3 frames, an icon pulse of ×1.1–1.3 or a 2-frame flash
+  counter: digits count up over 0.15–0.3 s (4–8 frames), then stop on the final value
+  pocket_out: tumble 0.4–0.5 s (10–12 frames), motion blur and roll, brightness ×0.3, the darkness of the fabric
+  live_ui: live badge ≈10×5 % of the frame at top left, timer at bottom left, chat in the left ≈20 % of the width, reactions in the right 10–20 %, floating up from the bottom
+when: |
+  Scenes with a phone: a message arrives, the result of a bet or an order, likes, "saw the news"; the screen's view shows at once
+  both what the character sees (the mirrored interface) and their face. UGC and app walkthroughs: a button press → the result.
+  A music video or teaser in a streaming aesthetic: a live badge, chat and reactions on the verse. End of a scene: the phone goes into the pocket, a tumble
+  into darkness as a transition. 1–3 times per video, keep it short (1.5–3 s).
+avoid: |
+  An interface that is not mirrored in the view "from the screen" breaks the logic (mirror everything except livestream mode). Too
+  dense an interface covers the face; the eyes and mouth must stay visible. Real logos and app names: only
+  a neutral made-up interface. Text that matters to the viewer cannot be read mirrored, so duplicate it with a caption
+  or a cutaway to the screen itself.
+sfx: |
+  Interface sounds: a tap, vibration, a notification chime when a bubble appears, counter clicks and an accent on the final figure;
+  for a livestream, a hum of voices and short reaction "blips". The tumble into the pocket: fabric rustle and a dull thud in the darkness.
+genres: {ugc: signature, viral: allowed, explainer: allowed, product: allowed, drama: allowed, teaser: allowed, fanedit: allowed}
+detect: |
+  ed_motion: no events, jitter ≤0.25 % (5 of 6) or slight handheld shake; when going into the pocket, a cascade of "cuts",
+  ROTATE and ZOOM of 2 frames each and a brightness drop to ≈35.
+  Visually: a face from below, large in the upper half, looking into the lens or just below it; on top, a glowing
+  semi-transparent layer with reversed text and digits, a status bar at the top with a mirrored icon order; screen
+  light on the face. Mirroring check: run text recognition on the frame and on its mirror image; if the mirrored version
+  reads better → the interface is shown from inside.
+  Livestream: readable elements in fixed positions (live badge, timer) give a static overlay-mask of 0.1–0.4 in
+  ed_motion; chat and reaction columns moving upward.
+  Difference from pov.object: there is no interface there, the frame is the object itself. From layout.screen_in_screen and gfx.floating_ui: there
+  the screen is an object in the frame or graphics over a normal shot, here the camera itself is the screen. From pov.first_person with a phone:
+  there we look at the screen through the character's eyes, here we look at the character from the screen.
+engine: |
+  footage: find_shot(gaze='lens', angle='low', face_top_half=True) — a phone's front camera almost always gives this angle.
+  interface: ui_overlay(layout='phone_status|chat_bubbles|app_icon|text', mirror=True, opacity=0.55, glow=6px, t)
+             + color(cast='cool', amount=0.2) on the face + flash(color='white', dur=2fr, amount=0.3) on the tap.
+  counter: counter(from, to, dur=0.25, mirror=True, size=0.4H, anchor='bottom').
+  livestream: ui_overlay(layout='live', mirror=False, badge=True, timer=True, chat='left', reactions='right', rate=2–4/s).
+  ending: transform(rotate=[0, 40], shift=[[0, 0], [0.3, 0.4]], t=[t1, t1+0.45], ease='inCubic', motion_blur=0.5)
+         + fade(to='black', dur=0.2) + sfx('whoosh', at=t1).
+gen_hint: low-angle shot from a smartphone's point of view, <person> holds the phone at chest height and looks straight down into the lens reading something, face lit by cool screen glow, raises a finger toward the lens to tap, handheld but steady, shallow depth of field, no on-screen graphics
+commands: ["a shot from the phone: she reads a message, with the chat mirrored over her face", "on #6, the screen's view with a tap and a pop-up window", "style #2 as a livestream: live badge, chat and reactions", "at the end of the scene the phone goes into the pocket, a tumble into darkness"]
+related: [pov.object, pov.mirror, pov.first_person, layout.screen_in_screen, gfx.floating_ui, layout.split_screen]
+evidence: {examples: 6, sources: 6, measured: "camera static in 5 of 6 (jitter 0.07–0.24 %); mirrored semi-transparent interface in 4 of 6 (status bar, icon, bubbles, counter digits up to 40 % of the height), a livestream with a readable interface in 2 of 6; face 25–50 % of the height in the upper half when shot from below (by grid, ≈); tumble into the pocket ≈0.5 s, brightness 122→35; shot 1.2–4.5 s; interface transparency and glow by eye (≈)", confidence: medium}

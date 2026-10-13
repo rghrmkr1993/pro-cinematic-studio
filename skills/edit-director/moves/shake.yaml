@@ -1,0 +1,102 @@
+id: shake.beat
+family: shake
+group: effect
+level: B
+aliases: [beat shake, shake on beat, camera shake, impact shake, screen shake, micro shake, rotational shake, shake to the beat, shake, shake on hit, frame shake, bass shake]
+what: a digital shake of the whole frame on a beat or a hit — an impulse exactly on the transient frame and a decaying rebound over 0.15–0.3 s; micro, impact, heavy, rotational and "bass" variants
+frames: |
+  1. Before the hit the frame is still or follows its own motion.
+  2. The transient frame (kick, 808, snare, a hit or a landing in the shot): the whole frame is shifted by A = 1.5–4 % of the short side
+     (impact), with bass usually vertically downward; on the same frame, directional motion blur over half the shift; in the rotational
+     variant the frame is rotated by 1.5–4° around the center.
+  3. Decay: each following frame rebounds the opposite way with ×0.55–0.75 of the previous amplitude and with the direction
+     turning by 20–40°: 5 frames @25 fps (0.2 s) for impact, 7–9 for heavy (≈ 0.3 s).
+  4. Rest until the next hit: the frame returns exactly to its original position, the shake does not "drift".
+  The micro and bass variants are not impulses but a continuous fine tremor across the whole section, whose amplitude breathes with the bass.
+variants:
+  - "impact — A 1.5–3 %, alternating-sign rebound over 0.2 s; kick or 808 in the drop of phonk, fan edits, viral edits"
+  - "heavy (\"boom\") — A 4–6 % + 1–2° rotation, decay ≈ 0.3 s, often together with zoom.punch ×1.08–1.12; entering the drop, an explosion, a landing, the final hit"
+  - "micro — 0.3–0.8 %, noise every frame, running through the whole section; \"nervous energy\" under fast hi-hats and bass"
+  - "rotational — 1.5–4° rotation with an alternating-sign rebound, shift ≤ 0.5 %; the frame \"rocks\" on the snare"
+  - "kick tilt — 3–6° rotation on the beat and return without rebound over 0.25–0.3 s; the heavy version of rotational, on the 808"
+  - "bass-follow — the amplitude follows the low-end envelope at 30–150 Hz for the whole drop; the frame breathes with the 808"
+  - "punch-shake — shake and zoom.punch on the same beat: the punch's scale covers the edges by itself"
+status: code
+fallback: |
+  The move is done in code on any shot; the limitation is the edges. The shake needs spare picture (cover in params): if the source is small
+  (already upscaled ×2+) and the margin would eat sharpness, use micro and impact up to 1.5 % with mirrored edges and motion blur on 1–2 frames, without
+  rotation. When reframing 16:9 → 9:16 there is already horizontal margin, so shake horizontally rather than vertically.
+  If the source itself is shaky (handheld camera), stabilize(0.6–1.0) first, otherwise the hits are not visible.
+params:
+  amp: "A is a fraction of the frame's short side (px @1080): micro 0.3–0.8 % (3–9 px); impact 1.5–3 %, typically 2.5 % (27 px); heavy 4–6 % (43–65 px); in the build, half of what it is in the drop; in ed_render, amp is a fraction of the canvas height: 9:16 → amp = px/1920 (27 px = 0.014), 16:9 → px/1080"
+  peak_frame: "maximum displacement on the beat frame k0 = floor(t_beat·fps + 0.4), as in zoom.punch; frame k0−1 is at rest, no anticipatory motion; tolerance 0…+1 frame: earlier than the sound the shake looks like a \"premonition\", later than +1 frame it looks late"
+  impact: "d(k) = A·g(k)·u_k, g(k) = (−q)^k, q = e^(−1/(τ·fps)), τ = 0.067 s, cut off when |g| < 0.08: @25 fps q 0.55 → +1.00 −0.55 +0.30 −0.17 +0.09 (5 frames, 0.2 s); @30 fps q 0.61 → +1.00 −0.61 +0.37 −0.22 +0.14 −0.08 (6 frames, 0.2 s)"
+  heavy: "τ = 0.11 s: @25 fps q 0.70 → +1.00 −0.70 +0.48 −0.34 +0.23 −0.16 +0.11 (7 frames, 0.28 s); @30 fps q 0.74 → +1.00 −0.74 +0.55 −0.40 +0.30 −0.22 +0.16 −0.12 +0.09 (9 frames, 0.3 s); plus a 1–2° rotation following the same g(k)"
+  direction: "u_k is a unit vector; the first one: kick and 808 vertical ±20° (downward), snare and clap horizontal or random; after that, the sign follows g(k) and the direction turns by ±20–40° with a random sign, so the shake is two-dimensional rather than a sawtooth on one axis; seed = beat number, so the render is repeatable"
+  rotation: "rotational: ρ(k) = R·g(k), R = 1.5–4° (typically 2.5°), the center is the frame center or a face, shift ≤ 0.5 %; kick tilt: ρ(k) = R·e^(−k/τ), τ = 0.1 s, no rebound: @25 fps 1.00 0.67 0.45 0.30 0.20 0.14 0.09 (7 frames), @30 fps 1.00 0.72 0.51 0.37 0.26 0.19 0.14 0.10 (8 frames)"
+  micro: "every frame, Gaussian noise in x and y, smoothed over time with σ = 1 frame and normalized to A; A(t) = A_m·(0.4 + 0.6·env(t)), env is the bass envelope 0…1; rotation ≤ 0.3°"
+  bass_follow: "A(t) = A_max·clip((env − p10)/(p95 − p10), 0, 1)^γ, γ = 1.5–2, A_max = 1–2.5 %; env is the 30–150 Hz envelope (low_e from ed_audio), attack 5 ms, release 80–150 ms; direction: a new random vector every frame with a 0.5 correlation to the previous one"
+  motion_blur: "directional, along the jump d(k) − d(k−1), length = shutter × |jump|; shutter 0.5 (180°) by default, 0 for a dry \"digital\" shake; impact at 2.5 % on a 1080 frame: 14 px on the hit frame and 21 px on the first rebound; sharpness of the hit frame drops to ×0.15–0.3"
+  cover: "the edges are covered by a constant scale margin for the whole clip (do not animate it, or it reads as a zoom); native 9:16 or 16:9: cover ≥ (1 + 2A)·(cos R + 1.78·sin R): A 0.8 % → ×1.02, 2.5 % → ×1.05, 5 % → ×1.10; R 1.5° → ×1.05, 2.5° → ×1.08, 4° → ×1.12 (with a 0.8 % micro shift, ×1.06 / 1.09 / 1.14); reframe 16:9 → 9:16, where horizontal margin already exists: (1 + 1.125·A)·(cos R + 0.56·sin R), ×1.03 at 2.5 %, ×1.03–1.05 at 2.5°; mirrored edges (BORDER_REFLECT101) only for micro and for 1–2 frames with motion blur"
+  tempo_fit: "the shake dies down before the next hit: duration ≤ 0.6 of a beat (at 140 BPM ≤ 0.26 s ≈ 6 frames @25 fps); above 150 BPM, impact on every other beat, otherwise the hits merge into a continuous tremor"
+when: |
+  Music (phonk, fan edit, viral, sport, epic, motivation):
+  hook — one heavy on the first hit if the track starts with one; otherwise no shake;
+  build — impact only on the snare or clap (beats 2 and 4) or on the drum roll in the last bar, at half the amplitude of the drop;
+  drop — heavy on the first beat, then impact on the kick or 808 of the strong beats for no more than 2 bars in a row (8 hits),
+  then a bar of the micro or bass variant or a change of accent (zoom.punch, flash); rotational on the snare once every 1–2 bars;
+  outro — no shake, or a last heavy on the final hit.
+  Action in the shot: a punch, a fall, a landing, an explosion, a door slam — heavy exactly on the contact frame (and on the beat if
+  the contact coincides with it). Speech (clips, UGC, motivation): only as a comic or shock "boom", 1 per video.
+  Limits: ≤ 1 impact per beat; heavy ≤ 1 per 4–8 bars; rotational ≤ 1 per 2 bars; shake > 1 % no more than 3 times per
+  second; no more than two accents from {shake, punch, flash, RGB split} on one beat, except the first beat of the drop.
+avoid: |
+  Calm, luxury, product and explainer videos. Shots that need to be read: text, numbers, interfaces, products,
+  a face during a line (the lips smear). Shake on top of an already shaky handheld shot (handheld.shaky) reads as a
+  defect. Captions and graphics shaking along with the frame: overlay them after the shake (their own shake is allowed only for
+  beat-synced text). Shake that misses the hit, or on every beat throughout the video, looks cheap and causes motion sickness. A decay longer than 0.6 of a beat on a
+  fast track makes the hits merge into a tremor. No scale margin: mirrored or black borders flicker at the edges.
+  Several kinds of shake at once (micro + impact + rotational) turn into a mess.
+sfx: |
+  The shake is a "visible kick" and goes on a hit in the track; no separate sound is needed. A heavy variant with no support in the music (a hit in
+  the shot, entering the drop after a pause): sfx.impact (align='attack', 0 ms to frame k0, −3…−6 dB relative to the music, duck the music for 150 ms
+  by 3 dB) or sfx.sub_drop on entering the drop. In speech genres, a low hit at 60–100 Hz lasting 120–200 ms under the shake,
+  with the voice on top louder by 10+ dB.
+genres: {phonk: signature, fanedit: signature, viral: allowed, epic: allowed, sport: allowed, travel: allowed, fashion: allowed, teaser: allowed, clips: allowed, ugc: allowed, motivation: allowed, calm: forbidden, product: forbidden, explainer: forbidden, drama: forbidden}
+detect: |
+  ed_motion on a static or smooth shot: no global SHIFT events even with a heavy 5 % shake (the alternating-sign rebound
+  breaks up the runs), but the shake block shows the impulses: p90_pct 0.8–4 with jitter_pct ≤ 0.6. A synthetic render of the profiles from
+  params → ed_motion at 320 px, 9:16, 25 and 30 fps: impact 2.5 % on every beat gives jitter 0.26–0.58, p90 3.5–4.1; impact
+  1.5 % gives jitter 0.16–0.35, p90 2.1–2.4; impact once per bar gives jitter 0, p90 0.8–0.9; heavy 5 % once per bar gives p90 2.8–3.0;
+  micro 0.5–0.8 % gives jitter 0.2–0.32, p90 0.35–0.57 and no holds. Impulse shake produces an even comb of holds: rest between
+  hits with the beat period (12 frames @25 fps at 125 BPM, 15 @30 fps at 120 BPM), the shake itself takes 5–7 frames.
+  The shift is rigid: pair nonrigid ≤ 0.05. Rotational: ROTATE events ≈ R (2.7–2.9° at R 2.5°) over 3–5 frames, whose
+  peak_deg_per_fr exceeds the total angle (a back-and-forth turn); they repeat every beat, CW and CCW alternating from hit to hit.
+  x_dir_flips counts only the horizontal; vertical bass shake gives 0–1, so do not rely on it.
+  Custom check on pairs: a spike of |tx|+|ty| > 1 % of the frame, after which the sign alternates and the amplitude shrinks ×0.55–0.75 per frame;
+  the start of the spike coincides with a beat ±1 frame for ≥ 70 % of the hits; after the decay the frame matches the frame before the hit (scale
+  1.00, shift ≤ 0.1 %); on the hit frame (if the shake has motion blur), sharpness ×0.15–0.3 and gradient anisotropy along the jump;
+  across the whole clip, a constant extra scale of ×1.03–1.1 (the margin) or mirrored strips at the edges on hit frames.
+  Difference from handheld.shaky: handheld is continuous, with no rest between impulses, a dominant frequency of 1.2–2.6 Hz, jitter_pct 1–10,
+  nonrigid 0.2–0.6 (parallax), and long one-directional SHIFT and ROTATE. From cut.stutter: there frames repeat (time
+  jumps back) rather than the whole frame shifting. From fx.glitch: strips shift, not the frame as a whole. From fx.wigglegram:
+  parallax around a pivot. From zoom.punch: the scale changes, not the position. From light.flash and trans.flash: the brightness changes.
+engine: |
+  beat_shake(times=beats|'downbeats'|'snare'|band_onsets(track, lo=30, hi=150)|[t…],
+             profile='impact'|'heavy'|'micro'|'rot'|'kick_tilt'|'bass', amp=0.025 (fraction of the short side), rot=0 (°),
+             tau=0.067 (s), dir='bass_down'|'random'|<angle°>, dtheta=30, blur_shutter=0.5, cover='auto'|1.05|'reflect',
+             seed='beat_index', section=[t0, t1])
+    — an extension of beat_shake from _engine_api: on each hit shake(...) with a per-frame d(k) = amp·g(k)·u_k and rotation ρ(k);
+      + blur(kind='directional', amount=shutter·|d(k) − d(k−1)|, angle=direction of the jump);
+      cover='auto' is the minimal constant transform(scale) of the clip at which the shifted and rotated window stays inside the source.
+    band_onsets(track, lo, hi) and band_envelope(track, lo=30, hi=150, attack=0.005, release=0.12) — new primitives
+      (low-end onsets and envelope from low_flux and low_e of ed_audio) for hits on the kick and for profile='bass'.
+  Current ed_render: {id: 'shake.beat', times: [...], amp (fraction of H), decay (τ in frames), freq (Hz), rot (°)}; impact ≈
+  decay 1.67 and freq 12.5 @25 fps (the sign flips every frame), decay 2.0 and freq 15 @30 fps. To improve in shake_at: direction as a
+  unit vector (currently sx, sy ∈ [−1, 1], so the first frame may barely move), dy in the same phase as dx (currently sin, so
+  the vertical is 0 on the beat frame), rotation with a cos phase (currently sin, so the peak lands a frame after the beat), the g(k) profile as a table.
+  The shake goes before text and graphics are overlaid. + sfx('impact', at=k0/fps, align='attack') only for a heavy one with no support in the track.
+gen_hint: "<subject> performing <a powerful impact action: stomp, punch, jump landing, slamming a door>, static camera, sharp frames with fast shutter, subject comfortably inside the frame with empty margins on all sides so a digital camera shake can be added later"
+commands: ["shake on every kick in the drop", "a heavy shake on entering the drop", "micro shake over the whole chorus", "rotational shake on the snare", "the frame breathes with the bass in the drop", "remove the shake from #6"]
+related: [zoom.punch, handheld.shaky, time.velocity, fx.glitch, cut.stutter, light.flash, trans.flash, fx.rgb_split, zoom.in_out, angle.dutch, sfx.impact]
+evidence: {examples: 0, sources: 0, measured: "edit culture: parameters from editing practice; verify with a demo render", confidence: medium}

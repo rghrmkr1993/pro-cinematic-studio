@@ -1,0 +1,408 @@
+id: address.aside
+family: address
+group: editing
+level: B
+aliases: [aside, look into the camera, reaction glance into the lens, look to camera, camera glance, wink at the viewer, viewer as accomplice]
+what: a fleeting glance by the character into the lens mid-scene — a smirk, an eyebrow raise, a deadpan face, a shrug or a short line to the viewer — and straight back into the action; the viewer becomes an accomplice
+frames: |
+  1. Trigger: something absurd, awkward or lucky has just happened in the scene; the character is busy — talking to someone,
+     walking, eating, doing a stunt. The camera is static or slowly pushes in over the last 1.4–4 s (×1.14–1.30 per second).
+  2. Turn: the head turns to the lens in 0.15–0.25 s (4–6 frames @25 fps). Variants: only the eyes move while the head
+     stays in three-quarter view; or a slow turn over the shoulder or with the whole body in 0.4–1 s.
+  3. Contact 0.3–1.6 s (8–40 frames): a smirk, a raised eyebrow, a deadpan face, an awkward grimace, a shrug, an eye
+     roll; silent in 15 of 24. The others in the frame don't notice the glance and carry on with what they are doing.
+  4. Exit: the head returns to the scene in 0.2–0.4 s — or cut right at the peak of the expression while the gaze
+     still holds.
+  5. Boosters (optional): a ×2 crash zoom into the face in 0.2 s before the contact; a long zoom that ends on the glance;
+     ×0.1–0.2 slow motion at the peak of a stunt; a freeze frame on the glance.
+variants:
+  - close-up smirk (4 of 24): profile → turn to camera → a smug half-smile or a raised eyebrow; in hand-drawn animation — a laughing grimace straight at the viewer
+  - over-the-shoulder glance (3): the character walks away from the camera or stands in a crowd with their back to it and looks back into the lens; the camera slowly pushes in
+  - side-eye (2): only the eyes move to the lens, the head stays turned away in three-quarter view, the character keeps talking or smoking
+  - spoken aside (4): a short line or gesture to the viewer (a shrug, "did you see that?"), the people around don't hear it; the character sometimes steps a pace away from the group
+  - one of the group (2): everyone is busy or has their back turned, and only one person looks into the camera
+  - deadpan stare after something absurd (2): a scared or awkward look without words, at the end of a zoom
+  - with an object: the character briefly looks into the camera and raises an item toward it
+  - at the peak of a slow-motion stunt: time has almost stopped, the athlete in mid-air smirks into the lens
+  - camera inside an object: a look "into the tank" or "into the cupboard", then a smile into the camera
+  - a narrator downstage turns to the viewer (2) — borderline with address.direct
+  - point-blank cut (general section): after loud action — a hard cut to a close-up where the character is already looking into the lens, displeased, for ≈0.9 s; there is no turn, the cut itself "delivers" the glance
+status: footage
+fallback: |
+  1) Search the source footage: vlogs, sketches, behind-the-scenes and stories are full of accidental 0.3–1 s glances
+  at the camera — look for those. 2) Code (hybrid): if the shot has at least 2–3 frames where the person looks into
+  the lens — freeze 0.6–1.2 s on that frame + punch-in ×1.15–1.3 + a record scratch or a music pause — gives a "built" aside.
+  3) Generation with consent: the same character in the same scene with a short glance into the lens (gen_hint).
+params:
+  turn_in: 0.15–0.25 s (4–6 frames @25 fps) in 5 of 8 measurable cases; slow — over the shoulder or with the whole body — 0.4–1 s (3)
+  contact: 0.3–1.6 s (8–40 frames) in 17 of 24; comic holds and over-the-shoulder glances — 2–2.5 s; longer and with speech to the viewer, it is already address.direct
+  head: frontal or near-frontal (|nose − eye midpoint| ≤0.2 of the interpupillary distance) — 15 of 24; three-quarter 0.25–0.6 with eyes on the lens — 8 (over-the-shoulder glance, side-eye, smirk)
+  face_h: close-up 0.43–0.76 of frame height (8 of 24), medium 0.16–0.31 (10), wide 0.07–0.14 (5)
+  silence: no words in 15 of 24; a line — at most 1 sentence
+  lead: the glance comes 0.3–0.8 s after the trigger (punchline, fall, awkwardness) (≈)
+  camera: static (jitter ≤0.3 %) — 11 of 24; a push-in ending on the glance, ×1.33–2.42 over 1.44–4.05 s (×1.14–1.30 per second) — 4; fast zoom ×2.07 in 0.2 s or ×5.32 in 1.5 s (ease-out) — 2; pull-out ×0.47–0.91 — 2; slow motion ×0.1–0.2 — 1
+  exit: head back to the scene in 0.2–0.4 s or a cut at the peak of the expression, 0.5–1.2 s after the contact starts (≈)
+when: |
+  A comic beat after a punchline, a fail, absurdity or awkwardness — the character "shares" it with the viewer; a sly look
+  when the character has got away with something; a departing character's over-the-shoulder glance at the end of a shot;
+  in a music video — the performer's quick glance into the lens on a lyric accent; in an ad — a knowing look after the
+  product has worked; in sport — a smirk at the peak of a stunt. Place it on a downbeat or in a music pause.
+  At most 1–2 times per minute, never two in a row.
+avoid: |
+  It needs a trigger: a glance with no event looks like an accidental mistake. Don't hold it longer than 1.6–2 s — it
+  turns into direct address or an awkward pause. A talking head that looks into the camera all the time anyway — there
+  is no contrast, the move doesn't read. Epic and serious tone: a wink undercuts the solemnity. If the glance has an
+  addressee in the story (a reverse shot of the listener), it is pov.dialogue. Passers-by accidentally glancing at the
+  camera in reportage are an artifact, not a move, unless the edit emphasizes them.
+sfx: |
+  On the head turn — the music stops or dips by −15…−20 dB for 0.3–0.6 s, sometimes a record scratch; in comedy — a
+  single "ding", chirping crickets, a short hit or a laugh track; with a crash zoom — whoosh + impact on the landing.
+  Back to the scene — the music comes back on the next beat.
+genres: {viral: signature, ugc: signature, fanedit: allowed, clips: allowed, teaser: allowed, product: allowed, fashion: allowed, sport: allowed, travel: allowed, explainer: allowed, phonk: allowed, calm: allowed, epic: forbidden, drama: forbidden, motivation: forbidden}
+detect: |
+  By the face over time: head or eyes turned away (|nose − eye midpoint|/interpupillary distance >0.3) → turn to the
+  lens in 0.15–0.25 s (rarely up to 1 s) → contact 0.3–1.6 s (frontal or three-quarter with eyes on the lens) → turned
+  away again or a cut. What's in frame before the glance is a live scene: a conversation partner, action, other people
+  who don't look at the camera; there is no reverse shot.
+  ed_motion: "no significant global motion" or a slow ZOOM-IN ×1.3–2.4 over 1.4–4 s (peak ≤×1.03/frame) that
+  ends on the glance; or a sharp ZOOM-IN peaking at ≥×1.2/frame with a cut right before the glance; in slow motion
+  the difference between adjacent frames drops by a factor of 4–8.
+  Distinctions: address.direct — contact ≥1.5–2 s, speech to the viewer, the character "steps out" of the scene; here —
+  an instant reaction inside the scene. pov.dialogue — the gaze is aimed at a character who is the camera (there are
+  reverse shots). frame.interview — the gaze passes the lens. An accidental glance at the camera in documentary
+  footage — no trigger and no emphasis from the edit.
+engine: |
+  footage: find_shot(gaze='lens', dur=[0.3, 1.6], prev_gaze='off', faces>=1) → events [t_in, t_out];
+           t_in — end of the head turn, t_out — the gaze has left.
+  assembly: cut(at=t_in−0.4) … cut(at=min(t_out, t_in+1.2)) — glance 0.3–0.8 s after the trigger, cut at the peak
+            of the expression; put t_in on a downbeat.
+  accent (pick one):
+    pause: duck(music, −20 dB, t=[t_in, t_in+0.5]) + sfx('scratch', at=t_in)
+    crash: transform(scale=[1, 2.0], center=track(face), t=[t_in−0.2, t_in], ease='inOutCubic') + blur(kind='zoom')
+           + sfx('whoosh', at=t_in−0.2) + sfx('impact', at=t_in)
+    zoom-in: transform(scale=[1, 1.25], center=track(face), t=[t_in−2.0, t_out], ease='inOutQuad')
+    freeze frame: freeze(at=t_in+0.3, dur=0.8) + text(caption, style='caption', anim='pop', safe_zone='tiktok')
+    slow motion: speed(curve=[[t_in−0.3, 1], [t_in, 0.2], [t_out, 0.2], [t_out+0.2, 1]], interp='flow')
+  no ready-made glance: find_frames(gaze='lens', min=2) → freeze(dur=0.8) + transform(scale=[1, 1.2], ease='outCubic').
+gen_hint: <character> in the middle of <scene action> briefly glances straight into the camera lens with a knowing smirk (or raised eyebrow, deadpan stare, shrug) for about one second, then turns back to the scene; the other people in the frame do not notice; static camera, medium close-up, natural light
+commands: ["after his line — a glance at the camera with a pause and a record scratch", "find the moments where she briefly glances into the lens", "on #5 do a crash zoom into his smirk", "freeze the glance at the camera for a second and add a caption", "at the end, have him look back over his shoulder into the camera"]
+related: [address.direct, pov.dialogue, zoom.crash, zoom.slow, time.freeze, time.slow_motion, address.lens_touch, frame.interview]
+evidence: {examples: 24, sources: 19, measured: "YuNet frame by frame: head turn to the lens 0.15–0.24 s in 5 of 8 measurable (slow 0.4–1 s in 3 — over the shoulder, whole body); contact 0.3–1.6 s in 17 of 24, 2–2.5 s in 5, narrator ≥3 s in 2 (some clips are cut off on the glance); frontal or near-frontal 15, three-quarter with eyes on the lens 8; silent in 15 of 24; face 0.07–0.76 of the height (close-up 8, medium 10, wide 5); ed_motion: static 11, push-in ×1.33–2.42 over 1.44–4.05 s (4), zoom ×2.07 in 0.2 s and ×5.32 in 1.5 s, pull-out ×0.47–0.91, slow motion (frame difference drops from ≈25 to 2–8); general fourth-wall section: 10 of 32 examples are this move (9 match the section, 1 new — the point-blank cut)", confidence: high}
+---
+id: address.direct
+family: address
+group: editing
+level: B
+aliases: [direct address, addressing the viewer, looking into the lens, breaking the fourth wall, talking to camera, piece to camera]
+what: "speaking to the audience: the subject turns to the lens to explain, point something out or lean in, and the viewer is pulled into the conversation instead of watching from outside"
+frames: |
+  1. Entry (optional): the character is busy with the scene — in profile, back to camera, on the move; a narrator
+     enters the frame from the edge in 1–4 s, or a camera pan across 15–49 % of the frame in 0.8–1.8 s reveals them
+     next to the scene.
+  2. Contact: the head turns to the lens in 0.2–0.35 s (5–9 frames @25 fps) and the gaze locks straight onto the lens.
+     The face is frontal (nose offset from the eye midpoint ≤0.15 of the interpupillary distance) or three-quarter, but
+     with the eyes on the lens.
+  3. Address: a line to the viewer or a silent challenging stare plus an action toward the camera — an open palm
+     "presenting", fists or an object to the lens, a lean or a lunge: the face grows ×1.2–2.3 in 0.3–1.0 s against a
+     still background. During the contact the camera is static (16 of 25) or slowly pushes in ×1.2–2.0 over 0.5–3.5 s.
+  4. Duration: a performer's silent beat 1–2.8 s; a line 3–7 s; a long monologue — takes of 3–7 s each (median ≈4 s),
+     joined with jump cuts that change the outfit or the location.
+  5. Exit: the character turns back to the scene, leaves the frame in 0.9–1.5 s (the camera stays on the scene or
+     pans away) — or a cut right on the last word.
+variants:
+  - narrator-host (6 of 25): stands at the edge of a wide shot (face center at 0.14–0.15 or 0.74–0.77 of the width in 5 of 6, face 8–14 % of the height), the scene plays out in the other half of the frame; talks into the lens, "presents" the scene with a gesture and leaves — the scene goes on
+  - monologue to the viewer (5 of 25): a close-up or medium shot, centered or on a third, 3–7 s of speech per take; the long version has 7 takes in 32 s with a change of outfit and location at every cut
+  - a line mid-task: the character is riding, holding on, working — turns the head to the camera in ≈0.2 s, comments and goes back to the task
+  - performer challenge (8 of 25, music video and ads): a silent stare, a lean or a lunge toward the lens, hands, fists or a dish reaching toward the camera; often from below or with a wide-angle lens
+  - push-in to the turn: the camera slowly pushes in (×1.5–1.9 over 1.5–3.5 s), and by the end of the push-in the character turns to the lens
+  - group into the lens: several people loom over the camera, shot from below, and look straight into it
+  - with graphics: outlines and labels appear next to the characters, then full-frame kinetic text
+  - camera inside an object (a fridge): the person looks into the lens and talks to the viewer, not to the object — borderline with pov.object
+  - beckoning host (5 examples from the general section): waves and calls the viewer — the camera lurches in after him through a door in ×1.3 jerks of 0.2–0.5 s and chases him through the house with motion blur; or he stands in frame while the set behind him breaks apart and changes (trans.set_change)
+status: footage
+fallback: |
+  Needs a shot where the person looks into the lens. 1) Search the source footage: selfies, stories, vlogs and stand-up
+  are made almost entirely of such pieces; even an accidental glance at the camera of 0.3 s or more will do. 2) Code
+  (hybrid): the accidental glance is stretched with freeze or slow-mo 0.5–1.5 s + punch-in ×1.15–1.3 on the face + a
+  caption — this gives a silent address beat (see address.aside); speech can't be made this way. 3) Generation with
+  consent: a host or character speaking to camera over a ready voice-over script (gen_hint).
+params:
+  gaze: into the lens for the whole fragment; head frontal (|nose − eye midpoint| ≤0.15 of the interpupillary distance in ≥60 % of frames) in 17 of 25, the rest three-quarter (0.15–0.3) with eyes on the lens
+  face_h: close-up — face 0.40–0.71 of frame height (8 of 25), medium 0.19–0.35 (8), wide — full figure, face 0.08–0.15 (9)
+  face_x: centered 0.46–0.53 of the width (14 of 25); on a third 0.29–0.40 or 0.59–0.64 (5); narrator at the edge 0.14–0.15 or 0.74–0.77 (5)
+  turn_in: turn to the lens 0.2–0.35 s (5–9 frames @25 fps), contact holds ≥1.5 s
+  approach: a lean or a lunge — face ×1.2–2.3 in 0.3–1.0 s (8–25 frames @25 fps), background scale ×1.00–1.02
+  camera: static (jitter ≤0.3 %) during the contact — 16 of 25; push-in ×1.2–2.0 over 0.5–3.5 s (≤×1.03/frame @25 fps) — 5; handheld 0.5–0.7 % — 4; a pan to or away from the narrator, 15–49 % of the frame in 0.8–1.8 s
+  duration: silent beat 1–2.8 s (25–70 frames @25 fps); a line 3–7 s (75–175 frames); monologue — pieces of 3–7 s, median ≈4 s
+  speech: they speak in 13 of 25, the rest — a silent look with an action toward the camera
+  exit: leaving the frame 0.9–1.5 s, a pan away or a cut on the last word
+when: |
+  Hook: the first 0–2 s — a look into the lens and the first line; the strongest opening for UGC, explainer and
+  motivation videos. A narrator opens a chapter or introduces the next scene. A commentary line mid-story — irony,
+  "did you see that?". In a music video — the performer leans toward the lens on a downbeat or on the chorus entry.
+  Ending — a call to action to the viewer in the last 2–4 s. In a narrative edit, 1–3 addresses per video, otherwise
+  the move wears thin; in a talking head the address is the whole video, but with cutaways over the voice every 3–8 s
+  and a change of shot size every 2–4 s.
+avoid: |
+  A gaze 10–30° off the lens is an interview (frame.interview), not direct address. After the address, don't put a
+  reverse shot of the listening character — the picture turns into pov.dialogue. Don't cut in the middle of a line said
+  straight to the viewer. Several different people addressing the camera in a row with no link confuse the viewer. Jump
+  cuts between takes with different eyelines. In immersive drama, an unintended address breaks the illusion.
+sfx: |
+  Voice dry and close, music under the voice at −12…−18 dB. In a story scene, as the head turns to camera, the background
+  and music dip or fall silent for 0.2–0.5 s — the viewer is "caught"; in comedy — a record scratch or a music stop. A
+  performer's lunge — a whoosh or a riser with a hit at the peak. The narrator gets a "studio" tone of their own, with
+  the scene sound behind them 6–10 dB quieter.
+genres: {ugc: signature, explainer: signature, viral: signature, motivation: allowed, product: allowed, fanedit: allowed, teaser: allowed, drama: allowed, fashion: allowed, travel: allowed, sport: allowed, phonk: allowed, clips: allowed, calm: allowed, epic: allowed}
+detect: |
+  A face in frame, eyes on the lens (pupils centered in the eye opening — visually or with a gaze detector), head frontal
+  (|nose − eye midpoint|/interpupillary distance ≤0.15) or three-quarter ≤0.3; continuous contact ≥1.5 s; the mouth
+  moves (speech) or there is an action toward the camera. ed_motion: "no significant global motion", jitter ≤0.3 % — or
+  a slow ZOOM-IN ×1.2–2.0 peaking at ≤×1.03/frame, or SHIFT 15–49 % over 0.8–1.8 s (the camera reveals the narrator).
+  Lunge toward the camera: the face grows ×1.2–2.3 in 0.3–1.0 s while the background scale is ×1.00–1.02 (ed_motion over
+  the whole frame will show ZOOM-IN with nonrigid ≥0.3).
+  Distinctions: address.aside — a reaction glance of 0.3–1.6 s, usually wordless, in the middle of an ongoing scene and
+  straight back; pov.dialogue — the same picture, but next to reverse shots of the listening character or answers from
+  off-screen; frame.interview — the gaze passes the lens by 10–30°; look.news — a reporter with broadcast lower thirds;
+  pov.object and pov.mirror — an object's rim framing the picture or everyday actions near the face, with no talking
+  to the viewer.
+engine: |
+  footage: find_shot(gaze='lens', faces>=1, min_dur=1.5, speaking=any) → contact segments [t0, t1]; t0 — end of
+           the head turn to the lens.
+  hook: cut(at=t0) as the first shot + text(hook, style='caption', anim='pop', t=[0, 1.5], safe_zone='tiktok').
+  monologue: jump_cut(remove_pauses>0.35 s) + transform(scale=[1, 1.15], center=track(face), ease='hold') on every
+             second piece + subtitle(style='bold', karaoke=True) + duck(music, under=voice) −15 dB;
+             cutaways over the voice every 3–8 s.
+  narrator: hold from the entry into the frame until the exit; reveal on a wide source —
+            transform(shift=[[0, 0], [±0.3, 0]], t=[t0−1.2, t0], ease='inOutQuad').
+  lunge: the peak of the face growth goes on a downbeat; on a static shot boost it with transform(scale=[1, 1.2],
+         center=track(face), t=[beat−0.3, beat], ease='outCubic') + sfx('whoosh', at=beat−0.3) + sfx('impact', at=beat).
+  story break: duck(ambience+music, −20 dB, t=[t0, t0+0.4]) at the moment of the turn to camera.
+gen_hint: <character> stops what they are doing, turns and looks straight into the camera lens and speaks directly to the viewer, eye contact held, frontal medium close-up centered (or wide shot with the narrator standing at the edge of the scene, presenting it with an open hand), static camera, natural light, breaking the fourth wall
+commands: ["start the video with the line he says straight to camera", "find all the bits where people look into the lens and build a hook from them", "insert a direct address to the viewer between #3 and #4", "on the drop, have the singer lean toward the camera", "at the end — a call to action to camera with subtitles"]
+related: [address.aside, pov.dialogue, frame.interview, address.lens_touch, address.frame_break, cut.jump, zoom.punch, type.subtitles, look.news, pov.object]
+evidence: {examples: 25, sources: 15, measured: "YuNet on all frames: frontal in ≥60 % of frames in 17 of 25 (nose offset ≤0.15 of the interpupillary distance), three-quarter 0.15–0.3 with eyes on the lens in the rest (gaze judged visually on 340–1024 px frames); face 0.08–0.71 of the height (close-up 8, medium 8, wide 9); face center 0.46–0.53 in 14, narrator at the edge 0.14–0.15/0.74–0.77 in 5; turn to the lens 0.21–0.32 s; lunge — face ×1.2–2.3 in 0.36–0.9 s with the background at ×1.00–1.02 (5 cases); ed_motion: static during the contact 16 of 25, push-in ×1.22–2.03 over 0.5–3.5 s (5), pans to the narrator 15–49 % over 0.84–1.8 s; 32 s monologue — 7 pieces of 3–7 s; speech in 13 of 25; general fourth-wall section: 15 of 32 examples are this move (8 match the section, 7 new, 5 of them the beckoning host with push-ins ×1.29–1.31 in 0.2–0.5 s)", confidence: high}
+---
+id: address.frame_break
+family: address
+group: editing
+level: C
+aliases: [character breaks the frame, character touches the frame, breaking out of the frame, out of bounds, OOB effect, pop-out, frame break, breaking the frame, live split screen, character moves the split, climb out of the panel, push the frame apart, rip the frame off]
+what: "the borders of the edit become things to touch: bars pried apart, a divider line shoved aside, an image that tears like paper, a frame edge used as a ramp"
+frames: |
+  1. The frame is visible in advance: a split of 2–3 panels with lines 1–2 % of the width (white ≈2 %, black
+     1–1.2 %), vertical or slanted ±4–20° (with three panels the slants are mirrored: ≈+18° and −16°, the middle
+     panel is a trapezoid); or letterbox or pillarbox bars with a light trim ≈1 % of the height; or an ordinary
+     full frame whose edge will become a "sheet".
+  2. The character notices the frame: looks at the edge for 0.5–1 s (13–25 frames @25 fps), raises a hand, winds up,
+     reaches for the line.
+  3. Contact — the frame reacts exactly at the peak of the gesture (±1 frame), through one of these mechanisms:
+     - crossing the line: a hand, a gun barrel, a fist or the whole body enters the neighboring panel and is drawn
+       over the divider (the line is broken along the silhouette) for 0.4–0.6 s; the object often flies toward the
+       lens and grows;
+     - push: the divider shifts with a punch, a throw or a step — 0.5–4.3 % of the width per frame @25 fps
+       (0.12–1.1 widths per second), e.g. 0.51 → 0.22 of the width in 0.25 s (6 frames), then holds for 1–2 s;
+     - merge: the divider slides off the edge in 0.15–0.5 s (4–12 frames), the panels become one frame — characters
+       from different panels end up in the same space;
+     - spreading: the hands press against the pillarbox edges, the window widens linearly 71 → 92 % of the width
+       in 2.1 s (52 frames), symmetrically, ≈5 % of the width per side per second;
+     - snap: bars of 10–11 % slide in at the top and bottom in 0.35 s (9 frames), the woman looks at the top edge
+       for ≈0.9 s, a finger snap — the bars vanish in 2 frames;
+     - ripping the picture: the new shot is pulled down from the top like a blind — 0 → 45 % of the height in 0.2 s
+       (5 frames), then a cut; or the character bursts through the picture as if through paper — a ragged wedge from
+       the top edge, area 4 → 84 % in 0.6 s (15 frames), accelerating; or a finger at the edge swipes the frame like
+       a feed (the border reaches the middle in 7 frames, a 0.5 s pause, finished off in 3 frames);
+     - grab from the neighboring panel: a hand crosses the invisible seam of the split, grows toward the lens, grabs
+       a car — back in their own panel the character already holds it as a toy; the whole gag ≈1.3–1.5 s;
+     - the edge as a surface (animation): a hand-drawn skater rides around the whole perimeter of the frame in 1.9 s
+       (48 frames), feet toward the edge, turning 90° at every corner.
+  4. Landing: the new layout or the full frame holds for 1 s or more; the character's reaction (a smirk, a look into
+     the camera) is the payoff of the gag.
+variants:
+  - crossing the split line — a weapon, hand or body over the divider, often across three panels with the same gesture (5 of 16)
+  - divider as a wall — punches, throws and steps push it, the panels "breathe" over the course of a fight or a walk (5 of 16)
+  - merging panels — the line goes off past the edge, the characters meet in one frame (3 of 16)
+  - grabbing an object from the neighboring panel through the invisible seam, the object becomes a toy (1 of 16)
+  - spreading or opening the bars — with the hands or a finger snap (2 of 16)
+  - ripping off, pulling down, swiping away the picture — a blind, bursting through as if through paper, a finger at the edge (3 of 16; finger swiping in detail — gfx.touch_gesture)
+  - the frame edge as a ramp for a hand-drawn character (1 of 16)
+status: hybrid
+fallback: |
+  Needs a shot with a clear gesture toward the frame edge (a push, a punch, an outstretched hand, a swing, a snap,
+  arms spread apart) — search the source footage with hand tracking: a hand moves toward the edge or toward the panel
+  center faster than 3 % of the frame per frame. With a gesture, the code draws the frame (split, bars, blind, ragged
+  edge) and drives it by the hand; for crossing the line — a person mask (mediapipe or remove_background) so the hand
+  lies over the divider. No gesture — shoot a "reaching for the edge" take on a plain background or generate a shot
+  with consent; without a gesture only the plain layout.split_screen and fx.letterbox remain.
+params:
+  panels: 2–3; line 1–2 % of the width (white ≈2 %, black 1–1.2 %); slant 0° or ±4–20°, mirrored with three panels
+  divider_speed: 0.5–4.3 % of the width per frame @25 fps (0.12–1.1 widths/s), starts at the peak of a punch or step, outCubic; hold 1–2 s
+  merge: the line goes off the edge in 0.15–0.5 s (4–12 frames @25 fps), inCubic
+  crossing: the object over the line for 0.4–0.6 s (10–15 frames), the line is broken along the object mask, no feathering
+  grab_gag: reaches for 0.55 s (14 frames) → grabs in 2 frames → pulls back in 0.55 s; in the hand — a scaled-down copy of the object (a toy or a cut-out object)
+  aspect_push: window 71 → 92 % of the width in 2.1 s (52 frames), linear, symmetric; the window edges follow the hands (≈)
+  aspect_snap: bars 0 → 10–11 % H in 0.35 s (9 frames), hold ≈0.9 s (22 frames), opening in 2 frames on the snap
+  bar_edge: a light 1 % H trim along the inner edge of the bars — makes the frame feel "tangible"
+  pull_down: blind 0 → 45 % of the height in 0.2 s (5 frames), then a cut
+  tear: a ragged wedge from the edge, area 4 → 84 % in 0.6 s (15 frames), inExpo; the character of the new shot is over the torn edge
+  edge_ride: a lap of the perimeter in 1.9 s (48 frames), the sprite oriented along the edge normal
+  sync: the frame change starts on the frame of the gesture peak ±1 frame; a lag of more than 2 frames breaks the illusion
+when: |
+  Hook and intros: introducing characters in comic-book style panels where every gesture moves the frame; action and
+  fights — the divider gets hit on the downbeats; in-world transitions (blind, burst-through, spreading) — on the drop or
+  on a change of track section; UGC and comedy — "pulled an object out of the next frame", "spread the screen apart",
+  "opened the bars with a snap"; ending — the panels merge when the characters meet. Gesture transitions — 1–2 per
+  video; a panel sequence reacting to every beat — 5–15 s.
+avoid: |
+  The frame reacting more than 2 frames before or after the gesture. No mask — the hand "slips" under the divider. A
+  small or distant character — the gesture doesn't read. Three vertical panels in 9:16 are too narrow (split horizontally).
+  Rip transitions back to back get stale. Dramatic and calm delivery — frame tricks break the immersion.
+sfx: |
+  Divider push — a short whoosh and a hit at the peak; panel merge — a dull thud or a "clap" as the line disappears;
+  snap on the bars — a finger snap or a "pop"; blind — the rattle of a roller blind; burst-through — tearing paper;
+  swipe — a soft UI tick; object grab — a "swoosh" there and a "pop" in the hand; edge ramp — the rustle of wheels.
+genres: {ugc: allowed, viral: allowed, fanedit: allowed, teaser: allowed, clips: allowed, sport: allowed, product: allowed, explainer: allowed, fashion: allowed, drama: forbidden, calm: forbidden}
+detect: |
+  The frame is visible and changes in time with the character's action: a custom tracker of straight seams across the
+  full height (coverage ≥ 0.95, slant up to ±25°) — the seam position shifts by 0.5–4.3 % of the width per frame @25 fps
+  as the person moves toward it (pose: a hand or the torso within 5 % of the width from the seam); for 0.4–0.6 s the
+  seam is broken by a silhouette (crossing the line); the seam leaves past the edge in 0.15–0.5 s, after which there are
+  no seams (merge). ed_motion: the bars field changes while the camera is static and the hands are at the window edges
+  (spreading), or disappears in ≤ 2 frames at the peak of a hand movement (snap); a "cut" right after the edge pulled by
+  the character's hand has covered 45 % of the height (blind); a growing area of the new shot with a ragged edge from
+  the border where the person bursts through (burst-through).
+  Distinctions: layout.split_screen and fx.letterbox — the frame moves by itself, without the character's gesture;
+  gfx.touch_gesture — a hand controls the scene with a phone gesture rather than grabbing the frame edge; trans.wipe —
+  the wipe comes from an object passing the lens; address.lens_touch — the character touches the lens (the glass),
+  not the frame.
+engine: |
+  panels: split_screen(layout='2v'|'3v', angles=[18, -16], gutter=0.012, gutter_color='#000'|'#fff')
+  push: divider_follow(divider=i, driver=track(person:wrist|torso).x, gain=1.0, max_speed=0.043, ease='outCubic',
+        t=[peak, peak+0.25]) — new primitive: the divider follows a tracking point
+  crossing the line: composite(layers=[panels, cutout(mask('hf_remove_background'|'mediapipe_person'), panel=i)],
+          blend='normal', t=[t0, t0+0.5]) — the cut-out character over the dividers
+  merge: divider_follow(divider=i, to='offscreen', dur=0.3, ease='inCubic') → full frame of the panel
+  spreading: windowbox(scale=[0.71, 0.92], aspect='native', driver=track(wrists).dx, t=[t0, t0+2.1], ease='linear')
+  snap: letterbox(ratio=[1.78, 2.3], t=[t0, t0+0.35], ease='outCubic') + bar_edge(color='#fff', px=0.01H)
+        + letterbox(ratio=[2.3, 1.78], t=[snap, snap+0.08])
+  blind, burst-through: transition(kind='wipe(shape="blind"|"tear")', dur=0.2|0.6, params={driver: track(hand), edge: 'ragged'})
+          + cutout(hero, over the torn edge)
+  grab: composite(hand cutout across seam) + object_cutout(scale=[1, ≈0.2]) — the object moves into the character's hand
+  edge ramp: sprite_path(path='frame_perimeter', dur=1.9, orient='edge_normal') — new primitive for graphics
+  + sfx('whoosh', at=peak, align='attack') + sfx('impact', at=peak+0.25)
+gen_hint: comic-book style split screen with three slanted panels divided by thin black lines, a character in the middle panel swings his fist toward the left panel and his arm breaks out over the divider line into the neighbouring panel, the divider shifts with the punch, cinematic warm color, static camera
+commands: ["have the character push the divider out on the punch so the panels merge into one frame", "three slanted panels, and the gun pokes out over the line on the drop", "at the start the character spreads the black bars apart with his hands", "transition: he bursts through the frame as if through paper"]
+related: [layout.split_screen, fx.letterbox, gfx.touch_gesture, trans.wipe, layout.windowbox, address.direct, address.lens_touch]
+evidence: {examples: 16, sources: 9, measured: "custom seam tracker over 16 sheets (full frame rate in 5): lines 1–2 % of the width, slant 0–20° (with three panels +18°/−16° and +19°/−15°); divider shift 0.6–5.4 % per frame @20 fps (0.51→0.22 in 0.25 s; 0.67→0.94 in 0.75 s; 0.98→0.58 in 1.5 s), merge in 0.15–0.5 s; crossing the line 0.4–0.6 s; pillarbox 71→92 % in 2.07 s, linear; letterbox 0→10.5 % in 0.35 s, holds 0.88 s, opens in 2 frames on the snap; blind 0→45 % in 0.2 s; burst-through 4→84 % of the area in 0.6 s; feed swipe 96→43 % in 7 frames, pause 0.5 s, finish in 3 frames; perimeter lap in 1.92 s; 8 of 16 examples come from one source with a panel layout", confidence: medium}
+---
+id: address.lens_touch
+family: address
+group: editing
+level: C
+aliases: [character touches the lens, camera as an object, hand into the lens, push the camera away, hit the camera, cover the lens with a palm, drops on the lens, dirt on the lens, drawing on the lens glass, hand over lens, grab the camera, kick the camera, lens splash, cracked lens, rain on lens, camera knock]
+what: the camera stops being invisible — the character reaches for it, covers it with a palm, grabs, pushes away, kicks or carries it off, and the world leaves marks on the lens glass (splashes, dirt, drops, a crack, a drawing); the viewer feels they are standing right inside the scene
+frames: |
+  1. Addressee: the character sees the camera — looks into the lens, walks up or leans toward it; the camera is static
+     or hangs low, often shooting from below, wide-angle, with the face or body filling 40–90 % of the frame.
+  2. Contact (17 of 21) — one of these mechanisms:
+     - a palm or a foot covers the lens: the hand travels to the camera in 0.25–0.5 s, the frame stays covered and
+       smeared for another 0.25–0.4 s (sharpness ≤ 0.35 of the shot baseline, brightness drops to 20–40 or drowns in
+       skin tone), and inside this window comes a cut to a new scene or to black; a sole point-blank — 0.32 s to a
+       black frame;
+     - grabs and carries off: the camera is picked up, spun (spin 60–80° per frame), shaken (±10–30° in 0.2–0.4 s)
+       or carried — 0.4–0.85 s of a dark blurred frame, then a new view;
+     - pushes or hits: the camera breaks into a smear of 0.3–0.65 s (6–16 frames @25 fps) — a whip pan to a new
+       character in the same room or a cut to another place hidden in the smear;
+     - the camera flies: thrown or knocked down, it tumbles for 0.7–1.8 s with rotational motion blur and lands — the
+       world is turned 90° or 180°, the frame holds for 1.8–2.4 s, the character walks up to or looks at the "fallen" camera.
+  3. Mark on the glass (7 of 21): splashes of mud or water fly into the lens in 0.25 s and stay as spots — in the next
+     shot too; drops 5–12 % of the frame width (≈) as soft circles; a crack — 2–4 thin dark lines across the whole
+     frame after a hit, the frame holds for 2.5 s; a smudge in the corner stays put while the scene shifts by 19 % of
+     the width; a marker drawing right on the glass grows in ≈1 s; flare rings from a lamp.
+  4. Resolution: a cut hidden in the cover — the new scene emerges from the smear or defocus in 0.2–0.7 s;
+     or the character "fixes" the lens — wipes the dirt off with a cloth in 0.55 s; or the hit breaks the picture
+     off into interference or black.
+variants:
+  - palm covers the lens → cut: the new scene emerges from defocus in 0.5–0.7 s, sometimes with a slight push-in ×1.2
+  - grabs the camera → new place: the same character in another location, the cut inside the grab
+  - pushes away or hits → whip smear: into the same room to a new character or to another city with smeared lights
+  - grabs the camera with both hands and spins it → spin transition
+  - point-blank kick with the sole → black frame
+  - the camera is picked up off the floor and carried away: the frame drowns in skin and darkness, then shows what it was brought up to
+  - camera as a projectile or camera on a toy: flies, tumbles and lands on its side — the world at 90°, the character looks down from above
+  - holds the camera themselves: fingers in the frame edges (≈ 8–18 % of the width on each side), the character shakes and twists the camera near the face
+  - splash and wipe across a cut: in shot A mud flies into the lens, in shot B another character wipes it off with a cloth
+  - drops, tears, rain on the glass: soft circles in the upper part of the frame build up over 0.5–1 s
+  - hit → crack: after the shake the frame freezes with cracks across the whole glass
+  - hit → signal failure: the picture breaks up into horizontal bands and noise ≥ 0.64 s
+  - drawing on the glass: the character draws with a marker "on the lens", the drawing is fixed relative to the frame
+  - lens smudges and flares as texture: a smudge in the corner, ring flares from lamps
+status: footage
+fallback: |
+  The contact (palm, grab, push, kick) must be in the source footage: code looks for the moment when, within 4–12 frames
+  @25 fps, the share of a blurred dark or skin-toned area grows to 85–100 % of the frame (sharpness ≤ 0.35 of the shot
+  baseline, brightness ≤ 40 or skin), often after a look into the lens — that is where the cut goes; no such shot — shoot
+  a "hand into the camera" take or generate one with the user's consent. Code can do this on any shot: push and throw —
+  a whip smear or a spin of 0.3–0.65 s, fall — a 90° frame rotation with a bounce; marks on the glass — an overlay of
+  drops, dirt, a crack, a drawing or a ring flare (fixed relative to the frame); breakage — interference and black.
+params:
+  reach: a hand or foot to the lens in 0.25–0.5 s (6–12 frames @25 fps), face or body filling 40–90 % of the frame
+  cover: 85–100 % of the frame covered for 0.25–0.4 s (6–10 frames @25 fps), sharpness ≤ 0.35 of the shot baseline, brightness ≤ 40 or skin tone; the cut in the middle of the window
+  reveal: the new scene out of defocus or smear in 0.2–0.7 s (5–18 frames @25 fps), optionally a push-in ×1.06–1.22 ease-out
+  push_whip: smear after a push or hit 0.3–0.65 s (8–16 frames @25 fps), direction — away from the hand
+  grab_spin: rotation 60–80° per frame, 0.25–0.35 s
+  shake_in_hands: roll ±10–30° in 0.2–0.4 s, shake 5 % of the frame per frame, fingers at the edges 8–18 % of the width
+  kick: the sole fills the frame in 8 frames @25 fps (0.32 s), then black ≥ 3 frames
+  carry: a dark blurred frame for 0.4–0.85 s between the grab and the new view
+  throw_fall: tumble 0.7–1.8 s with rotational motion blur → frame at 90° or 180°, hold 1.8–2.4 s
+  splash: splashes 0.25 s (5–6 frames) to the peak, the spots stay 2+ s and carry across the cut; translucency ≈ 30–50 %
+  droplets: 3–8 soft circles 5–12 % of the width (≈), upper half of the frame, build up over 0.5–1 s
+  crack: 2–4 thin dark lines across the whole frame (≈ 1 % of the area), after a hit; hold 2–2.5 s
+  wipe: a cloth or palm covers 50–70 % of the frame for 0.5–0.6 s, after that the frame is cleaner
+  signal_break: horizontal bands and noise 0.6+ s, mean brightness 55 → 20–30 with flashes of bands
+  drawing: a dark line 0.3–0.5 % of the width, the drawing grows over ≈1 s, fixed relative to the frame
+when: |
+  Hook (first 1–2 s: the character grabs the camera and carries the viewer into the scene), a transition between
+  locations or looks within one scene (palm, grab, hit — the cut inside the cover on a downbeat), ending (a kick or a
+  palm into the lens — black and the end of the video), comedy gag (the character pushes the camera away, wipes the
+  lens, cries streams of tears onto the camera), action and sport (mud, splashes, water fly into the lens). 1–2 contacts
+  per video; marks on the glass can stay for the whole episode.
+avoid: a contact without an addressee — a hand to the camera with no look and no reason reads as an accidental wipe; a cut before full cover (it shows) or after it (the grab is lost); more than 2–3 contacts in a row; marks on the glass that move with the scene instead of staying put; drops and cracks over titles and faces; a dramatic or calm tone without a reason
+sfx: |
+  Lens touch — a dull "thud" or a palm rustle exactly on the cover; grab — a rustle and a "swoosh" on the smear;
+  push or hit — a whoosh and a hit; kick — a heavy hit and silence on the black; fall — a knock and the rattle of the
+  camera body; splashes — a splash or a slap of mud; crack — glass crunching; interference — crackle and the sound
+  cutting out; wipe — the squeak of a cloth on glass; drawing — the squeak of a marker.
+genres: {ugc: signature, viral: signature, fanedit: allowed, clips: allowed, phonk: allowed, sport: allowed, teaser: allowed, travel: allowed, product: allowed, fashion: allowed, motivation: allowed, explainer: allowed, epic: allowed, drama: allowed, calm: forbidden}
+detect: |
+  Custom frame-by-frame measurement: within 4–12 frames @25 fps sharpness drops to ≤ 0.35 of the shot baseline,
+  brightness to ≤ 40 (or skin tone floods the frame), a large object grows from the center or an edge; before that the
+  face looks into the lens (as in address.direct). ed_motion: in the cover window — false cuts in a row (cuts every
+  other frame) and/or black frames; after it — ROTATE 60–80°/frame (spin), a long SHIFT with smear (push), ROTATE 90°
+  with no return (fall).
+  Marks on the glass: an area that stays put (shift < 1 % of the width) while the scene shifts by 5+ %; thin dark
+  lines across the whole frame after a hit (crack); soft circles 5–12 % of the width that appear within the shot (drops).
+  Difference from trans.wipe: there an object passes the lens on its own (a passer-by, a column), here the character
+  touches the camera on purpose. From address.direct: there the character only looks and talks into the lens without
+  touching it. From address.frame_break: there the character touches the frame border (split, bars), not the glass.
+  From pov.first_person: there the hands in frame are the viewer's hands, while here the character's hands reach
+  toward the viewer or hold the camera as an object. From trans.whip: there the smear is an editing device with no
+  cause in the frame, here it is caused by the character's hit or push.
+engine: |
+  lens_contact_cut(a, b, detect='cover', min_cover=0.85, sharp_max=0.35, cut='mid_cover', reveal='defocus',
+                   reveal_dur=0.5, push=1.1) — new: finds the window where a palm or sole covers the lens in shot A
+                   and cuts in its middle; shot B emerges from blur(kind='gaussian', amount 12→0) in 0.5 s.
+  push_off: transition('whip', dur=0.4, params={dir: away from the hand}) | grab_spin: transition('spin', dur=0.3, angle=70);
+  kick_to_black: cut(at=cover_peak) + fade(to='black', dur=0); throw_fall: transform(rotate=[0, 90], t=[t0, t0+0.8],
+  ease='outBack') + shake(amp=0.03, freq=12, decay=6) + blur(kind='directional').
+  lens_overlay(kind='droplets'|'dirt'|'crack'|'drawing'|'ring_flare', opacity=0.3–0.5, size=0.05–0.12, region,
+               t, grow=0.25–1.0) — new: an "on the glass" layer, fixed relative to the frame, with background
+               refraction under the drops (a slight displace) and defocus; it holds across cuts until lens_wipe(t, dur=0.55).
+  signal_break: glitch.tv_noise(dur ≥ 0.6) after a hit; held_camera: destabilize(profile='handheld', amp=0.05,
+  rot=±20) + overlay of hands at the edges (mask from the source).
+  sfx('impact', at=cover_peak, align='attack'); sfx('whoosh', at=smear); sfx for the splashes and the crack — when
+  the layer appears.
+gen_hint: "<a person> walks straight up to the camera, looks into the lens and reaches out with an open palm until the hand completely covers the lens; handheld low angle, wide lens, natural motion blur on the hand; then the lens goes dark"
+commands: ["palm over the lens — and cut to the next scene", "on the drop, have him grab the camera and we land in #5", "at the end — a kick into the camera and black", "add mud splashes on the lens, and in the next shot have someone wipe them off", "drops on the glass in the scene with tears", "hit the camera — and a crack across the whole frame"]
+related: [address.direct, address.aside, address.frame_break, trans.wipe, trans.whip, trans.spin, trans.hidden_cut, pov.first_person, glitch.tv_noise, handheld.shaky, angle.water_level, lens.ultra_wide, rig.mounted]
+evidence: {examples: 21, sources: 16, measured: "all 21 examples in the section by main mechanism: palm or grab → cut or spin 4, push or hit → smear 3, kick → black 1, grab → carry or lift 2, throw or fall 3, holds it themselves 2, hit → crack or interference 2, only a mark on the glass 4 (splash + wipe, drops, smudge, drawing); marks on the glass in 7 in total (counting crack, interference and ring flare); measurements: hand to the lens 0.25–0.5 s, cover 0.25–0.4 s at sharpness ≤ 0.35, reveal of the new scene 0.2–0.7 s (push-in ×1.06–1.22), smear after a push 0.3–0.65 s, spin 61.7°/frame, shake in the hands ±10–32° and 5.2 % per frame, sole 0.32 s to black, tumble 1.8 s and fall to 90°, splashes 0.25 s, wipe 0.55 s, the smudge stays put (+0.6 %) while the scene shifts −18.7 %, cracks ≈1 % of the area across the whole frame, interference ≥ 0.64 s; drop and finger sizes are estimates (≈)", confidence: medium}

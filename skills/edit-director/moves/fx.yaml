@@ -1,0 +1,1752 @@
+id: fx.bobblehead
+family: fx
+group: effect
+level: B
+aliases: [bobblehead, nodding doll, bobbing head, adult head on a child's body, caricature head, chibi proportions]
+what: a person's live head is out of proportion to the body — the head is enlarged or the body shrunk to a child's or doll's size; an adult turns into a living toy, a comedic composite
+frames: |
+  1. The shot is static (8 of 10 measured — jitter 0.01–0.12 % of the frame), medium or wide, the whole figure in frame;
+     most often a "toy" setting: a sandbox, a toy piano, a baby stroller, a dollhouse living room.
+  2. The head is real — with live facial expressions and lip-sync; the body is a child's, a doll's or shrunk. The head is ≈25–30 % of the height
+     of the seated figure versus ≈13 % normally, i.e. ≈×1.8–2.2 relative to the body; head width ≈0.6 of shoulder width (normal ≈0.4).
+  3. The character does "adult" things — sings, gestures, plays an instrument — and the contrast between proportions and behavior makes
+     the joke. The shot holds for 1.4–3.9 s; camera movement, if any, is a slow push-in or pull-out ×1.05–1.1.
+variants:
+  - adult head on a toddler's body: in a stroller, at a toy piano, on a slide — the head is composited onto a body double's body
+  - marionette doll: thin doll arms, a live head, a doll's room; body movements are jerky, as in stop-motion animation
+  - toy world: two people among giant toys in a sandbox — proportions shifted only slightly, the oversaturated warm color does the main work
+  - code version without a body swap: head ×1.5–2 right on the original person with a light bobblehead "wobble"
+status: hybrid
+fallback: |
+  without a suitable body — only head enlargement in code on the original shot; the "head on a child's body in a toy
+  world" scene — generation from a face photo with the user's consent; shrinking the body while keeping the head requires restoring
+  the background (outpaint or a clean plate without the person from the source footage).
+params:
+  head_scale: ×1.5–2.2 of the original (typically ×1.8); pivot point — the chin or the base of the neck
+  mask: head with hair — face contour from face mesh, expanded upward and sideways by 25–40 %, ∩ person mask; feather 2–4 px @1080p
+  tracking: every frame; smooth position and scale over 3–5 frames, otherwise the head "floats" separately from the neck
+  bobble: optional — the head tilt lags by 2–4 frames, wobble ±4–8° decaying over 0.4–0.6 s
+  body_scale: shrunk-body variant ×0.5–0.6 with the head at ×1.0; needs a restored background
+  shot: static medium or wide shot, whole figure, 1.5–4 s (38–100 frames)
+  look: toy palette — saturation median 90–150 of 255 (measured), warm shift R−B ≈ +25–70, primary colors
+when: comedic inserts and punchlines, meme reactions, music videos and fan edits with toy characters, UGC humor; a single accent 1–3 times per video or a running device for a whole scene; the effect appears on a downbeat or a stressed word
+avoid: a serious, dramatic or luxury tone; a face in profile beyond ≈60° or covered by hands (the mask breaks); fast head movements and motion blur; a close-up of the face — without the body the effect does not read; several overlapping people without reliable tracking
+sfx: a cartoon "boing" or pop on the appearance; for comedy — the voice pitched up 3–5 semitones; without a voice effect — the regular track
+genres: {viral: signature, ugc: allowed, fanedit: allowed, clips: allowed, drama: forbidden, epic: forbidden, motivation: forbidden, fashion: forbidden, teaser: forbidden}
+detect: |
+  ed_motion: usually static (no events, jitter ≤0.12 %), sat_med ≥90 and a warm rgb_med (R−B ≥ 25) in the "toy"
+  variant. The key sign is proportions via mediapipe: face height ≥0.6 of torso length (shoulders–pelvis; normal ≈0.35–0.4) or head
+  width ≥0.55 of shoulder width; adult facial features (stubble, adult face shape) on a child's body; a mask halo along the hair edge;
+  the head slightly "floats" relative to the neck from frame to frame.
+  Differences: lens.fisheye — the whole frame is distorted, background lines bend; scene.tiny_people — the person is shrunk as a whole
+  with proportions preserved; a real child — childlike facial features.
+engine: |
+  head = mask(method='face', feather=3) expanded upward by 35 % ∩ mask('mediapipe_person')
+  new primitive head_scale(scale=1.8, pivot='chin', smooth=4, bobble={amp: 6, lag: 3, decay: 0.5}) — scales the head
+  layer around track(chin) every frame; composite(layers=[plate, head], blend='normal').
+  Toy look: color(params={saturation: +40 %, temperature: warm +8, contrast: +10 %}).
+  Body variant: mask('mediapipe_person') → transform(scale=0.55, center=track(feet)) over the restored
+  background (outpaint) → the head on top at scale 1.0 with the pivot on the new chin.
+  sfx('click', at=appearance) or voice pitch +4 semitones.
+gen_hint: a grown man's real head on a toddler's body, sitting at a tiny yellow toy piano on a sunny beach, bobblehead proportions, oversaturated warm toy-like colors, static wide shot, comedic music video style
+commands: ["give me a big head on #3", "bobblehead on the chorus: head ×2 with a wobble", "my head on a toddler's body in a toy world", "bobblehead on the punchline at 0:15"]
+related: [scene.tiny_people, scene.forced_perspective, lens.fisheye, trans.lens_distort]
+evidence: {examples: 10, sources: 2, measured: "camera static in 8 of 10 (jitter 0.01–0.12 %), in 2 — a push-in or pull-out ×1.05–1.1 over 0.7–2.4 s; shots 1.4–3.9 s; head ≈25–30 % of the seated figure's height — estimated from frames; saturation median 91–152, warm shift R−B 23–72 in 9 of 10", confidence: medium}
+---
+id: fx.color_shift
+family: fx
+group: effect
+level: B
+aliases: [color change, color shift, hue shift, recolor, colour cycle, RGB cycle, monotone, color pop, color returns, desaturation, relight]
+what: the scene's color changes abruptly or smoothly right inside a shot or on a cut — per-channel monotone, a drop to B&W and the return of color, a "creeping" hue, a different light color on the same scene — as an accent on the beat or on a change of meaning
+frames: |
+  1. Setup: a shot in normal color for 0.3–2 s — the viewer memorizes the "normal" palette.
+  2. The shift, in one of three ways:
+     jump — within 1 frame on a beat or a cut (the scene stays the same, the geometry does not break);
+     hue rotation — 35–95° per second, 0.9–3.2 s (a face turns green in ≈0.9 s, the background goes from pink to blue in 3 s);
+     reveal — B&W for 0.3 s, then saturation rises from 0 to 0.5 over 1.2 s almost linearly.
+  3. Hold of the new color for 0.3–1 s in cycles or until the end of the shot.
+  4. Return the same way, through a short diagonal wipe of 1–2 frames, or with a cut to normal color.
+  RGB cycle: red monotone (one channel ≈95 % of the sum, brightness drops to 20–45 % of the original) → green → blue, 0.3–0.45 s each,
+  with 0.1 s diagonal wipes between them, then normal color — the whole cycle ≈2 s.
+variants:
+  - RGB cycle: red → green → blue monotone, 0.3–0.45 s each, through diagonal wipes, then normal
+  - color returns: B&W → color over 1–1.5 s ("the world comes alive") or the reverse desaturation
+  - creeping hue: one color (green, red) floods the face over ≈1 s — emotion, screen light, nausea
+  - background rotation: the background or the light smoothly travels around the hue circle over 3–6 s, the original color shows on white flashes
+  - recolor on a cut: the same scene, a different light color (light blue → red) — a cut on the beat
+  - treatment changes on beats: color → B&W → hard B&W → cold color, 0.3–1 s per shot
+  - color strobe: the light on the characters changes color every 0.15–0.3 s
+status: code
+fallback: relighting the characters looks more realistic with a mask (hybrid) — the background and the person are tinted differently; if real colored light is needed — look in the source footage for shots with colored lamps or generate them (with consent)
+params:
+  jump: 1 frame; hold 0.3–1 s (8–25 frames @25 fps) — ½–2 beats at 120 BPM
+  hue_sweep: 35–95° per second, 0.9–3.2 s, ease linear or inOutSine
+  fade: saturation 0 → normal over 1–1.5 s (25–38 frames), linear; B&W hold up to 0.3 s
+  monotint: one channel ≈90–95 % of the RGB sum, brightness ×0.2–0.45 (red brighter than blue)
+  cycle: R → G → B → normal, 0.3–0.45 s each; wipe between colors at 45°, 1–2 frames
+  mask: whole frame | background only (person mask) | face only
+  treatments: color / B&W / B&W with contrast ×1.5–2 / cold color — one per shot
+when: the drop and a change of track section, a snare run (cycle), a turn in meaning — desaturation as loss, the return of color as hope; chorus versus verse; dreams and trips; fashion shots on a plain background; big shifts no more than once per 8 bars, a cycle — 3–4 beats in a row
+avoid: a product with a brand color and skin in beauty content, if the color matters; small random shifts — they look like a broken white balance; a shift not anchored to the music or the meaning; a long monotone (longer than 1 s) on an important face
+sfx: on a jump — a hit or a click on the beat; on a rotation — a filter sweep or a riser; on the return of color — a low-pass filter opening and the music swelling; on a cycle — three identical hits
+genres: {fanedit: signature, fashion: signature, viral: allowed, phonk: allowed, motivation: allowed, drama: allowed, teaser: allowed, clips: allowed, sport: allowed, travel: allowed, calm: allowed, product: allowed}
+detect: |
+  ed_motion: "cuts" without loss of tracking (LK keeps the points, the geometry is continuous), some of them only a color change; black frames
+  on the blue monotone; holds while the scene is unchanged.
+  Custom code: saturation-weighted circular mean of hue and per-frame channel shares — a hue jump > 60° within 1 frame with
+  static geometry; a drift of 35–95° per second; one channel > 80 % of the RGB sum (monotone); saturation rising from 0 to 0.4–0.5 over 1–1.5 s
+  at unchanged brightness (return of color).
+  Difference from a regular cut: points are tracked across the "seam", only the color changes. Difference from cut.flash: brightness does not spike.
+  Difference from a constant grade (look.*): here the color changes over time within the video.
+engine: |
+  color(params={'hue_rotate': [0, 90], 't': [t0, t0+1.0], 'ease': 'linear'}) — hue rotation
+  color(params={'saturation': [0, 1], 't': [t0, t0+1.2]}) — return of color; the reverse — desaturation
+  color_cycle(seq=['R', 'G', 'B', 'orig'], hold=0.4, wipe={'angle': 45, 'dur': 0.08}, beat_sync='1/4') — new primitive
+  + mask(method='mediapipe_person') to recolor only the background or only the subject
+  + sfx('impact', at=beat) on jumps; sfx('riser', t=[t0, t0+1.0]) on a rotation
+gen_hint: <subject> in a scene whose lighting color shifts dramatically, the whole frame washes from pink to blue, saturated monochrome color changes, colored light cycling red green blue
+commands: ["RGB cycle on the three snares before the drop", "bring the color back into the frame on #5 after the B&W", "face turns green on the line at 0:14", "background shifts from pink to blue over the whole verse"]
+related: [fx.glitch, cut.flash, look.film, mask.bg_replace, trans.wipe]
+evidence: {examples: 8, sources: 8, measured: "RGB cycle: red 0.4 s (R 95 %), green 0.35 s, blue 0.45 s, wipes 1–2 frames @20 fps, whole cycle ≈1.6 s between normal frames; return of color: saturation 0 → 0.5 over 1.2 s almost linearly; creeping green: hue 27° → 113° over 0.9 s; background rotation: 328° → 216° over 3.2 s (≈35°/s), hold 0.8 s, back to 291° by 6 s; treatment changes from shot to shot every 0.3–0.8 s", confidence: high}
+---
+id: fx.duplicate
+family: fx
+group: effect
+level: C
+aliases: [clone, clone shot, clones, cloning, twins, double, twinning, subject double, clone army, replication, multiplication, time stacking, copy stack, object array]
+what: the same person or object appears in the frame several times — a double at the table, a hall full of clones, copies popping up on the beats, an object multiplied into a forest or a flock; the scene is whole, without borders or seams
+frames: |
+  The basis is a locked-off camera (jitter 0.01–0.13 % of the frame) and several takes combined into one frame over a "clean plate".
+  1. Setup: the subject alone in frame for 0.1–1 s, or straight to a wide shot with the copies.
+  2. The copies appear in one of these ways:
+     one by one on the rhythm: a new copy every 1–2 frames (40–80 ms), in 0.3 s the hall goes from 1 → 14 figures;
+     emerging: a copy steps out of the subject offset by ≈10 % of the frame, holds and merges back into them;
+     entering the frame: the double walks in from the side and stands next to them;
+     on a cut: a close-up of the subject → a wide shot where there are two of them (a dialogue with oneself).
+  3. Hold: the copies live independently (different takes, different poses) for 2–10 s; for a pair "holding hands" the seam runs
+     through the empty space between the figures.
+  Objects: one object multiplied into an array — dozens to hundreds of copies fill a strip or the whole frame (wind turbines, traffic lights, a structure),
+  or 10 copies of a chairlift chair stand in a "stack" offset diagonally, or airplanes from different moments in time
+  are gathered into one sky (one camera position, different passes).
+  Grid: the frame shrinks into a repeating grid of copies — from 1 to 5 across the width in 0.45–0.65 s (zoom-out ×0.36), then holds.
+variants:
+  - double: two instances of the subject in one shot (a conversation, walking hand in hand, playing four-handed) — a vertical seam between them
+  - hall of clones: copies of one or two people appear one at a time on the rhythm and fill the space
+  - split-off: a copy separates from the subject, lives on its own and merges back; the camera can move (tracking needed)
+  - the double enters the frame: a second instance of the subject walks in from the side or from behind
+  - stack: 8–12 copies of an object offset diagonally by ≈4–6 % of the frame, moving together
+  - object array: dozens to hundreds of identical objects (graphics) — a surreal landscape
+  - stacking in time: one camera position, different passes of an object (planes, cars, passers-by) — all in one frame
+  - grid of frame copies: the image recedes into an endless grid of repeats on the drop
+  - mirror shards: the face repeated 4–5 times in a fan of mirrors, right in camera
+status: hybrid
+fallback: needs a static tripod shot and several takes (the subject in different places) — look in the source footage for series shot from one position; if there is only one take — stacking in time from a single clip or a "stack" via a mask; for object arrays and complex scenes — generation (with consent)
+params:
+  copies: 2 (double), 3–14 (hall), 8–12 (stack), 30–300 (object array); typically 2–5 for people
+  camera: tripod or a stabilized frame, jitter < 0.15 %; if moving — tracking and the same trajectory in all takes
+  plate: a clean plate without the subject, 1–2 s (or a median of frames) to fill the seams
+  seam: a vertical seam through empty space, feather 2–5 % of the width; at overlaps — a person mask
+  appear: one by one, 1 copy per 1–2 frames (40–80 ms) or 1 copy per beat; emerging 0.3–0.5 s; entering the frame 1–2 s
+  stagger_time: for stacking in time, an offset of 0.3–1 s between copies of one pass
+  stack_offset: 4–6 % of the frame per copy diagonally, no fade (unlike an echo)
+  grid: 1 → 4–5 copies across the width in 0.45–0.65 s (zoom-out ×0.3–0.4), mirrored joins — optional
+  hold: 2–10 s per shot with copies
+when: duality and inner dialogue, "me versus myself", comedy, "one person is a whole group" (a choir, a team, an audience), product abundance, a surreal image; the copies appear on the beats before the drop or on the drop; 1–2 times per video
+avoid: handheld camera without tracking (the seams drift); different light and shadows between takes; overlapping copies without a mask — ghosts and semi-transparency; identical synchronized movements of the copies — looks cheap (use different takes or offset them in time); a tight frame where the copies have no room to stand
+sfx: on each copy's appearance — a click or a "pop" on the beat; on a split-off — a whoosh or a reverse; voice doubling (double-tracking) for the copies; on the grid of copies — a riser into the drop
+genres: {fanedit: allowed, viral: allowed, ugc: allowed, fashion: allowed, product: allowed, teaser: allowed, drama: allowed, clips: allowed, motivation: allowed, phonk: allowed, explainer: allowed}
+detect: |
+  ed_motion: the camera is static (jitter 0.01–0.13 %, holds) while the people move naturally; on the grid of copies — ZOOM-OUT ×0.36 over 0.65 s centered at [0.5, 0.5]
+  and nonrigid ≈0.1.
+  Custom code: several faces or figures with identical features (face embeddings, clothing histogram) in one frame; the number of
+  changed patches relative to the first frame grows by 1 every 1–2 frames (one-by-one appearance); a repeated object — many matches of one template
+  (template matching) in one frame; identical trajectories offset in time.
+  Difference from time.echo_trail: an echo is a semi-transparent fading trail behind the movement; clones are opaque and independent.
+  Difference from split screen: there, visible borders and different spaces; here, one continuous space. Difference from fx.kaleidoscope:
+  no mirror symmetry around the center.
+engine: |
+  clone(takes=[clip_a, clip_b, ...] | time_offsets=[0, 0.6, 1.2], plate='median'|clip_plate, mask='split(x=0.5, feather=0.03)'|'mediapipe_person'|'hf_remove_background',
+        appear='pop'|'fade'|'slide', stagger=0.04, t=[t0, t1]) — new primitive: combines takes over a clean plate
+  instance_array(mask='hf_remove_background', count=10, offset=[0.05, -0.04], scale_jitter=0.05) — stack and array of object copies
+  time_stack(clip, offsets=[0, 0.5, 1.0, ...], plate='median', key='difference') — stacking passes in time from one static clip
+  tile_zoom(start=1, end=5, dur=0.6, mirror=False, ease='inOutQuad') — grid of frame copies
+  + stabilize(1.0) before combining, if the camera drifts slightly; + sfx('click', at=each appearance, align='attack')
+gen_hint: the same person appears five times in one continuous locked-off shot, clones of <subject> sitting in different rows of an empty theater, seamless composite, consistent lighting
+commands: ["clones of the subject appear one per beat before the drop", "make a double at the table on #4", "multiply the product into a whole shelf at 0:12", "grid of frame copies on the drop"]
+related: [time.echo_trail, fx.kaleidoscope, layout.split_screen, mask.bg_replace, fx.refraction, cut.jump]
+evidence: {examples: 15, sources: 13, measured: "camera jitter 0.01–0.13 % in 7 of 9 shots with people and objects; hall: 1 → 14 copies in 0.32 s, one every 1–2 frames @25 fps, starting after 0.12 s; split-off: copy offset ≈10 % of the frame, merge in ≈0.2 s with a moving camera (pull-out ×0.76); grid: zoom-out ×0.36 over 0.65 s, 5 copies across and 3 down; stack — 10 copies; object arrays — dozens to hundreds; 1 example is ambiguous (possibly different people)", confidence: medium}
+---
+id: fx.film_overlay
+family: fx
+group: effect
+level: B
+aliases: [film overlay, film texture, grain overlay, film grain, grain on top, dust overlay, dust and hairs, organic look, film on top]
+what: a procedural film texture over any shot — grain, dust, hairs, scratches, flicker and frame micro-weave — with no change of color, frame border or format; from a barely noticeable "organic" feel to old film, in levels 1–3
+frames: |
+  Not an event but a layer over the whole episode: every frame gets new grain, the frame "lives" even on a freeze frame, a title or black.
+  1. Grain: fine specks of 1.3–2.8 px @1080 over the whole frame, strongest in the midtones, weaker in deep shadows and highlights;
+     no two frames share a grain pattern; color stock adds a faint tint to the specks.
+  2. Dust: 1–25 dots and clumps of 1–6 px per frame in random places, mostly dark (light ones on a dark background),
+     each lives 1 frame; occasionally a clump "sticks" for 2–6 frames.
+  3. Hairs: a thin curved line 2–8 % of the frame's short side (S) long flashes for 1–4 frames, sometimes hangs at the frame edge for 1–3 s.
+  4. Scratch: a light vertical line 1–2 px wide over 40–100 % of the height appears abruptly, lives 0.3–1.5 s, jitters
+     horizontally by 1–3 px, breaks up in places; at level 3 there are 1–3 at once.
+  5. Flicker: the brightness of the whole frame wanders by ±0.7–5 % from frame to frame — unevenly, without rhythm.
+  6. Gate weave: the whole frame floats with an amplitude of 1–12 px @1080 at 0.5–3 Hz, more noticeably vertically than horizontally.
+  Color, contrast, the black point and the frame format do not change — that is the job of look.film.
+variants:
+  - level 1, organic: only fine grain, micro-flicker and barely noticeable weave — "shot, not rendered"; glues together phone, camera and generated shots
+  - level 2, film: noticeable grain, occasional dust, a hair every 3–5 s, a scratch every 4–8 s, light flicker and weave
+  - level 3, old film: coarse grain, lots of dust and hairs, 1–3 scratches constantly, strong flicker and weave — flashback, archive, "found footage"
+  - grain only: monochrome or colored, without dust or weave — for clean genres and graphics
+  - dust on black: a black frame or leader with dust and hairs between parts of the video
+status: code
+fallback: no special footage or third-party overlay files are needed — everything is synthesized in code from a seed on any video; a night source with heavy digital noise should first go through a denoiser (otherwise the noise doubles), and only then gets the grain
+params:
+  level: "1 — organic, 2 — film, 3 — old film; the numbers below are given per level 1 / 2 / 3; the level changes only at a boundary between parts of the video"
+  grain_sigma: "grain σ in 0–255 levels in the midtones: 2–3 / 4–5 / 7–10; black-and-white old film — 10–14"
+  grain_size: "speck width (autocorrelation width at half maximum) @1080: 1.3–1.6 / 1.8–2.2 / 2.2–2.8 px; generation — white noise, Gaussian σ 0.3–0.9 px, then normalization to the target σ; at 4K — ×2"
+  grain_response: luminance weight — 1.0 in the midtones (0.3–0.6), 0.6 in deep shadows, 0.3 in highlights above 0.9; add to the frame in gamma, not in linear light
+  grain_chroma: colored grain — channels correlated at 0.7–0.85 (mostly luminance), color share 0.2–0.5; for B&W — monochrome
+  grain_renew: a new pattern every frame (correlation between adjacent frames 0); the grain lives on a freeze frame too
+  dust: "dots per 1080×1920 frame: 0–1 / 3–8 / 10–25; size 1–6 px (mostly 1–3), a clump of 3–5 dots with a 0.5 px blur; 70–80 % dark, 20–30 % light; opacity 0.4–0.9; they live 1 frame, 5 % — 2–6 frames"
+  hair: "hairs per second: 0 / 0.2–0.3 / 1–2; length 2–8 % S, thickness 1 px, a curve with 1–2 bends, lives 1–4 frames; 30 % — at the frame edge, hanging for 1–3 s"
+  scratch: "at once: 0 / 0–1 / 1–3; width 1–2 px, light (85–95 % white, opacity 0.4–0.7), length 40–100 % of the height with breaks; lives 0.3–1.5 s (8–38 frames @25 fps, 9–45 @30 fps); jitters by ±1–3 px per frame, crawls 0–5 px/s; a new one every 4–8 s (level 2) or 1–3 s (level 3)"
+  flicker: "brightness ±0.7 / ±2 / ±4–5 % (per-frame σ), noise with a 6–12 Hz cutoff — not a strobe; optionally the frame edges flicker more than the center"
+  weave: "weave amplitude @1080: 0.5–1.5 / 2–5 / 6–12 px, vertical ×1.5–2 relative to horizontal; smooth noise at 0.5–3 Hz plus per-frame scatter of 25 % of the amplitude; rotation ±0.02–0.1°; overscan ×1.01–1.02 so there are no empty edges"
+  seed: seed = base + timeline frame number — re-rendering a section gives the same result (project = code)
+  speed: a bank of 32–64 grain tiles of 512×512 for the required σ and size, per frame — a random tile with an offset and a flip, never the same tile on two frames in a row; assembling the grain for a 1080×1920 frame ≈ 10 ms versus ≈ 200 ms generating from scratch, luminance-weighted blending ≈ 40 ms on 1 core; draw dust, hairs and scratches in small windows, not with full-frame masks
+  delivery: "the platform re-encodes the video: fine grain of 1–1.5 px is wiped out almost completely (≈ 5 % σ remains) and turns into blotches, 2–2.5 px grain keeps 30–40 % σ; so for social media levels 2–3 use size 2–2.5 px and σ 5–8 (≈ 2–3 after re-encoding); level 1 almost disappears on social media — it is for the master and high bitrates; master — H.264 CRF 17–19 with -tune grain"
+  order: grade → glow → light leaks → impulse effects (RGB split, shake) → film_overlay → text; level 1 grain can also go over titles (it glues graphics to the picture), dust and scratches — always under text and subtitles
+when: |
+  Calm, warm and nostalgic videos — level 1–2 for the whole video; a memory, a flashback, archive and old photos —
+  level 3 for an episode of 3–15 s; travel, fashion, fan edit, motivation with a dark cinematic grade — level 1–2;
+  cutting together mixed sources (phone, camera, generated shots) — level 1 over everything; masking banding in skies and
+  gradients — level 1. The layer is not synced to the music: the level changes only on the downbeat of a part boundary (for example,
+  verse — 2, drop — 1 for a clean hit, flashback in the bridge — 3). Hook — texture from the first frame, never switched on mid-shot;
+  outro — the same level to the end or a move to "dust on black". Dust on black — pauses and leaders between parts, 0.5–1.5 s.
+  Limit: level 3 — no longer than 15 s in a row, unless the whole video is styled as old film.
+avoid: |
+  Infographics, small text, interfaces and screens (dust reads as dirt, grain eats thin lines); product macro shots —
+  specks look like real dirt on the product (level 1 only, without dust); beauty close-ups — level 1 grain only;
+  mixing with tape noise and digital glitch in one shot (clashing media); a noisy night source without a denoiser (the noise
+  doubles); strobe flicker stronger than ±8 % (cheap and dangerous for photosensitive viewers); a looped texture with repeating
+  dust — the texture is always procedural and new every frame; a scratch on a face or eyes for longer than 1 s; switching the
+  texture on and off between adjacent shots of the same scene.
+sfx: level 1 — no sound; levels 2–3 — a quiet projector clatter and film rustle under the episode (synthesis — pink noise in the 1.5–6 kHz band with 18–24 Hz amplitude modulation plus rare 2–5 ms clicks), −30…−24 dB relative to the music, another −6 dB under the voice; on entering a level 3 episode — a mechanism click sfx('click', at=t0, align='attack')
+genres: {calm: signature, fanedit: signature, viral: allowed, epic: allowed, drama: allowed, product: allowed, phonk: allowed, sport: allowed, travel: allowed, fashion: allowed, teaser: allowed, clips: allowed, ugc: allowed, motivation: allowed, explainer: forbidden}
+detect: |
+  Grain: in flat areas the residual "frame minus Gaussian σ 3 px" has σ of 1.5–10 levels, the residual's correlation between adjacent frames ≈ 0
+  (less than 0.1), the autocorrelation width is 1.3–2.8 px @1080 and the same in x and y ±15 % (tape noise is stretched horizontally
+  1.5–3 times). In videos downloaded from a platform σ is 2–3 times lower and the width 2.5–3.5 px (re-encoding); fine level 1 grain
+  may not survive.
+  The main sign is "living" freeze frames, titles and black frames: black frames (ed_motion black frames) have noise σ of 1 level or more,
+  new every frame (digital black after a codec is flat, σ below 0.3); a frozen frame with level 2–3 grain does not register as
+  ed_motion holds — the frame-to-frame difference is 1–4 (from 1 after re-encoding) instead of below 0.6.
+  Dust: 1–6 px specks where |frame − median of three adjacent frames| exceeds 40 levels, living 1 frame, 1–25 per frame, 70–80 % darker than the background.
+  Scratch: in the column profile of |frame − blur| — a peak 1–2 px wide over 40 % of the height or more, lasting 8–40 frames and shifting by ±1–3 px.
+  Flicker: mean brightness jumps by ±0.5–5 % from frame to frame with no cuts and no motion (no flash frames or strobe flips).
+  Weave: ed_motion shake jitter_pct 0.02–0.2 % (p90 up to 0.4 %), x_dir_flips 0, no ZOOM, ROTATE or SHIFT events; the weave is present even on
+  static titles. Color matches the adjacent clean shots (rgb_med, sat_med), bars ≈ 0.
+  Differences: look.film — plus a color change (warm or teal shift, lifted blacks), halation, a film gate with rounded
+  corners and perforations (bars 0.03–0.07), white frames on cuts; glitch.film_damage — events: R/B light leaks 3–6, film burn, a frame
+  slip with an inter-frame bar (jitter from 8 %), double image, reel tail; glitch.vhs and look.vhs — a soft image, blurred shifted
+  color, horizontal interference bands; handheld.shaky — jitter 0.6–4.5 % with directional jerks; fx.night_vision — green monochrome.
+engine: |
+  film_overlay(level=2, t=[t0, t1], seed, grain={...}, dust={...}, hair={...}, scratch={...}, flicker={...}, weave={...}) =
+    grain(sigma=4.5, size=2.0, chroma=0.35, corr=0.8, response='mids', renew=1)                  — extends grain(amount, size)
+    + film_dust(per_frame=5, size=[1, 4], dark_share=0.75, opacity=[0.4, 0.9], sticky=0.05)       — new
+    + film_hair(per_s=0.25, length=[0.02, 0.08], width=1, life=[1, 4], edge_stick=0.3)            — new
+    + film_scratches(max=1, width=[1, 2], polarity='light', opacity=[0.4, 0.7], life=[0.3, 1.5],
+                     jitter=2, spawn_every=[4, 8])                                                  — new
+    + flicker(amount=0.02, cutoff_hz=8)                                                             — as in look.film, refined
+    + gate_weave(amp_px=3, freq=[0.5, 3], y_ratio=1.7, jitter=0.25, rot=0.05, overscan=1.015)        — as in look.film, refined
+  presets: level=1 → grain(2.5, 1.5), flicker 0.007, weave 1 px, no dust, hairs or scratches;
+           level=3 → grain(8, 2.4), dust 15, hair 1.5 per second, scratches max 2 (a new one every 1–3 s), flicker 0.045, weave 8 px.
+  grain: n = N(0, 1) from the tile bank → Gaussian σ_b 0.3–0.9 px → n / std(n) → channels: corr · n + √(1 − corr²) · n_c →
+         frame += σ/255 · w(Y) · n in gamma, w(Y) — interpolation [0: 0.6, 0.3–0.6: 1.0, from 0.9: 0.3] → clip to 0–1.
+  look.film and glitch.film_damage call the same components (film_damage(dust, scratches) = film_dust + film_hair + film_scratches).
+  Export: libx264 -crf 18 -tune grain; QA — do a test re-encode at CRF 28 and check that the grain σ in a flat area stays at 1.5
+  levels or more (levels 2–3), otherwise make the grain coarser (size ×1.3) or raise σ.
+gen_hint: shot on 16mm film, visible organic film grain, occasional dust specks and a faint vertical scratch, subtle flicker and gate weave, <scene>, natural colours
+commands: ["light film grain over the whole video", "flashback like old film: dust, scratches, flicker", "stronger grain on #3–#7, but no dust", "remove the scratches, keep the grain and the weave", "add some organic texture to the generated shots so they don't look too clean", "black frame with dust between the parts"]
+related: [look.film, glitch.film_damage, fx.light_leak, light.halation, scene.archival, type.vintage_title, look.photo_prints, glitch.vhs, look.vhs, time.step_print, look.dreamcore, handheld.shaky]
+evidence: {examples: 0, sources: 0, measured: "edit culture: parameters from editing practice; verify with a demo render", confidence: medium}
+---
+id: fx.glitch
+family: fx
+group: effect
+level: B
+aliases: [glitch, digital glitch, digital malfunction, rgb split, rgb shift, slice glitch, slice shift, scanline smear, glitch stutter]
+what: short bursts of a "broken" digital picture — slices slide sideways, color channels separate, rows smear, the frame inverts or sticks — and then immediately a clean image again
+frames: |
+  1. Setup: a clean shot of 0.3–2 s or straight to the cut point.
+  2. A burst of 1–8 frames (0.05–0.4 s): the frame "breaks" — 3–10 horizontal slices 2–15 % of the frame high slide
+     sideways by 2–30 % of the width, R and B separate by 0.5–2.5 % of the width, rows stretch into colored streaks
+     (the ratio of vertical to horizontal gradients rises from ≈1.0 to 1.7–2.6), 8–16 px blocks, garbage colors.
+  3. Within the burst the glitch state changes every 1–3 frames — no smooth animation, everything jumps.
+  4. Landing: back to a clean frame within 1 frame; a pause of 0.3–2 s before the next burst; in intros and loops — a series of 3–5 bursts.
+  Time glitches: a stutter — a chunk of 3–4 frames repeats 1–2 times; a jump back 7–8 frames, then playback in steps of
+  2–3 frames; a single negative frame among normal ones.
+  Glitch transition: over 5–6 frames (≈0.4 s) the columns of the old frame run down in vertical drips, the new scene shows through them.
+variants:
+  - row smear: rows stretch sideways into rainbow streaks, the figure reads only by its outline; a 0.2–0.4 s loop
+  - slice shift: horizontal slices slide sideways, in places with black gaps and wrapping around the edge
+  - RGB separation: cyan/magenta fringes on some of the frames, the object jitters and jumps around the frame
+  - negative and false color: a 1-frame negative or a palette change of background and skin every 0.25 s on the rhythm
+  - stutter: a chunk of 3–4 frames repeats or jumps back, like a scratched disc
+  - glitch transition: 0.3–0.4 s of vertical drips or 3–5 frames of abstract "garbage" texture between scenes
+  - strobe cutting: every frame is a different shot or a different treatment (negative, a card, a glitch), 0.5–0.6 s in a row
+  - soft: one or two frames of a light RGB shift on a hit — an almost unnoticeable accent
+status: code
+params:
+  burst: 1–8 frames (1–10 frames @25 fps, 0.04–0.4 s), typically 3–4
+  state_hold: 1–3 frames per glitch state
+  gap: 0.3–2 s of clean picture between bursts; no more than 3–5 bursts in a row
+  slices: 3–10 slices 2–15 % of the frame high; shift ±2–30 % of the width, typically 5–10 %; wraparound at the edge
+  rgb_split: 0.5–2.5 % of the width (10–45 px at 1080p) horizontally, R and B in opposite directions; only on some frames of the burst
+  row_smear: 10–40 % of rows — a pixel repeated from a random point to the frame edge
+  blocks: 8–32 px, shuffled or noise over 5–20 % of the area
+  invert: 1 frame of negative or channel swap per burst, no more than once every 1–2 s
+  stutter: a chunk of 2–4 frames repeated 1–2 times, or a jump back of 6–8 frames
+  transition: 8–10 frames @25 fps (0.3–0.4 s) on the cut
+  palette_jump: a false palette change every 0.25–0.5 s (1/8–1/4 notes at 120 BPM)
+when: an accent on a hit or a snare, the drop, a fill and a beat repeat in the track; the theme of "system failure", the digital world, memory, hacking; a transition between scenes; intro and logo; no more than one burst per 2–4 bars in a regular video, denser — only in short series of up to 1 s
+avoid: continuous glitching longer than 1 s over something important; a face while it delivers a line; text, prices, subtitles (they become unreadable); calm, luxury, trust-building videos; the same preset on every join; a burst without support in the sound
+sfx: glitch clicks, digital crackle or an audio "stutter" in sync with each burst; on a stutter — a repeat of the same bit of audio; on a glitch transition — a short noise sweep
+genres: {phonk: signature, fanedit: signature, viral: allowed, clips: allowed, teaser: allowed, sport: allowed, fashion: allowed, motivation: allowed, ugc: allowed, drama: allowed, calm: forbidden, epic: forbidden, product: forbidden, travel: forbidden, explainer: forbidden}
+detect: |
+  ed_motion: "cuts" on adjacent frames within one shot, fail and ECC fallbacks, single flash/black frames,
+  strobe flips, high jitter with a static camera.
+  Custom code: ratio of mean |d/dy| to |d/dx| > 1.6 on individual frames (row smear); slices shifted
+  horizontally relative to the adjacent frame while the other slices stay in place; R/B edges offset by 0.5–2.5 % of the width;
+  brightness correlation with the adjacent frame < −0.5 (negative); a near-exact repeat of a frame 3–8 frames back (stutter).
+  Difference from glitch.datamosh: a mosh flows along the motion for 0.5–2 s and does not jump between states; a glitch is discrete bursts of 1–8 frames.
+  Difference from cut.flash: what is inserted is not a white or black frame but a distorted version of the same frame.
+  Difference from analog interference: there, sinusoidal line waves, snow and vertical frame roll.
+engine: |
+  glitch(t=[t0, t0+D], kinds=['slices', 'rgb', 'smear', 'blocks', 'invert'], intensity=0.3–1.0, hold=1–3, seed)
+    slices: n=3–10, h=2–15 % H, dx=±2–30 % W with wraparound; rgb: rgb_split(px=0.5–2.5 % W, angle=0);
+    smear: 10–40 % of rows — a pixel repeated from x0 to the edge; blocks: shuffling 8–32 px blocks over 5–20 % of the area
+  stutter(at=t0, chunk=3, repeats=2) | stutter(mode='skip_back', back=8, step=3)
+  transition(kind='glitch', dur=0.36, params={streaks: 'vertical'}) — for the glitch transition
+  + sfx('glitch', at=t0, align='attack') on each burst; beat_sync(event='snare', grid='1/4')
+gen_hint: digital glitch on <subject>, horizontal slices displaced sideways, RGB channel split with cyan and magenta fringes, scanlines smeared into colorful streaks, corrupted pixel blocks, brief glitch bursts between clean frames
+commands: ["glitch on every snare in the chorus", "glitch transition between #2 and #3", "RGB shift and slices at 0:15 for 4 frames", "frame stutter on the beat repeat"]
+related: [glitch.datamosh, glitch.vhs, glitch.tv_noise, cut.flash, cut.stutter, fx.color_shift]
+evidence: {examples: 14, sources: 11, measured: "a heavy burst of 8 frames (0.4 s) after 2 clean ones; row smear: |dy|/|dx| 0.9 → 1.7–2.6; slice shift up to 22–33 % of the width, moderate — 1.6 % on a third of the slices; RGB fringes 0.6–2.4 % of the width on 3 of 12 frames; negative 1 frame (correlation −0.83); stutter — a repeat of 3 frames after 4, a jump back 8 frames in steps of 3; glitch transition 6 frames @14 fps (0.42 s); the false palette changes every 5 frames @20 fps (0.25 s); 3 examples from the section are datamosh", confidence: medium}
+---
+id: fx.glow
+family: fx
+group: effect
+level: B
+aliases: [glow, bloom, soft glow, neon glow, glow pulse, radiance, edge glow, anamorphic flare]
+what: bright areas of the frame spill into a soft glow of their own color — from a light dreamy sheen to a neon halo; constant over an episode or as a pulse on the beat
+frames: |
+  Constant (a property of the episode):
+  1. Source: everything brighter than the threshold — lights, windows, sky, highlights on skin and metal, white clothing, neon; dark areas are untouched.
+  2. Around the source — a halo of the same color (in neon — of a set hue): a dense core of 0.3–1 % of the frame's short side (S),
+     a middle layer of 1.5–4 % S, a wide tail of 6–15 % S; visible (from 3 levels of 255) at 2–5 % S from the source's edge.
+  3. Black stays black: away from the lights the shadows and the black point are not lifted — the frame is not "milky" as in haze, edges are sharp.
+  Pulse on the beat:
+  4. Attack on the beat frame: within 1 frame the strength rises from a base of 0.2–0.3 to 0.8–1.5, radii ×1.3–2; mean frame brightness +5…+20 %,
+     the halo of a point light reaches 8–12 % S.
+  5. Exponential decay over 6–12 frames @25 fps (8–15 @30 fps) back to the base; by the next beat the frame is back at the base.
+  Build-up and exit: strength 0.1 → 0.6 over 2–4 bars before the drop; in the finale the glow grows to white over 1–2 bars and goes into a fade.
+variants:
+  - dreamy: threshold 0.6–0.7, strength 0.15–0.35, radii up to 4–6 % S, warm or neutral — romance, travel, sunset, a wedding
+  - neon: key on the brightest channel weighted by saturation, strength 0.5–1.0, halo saturation ×1.3–1.6 — a night city, a club, signs
+  - pulse on the beat: base 0.2 and pulses up to 1.0–1.5 on the kick of the drop
+  - subject contour glow: a glowing outline along the person mask in an accent color, pulsing on the beats — an "aura" in a fan edit
+  - horizontal streaks (anamorphic flare): thin bluish streaks stretch from point lights across 10–40 % of the frame width
+  - fade to white: the glow grows until the whole frame is blown out — a finale or a transition
+status: code
+fallback: without bright areas (a flat daytime shot, an overcast sky) the glow only adds overall murk — pick shots from the source footage with practical lights, backlight and highlights, or take the threshold from the shot's percentile (p95–p98) instead of an absolute value; the contour glow needs a mask of the subject (hybrid — mediapipe_person or hf_remove_background)
+params:
+  threshold: 0.6–0.85 (typically 0.72) with a soft knee of 0.05–0.15; adaptive — the p92–p97 percentile of the shot's brightness, computed once per shot, not per frame (otherwise the glow "breathes" on its own)
+  key: "luma — regular glow; value = max(R,G,B) — colored lights; value_sat = max(R,G,B)·(0.5 + 0.5·saturation) — neon glows while skin (V 0.5–0.7, S 0.3–0.5) does not. By luma, an orange streetlight (luma ≈ 0.62) and blue neon (≈ 0.3) do not pass the 0.72 threshold"
+  radii: "multi-radius as fractions of the short side S (px at 1080): [0.004, 0.015, 0.04, 0.10] → σ 4, 16, 43, 108 px with weights [0.35, 0.3, 0.2, 0.15]; dreamy — without the last layer; neon and pulse — radii ×1.3–1.6"
+  strength: dreamy 0.15–0.35 (typically 0.25), neon 0.5–1.0, pulse peak 0.8–1.5; base between pulses 0–0.3
+  blend: screen in linear light (soft, no clipping) — constant; add in linear light with a soft shoulder above 0.9 — neon, pulse, fade to white
+  color: "default — the source's color; neon tint — magenta ff3cac, cyan 2de2e6, violet 8a5cff, warm ffb36b, mix 0.3–1.0; halo saturation ×1.0–1.6"
+  pulse: attack 0 frames, peak 0–1 frame, exponential decay τ = 3 frames @25 fps (4 @30 fps) — back to the base within 6–12 frames @25 fps (8–15 @30 fps)
+  ramp: strength 0.1 → 0.6 over 2–4 bars before the drop (inQuad), a 1.2 pulse on the drop beat, then base 0.25
+  breathe: slow "breathing" of the strength ±20–40 % with a period of 1 bar (2 s at 120 BPM), sine — for calm parts
+  streak: threshold 0.9 (point lights only), length σx 5–15 % of the width, thickness σy 0.15–0.3 % S, bluish tint 7fb2ff, strength 0.3–0.6
+  contour: mask outline 0.3–0.8 % S and glow 1.5–5 % S, strength 0.6–1.2, an accent color that is not present in the scene
+  render: compute layers with σ above 2 % S at ¼ resolution, 0.6–2 % S at ½, then upscale; gamma there and back — via lookup tables (LUT), not a per-pixel power; on 1 core ≈ 0.15 s per 1080×1920 frame, preview at ½ resolution ≈ 0.04 s
+  scope: one base per scene; do not switch it on or off between adjacent shots of the same scene (except for pulses on the beat)
+  limits: "pulses — no more than 1 per beat; strong ones (frame brightness +15 % or more) — no more than 2 per second and no longer than 2 bars in a row; no more than 3 large brightness swings per second over a large area (photosensitivity); constant strength above 0.35 — only for neon on night shots"
+when: |
+  Night, neon, the city, lights, concerts and clubs, fire and sparks, backlit sun, glints on water, white clothing; a dreamy tone —
+  intro and outro, a memory, romance, golden hour, travel, a wedding. Hook — the glow is set from the first frame, or one
+  pulse on the first downbeat. Build — strength rising 0.1 → 0.6 over 2–4 bars together with a riser. Drop — a pulse on every kick
+  (base 0.2, peak 1.0), the strongest on the beat that enters the drop. Outro — fade to white over 1–2 bars and a fade, or slow breathing on the
+  last shot. Contour glow — on the subject's appearance and in a fan edit's drop, 1–4 bars. Limits — in params.limits.
+avoid: |
+  Flat daytime shots without highlights (the frame just gets murky); a blown-out sky and a white background (the glow floods half the frame with white);
+  text, subtitles, UI and infographics — the frame glow goes below the text layer (a glow on the letters themselves is a type.* style);
+  products and packaging where contour and color matter (a halo on a white label looks like a defect); skin in close-up at strength above 0.4
+  (a plastic face); a heavily compressed source (blocks in bright areas glow as squares — raise the threshold); together with
+  light.halation on the same frames without intent (a double halo); pulses off the beats; the same strength on every frame of the video.
+sfx: a constant glow needs no sound; pulses — no separate sound, they sit on the kick; the build-up before the drop — sfx.riser peaking on the drop beat; fade to white — a soft 1–2 s swell, −18…−12 dB relative to the music
+genres: {fanedit: signature, viral: allowed, epic: allowed, drama: allowed, calm: allowed, product: allowed, phonk: allowed, sport: allowed, travel: allowed, fashion: allowed, teaser: allowed, clips: allowed, ugc: allowed, motivation: allowed, explainer: forbidden}
+detect: |
+  Visually: around lights, neon, highlights and the sky — a soft halo of the same hue as the source (or of a single tint in neon);
+  object edges stay sharp (not defocus), black away from the lights stays deep (not haze).
+  Measurement: a mask of cores (brightness from 0.85 or max(R,G,B) from 0.9); the profile of excess brightness in rings around the core — from 3 levels at
+  2–5 % S (for a clean image — under 0.5 % S), for a pulse — up to 8–12 % S; in linear light the channel ratios of the excess match
+  the source ±15 % (with halation the halo is redder than the source); p1 brightness and the dark channel away from the lights do not change (with haze they rise).
+  Pulse: mean brightness +5…+20 % within 1 frame on the beat (the darker the frame, the larger) and an exponential decay over 6–12 frames @25 fps
+  without a cut; sharpness (Laplacian variance) simultaneously drops to ×0.45–0.75. ed_motion: no cuts, no ZOOM or SHIFT; when brightness
+  rises by more than 30 levels — flash frames, but no strobe flips (the decay is smooth).
+  Neon: saturated halos (HSV-S from 150) around colored sources. Streaks: horizontal light bands through point lights across
+  10–40 % of the width. Contour: a thin glowing line along the person's edge in a color not present in the scene.
+  Differences: light.halation — a red-orange halo redder than the source and a thin red fringe on edges; light.haze — a veil
+  lifts the blacks and kills contrast across the whole frame; focus.bokeh — lights turn into discs, the whole frame is soft; light.flash —
+  the scene lighting changes with a gradient from the source, 2–4 frames; trans.flash — a flat white frame on a cut, the structure disappears;
+  fx.light_leak — a patch at the frame edge, not tied to bright areas.
+engine: |
+  glow(threshold=0.72, knee=0.1, key='luma'|'value'|'value_sat'|mask, radii=[0.004, 0.015, 0.04, 0.10]·S,
+       weights=[0.35, 0.3, 0.2, 0.15], strength=0.3, tint=None|'#ff3cac', tint_mix=0.6, sat=1.0,
+       blend='screen'|'add', linear_light=True, soft_clip=0.9, t=[t0, t1]) — extends glow(threshold, radius)
+    implementation: lin = sRGB → linear; hi = lin · smoothstep(thr − knee, thr + knee, key); for each radius — Gaussian at ½ or ¼
+    resolution → upscale → weighted sum → saturation and tint → screen 1 − (1 − lin)(1 − g) or add lin + g with a shoulder
+    k + (1 − k)(1 − exp(−(x − k)/(1 − k))) above k = 0.9 → linear → sRGB.
+  beat_pulse(param='glow.strength', events=band_onsets(track, lo=30, hi=150), base=0.2, peak=1.0, attack=0, hold=0, tau=3,
+             radius_mul=1.6, max_per_s=2) — the pulse generator from fx.rgb_split; band_onsets (kick attacks) — from shake.beat
+  build-up: glow(strength=[0.1, 0.6], t=[drop − 2 bars, drop], ease='inQuad') → beat_pulse(peak=1.2) on the drop beat → base 0.25
+  streak_glow(threshold=0.9, length=0.1·W, thickness=0.002·S, tint='#7fb2ff', strength=0.4) — new: anisotropic Gaussian σx = length, σy = thickness
+  contour_glow(mask=mask('mediapipe_person', feather=0.002), width=0.005·S, radius=0.03·S, color='#8a5cff', strength=0.8) — new, hybrid:
+    mask edge = dilate − erode → glow(key=edge) → add over the frame
+  fade to white: glow(strength=[0.3, 3.0], threshold=[0.72, 0.3], t=[t1 − 2.0, t1], blend='add') + fade(to='white', t=t1 − 0.3, dur=0.3)
+  Currently in ed_edl.py — fx 'bloom' (thr, r, strength): a single radius, addition in gamma; extend to multi-radius, screen, the value key and tint.
+  Order: after the grade, before light leaks, film texture and text.
+gen_hint: night city scene with glowing neon signs, strong soft bloom around every light source, dreamy glow on highlights, deep blacks, cinematic, <subject> in the foreground
+commands: ["soft glow over the whole intro", "neon bloom on the night shots #4–#9", "make the glow pulse on every kick in the drop", "the subject's outline glows violet on the drop", "horizontal streaks from the streetlights, like an anamorphic lens", "at the end, fade to white through the glow"]
+related: [light.halation, light.haze, focus.bokeh, light.flash, fx.light_leak, trans.flash, trans.fade, look.dreamcore, look.psychedelic, fx.night_vision, fx.rgb_split, shake.beat, sfx.riser]
+evidence: {examples: 0, sources: 0, measured: "edit culture: parameters from editing practice; verify with a demo render", confidence: medium}
+---
+id: fx.kaleidoscope
+family: fx
+group: effect
+level: B
+aliases: [kaleidoscope, mandala, mirror tiles, mirror tiling, mirror symmetry, symmetrical pattern, radial symmetry, mirror fx]
+what: the frame folds into a symmetrical pattern — sectors with mirrored copies around the center, mirror tiles or a "tunnel"; the pattern slowly rotates and breathes with zoom, turning any footage into a mandala
+frames: |
+  1. Entry: a normal frame or straight into the pattern; on a transition the pattern "unfolds" from the center in 0.3–0.6 s.
+  2. Pattern: 3–8 sectors around the frame center (symmetry confirmed by angular autocorrelation of 0.6–0.9 at 360/N)
+     or 2–4 mirror tiles across the width (left/right match at 0.77–0.9).
+  3. Motion: the pattern rotates at 10–135° per second and at the same time slowly zooms in or out
+     (×0.63–1.9 over 1.7–2.1 s) — the center is fixed, the image "flows" into the middle or spreads to the edges.
+  4. Inside the sectors the original motion continues (dance, a drive-by, waves), so the pattern lives rather than stands still.
+  5. Exit: a cut on the beat or a reverse "folding" back into the normal frame.
+variants:
+  - radial copies: a person shot from above, 4–5 rotated copies around the center, the pattern spins at ≈135°/s with a zoom-out ×0.63 over 1.75 s
+  - triangular mirror tunnel: a central triangle and its mirrored neighbors (shot through three mirrors or simulated), a hexagonal lattice
+  - mirror tiles: a drone landscape or silhouettes, 2–4 mirrored strips across the width and 2–3 down the height
+  - tunnel: the image is wrapped into a tube around the center, the sky is a circle in the middle, a slight zoom-out
+  - spiral: small repeats (eyes, faces, flowers) spiral into the center, 8 sectors, rotation ≈10°/s + zoom-in ×1.1 over 0.35 s
+  - mandala cutting: a new pattern with 3-fold symmetry every 2 frames and a zoom pulse ×1.05 — for a fast beat
+status: code
+fallback: a real optical kaleidoscope (a three-mirror prism in front of the lens) is simulated in code in triangle mode; if the optical sheen and vignette specifically are needed — look for such shots in the source footage or generate them (with consent)
+params:
+  segments: 3–8 (triangle — 3, radial copies — 4–5, hexagon — 6, spiral — 8); typically 6
+  mode: radial (sectors with a mirror) | triangle (mirror tunnel) | tile (mirror tiles nx×ny 2–4×2–3) | tunnel (polar wrap)
+  rotate: 10–135° per second, constant speed; typically 30–60°/s
+  zoom: ×0.6–1.9 over 1.5–2.5 s (slow "breathing") or a ×1.05 pulse over 0.14 s on the beat
+  center: frame center [0.5, 0.5]; the source point inside the original frame can be moved along the object so the pattern changes
+  duration: 1.5–5 s per shot; mandala cutting — 2–3 frames per pattern
+  source: a shot with continuous motion (dance, water, lights, a drone pass); a static frame without motion gives a dead pattern
+when: a "trip", a dream, meditation, magic; intro and title sequence; a long sustained part of the track or an ambient bridge; fashion and beauty shots on a plain background; top-down and drone footage; no longer than 5 s in a row and no more than 1–2 times per video, otherwise the pattern gets stale
+avoid: faces while delivering a line (the mirror seam cuts through the face); text and logos — they get mirrored and read backwards; explainer and news videos; chaotic shake in the source — the pattern jerks; several different kaleidoscopes in a row
+sfx: a sustained pad, a shimmer or a reverberated bell; on the pattern's "unfolding" — a riser or a sweep; in mandala cutting — clicks on the beat
+genres: {fashion: signature, fanedit: allowed, viral: allowed, teaser: allowed, travel: allowed, calm: allowed, drama: allowed, phonk: allowed, product: allowed, ugc: allowed, explainer: forbidden, sport: forbidden}
+detect: |
+  ed_motion: ROTATE by hundreds of degrees over 1–2 s with a fixed center ≈[0.5, 0.5] and a steady pace; a slow zoom ×0.6–1.9 centered in the middle;
+  with handheld footage inside the sectors — nonrigid 0.5–1.2 and conf low.
+  Custom code: a polar unwrap around the frame center and angular autocorrelation — a peak of 0.5–0.9 at 360/N (3, 4, 6, 8); the frame matches
+  its left/right mirror at 0.75–0.9 (tiles, tunnel); repetition period across the width 25–50 %.
+  Difference from fx.refraction (prism): there, 1–3 semi-transparent asymmetric copies and a clean center; here, strict symmetry over the whole frame.
+  Difference from split screen: the panels have different content and no mirror match. Difference from fx.duplicate: the clones stand in different places
+  in the scene without symmetry around the center.
+engine: |
+  kaleidoscope(segments=6, mode='radial'|'triangle'|'tile'|'tunnel', rotate=45, zoom=[1.0, 1.4], t=[t0, t0+3], center=[0.5, 0.5],
+               source_center=track(person)|[0.5, 0.5], tile=[3, 2])
+  unfolding: transition(kind='zoom', dur=0.5) from the normal frame into the pattern; pulse: transform(scale=[1, 1.05, 1], t=[beat, beat+0.14])
+  tile mode = mirror(axis='x') + mirror(axis='y') repeated nx×ny
+  + sfx('swell', at=t0)
+gen_hint: kaleidoscopic mandala made from footage of <subject>, perfect radial mirror symmetry with six segments, slowly rotating and zooming into the center, hypnotic psychedelic pattern
+commands: ["kaleidoscope on the bridge, slow rotation", "make a mandala from the top-down dance on #3", "mirror tiles from the drone shot on the intro", "kaleidoscope cutting to the fast beat at 0:40"]
+related: [fx.refraction, fx.duplicate, look.psychedelic, layout.split_screen, zoom.infinite, reflect.mirror]
+evidence: {examples: 7, sources: 7, measured: "symmetry: 8 sectors (autocorrelation 0.67–0.92), 3-fold (0.58–0.71), 4 radial copies; left/right mirror 0.77–0.90 in 3 examples; rotation −236° over 1.75 s (≈135°/s) with a zoom-out ×0.63, spiral ≈10°/s with a zoom-in ×1.07–1.1 over 0.3 s; tiles with a zoom-in ×1.87 over 2.1 s; mandala cutting — a new pattern every 2 frames @14 fps with a ×1.05 pulse", confidence: high}
+---
+id: fx.letterbox
+family: fx
+group: effect
+level: B
+aliases: [letterbox, aspect ratio change, animated letterbox, movie bars, cinema bars, black bars, cinematic bars, pillarbox, frame curtains, slit opening]
+what: black bars smoothly slide onto the frame or off it — the aspect ratio changes right in the shot (16:9 ↔ 2.2–2.4:1, ↔ 4:3, slit ↔ full frame) to "switch on cinema", open or close a scene, move to another time
+frames: |
+  1. Start: the original format — full frame, existing bars (2.14–2.37:1) or a black screen.
+  2. Bar movement: straight edges, pure black; symmetrical top and bottom (±1 % of the height),
+     constant speed (almost linear) — 0.05–0.12 of the frame height per second per bar
+     (0.2–0.5 % per frame @25 fps). Duration 0.7–2.6 s; a slow "creep" — 0.03 of the height/s
+     over 3.9 s; opening from a slit — 4.6 s, and under intro titles — up to ≈47 s.
+  3. The bars ignore cuts: the movement continues through shot changes without a jerk.
+  4. Finish: the new format holds to the end of the scene (2.0–2.4:1, 1.33:1 or full frame) or closes
+     to black; when closing to the eyes the bottom bar moves twice as fast as the top one (0.25 versus 0.12 of the height/s),
+     the slit converges on the eye line at ≈0.33 of the height.
+  5. In 4 of 9 examples a slow zoom-in ×1.27–1.69 over 1.5–2.8 s runs at the same time — the format squeeze
+     and the zoom work together.
+variants:
+  - cinema mode (16:9 → 2.2–2.4:1): bars of 9.6–12.8 % of the height each slide in over ≈2 s, often under a title or a key product shot
+  - creep: a very slow slide-in of the bars (1.6 → 14 % over 3.9 s) in a tense dialogue — the viewer does not notice it but feels the pressure
+  - the frame opens up (2.14–2.37:1 → 16:9): the bars leave over 0.7–2.1 s when the world "opens wide" or after a split screen
+  - opening from a slit: black → a strip 4 % of the height → 1.9:1 over 4.6 s (under an intro — stretched over the whole opening montage)
+  - closing to the eyes: the full frame shrinks into a slit on the eye line over 2.6 s together with a zoom-in ×1.7, then black
+  - orientation change: 2.21:1 → 4:3 over 1.7 s — the top/bottom bars leave, side bars grow; a sign of another time or of archive footage
+  - breathing: 1.92 → 1.61 → 1.99:1, ≈1.5 s each way, in time with the camera move
+status: code
+fallback: if something key (a face, text) falls under a bar — reframe by tracking; if the new format lacks picture at the edges — outpaint
+params:
+  ratio_169: "16:9 → 2.39:1 bars of 12.8 % of the height each; 2.35:1 — 12.2 %; 2.2:1 — 9.6 %; 2.0:1 — 5.6 %; 1.85:1 — 1.9 %; 4:3 — side bars of 12.5 % of the width each"
+  ratio_916: "vertical 9:16 → 4:5 bars of 14.8 % of the height each; 1:1 — 21.9 %; 16:9 — 34.2 %; 2.39:1 — 38.2 %"
+  speed: 0.05–0.12 of the height/s per bar (typically 0.06); creep 0.03/s; intro slit 0.01–0.09/s
+  duration: 0.7–2.6 s (18–65 frames @25 fps), typically 1.5–2 s; creep 3–4 s; opening from a slit 4–5 s
+  ease: linear (all 9 examples); outCubic is allowed for the landing in the last 4–6 frames
+  anchor: center; closing to the eyes — the eye line track(face) ≈0.3–0.35 of the height, the bottom bar at ×2 the speed of the top one
+  color: "#000000, edge without feathering"
+  cuts: the bar animation runs straight through, cuts do not interrupt it
+  breathe: amplitude ±3.5–7 % of the height per bar, ≈1.5 s per phase (period ≈3 s or 2 bars of music)
+  pair_zoom: optionally a zoom-in ×1.2–1.7 over the same time
+  safe_zone: keep titles and faces in the central band of the final format; intro text — centered in the slit
+when: intro (opening from a slit, slowly under the titles), entering "cinema" — the drop, an epic moment, a product reveal (the bars slide in); a climax of open space — the bars leave; outro and a dramatic finale — closing to the eyes into black; flashback and archive — 4:3; tension in a conversation — the creep. One format change per scene, 1–3 per video
+avoid: jerking the format back and forth for no reason (except rhythmic breathing); covering subtitles, faces and social media UI zones with the bars; a 1–2-frame jump of the bars — reads as a glitch; different bar colors in one video
+sfx: opening — a long swell or riser over the whole movement, an impact at the moment it stops; closing to black — a sub_drop or sudden silence; creep — a low drone; breathing — in sync with the bass
+genres: {epic: signature, teaser: signature, drama: allowed, motivation: allowed, travel: allowed, fashion: allowed, product: allowed, fanedit: allowed, calm: allowed, clips: allowed, explainer: allowed, sport: allowed, phonk: allowed, viral: forbidden, ugc: forbidden}
+detect: |
+  Custom calculation: rows (columns) at the frame edges whose 98th percentile of brightness is < 28 of 255; the bar
+  thickness changes monotonically by 0.2–0.5 % of the height per frame, equally top and bottom (±1 %), the bars are pure black,
+  the border is straight; the bar movement is not interrupted at cuts.
+  ed_motion: the bars field is non-zero (median 0.04–0.29); the picture inside does not shrink — no ZOOM-OUT coinciding with the bars growing (otherwise it is the frame shrinking "into a window"); often a parallel ZOOM-IN ×1.2–1.7, almost linear.
+  Difference from fade: not the whole frame darkens, the brightness of the center does not change.
+  Difference from trans.wipe and iris: the bars are straight, symmetrical and do not reveal a new frame.
+  Constant bars that do not change are just the video's format, not a move.
+engine: |
+  letterbox(ratio=[r0, r1], t=[t0, t0+D], ease='linear', anchor=[0.5, 0.5], color='#000000', through_cuts=True)
+  r0/r1 — ratios (2.39 | 2.2 | 1.78 | 1.33 | 0.8 | 1.0); when r1 < the original format, the bars become side bars
+  Cinema mode on the drop: letterbox(ratio=[1.78, 2.39], t=[drop-2, drop]) + transform(scale=[1, 1.3], t=[drop-2, drop], ease='linear')
+  Closing to the eyes: letterbox(ratio=[1.78, 60], anchor=[0.5, track(eyes).y], t=[t0, t0+2.6]) + transform(scale=[1, 1.7]) + fade(to='black', t=t0+2.6, dur=0.04)
+  Breathing: letterbox(ratio=[1.92, 1.61, 1.99], t=[b0, b0+1.5, b0+3], ease='linear') over 2 bars of music
+  + sfx('swell', at=t0, align='attack') + sfx('impact', at=t0+D)
+gen_hint: cinematic widescreen shot of <scene>, composed for 2.39:1 anamorphic framing with the key action inside the central horizontal band, room above and below for black letterbox bars, film look
+commands: ["switch on cinematic bars on the drop", "intro — the frame opens from a narrow slit", "make the flashback 4:3", "at the end, close the bars down to the eyes and go to black", "let the bars breathe in time on the chorus"]
+related: [zoom.slow, zoom.in, layout.split_screen, trans.wipe, cut.flash]
+evidence: {examples: 9, sources: 9, measured: "bars symmetrical within ±1 % of the height, movement almost linear; speed 0.047–0.124 of the height/s (5 of 9), creep 0.033/s over 3.9 s, slit → 1.91:1 over 4.6 s (0.088/s), intro ≈47 s (0.008/s); cinema mode 1.78→2.30 over 2 s; opening up 2.14→1.78 over 0.72 s and 2.37→1.81 over 2.1 s through a cut; 2.21→1.33 over 1.7 s; closing to the eyes: top 0.12/s, bottom 0.25/s, converging at 0.33 of the height; breathing 1.92→1.61→1.99, ≈1.5 s each; a simultaneous zoom-in ×1.27–1.69 — 4 of 9", confidence: high}
+---
+id: fx.light_leak
+family: fx
+group: effect
+level: B
+aliases: [light leak, film light leak, warm light leak, edge leak, light patch, leak transition, light leak transition, flare wash, burst leak]
+what: warm patches of light drift in from the frame edge and slowly float over the picture, independent of its content — a soft "filmic" glow over an episode or a transition where the cut hides inside a flared-up patch
+frames: |
+  Ambient (an episode glow):
+  1. A glow emerges at the edge or corner of the frame — at first a narrow strip of 5–15 % of the width.
+  2. Over 0.6–1.5 s the patch flares up and creeps into the frame: the core at the edge is almost white or pale yellow, further in orange,
+     the rim red or magenta; the edge is soft, feathered over 15–40 % of the frame's short side (S), the shape is uneven and slowly
+     shimmers. Coverage 10–40 % of the frame, brightness in the patch zone +20…+120 levels of 255, the picture under the patch stays visible.
+  3. The patch holds and drifts for 1–4 s at 2–8 % of the width per second, its brightness slowly "breathes" ±5–15 %.
+  4. It fades out or floats off the edge over 1–2 s; the next one comes from another side and has another shape, no sooner than 2 bars later.
+  Transition:
+  5. 6–10 frames @25 fps (8–12 @30 fps) before the cut the patch rapidly grows from the edge and for 2–4 peak frames floods 90–100 % of the frame
+     (mean brightness 170–240, the core almost white); the cut — exactly on the peak.
+  6. The new shot emerges from the leak: the patch recedes to the opposite edge or fades out over 8–12 frames @25 fps (10–15 @30 fps).
+variants:
+  - edge wave: a warm wall of light from the left or right edge — the most common kind
+  - corner patch: an ellipse from a frame corner, 30–60 % S in size
+  - streak flare: a long diagonal streak at 20–40° floats across the frame over 1.2–3 s, like a glint from a window in motion
+  - leak transition: the patch floods the frame, the cut on the peak
+  - leak flash: a short warm burst of 0.3–0.5 s on a downbeat without a cut
+  - cool: a blue or teal leak for a cold grade, night, winter
+  - rainbow: a streak with a spectral shimmer (red → yellow → green → light blue) across its width
+status: code
+fallback: no special footage or third-party overlay files are needed — the leak is entirely synthesized in code (noise, gradients, palette) on any video; if the source is already overexposed, the leak is not visible in screen mode — lower the shot's exposure under the patch by 0.3–0.5 stops or use soft_light mode
+params:
+  shape: "edge — an ellipse at the edge elongated 1.5–3 along the edge; corner — from a corner; blob — a free-floating patch; streak — a band 15–35 % S wide at 20–40°; burst — from a point on the edge to the full frame (transition)"
+  anchor: an edge or corner (left, right, top, bottom, tl, tr, bl, br) or a point [x, y]; neighboring leaks — from different sides
+  palette: "amber — core fff1d0 → orange ff6a10 → red rim ff2a0a; magenta — ffe6ea → ff4f7b → d81b60; gold — fff6d8 → ffc84a → f08c0a; peach — ffe8dc → ff9a8b → ff5e62; cool — eefcff → 6fd6ff → 1a4dff; rainbow — hue shimmer 0–300° across the band"
+  color_ramp: color is a function of the profile p — ramp(p^0.7) (pale core, saturated rim); opacity is set by the profile itself, do not darken the rim color — otherwise the patch turns brownish over a dark frame
+  size: profile size (the distance where it falls to 1/e) 0.25–0.4 S in ambient, 0.6–1.0 S in a transition; falloff exp(−(d/size)^1.4–2)
+  peak: layer core intensity 0.75–1.0 in ambient (the visible strength is set by size and envelope, not by a dim color), 1.2–1.5 with add in a transition; soft variant 0.4–0.6 with soft_light
+  coverage: ambient 10–40 % of the frame (brightness gain from 20 levels), accent 30–60 %, transition at the peak 90–100 %
+  drift: ambient 2–8 % of the width per second, streak flare 30–80 % of the width per second, transition — from the edge to the full frame in 6–10 frames @25 fps (8–12 @30 fps)
+  warp: domain warping with fractal noise — 3 octaves, cell 0.4–0.5 S, amplitude 0.08–0.15 S, the field crawls at 3–6 % of the width per second
+  envelope: "ambient — attack 0.6–1.5 s, hold 1–4 s, release 1–2 s (inOutSine); accent — attack 3–5 frames, release 8–12 frames @25 fps; transition — attack 6–10 frames, peak 2–4 frames on the cut, release 8–12 frames @25 fps (×1.2 in frame count @30 fps)"
+  flicker: patch brightness modulation ±5–15 % at 0.5–3 Hz (filmic unevenness), optional
+  blend: screen by default (never darkens) | add in linear light with a soft shoulder (transition, flash) | lighten (weaker, no color mixing) | soft_light (tints without brightening — overexposed sources)
+  texture: multiply the layer by (1 + grain 2–4 %), add ±0.5 LSB dithering before converting to 8 bit — without it, steps show on a smooth gradient, especially after the platform re-encodes
+  render: synthesis at ¼ resolution and bicubic upscale (the patch is low-frequency); together with compositing ≈ 30–40 ms per 1080×1920 frame on 1 core
+  seed: a separate seed for each leak — shape and path never repeat; two identical leaks in a row give away the template
+  limits: "leak transition — no more than once per 8 bars (16 s at 120 BPM) and never on two cuts in a row; ambient — no more than 40 % of the video's duration and no more than 2 patches at once; leak flash — no more than once per 4 bars"
+when: |
+  Warm, nostalgic and dreamy moments: summer, travel, sunset and golden hour, weddings and family, a memory,
+  lifestyle, fashion "on film", calm intros and outros. Hook — the video opens by emerging from a leak (blown-out → picture over
+  0.5–1 s) or a leak on the first downbeat. Build — ambient patches, one per 2–4 bars, the patch peak on the bar's downbeat.
+  Drop (chorus) — one leak transition on the cut into the drop (peak on the beat), then no leaks in the fast part or only
+  ambient; in calm genres the chorus gets ambient patches in the same rhythm. Outro — a leak floods the last shot and goes to white or
+  black over 1–2 s. Put the transition on a change of place or time, not inside one scene. Limits — in params.limits.
+avoid: |
+  A face and eyes during an important line (the patch eats the facial expression); the subtitle and text zone — the leak kills the contrast of the letters
+  (keep the patch outside the text safe zone or put it under the text); a product and a brand color; aggressive dark genres and
+  horror scenes — a warm patch breaks the mood (if needed — a cool leak); already overexposed shots (the effect is not visible);
+  a leak on every cut and the same shape from the same side — looks like a template; mixing with digital glitch and tape
+  lines (clashing eras); leaks in fast cutting with shots shorter than 0.5 s (they do not have time to read).
+sfx: ambient — no sound or a soft airy swell −24…−18 dB relative to the music; transition — a swell or reverse_whoosh of 0.4–0.8 s peaking exactly on the cut (align='peak'), −14…−10 dB; a leak entering the drop — plus sfx.impact on the cut; under a voice everything is pulled down another 6 dB
+genres: {travel: signature, viral: allowed, epic: allowed, drama: allowed, calm: allowed, product: allowed, sport: allowed, fashion: allowed, fanedit: allowed, teaser: allowed, motivation: allowed, phonk: forbidden, clips: forbidden, explainer: forbidden, ugc: forbidden}
+detect: |
+  Custom code: the difference between a frame and its neighbors (or the shot's median) — a smooth warm patch of brightness gain from 20 levels that does not
+  follow the scene's contours (Laplacian of the gain map ≈ 0), with its center of mass within 0–25 % of an edge or in a corner; coverage 10–40 %
+  of the frame (ambient) or 90–100 % at the peak (transition); in the patch R/B 1.5–2.5 (amber, gold), ≈ 1.0–1.3 (magenta), below 0.8
+  (cool); gradient width 15–40 % S. Over time — it grows over 0.6–1.5 s (ambient) or 6–10 frames (transition), the center drifts
+  at 2–8 % of the width per second independently of camera movement (the patch stays put when the camera pans, and vice versa). Shadows and the light
+  pattern of the scene under the patch do not change — it is a layer over the frame, not light in the scene.
+  ed_motion: no cuts in ambient; luma_med +10…+60 % (the darker the frame, the larger) over 0.6–1.5 s and back; rgb_med
+  shifts warm (R grows more than B); in a transition — flash or white frames at the peak and a cut within ±1 frame of
+  the brightness maximum.
+  Differences: glitch.film_damage (a leak on damaged film) — next to it a film gate frame, dust and flicker, the leak is saturated
+  (R/B 3–6), grows over 0.1–0.2 s and floods 50–100 %; here — a clean picture, a soft gradient, partial coverage, and gold,
+  magenta and cool variants exist. light.halation — a halo around bright objects in the scene; fx.glow — the glow grows out of bright areas of the frame
+  and moves with them; light.flash — the scene lighting changes (shadows, a gradient from the source), 2–4 frames; trans.flash — a flat
+  fill of the frame for 1–4 frames without a gradient; light.haze — a veil over the whole frame with a depth gradient; a lens flare — ghost
+  rings on a line through the frame center.
+engine: |
+  light_leak(mode='ambient'|'accent'|'transition', t=[t0, t1] | at=t_cut, shape='edge'|'corner'|'blob'|'streak'|'burst',
+             anchor='left'|'right'|'top'|'bottom'|'tl'|'tr'|'bl'|'br'|[x, y], palette='amber'|'magenta'|'gold'|'peach'|'cool'|'prism'|[hex, ...],
+             peak=0.9, size=0.32·S, falloff=1.5, elong=1.8, drift=[0.04, 0.02] (fractions of W and H per second),
+             warp={scale: 0.45·S, amount: 0.1·S, octaves: 3, speed: 0.04}, env={attack: 1.0, hold: 2.0, release: 1.5},
+             flicker={amp: 0.08, hz: 1.5}, blend='screen'|'add'|'lighten'|'soft_light', grain=0.03, dither=True, seed)
+    — extends light_leak from glitch.film_damage (color → palette, side → anchor, dur and waves → env and leak_track).
+    implementation at ¼ resolution: coordinates in fractions of S → + fbm offset (warp) → d = distance to the shape (ellipse at the edge, point,
+    |projection onto the normal| for a streak) → p = exp(−(d/size)^falloff) → layer = ramp(p^0.7, palette) · p · peak · env(t) · (1 + flicker)
+    · (1 + grain · noise) → bicubic upscale → screen 1 − (1 − frame)(1 − layer) (add — with a soft shoulder above 0.9) → dithering ±0.5 LSB.
+  transition(kind='leak', dur=0.6, params={palette: 'amber', shape: 'burst', anchor: 'right', peak: 1.3, size: 0.95·S, blend: 'add'})
+    = light_leak(mode='transition', at=t_cut, env={attack: 8, hold: 3, release: 10} in frames @25 fps) — the cut on the maximum.
+  leak_track(t=[t0, t1], every='2 bars', count_max=2, sides='alternate', shapes='rotate', peak_on='downbeat', seed) — new:
+    a bar-based schedule of ambient leaks without repeating the side or the shape.
+  + sfx('swell'|'reverse_whoosh', at=t_cut, align='peak', gain=-12) on a transition.
+  Order: after the grade and glow, before film texture and text.
+gen_hint: warm orange and red light leaks drifting in from the left edge of the frame over <scene>, soft glowing film light leak, golden hour, dreamy nostalgic summer mood
+commands: ["warm light leaks on the intro", "light leak transition between #2 and #3", "subtle floating leaks over the whole wedding verse", "a cool blue leak instead of a warm one on #7", "an edge leak on every second bar in the chorus"]
+related: [glitch.film_damage, fx.film_overlay, fx.glow, light.halation, light.flash, light.haze, trans.flash, trans.fade, trans.dissolve, look.film, focus.bokeh, sfx.whoosh]
+evidence: {examples: 0, sources: 0, measured: "edit culture: parameters from editing practice; verify with a demo render", confidence: medium}
+---
+id: fx.living_object
+family: fx
+group: aesthetics
+level: C
+aliases: [anthropomorphism, personification, living object, object with eyes, googly eyes, wiggly eyes, talking object, object character]
+what: an inanimate object gets a face and a personality — eyes, a mouth, facial expressions, a pose and a voice; a stone blinks, a power socket looks surprised, a ball sings, a mountain smiles; comedy, cuteness and a mascot out of any object
+frames: |
+  1. The object is large and almost centered, the camera is static (jitter 0.02–0.14 % of the frame in 5 of 8) or slowly pushes in
+     (×1.35–1.37 over 0.8–2.2 s); the object takes up 20–60 % of the frame height, the background is ordinary, "live".
+  2. The face is built from what the object already has (the socket's holes, the ball's seams, the mountain's folds), or added:
+     plastic googly eyes, drawn or human eyes and mouth. The eyes are in the upper third of the object, the distance
+     between them ≈0.3–0.4 of its width, diameter ≈12–20 % of the width.
+  3. Animation: blinking and darting pupils, expression changes ≈2–3 times per second, the mouth sings or talks (≈2 openings/s);
+     features can appear one by one — on a plasticine mountain the eyes at 1.35 s, a little tree as a "hairdo" at 2.85 s,
+     a smile at 4.2 s.
+  4. The object acts like a person: sings, watches what is going on, flies toward the camera with a facial expression while around it
+     ordinary life goes on (a game on a playground, a street). Shot 0.9–5.4 s.
+variants:
+  - googly eyes: real plastic eyes on a stone or an object, the pupils wobble, a ≈0.9 s loop
+  - face from the object's details: a socket, headlights, a house's windows turn into eyes and a mouth and change expressions
+  - human face on an object: a real person's eyes and mouth set into a ball, a fruit or a mug, singing or talking
+  - plasticine and stop-motion: a mountain or an object with sculpted eyes, details appear one by one
+  - drawn object characters (a sock, a flower, a potted plant) with eyes and little legs walk among real people on the street
+  - puppet animals in human clothes, behaving like people (see fx.talking_animal)
+  - living portrait: a person in a framed painting moves, the camera pushes in on the frame
+status: hybrid
+fallback: |
+  googly eyes, drawn eyes and mouth, blinking and simple lip-sync are done in code on top of the object's tracking;
+  human eyes and mouth are taken from the user's video (face mesh, cut-out of lips and eyes) with their consent;
+  plasticine, puppet and drawn characters, complex expressions built from the object's details — generation.
+params:
+  target: object 20–60 % of the frame height, tracked every frame (bbox or planar), smoothing over 3 frames
+  eyes: in the upper third of the object, spacing 0.3–0.4 of the width, diameter 12–20 % of the width; white + pupil of 40–55 % of the diameter
+  googly: a spring-loaded pupil — lag 2–4 frames, overshoot 20–40 %, decay 0.3–0.5 s after the object jerks
+  blink: every 2–5 s, 3–4 frames (close 1, hold 1–2, open 1)
+  mouth: 3–4 shapes (closed / half-open / open / "o"), openness = voice envelope (attack 1 frame, release 2–3), shape changes on twos (12.5 fps)
+  human_features: cut-out of eyes and lips via face mesh, feather 2–3 px, color and grain matched to the object, scaled to the object's size
+  expression_rate: 2–3 expression changes per second for "chatter", one expression for 0.3–1 s for a reaction
+  feature_reveal: details appear one at a time, 1–1.5 s apart, each with a pop scale 0→1.15→1 over 4–6 frames
+  squash: on stressed words, squash-and-stretch of the object's height ×0.92–1.08 over 4–6 frames
+when: the hook and comedic inserts, the "object's" reactions to what is happening, a product mascot (the product speaks in the brand's voice), explainer videos with a guide character, kids' and cute topics; the eyes appear on a downbeat or a pause in the track; 1–3 times per video or as a running character
+avoid: a serious or tragic tone; the object rotates a lot or leaves the frame (the track breaks, the eyes "float"); eyes that do not match the object's perspective; lip-sync running ahead of the voice by more than 2 frames; a face on a small object (under 15 % of the frame) — the expressions do not read
+sfx: a "pop" or a "blink" on the eyes' appearance, a cartoon ting on a blink, the character's voice (can be pitched +2–4 semitones), a creak or a squeaker on the squash
+genres: {viral: signature, product: signature, ugc: allowed, fanedit: allowed, explainer: allowed, calm: allowed, drama: forbidden, epic: forbidden, fashion: forbidden, teaser: forbidden}
+detect: |
+  ed_motion: usually static (jitter ≤0.14 %) or a slow push-in ≤×1.4; local animation only on the object —
+  repeating changes in two symmetrical spots (eyes) and a spot below them (mouth) at 2–3 Hz, while the object's
+  shape does not change.
+  Visually: an inanimate object has two eyes and a mouth that move in sync with a voice or a reaction;
+  the eye whites are pure white and sharper than their surroundings (an overlay); human lips and eyes have a different texture from the object.
+  Differences: fx.talking_animal — a real animal's mouth moves; anim.living_architecture — a building's geometry
+  moves without a face; fx.bobblehead — a live person's proportions change.
+engine: |
+  new primitive face_overlay(target=track(object:<name>), eyes='googly'|'cartoon'|'human', mouth='viseme'|'human',
+  eye_spacing=0.35, eye_size=0.16, blink_every=3.5, jiggle={lag: 3, overshoot: 0.3, decay: 0.4},
+  lip_sync=audio(voice), viseme_fps=12.5) — draws or pastes features into the track's coordinate system;
+  human: mask(method='face') on the user's video → cut-outs of eyes and lips → composite(blend='normal', feather=3)
+  + color(match=target). Feature appearance: transform(scale=[0, 1.15, 1], t=[t, t+0.2]) + sfx('click', at=t).
+  Squash: transform(scale=[[1, 1], [1.04, 0.92], [1, 1]], center=bottom(target), t=[w, w+0.2]) on stressed words.
+  Plasticine, puppets, drawn characters — Higgsfield image-to-video from a frame of the object with a prompt from gen_hint.
+gen_hint: a smooth grey stone sitting on a sandy beach with two big googly eyes, the eyes jiggle and blink, it slowly looks around and smiles, static close-up, warm natural light, playful handmade feel, realistic photography
+commands: ["stick googly eyes on the mug in #2 and make it blink", "have our product say this line in my voice", "a face made of my lips and eyes on the ball at 0:05", "eyes appear on the drop, then a smile"]
+related: [fx.talking_animal, fx.bobblehead, anim.living_mural, anim.living_architecture, anim.stop_motion, gfx.floating_ui]
+evidence: {examples: 8, sources: 8, measured: "camera static in 5 of 8 (jitter 0.02–0.14 %), push-ins ×1.35 over 0.8 s (ease-out) and ×1.37 over 2.24 s (linear); shots 0.9–5.4 s; the mountain's features appear at 1.35 / 2.85 / 4.2 s; googly-eye loop 0.9 s; the singing ball's mouth ≈2 openings per second, the socket's expression changes ≈3/s — counted by frames; eye sizes — an estimate", confidence: medium}
+---
+id: fx.mosaic
+family: fx
+group: effect
+level: B
+aliases: [pixelation, mosaic, censor mosaic, pixel censorship, pixelate, blocky face blur, pixelate face, 8-bit person]
+what: for censorship, anonymity or a joke, one object in live footage is covered with a mosaic of large squares — the subject seems to turn into a character from an old video game
+frames: |
+  1. Mosaic area: a face or head (often of everyone in the frame), a body part, a detail in the frame or
+     the whole person by silhouette; the edge is blocky and hard, no feathering; the rest of the frame is untouched.
+  2. Block: a square of 1.8–6.3 % of the frame height — small "censorship" on a detail 1.8 %, faces 2.6–6 %,
+     a sprite person ≈3 %, a large art mosaic on the body 3.4–4.4 %. Block color — the average over the square.
+  3. The grid is locked to the screen while the area follows the object: a person dances — the squares under them
+     "click over", the silhouette is stepped; the mosaic holds for the whole shot (1–5 s), without appearing or disappearing.
+  4. Accent: after a shot with mosaic faces — a cut to a shot where the whole frame is in large squares (≈6 % of the height);
+     or mosaic together with a negative and a cold tone — an artistic rather than a censoring treatment.
+  5. Comedy: a little mosaic square on a dog's "indecent" detail or on an empty spot — a joke about censorship.
+variants:
+  - face censorship: all faces in the frame are pixelated, the shot holds like a normal one — anonymity, a "documentary" feel
+  - detail censorship: a small mosaic square on a body or an object, blocks 1.8–3 % of the height — often as a joke
+  - sprite person: a dancing person made entirely of squares ≈3 % of the height on a sharp real background
+  - whole frame: the entire shot in large 5–6 % squares — a hit after a shot with pixelated faces
+  - art mosaic: negative, cold tone, large squares on body parts, moving with the body
+  - relief tiles: the whole frame broken into squares 4–5 % of the height with pyramid facets, like glass tiles (a related filter)
+status: hybrid
+fallback: without a mask — a rectangular mosaic following face tracking (mediapipe face) or the whole frame in code; a person's silhouette — mediapipe_person or hf_remove_background; if the tracker loses the face — manual keyframes every 3–5 frames
+params:
+  block: 1.8–6.3 % of the frame height (typically 3–4 %; 1080p — 20–65 px); square pixels
+  region: track(face) with a 15–25 % margin | mask(person) expanded by 1 block | a rectangle around the object | the whole frame
+  grid: aligned to the screen, not to the object; no feathering
+  color: the block average; optionally reduce the palette to 16–32 colors for the "sprite"
+  duration: the whole shot 1–5 s; the "whole frame" hit 0.5–1.5 s (12–38 frames @25 fps)
+  art: "invert + tone #9cc3d5 + block 4 % — the artistic version"
+  tile_relief: block 4–5 %, pyramid facets (diagonal emboss) — the relief tile variant
+when: hiding the faces of random people and police in travel and reportage (anonymity); comedic "censorship" on memes and UGC (with a bleep); a music-video accent — a sprite person in the real world over an 8-bit sound; a "whole frame in mosaic" hit on the drop or a glitch pause; as much as needed for anonymity, as a gag — 1–2 times
+avoid: small blocks (<1.5 % of the height) — looks like poor quality rather than a device; mosaic with feathering and blur — that is blur censorship instead; a jittery area lagging behind the face; mosaic on the main subject for no reason — the emotion is lost
+sfx: censorship — a short 1 kHz bleep on the word or moment; sprite — 8-bit sounds, chiptune; whole frame — a glitch or bitcrush on the hit
+genres: {viral: allowed, ugc: allowed, fanedit: allowed, clips: allowed, travel: allowed, explainer: allowed, phonk: allowed, teaser: allowed, drama: allowed}
+detect: |
+  In part of the frame the image is piecewise constant on a square grid: autocorrelation of the column sums of |dx| and the row sums of |dy|
+  in that area peaks at the block period (1.8–6.3 % of the frame height) and its harmonics; the grid is aligned to the screen;
+  outside the area normal sharpness. The area's shape — a face, a head, a body or the whole frame; it holds for the whole shot.
+  ed_motion: no signature of its own.
+  Difference from fx.pixel_art: there the whole frame is stylized as pixel art with a reduced palette and a game aesthetic; here the mosaic is local or for a single hit.
+  Difference from blur censorship: mosaic has squares with hard edges.
+  Difference from fx.glitch: in a glitch the blocks are displaced and the colors broken; here each block is an average color in its own place.
+engine: |
+  mask(method='face'|'mediapipe_person'|'hf_remove_background', feather=0, grow=0.2) + pixelate(size=0.035*H, region=mask, grid='screen')
+  Whole-frame hit: pixelate(size=0.06*H, t=[beat, beat+1.0])
+  Sprite: pixelate(size=0.03*H, region=mask(person)) + posterize(levels=6)
+  Art: color(params={invert: true, tint: '#9cc3d5'}) + pixelate(size=0.04*H, region=mask(body_parts))
+  + sfx('beep', at=t_word) for censorship
+gen_hint: <scene> with <the subject's face / a detail> censored by a coarse square pixel mosaic, hard-edged blocks about 4 percent of the frame height, the rest of the image sharp and normal
+commands: ["pixelate the passers-by's faces on #3–#5", "funny square censorship at 0:08 with a bleep", "turn the subject into an 8-bit sprite, keep the background", "whole frame into big pixels on the drop"]
+related: [fx.pixel_art, fx.glitch, mask.silhouette_window, glitch.datamosh]
+evidence: {examples: 8, sources: 8, measured: "blocks 1.8 % (detail), 2.6 % and ≈6 % (faces), 2.8–3.1 % (sprite person), 3.4–4.4 % (art mosaic on the body), 4.5 % (relief tiles) of the frame height — by gradient autocorrelation in the areas; the mosaic holds for the whole shot; the 'whole frame' hit comes after a shot with faces; in 1 of 8 the mosaic is not visible in the capture", confidence: medium}
+---
+id: fx.night_vision
+family: fx
+group: effect
+level: B
+aliases: [night vision, night vision goggles, night vision device, camera night mode, infrared footage, IR camcorder, green night vision]
+what: the frame as seen through a night vision device — green monochrome with grain, dark edges or a round eyepiece, glowing eyes and bloomed lights; the aesthetic of surveillance, hunting, found footage
+frames: |
+  1. Color — a single shade of green over the whole picture. Military "phosphor": hue 114–152°, saturation
+     67–95 %, the green channel 2.5–5.5 times higher than red. A consumer camera's night mode:
+     pale teal-green, hue 150–166°, saturation 33–45 %, G/R 1.6–1.7, G/B ≈1.16.
+     Highlights almost white with a green cast ≈ RGB (150–195, 218–246, 150–223).
+  2. Dark tonality: median L 8–60 (with IR illumination on a face — up to 87); the edges 1.6–5 times darker than the center —
+     a strong vignette or an illumination spot in the middle; with an eyepiece — a round field ≈0.88 of the frame wide,
+     black outside.
+  3. The grain is coarse and alive, details are soft; bright sources (lights, an engine, a flashlight) bloom
+     into halos and rays; the eyes of people and animals glow from the reflected IR illumination.
+  4. Device interface: a "+" crosshair in the center (5–7 % of the frame height), a battery icon in a corner;
+     two examples run at 10–12.5 fps — the jerky motion of a cheap camera.
+  5. In music videos — a 1–2-frame whiteout as a cut, sharp camera zoom jerks ×1.2–2.7 over
+     2–6 frames, recoloring between cuts (B&W → blue → green), blown-out teeth and jewelry.
+variants:
+  - military eyepiece: saturated phosphor green, a round field with black around it, star-shaped halos from lights in the sky
+  - trail camera: very dark green (median L 9, 64 % of the frame almost black), heavy noise, a static camera, an animal in the grass
+  - consumer camera night mode: pale teal, an IR illumination spot in the center, glowing eyes, a crosshair and a battery icon, ragged zooms
+  - music-video mix: the same camcorder, but with B&W and blue variants between cuts, whiteouts on transitions
+  - outside view: a person wearing a night vision device, filmed with the same device — a glowing eyepiece on the face, 10 fps
+status: code
+fallback: glowing eyes — hybrid (eye points from the face mesh + glow); real night footage — look for dark shots in the source footage, the effect looks most honest on them
+params:
+  palette_mil: "0 #000000, 0.25 #0b3d10, 0.5 #1f7a22, 0.75 #4fbf4a, 1.0 #d8ffd0"
+  palette_cam: "0 #000000, 0.3 #1c3a33, 0.65 #6fa596, 1.0 #e6fff4"
+  saturation: military 65–95 %, camcorder 30–45 %
+  levels: shadows lifted, but median L 15–60; whites blown out (p95 up to 255)
+  vignette: edge/center 0.2–0.6; eyepiece — a circle 0.85–0.9 of the width, feather 2–4 %
+  grain: heavy, σ 2–9 levels of 255, grain size 1.5–2 px
+  bloom: glow(threshold 0.8, radius 2–4 % of the frame) + rays from point lights
+  fps: optionally step_print down to 10–12.5 fps (hold each frame 2 times @25 fps)
+  hud: crosshair 5–7 % of the height in the center, battery in a corner 3–4 % of the height
+  whiteout: 1–2 frames of white (0.04–0.08 s) on cuts
+  zoom_jerk: ×1.2–2.7 over 2–6 frames, no smoothing
+when: night and dark scenes (the effect justifies the darkness and noise), surveillance, hunting, a night foray, horror and "found footage", nocturnal wildlife; in music videos — camera "night mode" inserts with glowing eyes; 1–4 s per insert, an episode up to 15 s
+avoid: brightly lit daytime shots — looks fake; a product and faces where skin color matters; placing it next to other color effects in one episode; long static shots with no action in the dark
+sfx: a thin electronic power-on whine of the device at the entry, steady interference noise under the whole episode, a click on the crosshair; whiteout — a short whoosh or impact
+genres: {teaser: allowed, drama: allowed, phonk: allowed, fanedit: allowed, ugc: allowed, viral: allowed, clips: allowed, explainer: allowed, calm: forbidden, product: forbidden}
+detect: |
+  Color: one hue per frame, hue 110–170°, G > R by 1.6–5.5 times and G > B; in ≥70 % of pixels
+  green dominates; median L ≤ 60; edges/center < 0.65; heavy noise in flat dark areas.
+  Device signs: a round field with black around it, a crosshair in the center, a battery icon, glowing eye dots.
+  ed_motion: no signature of its own; in music videos — white frames on cuts and short ZOOM-IN ×1.2–2.7 over 2–6 frames.
+  Difference from fx.thermal: there, an orange-violet scale and people are the brightest, with no green.
+  Difference from fx.xray: there, a cold blue, a black background and bones.
+  Difference from a green color grade: a grade keeps other hues (skin, sky) and has no grain or vignette.
+engine: |
+  color(params={desaturate: 1.0}) + color(params={gamma: 1.4, black: 0.03})
+  + gradient_map(source='luma', stops=[[0,'#000000'],[0.25,'#0b3d10'],[0.5,'#1f7a22'],[0.75,'#4fbf4a'],[1,'#d8ffd0']])  # military
+  + grain(amount=0.08, size=1.8) + vignette(amount=0.6) + glow(threshold=0.8, radius=0.03)
+  + circle_mask(diameter=0.88, feather=0.03, outside='#000000')  # eyepiece
+  + step_print(hold=2)  # optional, 12.5 fps
+  + hud(kind='crosshair', size=0.06, position='center') + hud(kind='battery', size=0.035, position='bottom_right')
+  + eye_glow(track(face), radius=0.012, intensity=1.5)  # glowing eyes, optional
+  Cuts in a music video: flash(color='white', dur=0.06) + transform(scale=[1, 1.5], t=[t, t+0.16], ease='linear')
+gen_hint: night vision camera footage of <scene>, green phosphor monochrome, heavy grain, dark vignette, circular scope view, eyes glowing from infrared light, blooming light sources, shaky surveillance feel
+commands: ["#5 as night vision", "night vision insert with a crosshair at 0:20", "intro like a camera's night mode with glowing eyes", "the chase through a round night vision eyepiece"]
+related: [fx.thermal, fx.xray, time.step_print, cut.flash, zoom.crash]
+evidence: {examples: 9, sources: 6, measured: "military green: hue 114–152°, saturation 67–95 %, G/R 2.5–5.5 (4 clips); camcorder: hue 150–166°, saturation 33–45 %, G/R 1.6–1.7 (3 clips); median L 8–87; edge/center 0.19–0.62; noise σ 1.6–9 levels; eyepiece ≈0.88 of the width; 2 clips at 10–12.5 fps; whiteouts of 1–2 frames on cuts", confidence: high}
+---
+id: fx.omni_360
+family: fx
+group: effect
+level: B
+aliases: [360 camera, spherical video, equirectangular, 360 unwrap, invisible selfie stick, invisible stick, 360 reframe, 360 panorama]
+what: 360-camera footage unwrapped into an unusual projection — the whole sphere as a flat strip, an ultra-wide "ball", a tunnel, or an orbit around the subject from an invisible stick; the frame bends and spins in ways a normal camera cannot
+frames: |
+  1. Full unwrap: the whole surround view in one ≈2:1 frame — the left edge continues the right one
+     (edge correlation 0.86–1.0), horizontal lines become sinusoids, doors and windows repeat
+     across the width; the camera moves, the picture slides sideways; a zoom-in insert into part of the strip ×2–2.6 over 1.9–2.5 s.
+  2. Ultra-wide "ball": a 150–220° field of view, strong barrel distortion, the edges curl, verticals in the center stay straight.
+  3. Projection morph within a shot: a normal wide view folds into a tunnel or a ball over 1.8–4 s,
+     with a simultaneous roll of 55–100°/s (up to 400° over 3.9 s) — a corridor or a train car becomes a tube.
+  4. Orbit from an invisible stick: the subject in the center, the camera "floats" around and above them (no operator visible),
+     a fly-through push-in ×5.5–5.8 over 1.2–1.4 s from a wide to a medium shot.
+  5. Spin transition: a frantic roll and yaw of 4–16° per frame (100–400°/s) with motion blur into radial streaks,
+     several flash cuts every 4 frames, landing on the running subject.
+variants:
+  - unwrapped strip: a whole train car or station in one 2:1 frame, the camera moves
+  - ball view: an ultra-wide spherical picture from below or from inside a train car
+  - tunnel morph: a corridor folds into a tube with rotation
+  - orbit from an invisible stick: a night dance in streetlight, the camera flies around
+  - spin transition: a rotation with motion blur between train car scenes, landing on the subject
+status: footage
+fallback: without 360 material — simulation in code (a spherical or "ball" warp of a wide shot + roll + radial blur); tunnel and tiny planet — a polar unwrap of a wide panorama (see fx.tiny_planet); the orbit from an invisible stick — only 360 footage or generation with consent
+params:
+  projection: equirectangular 360×180 (2:1 frame) | ultra-wide stereographic 150–220° | rectilinear ≤120° for a "normal" view
+  morph: 1.8–4 s (45–100 frames @25 fps) from rectilinear to ball or tunnel, ease inOutCubic
+  roll: drift 10–30°/s; in a morph 55–100°/s; spin transition 100–400°/s (4–16° per frame)
+  yaw_drift: 10–30°/s for the unwrapped strip
+  flythrough: push-in ×3–6 over 1.1–1.4 s toward the subject
+  blur: radial/zoom at rotation speeds >5° per frame
+  resolution: a 5.7K sphere gives ≈1080p in a 90° rectilinear view — do not crop any tighter
+  duration: 1.5–5 s per shot
+when: action and sports (skateboarding, cycling, parkour, dance), travel and parties, a music video with an "impossible" camera; spin transition — between locations on a downbeat; tunnel morph — the build-up before the drop; unwrapped strip — the intro or an opening overview of the place. 1–3 times per video
+avoid: a talking head and calm interviews; sphere stitching seams and a visible operator; faces at the very edge of the projection (stretched); long spins — they cause motion sickness; low resolution with heavy cropping
+sfx: spin and morph — whoosh/reverse_whoosh under the rotation, impact on the landing; fly-through to the subject — riser; unwrap — ambience of the location
+genres: {sport: signature, fanedit: allowed, travel: allowed, viral: allowed, phonk: allowed, ugc: allowed, clips: allowed, epic: allowed, teaser: allowed, calm: forbidden}
+detect: |
+  Unwrap: aspect ≈2:1, the left and right edges of the frame match (column correlation >0.8), horizontals are bent into a sinusoid, verticals are straight.
+  Ball and tunnel: closed or nearly closed circular lines around the center, verticals converge radially.
+  ed_motion: long ROTATE at 55–100°/s centered ≈(0.5, 0.5) together with ZOOM-OUT ×0.4–0.7 — a morph;
+  ROTATE peaks of 4–16°/frame + a drop in sharpness and short cuts — a spin transition; ZOOM-IN ×5–6 over ≈1.2 s centered on the subject — a fly-through.
+  Difference from lens.fisheye: a fisheye has a field of ≤180° and the horizon is an arc; here the whole circle of view is visible or the line closes on itself.
+  Difference from fx.tiny_planet: there the ground is folded into a small ball with sky around it; here — unwraps and orbits at the scale of the scene.
+engine: |
+  equirect_reframe(src=clip360, yaw=[y0, y1], pitch=[p0, p1], roll=[r0, r1], fov=[f0, f1], projection='rectilinear'|'stereographic'|'equirect', t, ease='inOutCubic')
+  Tunnel morph: equirect_reframe(fov=[110, 260], pitch=[0, 90], roll=[0, 180], projection='stereographic', t=[t0, t0+2.5])
+  Spin transition: equirect_reframe(roll=[0, 720], t=[t0, t0+0.5]) + blur(kind='radial', amount∝speed) + cut at the peak
+  Without 360 material: lens_warp(kind='sphere', strength=0.6) + transform(rotate=[0, 90]) + blur(kind='radial')
+  + sfx('whoosh', at=t0) + sfx('impact', at=t0+D)
+gen_hint: 360 camera footage of <scene>, extreme spherical ultra-wide view, camera floating around <subject> with no visible operator, horizon bending into a circle, fast roll, action sports energy
+commands: ["360 spin transition between #3 and #4", "fold the corridor into a tunnel before the drop", "intro — the whole train car as a 360 unwrap", "orbit around the dancer as if from an invisible stick"]
+related: [fx.tiny_planet, lens.fisheye, roll.whip, trans.spin, drone.fpv]
+evidence: {examples: 8, sources: 6, measured: "unwrap: the frame edges match (correlation 0.86–1.0), zoom-in ×2.6 over 2.5 s; morph: roll 98.7° over 1.8 s and 399° over 3.9 s, ZOOM-OUT ×0.41–0.44; spin transition: peaks of 4.5–16°/frame, cuts every 4 frames; fly-through to the subject ×5.5 over 1.44 s and ×5.8 over 1.2 s, center (0.48, 0.5)", confidence: medium}
+---
+id: fx.pixel_art
+family: fx
+group: effect
+level: B
+aliases: [pixel art, pixel graphics, 8-bit, 16-bit, retro game look, retro game, sprite, sprite animation, pixel animation, low-res, voxels, voxel]
+what: the whole frame is drawn (or converted) in large square pixels with a reduced palette and no anti-aliasing, and motion steps at 7–17 drawings per second — the aesthetic of old video games — cozy pixel dioramas, character and mascot sprites, game scenes with a game UI
+frames: |
+  1. Grid: the whole frame is made of square "art" pixels of one size — 0.23–1.85 % of the frame height
+     (2.5–20 px at 1080p), mostly 0.5–1.3 % (5–14 px @1080p, a canvas of 75–200 rows). Edges are stepped,
+     with no anti-aliasing or blur; the grid is fixed relative to the screen, objects move in whole-pixel steps.
+  2. Palette: 3–43 distinguishable colors per frame, mostly 8–17; the 8 most frequent colors cover 85–100 % of the frame
+     in 17 of 27 measured examples. Extreme variants — 2 colors (dark + light) with a dot dither, 1 bit
+     (black and white), 4 shades of one green. Color is flat, transitions are steps of shades, in 5 of 27 — checkerboard
+     dithering (a 2×2 "checker" over 1–8 % of the area, strongest with a 1-bit and 2-color palette).
+  3. Motion: characters and sprites change drawings 7–17 times per second — either the video itself runs at 7–12.5 fps,
+     or at 25–33 fps frames are held for 2 (12.5 and 16.7 drawings per second), key poses — up to 8 frames;
+     background scrolling, rain and lights may update every frame. A character or mascot sprite is
+     a loop of 4–11 drawings (0.3–0.8 s; a deliberately choppy version — 2.5 fps, 4.4 s); a pixel diorama is
+     a static scene where small things live (rain, a flickering sign, steam, streetlights), a 1.2–7 s loop.
+  4. Presentation: a postcard scene or a centered sprite on a plain background, game elements — score pop-ups
+     above the action, a dialogue box, a scoreboard, starting lights; if the camera moves at all, it is a smooth scroll.
+  5. Pixel size change (rare): a live object bursts into a flash of multicolored cubes in 0.3 s (6 frames @20 fps)
+     and reassembles into a blocky copy; a logo assembles from falling pixel drops over ≈2.6 s
+     (the last 32 → 94 % of the area — in 1.2 s), holds ≈1.9 s and drips back away over a little more than 1.6 s.
+variants:
+  - pixel diorama loop — a cozy night street, a bar, a shop, a room in the rain; a static frame with living details, 1.2–7 s on loop (10 of 34)
+  - character or mascot sprite — a product or a hero with arms and legs on a plain background, a loop of 4–11 drawings, jumps, somersaults, "breathing" (8 of 34)
+  - game scene and "game-style" ad — a race, a fight, score pop-ups, a dialogue box, a scoreboard (6 of 34)
+  - extreme palette — 2 colors with dither, 1 bit, 4 shades of green, 4–6 neon colors on black (5 of 34)
+  - voxels — a volumetric pixel, a blocky 3D world; a live object turns blocky in 0.3 s (4 of 34)
+  - pixel assembly — a logo assembles from falling pixel drops and drips back away; pixel "drips" as a title sequence (3 of 34)
+status: code
+fallback: converting the user's footage to pixel art — in code (downscale to the canvas, palette, dither, upscale without smoothing); a genuinely drawn pixel scene or a mascot sprite — generation with the user's consent (the style is described precisely in the prompt); a sprite hero over a real background — a person or product mask (mediapipe or hf_remove_background), the sprite itself in code with a large block
+params:
+  block: "0.5–1.3 % of the frame height (typically 0.8 % — 9 px @1080p, canvas ≈240×135); fine diorama 0.23–0.5 %, large sprite 1.0–1.9 %; a whole number of screen pixels per block — 6, 8, 9, 12 px @1080p"
+  canvas: typical 16:9 canvases — 320×180 (6 px @1080p), 240×135 (8 px), 160×90 (12 px); 9:16 — 135×240 (8 px @1920); square — 100×100–140×140
+  palette: "8–16 colors (k-means over the scene) or fixed: 4 shades of green #2a5b10 #598516 #83a80b #a8cf34; 2 colors #1c0e2f + #bbd8da (63/37 % of the area); 1 bit #010101 + #fdfdfd; neon on black #05030c #116dca #412b6a #b433cc #ead7f6; the 8 most frequent colors — 85–100 % of the area"
+  dither: none (default) | checker 2×2 | bayer 4×4 at the art-pixel level; strength 0.3–0.6, only in gradients and shadows; mandatory with a 2-color and 1-bit palette
+  outline: a dark outline of 1 art pixel around the sprite hero (optional)
+  aa: no anti-aliasing — upscale with nearest neighbor only; before downscaling — light median filtering so there are no "dirty" stray pixels
+  fps: 8–17 drawings per second (typically 12.5) — step_print(hold=2) @25 fps (12.5) or hold=3 (8.3); a key pose up to 8 frames @33 fps (0.24 s)
+  loop: sprite 4–11 drawings (0.3–0.8 s at 10–25 fps); diorama 1.2–7 s; a slow "cozy" loop — 7–10 fps
+  motion_snap: moves, scrolling and shake — in steps of a whole art pixel
+  build: logo assembly from drops ≈2.6 s (the last 32 → 94 % of the area in 1.2 s), hold ≈1.9 s, drip-away ≥1.6 s; turning a live object blocky — 0.3 s (6 frames @20 fps)
+  res_ramp: a smooth block growth 1 → 0.8 % H over 0.25–0.5 s (outCubic) as an entry into the effect or an exit from it — from editing practice, not seen in this section's examples
+when: game-style intros and outros, "level loaded", a channel intro; a product as a game character — ads for food, drinks, gadgets; an explainer with a game framing (points, levels, lives); fan edits and memes — a "just like in a game" moment, a switch to an "8-bit version" of the hero on the drop; a calm lo-fi loop with a pixel diorama to music; as a whole-shot effect — one episode of 2–8 s, not the whole video unless it is stylized throughout
+avoid: large faces and expressions — with a block ≥1 % H the emotion is lost; small text and subtitles over the pixelation (render text separately in a pixel font with the same block); smoothing when upscaling — you get mush, not pixel art; a non-integer block size in the output — uneven pixel widths are glaring; smooth 25 fps motion without holds on a sprite — looks like a cheap filter; drama and epic
+sfx: 8-bit sounds — short "pew" on jumps and hits, a "ding" on score pop-ups, a chiptune bed or a bitcrush on the track (bit depth reduced to 8 bit and sample rate to 11–22 kHz) for the duration of the effect; on the logo assembly — a rising arpeggio
+genres: {fanedit: allowed, viral: allowed, ugc: allowed, product: allowed, explainer: allowed, teaser: allowed, calm: allowed, clips: allowed, drama: forbidden, epic: forbidden}
+detect: |
+  Custom check — edge phase: profiles of strong |dx| changes by column and |dy| by row; phase coherence
+  s(P) = |Σ profile·e^(−2πix/P)| / Σ|profile| while sweeping P = 1.6–20 px. Pixel art: the largest P where s ≥ 0.6 of the
+  maximum (the true period and its fractions P/2, P/3 give a high s, multiples such as 2P give a low one), the same in X and Y,
+  0.2–2 % of the frame height; in clear examples s = 0.4–0.98. Palette on the P grid: the 8 most frequent colors ≥ 85 % of the area.
+  Edge sharpness is high, few intermediate (anti-aliasing) tones; characters at 7–12.5 fps or frames held for 2–3.
+  ed_motion: no signature of its own; moves in even steps, holds on every other frame.
+  Difference from fx.mosaic: there the mosaic is local (a face, a detail) or for a single hit, a block is the average color of the source frame
+  (1.8–6.3 % H), the rest is sharp and the palette is not reduced. From look.retro_graphics and look.vhs: a soft image without a grid.
+  From look.video_game: there, a clean 3D render and an over-the-shoulder camera, no pixel grid. From glitch.datamosh and fx.glitch:
+  blocks are displaced and flow, the grid does not hold its shape.
+engine: |
+  Footage conversion: pixelate(size=round(0.008*H), grid='screen', prefilter='median3')
+  + palette_quantize(colors=12, method='kmeans'|'fixed', palette='green4'|'duo(#1c0e2f,#bbd8da)'|'1bit'|'neon5'|None,
+    dither='none'|'checker'|'bayer4', strength=0.4) + pixel_outline(px=1, color='darkest', target=mask('mediapipe_person'))
+  + step_print(hold=2) + snap_motion(step=block) + upscale(method='nearest', factor=integer)
+  Sprite over a live background: mask('hf_remove_background') → the same stack for the hero only → composite(over=background)
+  Logo assembly: pixel_rain_build(mask=logo, block=0.018*H, dur=2.6, drip_colors=['#ce37df','#5ee6a7','#783398'], hold=1.9, reverse=True)
+  Effect entry: res_ramp(block=[1, 0.008*H], t=[t0, t0+0.4], ease='outCubic') — on a downbeat
+  + sfx('chiptune_blip', at=events), a bitcrush on the track for the duration of the episode.
+gen_hint: "16-bit pixel art animation of <a cozy rainy night street with a glowing shop window | a cute sprite of <product> with tiny arms and legs bouncing on a flat yellow background>, crisp square pixels, limited palette of about 12 colors, no anti-aliasing, 240x135 canvas upscaled with nearest neighbor, looping idle animation at 10 fps"
+commands: ["convert #3 to pixel art, 240×135 canvas, 12 colors", "turn the product into an 8-bit sprite and make it jump on the beat", "the logo at the end assembles from falling pixels", "the whole episode in a 4-shade green palette with dither"]
+related: [fx.mosaic, look.video_game, look.retro_graphics, glitch.pixel_sort, time.step_print, anim.stop_motion, fx.glitch, scene.diorama]
+evidence: {examples: 34, sources: 20, measured: "27 frames at native resolution: art-pixel period by edge phase (checked on enlarged crops) 0.23–1.85 % H, median ≈0.8 % (2–10.2 px in sources of 190–880 px); palette on the grid: 3–43 colors ≥0.5 % of the area, median ≈13, the 8 main colors ≥85 % in 17 of 27; checkerboard dither 1–8 % of the area in 5 of 27 (strongest with a 1-bit and 2-color palette); frame rate 2.5–33 fps, sprites 4–11 drawings at 10–25 fps, at 25–33 fps frames held for 2 (12.5 and 16.7 drawings/s), key pose up to 8 frames; live object → blocky in 0.3 s, logo from drops ≈2.6 s; all 34 examples reviewed, the variant groups overlap (2 examples in two groups)", confidence: high}
+---
+id: fx.projection
+family: fx
+group: effect
+level: B
+aliases: [projection, projector, projection mapping, video mapping, face projection, fabric projection, projected light]
+what: another video falls as light onto a face, a body, fabric, palms, water mist or a stage backdrop — the image bends over the relief, darkness all around; a ghostly, dreamy, theatrical image
+frames: |
+  1. The scene is dark: median L 11–44 (7 of 9 examples); the light comes mostly from the projector — p95 88–207,
+     peaks 235–250. Bright areas — 1–19 % of the frame.
+  2. The projected image follows the surface: geometric shards run across a face, a face breaks up
+     on the folds of a sheet, an image lies in cupped palms, a figure hangs in water mist, threads of light
+     cover a person and a wall. On the wall behind the person — their shadow, cut out of the projection.
+  3. Light color: cold teal-white ≈RGB (165–175, 200–226, 220–234) for "ghosts" and water
+     screens; warm white ≈(180, 180, 155) for fabric and palms; sometimes a solid screen color (red).
+  4. The light is alive: mean brightness jitters by 1.5–2.6 levels from frame to frame with occasional jumps of
+     15–30; the projected image changes (white → red → darkness) every 0.6–0.9 s.
+  5. The equipment is visible: the projector lens as a point with ray flares, a halo around the projection spot, a beam in haze.
+variants:
+  - face mapping: shards and textures run over a still face on a gray background
+  - screen behind the performers: people are dark silhouettes against a bright projection, patches of the image on their faces; the screen color changes on the rhythm
+  - fabric projection: a face on a hanging sheet, the folds break the image, the fabric sways and drifts away
+  - water screen: a glowing figure in water mist over a lake at night, the projector lens shines into the camera
+  - cinema in the palms: a bright rectangle of a film in cupped hands, a child watching nearby
+  - stage ghost: a teal glowing figure sits next to a real person
+  - light threads: an abstract glowing texture is projected onto a person and a wall in sepia
+  - backdrop behind musicians: blurred faces and eyes on the backdrop, the projector beam flares behind the band
+status: hybrid
+fallback: real projection — footage (look for concert and stage shots in the source footage); simulation in code — a person mask + a depth map for the bend + darkening the scene + a light overlay + a shadow; generation with the user's consent
+params:
+  ambient: darken the scene by 1.5–2.5 EV, median L 15–45
+  blend: screen/add over the surface mask, multiplied by the surface's own brightness (0.4–1.0) — texture and shadows are preserved
+  displacement: bend by a depth or luminance map, 1–3 % of the frame; the projection is softer than the base (blur 0.5–1.5 px), keystone 2–6°
+  shadow: the person's silhouette on the screen/wall, offset 2–6 % of the frame away from the projector, opacity 70–90 %
+  flicker: 1–3 % brightness per frame + rare jumps of 6–12 %
+  color: "cold #a5cae0 for the 'ghost' and water; warm #b5b49e for fabric and palms"
+  swap: projected image change on the beat — 0.5–0.9 s (12–22 frames @25 fps)
+  beam: optionally a lens flare (glow threshold 0.9, 4–8 rays) + haze
+  duration: 2–5 s per shot
+when: a memory or a "movie in the head", a dreamy intro, ghosts and people who are gone, an art music video and a stage aesthetic, a concert backdrop; projected image changes — on the beat; 1–3 shots per video
+avoid: bright surroundings (the projection is not visible); an image slapped on like a sticker without bending or darkening — gives away the fake; small text in a projection on a complex texture; long static shots without a projection change
+sfx: a quiet projector hum and clatter (18–24 clicks per second for a film projector), on a projection change — a swell or whoosh, ambience
+genres: {fashion: allowed, drama: allowed, calm: allowed, teaser: allowed, fanedit: allowed, product: allowed, motivation: allowed, epic: allowed}
+detect: |
+  A dark scene (median L ≤45) and bright areas following the shape of a surface (a face, fabric, palms, a curtain),
+  inside which a foreign image plays with its own motion that does not match the object's motion;
+  the surface's texture and shadows show through the image; mean brightness jitters by 1.5–3 levels per frame;
+  the person's shadow on a bright projection; sometimes the projector lens with rays in frame.
+  ed_motion: no signature of its own; flash/black frames when the projected image changes.
+  Difference from mask.silhouette_window: there the image replaces the object and does not light it; here the image is light over the texture.
+  Difference from double exposure: there the layers are blended over the whole frame or within a silhouette on a light background, not over a lit surface in darkness.
+engine: |
+  color(params={exposure: -2.0})
+  + depth_map(model='midas') + mask(method='mediapipe_person'|'face'|'hf_remove_background', feather=0.004)
+  + project(src=clip_B, onto=mask, displace=0.02, blend='screen', albedo='luma', blur=1.0, keystone=4, color='#b5b49e')
+  + cast_shadow(mask, offset=[0.04, 0], opacity=0.8, on='background')
+  + flicker(amount=0.02, spikes=0.08) + glow(threshold=0.9, radius=0.03)
+  Projection change: project(src=clip_C, t=beat_i) on every beat, on a black pause — fade(to='black', dur=0.1)
+gen_hint: projection mapping, <footage or pattern> projected onto <a person's face / a hanging white sheet / water mist>, dark room, the projected image bends over the surface, visible projector lens flare and beam in haze, cinematic
+commands: ["project #4 onto the subject's face", "the memory as a projection on a sheet", "projection on the subject in the dark with projector flicker", "make a glowing ghost next to the subject"]
+related: [mask.silhouette_window, mask.double_exposure, light.spotlight, fx.xray]
+evidence: {examples: 9, sources: 9, measured: "median L 11–44 in 7 of 9 (86 and 110 for the mapping on a gray background and the sepia one); p95 88–207, peaks 235–250; bright pixels 0.2–19 %; flicker 1.5–2.6 levels/frame with jumps of 15–30 in 3 examples; screen color changes every 0.6–0.9 s; light color — cold (163–175, 202–226, 220–234) or warm (180, 180, 155)", confidence: medium}
+---
+id: fx.recursion
+family: fx
+group: effect
+level: C
+aliases: [frame recursion, recursive frame, mise en abyme, in-frame recursion, frame within a frame within a frame, recursive zoom, infinite recursion, screen within a screen, infinity mirror, mirror infinity, video feedback]
+what: the frame contains a smaller copy of itself where a picture would naturally sit — on a phone screen, in a photo, in a frame, in a mirror — the copy contains the next one, and so on down to a point; zooming into the copy returns to the start and makes an endless loop
+frames: |
+  1. Levels: inside the frame there is a "window" (a screen, a post's square, a picture frame, a doorway) in which the same frame is scaled down by r
+     per side, and inside it — the same window with the next copy. Visible recursion: r ≈ 0.63–0.79 (≈0.7), 8–9 levels are visible
+     until the copy gets smaller than 2 px; the edges of the nested windows add up to an "hourglass" or a tunnel converging
+     to a single point (center at 0.49–0.5 of the frame). Rotation between levels — 0° in all examples.
+  2. Opening: 1–2 s of static (in the example 1.8 s = 45 frames @25 fps): a finger scrolls the feed to the right frame, the camera holds,
+     the viewer has time to realize that inside is the same frame.
+  3. Motion — one of two:
+     a) dive: a zoom-in into the recursion's vanishing point with acceleration — ×1.016 per frame @25 fps in the first 0.4 s, ×1.08 by the 1st second,
+        ×1.15 by the 2nd, ×1.27 by the 3rd; over 3 s (76 frames) ×2900 — that is ≈22 levels; at the end the levels flash by at 15+ per second,
+        merging into a flicker, then a cut;
+     b) loop: a zoom-in into the phone screen in the subject's hands (a copy of the whole frame ≈4.5 % of the width): approach ×1.6/s for 1.2 s →
+        a "plunge" into the screen ×3/s for 2 s → braking ×1.9/s for 0.4 s; after 3.64 s (91 frames @25 fps) the frame matches the first one exactly,
+        there is no seam and no cut — the video loops around.
+  4. Live variant — mirror infinity: mirrors facing each other or a room of mirrors; copies of the subject recede
+     into the depth as a lattice, their height falls by the law s0/(1+0.9n) (0.67 → 0.35 → 0.21 → 0.17 → 0.13 of the frame height), each
+     next reflection is darker and colder, thin vertical joins between the mirror panels are visible.
+variants:
+  - screen within a screen: a phone on a table shows a post with a photo of this same phone — 8–9 levels, then a dive into the recursion
+  - loop through a screen: a top view of the subject with a phone → zoom-in into the screen → the screen shows the same top view → frame 0 again (×22 over 3.64 s)
+  - mirror room: the heroine among her reflections in every direction; cut in shots of 0.3–1.5 s, camera rises of 15–30 % of the frame over 0.3–0.7 s, the finale — a close-up of the face without copies
+  - endless row: a tracking move along a row of seats between mirrors ×1.75/s (×1.023 per frame @25 fps) for 4.75 s, copies of people emerge from the depth every ≈0.37 s (the move itself is dolly.infinite)
+  - nested rooms: through an opening in the back wall the next room is visible with the same subject doing something else, the camera passes straight through — a new room every 2.1–2.2 s, the threshold in 0.35–0.6 s, in the last room — a crowd of copies of the subject
+  - spiral (the classic graphic variant, not seen in the examples): each level is rotated by 10–30°, the recursion twists
+status: hybrid
+fallback: |
+  The screen variant — in code on any shot with a screen, a picture frame, a painting or a doorway: track the window's 4 corners and recursively
+  insert the frame into itself (like layout.screen_in_screen, except the inserted frame is this same one). No suitable window —
+  a "frame within a frame" in pure code: the frame shrinks toward the center with a thin border of 1–2 % of the height and repeats down to a point.
+  The loop through a screen needs a shot where the camera approaches the subject's screen (search the source footage), or generating such a shot
+  with consent. Mirror infinity — only real footage (two mirrors facing each other) or generation; in code — a rough
+  imitation with a tunnel of masked copies of the subject, darkened per level.
+params:
+  ratio: 0.63–0.79 per side per level (typically 0.7) for visible recursion; 0.04–0.06 for a loop through a handheld screen (×17–25 per period)
+  levels: until the copy is smaller than 2 px — 8–9 at r ≈ 0.7; in the loop 1 level is visible on the screen, the repetition creates the infinity
+  rotate: 0° per level (6 of 6 examples); spiral — 10–30° per level, optional
+  center: the window center; the recursion's vanishing point [0.49–0.53, 0.42–0.5]
+  hold: 1–2 s of static before the motion (typically 1.8 s = 45 frames @25 fps)
+  dive: acceleration from ×1.016 to ×1.27–1.37 per frame @25 fps over 3 s (75 frames), ease inExpo; total ×100–3000, from 1 to 17 levels per second
+  loop_period: 3.6 s (90 frames @25 fps) for ×22; the speed at the seam equals the speed at the start (±10 %), no cut and no motion blur
+  loop_speed: approach ×1.6/s → plunge ×3/s → braking ×1.9/s; on average ×2.35/s (×1.035 per frame @25 fps)
+  mirror_law: copy height s0/(1+k·n), k ≈ 0.9; each reflection ≈20–35 % darker and colder; 4–6 rings before black
+  rooms: 2.1–2.2 s (53–55 frames @25 fps) per room, crossing the threshold 0.35–0.6 s (9–15 frames)
+  insert: insert edge 1 px; brightness, color and sharpness are identical on all levels (otherwise the seam shows)
+when: |
+  A "how was this made" hook in the first 1–2 s — the viewer looks for the seam and watches to the end; a loop finale after which the video starts
+  over (replays and completed views); themes of social media, the endless feed, "a video inside a video", the creator's self-irony. The dive into
+  the recursion — on the riser before the drop, the drop — on the cut out of the flicker. Mirror room — fashion, themes of identity and
+  multiplicity, "me among my copies". Nested rooms — "one subject living several lives at once", a self-improvement
+  montage. Once per video; the loop — only at the end or as a background under text.
+avoid: |
+  A window smaller than 4–5 % of the width without a zoom-in — the copy is not visible, the effect is lost. A window on a handheld camera without tracking — the levels
+  jitter differently. Different brightness or color between levels, a speed jump at the loop seam. Subtitles and text inside the frame —
+  they repeat on every level (put them on top, after the recursion). A dive faster than 15 levels per second for longer than 0.5 s is a
+  strobe: dangerous for photosensitive viewers, limit the speed or cut away. If the window shows a different
+  scene, it is zoom.infinite instead.
+sfx: |
+  Dive — a riser or an accelerating whistle over the whole acceleration, a hit or a sub drop on the exit; loop — a steady continuous sound
+  (a drone, ambience) with no accents at the seam, the sound is looped too; screen — a quiet tap at the start; mirror room — a shimmering
+  reverb and "glassy" bells.
+genres: {viral: allowed, ugc: allowed, fashion: allowed, teaser: allowed, fanedit: allowed, product: allowed, calm: allowed, drama: allowed, explainer: allowed}
+detect: |
+  Visible recursion: a window with straight edges in the frame whose content is the whole frame scaled by 0.6–0.8
+  (the shrunk frame matches the window: correlation ≥ 0.7), and inside it another 2 or more such windows converging to a single point;
+  the edges of the levels form rows of parallel lines, an "hourglass" or a tunnel.
+  ed_motion: dive — an ease-in ZOOM-IN centered ≈[0.5, 0.5], accumulated ×100–3000 over 2–4 s, peak ×1.3+ per frame; at the end
+  false "cuts" and ZOOM-OUT (the self-similar image confuses the tracking). Loop — a long near-linear ZOOM-IN or a
+  two-phase one (×1.6/s → ×3/s) without cuts; after one period the frame matches the first one (correlation ≥ 0.95) at an accumulated ×17–25.
+  Mirrors: many identical figures on a lattice, sizes following s0/(1+0.9n), the far ones darker; the copies move in sync with the subject.
+  Nested rooms: a forward move without cuts, brightness changes in steps every 2.1–2.2 s, the same subject in the opening.
+  Differences: zoom.infinite — a different scene in the window; dolly.infinite — the space repeats with parallax, not the frame;
+  fx.duplicate — copies are the same size and independent; fx.kaleidoscope — angular symmetry around the center;
+  layout.screen_in_screen — a different video on the screen.
+engine: |
+  recursion(clip, quad=track(screen)|rect, levels='auto', min_px=2, rotate=0, feather=1, time_offset=0) — new primitive:
+    the frame is corner-pinned into its own window, repeated until the copy is < min_px; time_offset > 0 — the levels show
+    the past (video feedback), rotate > 0 — a spiral.
+  dive: recursion(...) + transform(scale=[1, 3000], center=fixpoint(quad), t=[t0, t0+3], ease='inExpo') — take the scale
+    modulo 1/ratio (self-similarity gives an infinite zoom) + blur(kind='zoom') in the last 0.5 s + cut on the drop.
+  loop: screen_loop(clip, quad=track(screen), period=3.6, speeds=[1.6, 3.0, 1.9]) — new primitive: a zoom-in into the screen, the
+    screen shows the first frames of this same clip; the last frame equals the first, then loop.end.
+  frame within a frame without a screen: recursion(clip, quad=rect(center=[0.5, 0.5], size=0.7), border=0.015).
+  mirrors, simulated: mirror_tunnel(mask='mediapipe_person', rings=5, law='harmonic', k=0.9, darken=0.25, tint='cool').
+  + sfx('riser', at=t0) + sfx('impact', at=t0+3)
+gen_hint: a smartphone lying on a table, its screen shows a post whose photo is the very same phone on the same table, recursive picture-in-picture, nested screens shrinking into a single point, static top-down camera, soft daylight; variant - a person standing in a room made entirely of mirrors, infinite reflections receding in every direction
+commands: ["make a frame recursion on #3: the phone screen shows this same frame", "a loop through the screen at the end so the video plays in a circle", "dive into the recursion on the riser before the drop", "an infinite frame within a frame on the intro"]
+related: [zoom.infinite, dolly.infinite, layout.screen_in_screen, trans.screen, reflect.mirror, fx.duplicate, fx.kaleidoscope, loop.end]
+evidence: {examples: 6, sources: 4, measured: "screen within a screen — 8–9 levels, r 0.63–0.79 per side by the borders of the nested screens, rotation 0° (6 of 6), 1.8 s of static, dive ×2905 over 3.04 s accelerating from ×1.016 to ×1.27–1.37 per frame @25 fps, center 0.5/0.5; loop — frame 52 matches frame 0 (correlation 1.00), ×22.4 over 3.64 s: approach ×1.63/s for 1.2 s, plunge ×3.05/s for 2 s, ×1.87/s into the seam; mirror row ×14.5 over 4.75 s (×1.0286 per frame @20 fps), center 0.53/0.42; mirror room — copies at 0.67/0.35/0.21/0.17/0.13 of the height, darkening per reflection ≈ by eye, shots 0.3–1.5 s; nested rooms — 2.1–2.2 s per room by brightness steps; 3 of 6 examples from one source", confidence: medium}
+---
+id: fx.refraction
+family: fx
+group: effect
+level: B
+aliases: [distortion, refraction, prism, prism fx, ribbed glass, fluted glass, reeded glass, heat haze, heat shimmer, mirage, warp, edge smear, blurred edges, glass in front of the lens]
+what: the picture "through glass" — a prism multiplies parts of the frame and splits them into a rainbow, fluted glass slices it into vertical strips, heat haze ripples the bottom of the frame, soft edges stretch into a smear; the story stays readable in the center
+frames: |
+  Prism (the most common kind): over the frame, 1–3 semi-transparent copies of the same image offset by ≈10–30 % of the width,
+  with a soft wedge-shaped border; at the copies' edges — rainbow fringes 1–2 % of the width. When the camera moves, the copies drift at a different
+  speed, and on a jerk they turn into arcs of motion blur; the center of the frame with the subject is clean, the edges are distorted.
+  Fluted glass: 40–45 vertical strips across the frame width (period 2.4 % of the width), each strip is its own shifted and squeezed
+  piece of the picture; only the silhouette and color patches are recognizable.
+  Heat haze: the bottom half of the frame ripples — a local shift of 0.2–0.5 % of the height per frame versus 0.05–0.1 % at the top, near the ground
+  a "water" reflection, contrast and saturation reduced.
+  Soft edges: sharpness at the edges 0.1–0.35 of the center's, the edges stretch into a radial smear with colored fringing.
+variants:
+  - prism on a portrait or a dance: ghost copies and a rainbow at the edges, 1–4 s
+  - prism transition: on a camera jerk the copies merge into arcs of motion blur and lead into the next shot
+  - fluted glass: a silhouette behind vertical strips — intro, a mystery, "a person behind glass"
+  - heat haze: a shimmering horizon and cars in a mirage over a road
+  - soft edges: a sharp center, the periphery swims — a dream, a memory, intoxication
+status: code
+fallback: glass strips, heat haze and soft edges are simulated in code; a rich prism with live glints is better shot for real (a prism or glass in front of the lens), found in the source footage as shots through glass or water, or generated (with consent)
+params:
+  prism_copies: 1–3 copies, offset ≈10–30 % of the width, transparency 30–60 %, blend "lighten" or "screen"
+  prism_mask: a wedge or an arc, feather 10–20 % of the width; the frame center (≈40 %) without copies
+  prism_fringe: a rainbow fringe 1–2 % of the width along the mask edge (R and B shifted in opposite directions)
+  prism_drift: copies drift by ≈2–10 % of the width per second in counter-phase to the camera movement
+  fluted: period 2–2.5 % of the width (≈40–50 strips), shift within a strip up to ±1 period, a light blur of 0.2 % of the width
+  haze: displacement by a noise map 0.2–0.5 % of the height, blob scale 1–3 % of the height, rising 1–3 % of the height per second; 3–5 times stronger at the bottom than at the top
+  edge_smear: radial smear beyond a radius of 0.4–0.5 from the center, edge sharpness 0.1–0.35 of the center's, chromatic fringe 0.5–1.5 % of the width
+  duration: 1–4 s per shot; for the whole video — only soft edges or heat haze
+when: fashion and beauty shots, a music video, a dream and a memory, a "trip", a mysterious intro, heat and desert (heat haze); prism — on the chorus and sustained notes, prism transition — on a camera jerk in time with the beat; no more than 2–3 shots with a prism in a row
+avoid: important text, a detailed product, a face during a line under a heavy prism; explainer videos; heat haze on shots without a horizon or ground (looks like a compression defect); fluted glass for longer than 3 s without a reveal
+sfx: prism — a shimmer, a soft sweep or a reverse cymbal as the copies appear; fluted glass — a muffled "behind the glass" sound (high-frequency cut); heat haze — the hum and ringing of heat
+genres: {fashion: signature, fanedit: allowed, teaser: allowed, drama: allowed, travel: allowed, calm: allowed, product: allowed, viral: allowed, motivation: allowed, epic: allowed}
+detect: |
+  ed_motion: the camera is almost still, but nonrigid 0.3–0.5 and conf low; on a prism — false zooms and rotations on jerks; on heat haze — no
+  events while the bottom half is "alive".
+  Custom code: a spectral peak in the horizontal brightness profile with a period of 2–2.5 % of the width (25–30 times above the median) — fluted glass;
+  an edge-to-center sharpness ratio of 0.1–0.35 with a sharp center — soft edges; local optical flow 3–5 times stronger at the bottom
+  than at the top, with no global motion — heat haze; semi-transparent repeats of contours offset by 10–30 % and rainbow fringes — prism.
+  Difference from fx.kaleidoscope: a kaleidoscope is strictly symmetrical around the center; a prism gives asymmetric partial copies.
+  Difference from double exposure: there, two different shots are blended; here, copies of one and the same frame.
+  Difference from fx.duplicate: clones are opaque separate copies of the subject in different places in the frame.
+engine: |
+  refract(kind='prism', copies=2, offset=[0.18, 0.04], opacity=0.45, blend='lighten', mask='wedge', feather=0.15, keep_center=0.4,
+          fringe=0.012, drift=0.05)
+  refract(kind='fluted', period=0.024, amp=1.0, axis='x', blur=0.002)
+  refract(kind='haze', amp=0.004, scale=0.02, rise=0.02, falloff='bottom', contrast=0.85)
+  refract(kind='edge_smear', radius=0.45, strength=0.8) + chroma_ab(amount=0.01) at the edges
+  prism transition: transition(kind='whip', dur=0.3) with refract(kind='prism', copies=3) for the duration of the jerk
+  + sfx('swell', at=t0)
+gen_hint: shot of <subject> filmed through a crystal prism held in front of the lens, translucent ghost copies of the image overlapping at the edges, rainbow fringes, dreamy refraction, sharp center
+commands: ["prism on the close-ups in the chorus", "put the subject behind fluted glass in the intro", "heat haze over the road on #6", "blur the frame edges like a dream on the flashback"]
+related: [fx.kaleidoscope, fx.duplicate, lens.fisheye, fx.rgb_split, trans.whip, fx.slit_scan]
+evidence: {examples: 13, sources: 8, measured: "fluted glass: period 19 px at 800 (2.4 % of the width), ≈42 strips, spectral peak 26–30 times above the median; heat haze: local flow at the bottom 0.2–0.5 % of the height per frame versus 0.05–0.1 % at the top; soft edges: edge sharpness 0.09–0.36 of the center's in 4 examples; prism in 5 examples (3 from one source) — copy offsets estimated visually ≈10–30 %; ed_motion nonrigid 0.3–0.5 with a static camera", confidence: medium}
+---
+id: fx.rgb_split
+family: fx
+group: effect
+level: B
+aliases: [rgb split, RGB hit, channel separation, channel splitting, channel shift, chromatic aberration, chromatic fringing, color hit, anaglyph]
+what: the frame's R, G and B channels briefly slide apart and immediately come back together — outlines grow red and cyan fringes; a "digital hit" on the beat, a punch or a cut, with the frame geometry intact
+frames: |
+  1. Before the hit: a clean frame, channels aligned, no fringes.
+  2. Attack — exactly on the beat frame (kick, snare, the downbeat entering the drop): R instantly moves px to the left, B — px
+     to the right, G stays. Outlines triple: a red and yellow fringe on one side, a teal and blue one on the other. Frame brightness
+     does not change (G stays in place), saturation rises slightly. With a 1080 px short side: 8 px per side (16 px between R and B) is
+     a distinct hit on a face in a medium shot; 24 px or more — already three separate copies of the outline.
+  3. The peak holds for 1 frame @25 fps (1–2 frames @30 fps).
+  4. Decay: the channels converge exponentially over 2–6 frames (offset 100 → 50 → 25 → 10 %) or in a single step within 1 frame;
+     by the next beat the frame is clean again. The whole pulse is 3–8 frames @25 fps (0.12–0.32 s), 4–10 frames @30 fps.
+  5. Series: pulses on every kick or snare for 1–2 bars, the shift side may alternate (left-right), then a pause.
+variants:
+  - linear: R and B in opposite directions horizontally, G in place — the classic "digital hit"
+  - anaglyph: red versus cyan (G and B shifted together) — two-color fringes, like a stereo picture
+  - radial: channels at slightly different scales around the center — a clean center, rainbow fringes toward the edges; on a punch and a crash it grows with the zoom
+  - motion-based: the channels stretch along the vector of a camera jerk, a whip transition or shake
+  - temporal (RGB echo): each channel is taken from its own frame (t, t−1, t−2) — a moving subject gets a rainbow trail, the static background stays clean
+  - jittery: 2–4 frames in a row with a shift in a random direction, together with shake on a hit
+  - constant micro-aberration: radial, 1–3 px in the corners for the whole episode — a "lens character" rather than a hit
+status: code
+fallback: no special footage is needed — it is done in code on any video; on a low-resolution or heavily compressed source the split accentuates the compression blocks — halve px, soften the shifted channels (soften 1 px) or use the radial variant
+params:
+  px: "the offset of each outer channel from G in px for a 1080 short side of the frame (same for 9:16 and 16:9, for other sizes — proportional to the short side): micro 2–4, regular 6–12 (typically 8), heavy 14–24, extreme 30–48 — only for 1–2 frames; distance between R and B = 2·px"
+  close_up_cap: a face wider than 40 % of the frame — no more than 10 px; eyes and lips during a line — no more than 4 px
+  angle: 0° (horizontal, typical); 90° — vertical; 15–35° — diagonal; motion-based variant — the angle of the jerk vector; the sign can alternate from beat to beat (left, right)
+  channels: "linear — R −px, G 0, B +px; anaglyph — R −px/2, G and B +px/2"
+  envelope: attack 0 frames (the offset appears right on the beat frame), peak 1 frame @25 fps (1–2 @30 fps), exponential decay τ = 1.5–3 frames — to < 1 px within 2–6 frames @25 fps (3–8 @30 fps); stepped decay — 100 / 50 / 25 % per frame
+  radial: k = 0.2–2 % (R scale 1+k, B 1−k around the frame center or the zoom center) — in the corners of a 9:16 frame that is 2–22 px; the constant "lens" variant k = 0.1–0.3 %
+  motion: px = 0.5 px for every 1 % of the frame of displacement per frame, capped at 24 px; angle — the direction of motion
+  temporal: channel delay d = 1–2 frames (R from t, G from t−d, B from t−2d), a segment of 0.3–1.5 s, only with motion in the frame of at least 1 % of the frame per frame
+  jitter: 2–4 frames, a random angle and px × 0.5–1 on each frame
+  soften: blur of the shifted channels σ 0–1.5 px (0 — hard digital, 1 — softer, "optical")
+  mix: 0.7–1.0 — the share of the shifted channel (lower — semi-transparent fringes)
+  energy: px = px_min + (px_max − px_min) × the hit's onset strength (normalized over the track), clipped to the limits above
+  edges: frame edges — by reflection, without wraparound or empty strips; at px > 16 — overscan ×(1 + 2·px/W)
+  order: grade → glow → light leaks → rgb_split → film texture → text, subtitles and plates (film dust and scratches must not get color fringes)
+  limits: "no more than 1 pulse per beat; a series no longer than 2 bars (8 beats), then a pause of at least 1 bar; phonk and fan edit — up to 12 pulses per 10 s, other genres — up to 4; heavy (from 14 px) — no more than once per 2 bars (4 s at 120 BPM); extreme — once per part of the video"
+when: |
+  Hits in the track: kick or snare in the drop (pick one layer, not both at once); the downbeat entering the drop — the heaviest pulse;
+  paired with zoom.punch and shake.beat on the same frame — a "combo hit". Hook — 1–2 pulses on the first downbeats to catch
+  the eye. Build — micro-pulses on the snare or px growing 0 → 12 over the last bar together with a riser, a heavy one on the drop beat.
+  Fast cutting — a pulse on the first frame of the incoming shot. Whip and crash — the motion-based or radial variant at peak speed.
+  "Bass reaction" in phonk — px follows the 30–150 Hz bass envelope in 1/8 steps. Temporal variant — dance and sharp gestures on a
+  sustained note. Outro — one final hit on the last downbeat, or no split. Limits — in params.limits.
+avoid: |
+  Subtitles, text, prices, logos — the split goes only below the text layer; a face during an important line (eyes and lips triple);
+  a product, a packshot and a brand color — the fringes spoil the color; a calm, luxury or trust-building tone; low resolution and heavy
+  compression (the fringes highlight the blocks); small high-contrast patterns — stripes, grids, fabric (rainbow moiré); a constant heavy split
+  longer than 0.5 s (tires the eyes, looks like a broken stereo picture); pulses off the beats; the same strength on every hit
+  without pauses; over tape-style blurred color (glitch.vhs, look.vhs) — double separation.
+sfx: usually not needed — the pulse sits on the track's kick or snare; outside the drums and in silence — a short digital click or "zap" of 30–80 ms (sfx.glitch, align='attack', −10…−6 dB relative to the music); a heavy split entering the drop — together with sfx.impact; the temporal variant — no sound
+genres: {phonk: signature, fanedit: signature, viral: allowed, drama: allowed, sport: allowed, travel: allowed, fashion: allowed, teaser: allowed, clips: allowed, ugc: allowed, motivation: allowed, calm: forbidden, explainer: forbidden, epic: forbidden, product: forbidden}
+detect: |
+  Custom code per frame: phase correlation of the gradient magnitudes of the R and B channels (phaseCorrelate with a Hanning window) gives the separation
+  vector; at rest |d| < 1 px, on a pulse 4–96 px @1080 (= 2·px), the maximum on the beat frame, decaying to < 1 px within 2–8 frames;
+  for linear |dx| > 3·|dy|; G lies midway between R and B (for anaglyph, R versus G+B). Frame brightness does not change (|ΔL| < 1
+  level), saturation ×1.02–1.2, sharpness (Laplacian variance) ×0.7–0.8 with a hard integer shift and ×0.3–0.6 with a
+  subpixel or softened one.
+  Radial: ECC (affine) R → B gives a scale of 1 − 2k (0.96–0.996) centered near the frame center; the fringe is 0 in the center and grows toward the corners.
+  Temporal: separation only in moving areas — the |R − B| map correlates with the frame-difference map (> 0.6), the background is aligned.
+  ed_motion: the split itself produces no events (no ZOOM or SHIFT, no flash frames or strobe flips, no cuts); it often coincides with
+  ZOOM-IN ×1.1–1.35 over 1–3 frames (a punch), a shake jitter peak or a cut — the sign of a combo hit.
+  Differences: fx.glitch — breaks the geometry (shifted slices, blocks, row smear, negative), RGB fringes there are only part of the burst;
+  glitch.vhs and look.vhs — the color is blurred and shifted constantly, only to the right, by 0.3–1 % of the width, the image is soft; glitch.tv_noise —
+  color fringes together with scanlines and a line wave; light.halation — only a red halo around bright sources, without a cyan
+  partner; fx.refraction (prism) — semi-transparent copies of part of the frame offset by 10–30 % of the width with a rainbow along the mask edge;
+  look.psychedelic — the radial aberration is constant, as part of the look; light.flash and trans.flash — brightness spikes, here it does not.
+engine: |
+  rgb_split(px=8, angle=0, mode='linear'|'anaglyph'|'radial'|'motion'|'temporal', t=[b, b+D],
+            env={attack: 0, hold: 1, decay: 'exp', tau: 2}, mix=1.0, soften=0, edge='reflect', overscan=1.0)
+    linear — R: warpAffine with an offset of −px·(cos a, sin a), B: +px·(cos a, sin a), G in place; subpixel (INTER_LINEAR,
+             BORDER_REFLECT101), not a circular array shift — wrapping the edge brings in a foreign strip from the other side of the frame;
+    anaglyph — R: −px/2, G and B: +px/2;
+    radial = chroma_ab(amount=k, radial=True, center=[cx, cy]) — R scale 1+k, B 1−k around the center (or the zoom center);
+    motion — angle and px from the speed of transform / whip / shake on this frame;
+    temporal = channel_delay(frames=[0, d, 2d]) — new: channels from frames t, t−d, t−2d.
+  beat_pulse(param='rgb_split.px', events='downbeat'|'snare'|band_onsets(track, lo=30, hi=150)|[t, ...], base=0, peak=[6, 24],
+             by='onset_strength', attack=0, hold=1, tau=2, alternate_sign=True, max_per_s=2, burst_max_beats=8, rest_beats=4)
+    — a new pulse generator on top of beat_sync (glow.strength is modulated the same way); band_onsets — kick attacks from shake.beat.
+  Bass reaction: rgb_split(px=4 + 16·band_envelope(track, lo=30, hi=150, attack=0.005, release=0.12), t=[t0, t1]) with
+    quantization to 1/8 (band_envelope is a primitive from shake.beat).
+  Combo hit on beat b: beat_punch(times=[b], scale=1.15, mode='hold') (zoom.punch) + rgb_split(px=12, t=[b, b+0.2])
+    + beat_shake(times=[b], profile='impact', amp=0.015) (shake.beat) + sfx('impact', at=b) — one attack on the beat frame for all three.
+  Rise to the drop: rgb_split(mode='radial', k=[0, 0.01], t=[drop − 1 bar, drop], ease='inQuad') → on the drop beat px=20, tau=3.
+  ed_render.py currently has rgb_at(times, px=10, frames=3) — a linear decay with no peak; switch it to the env above and scale px · min(W, H)/1080.
+gen_hint: music video shot of <subject> with a strong RGB split on the beat, red and cyan channel fringes doubling every outline, chromatic aberration, crisp digital image, high contrast
+commands: ["RGB shift on every kick in the drop", "a strong channel split at 0:15 together with a punch", "light chromatic fringing at the edges for the whole video", "a rainbow trail behind the dancer on #6", "RGB hit on the first frame of every cut in #3–#8"]
+related: [fx.glitch, zoom.punch, shake.beat, zoom.crash, trans.flash, time.velocity, glitch.vhs, look.vhs, glitch.tv_noise, light.halation, fx.refraction, look.psychedelic, time.echo_trail, sfx.glitch, sfx.impact]
+evidence: {examples: 0, sources: 0, measured: "edit culture: parameters from editing practice; verify with a demo render", confidence: medium}
+---
+id: fx.scan_3d
+family: fx
+group: effect
+level: B
+aliases: [photogrammetry, 3D scan, point cloud, wireframe, wireframe mesh, digital twin, 3D model from photos]
+what: an object, a person or a place is shown as a scanned 3D model — it hangs on a gray "software screen", rotates on a turntable, breaks down into a wireframe or a point cloud, and the camera flies inside the model
+frames: |
+  1. Model view: the scan on a flat neutral viewport background — gray RGB 92–141 (#5c5c5c…#8d8b8a), background
+     41–82 % of the frame; under the object — an oval "pancake" of scanned ground with a ragged edge; at the edge of
+     coverage — holes, torn-off fragments and sparse points (the top of a trunk, the crown of a head).
+  2. Model motion: a full turntable rotation in 2.4 s (≈150°/s) in a looped piece; or
+     a ±15–20° back-and-forth sway with a period of 2.1 s; or a slow rotation of a top view at 13°/s.
+  3. Wireframe: a white triangle mesh on black (background RGB 4, 49 % of the frame), a gentle push-in ×2.07 over 3.5 s,
+     at the end a fade to black within 3 frames.
+  4. Point cloud: red points on dark red — a pull-out ×0.12 over 2.5 s with a −117° roll, a fast
+     start and braking (ease-out): from dense "dust" to a figure on a huge surface; or a night
+     street of sparse white points — a fly-through ×5.3 over 0.64 s.
+  5. Flying into the model: an exterior view → push-in ×2.06 over 0.84 s → a cut to a photorealistic interior of the same place.
+variants:
+  - turntable: a tree, a statue, a scanned person on a gray background, a full rotation or a sway
+  - building model from above: a dome or a house rotates and the camera dives inside
+  - wireframe mesh: white triangles on black, a slow push-in, a fade to black
+  - point cloud: colored points on dark, a big pull-out with a roll or a rapid fly-through down a street
+  - textured fly-through: a reconstructed scene with blurred near objects and ragged edges (turns into fx.volumetric_flythrough)
+status: generation
+fallback: an object — generating a 3D model from photos (Higgsfield generate_3d → GLB) and rendering the rotation/wireframe/points in Blender; the user's scans (a phone 3D scan) — footage; simulation in code from a single frame — depth map → point cloud or wireframe (triangulation along edges) with a small orbit of ±10–15°
+params:
+  viewport_bg: "#5c5c5c–#8d8b8a gray, no gradient; or #000000 for wireframe and points"
+  ground_disc: an oval 1.2–1.6 times the object's width, ragged edge
+  turntable: 4–12 s per rotation (30–90°/s) in a video; in a short loop down to 2.4 s (150°/s); sway ±15–20°, period 2–3 s
+  wireframe: 1 px lines, white at 60–90 % opacity, triangles 1–3 % of the frame width
+  points: "points 1–2 px, density 5–20 thousand per frame, a single color (#ff1a1a, #ffffff) or the texture color"
+  camera: push-in ×2 over 3.5 s; pull-out ×0.1–0.2 over 2.5 s with a 90–120° roll (ease-out); fly-through ×5 over 0.6 s; fly-in ×2 over 0.8 s + a cut inside
+  edge_artifacts: holes and torn-off fragments on 5–15 % of the surface along the edges of coverage
+  fps: 10–14 fps is acceptable (a technical look)
+  duration: 2–9 s
+when: showing a product or an object from all sides, a "digital twin" of a person or a place in a teaser and an intro, an explainer about how something is built and its scale, a music video's tech aesthetic; flying into the model — a transition to real footage of the same place; 1–2 times per video
+avoid: showing a model with big holes large and for long when an "expensive" look is needed; skin and faces in close-up — the scan looks creepy; a rotation that is too fast (>150°/s) — the shape does not read; a busy background behind the model
+sfx: a quiet digital hum, clicks and a "scanning" sweep as the wireframe or points appear; flying into the model — a whoosh that turns into the location's atmosphere
+genres: {product: allowed, explainer: allowed, teaser: allowed, fanedit: allowed, fashion: allowed, epic: allowed, viral: allowed, travel: allowed}
+detect: |
+  Background: flat gray (R≈G≈B, 90–145) or black, taking up 40–85 % of the frame; an object with an oval ground disc
+  and ragged edges; signs of a mesh — thin light triangles on dark; signs of a cloud — a scattering
+  of separate 1–2 px points without solid surfaces.
+  Turntable: the difference from the first frame grows to a maximum mid-cycle and falls symmetrically (a loop or ping-pong).
+  ed_motion: pull-out ZOOM-OUT ×0.1–0.2 with ROTATE 90–120° (ease-out) or ZOOM-IN ×2–5 almost linear; nonrigid 0.12–0.37 (real 3D parallax).
+  Difference from fx.volumetric_flythrough: there, a realistic frozen scene "from the inside"; here, the model as an object or a wireframe/points.
+  Difference from fx.xray: there, a glowing body on black, no mesh, no points and no gray viewport.
+engine: |
+  generate_3d(image=frame|product_photo) → render_3d(model, camera_path='turntable', period=8, bg='#7f7f7f', style='textured'|'wireframe'|'points', ground_disc=True)
+  Pull-out from a cloud: render_3d(style='points', color='#ff1a1a', camera_path=dolly(scale=[1, 0.12]), roll=[0, -117], t=[t0, t0+2.5], ease='outCubic')
+  Simulation from a frame: depth_map(model='midas') → point_cloud_look(density=12000, size=1.5, color='texture') | wireframe_look(step=0.02) + transform(rotate=[0, 12])
+  Fly-in: render_3d(camera_path=dolly(scale=[1, 2.06]), t=[t0, t0+0.84]) + cut(at=t0+0.84) to the real interior
+gen_hint: photogrammetry 3D scan of <object or place> displayed on a neutral grey 3D viewport background, slowly rotating turntable, visible scanned ground patch and ragged edges, optional white wireframe or point cloud render style
+commands: ["show the product as a 3D scan on a gray background with a rotation", "transition: a building model and a fly-in inside", "turn the subject into a point cloud and pull out", "wireframe mesh on the intro"]
+related: [fx.volumetric_flythrough, fx.xray, orbit.turntable, zoom.out, trans.zoom]
+evidence: {examples: 8, sources: 8, measured: "viewport background RGB 92/92/92, 127/125/128, 141/139/138 — 41–82 % of the frame; wireframe on RGB 4/4/4; trunk rotation ≈2.4 s (10 fps, the difference from the first frame peaks in the middle); figure sway — ping-pong 2.08 s; point cloud: pull-out ×0.12 over 2.5 s with a −117° roll; wireframe: push-in ×2.07 over 3.5 s; fly-through down a street of points ×5.35 over 0.64 s; fly-in into the dome ×2.06 over 0.84 s", confidence: medium}
+---
+id: fx.slit_scan
+family: fx
+group: effect
+level: C
+aliases: [slit-scan, slit scanning, time displacement, temporal displacement, time gradient, photo finish, time smear, stretching in time, scan line time warp, light corridor]
+what: each row or column of the frame shows its own moment in time — motion turns into twisted, stretched, "rubbery" shapes while static things stay normal; plus a variant with the background unrolled into stripes
+frames: |
+  Mechanics: the frame is assembled from strips, and each strip has its own delay — "now" at the top, "a second ago" at the bottom
+  (or left to right, or from the center). Static things look normal; everything that moves is distorted in proportion to its speed.
+  1. Entry: a normal frame, then the delay switches on — at first only moving things are distorted.
+  2. Development: the head turns, and the shoulders and chest repeat the turn with a delay — the body twists like a "rope";
+     arms passing through the frame leave long continuous arm-ribbons behind them (stretching to 70 % of the width in ≈1 s);
+     when the camera moves, verticals bend and stretch like "rubber".
+  3. Return: when the motion stops, the lower strips "catch up" with the upper ones — after the full delay the frame is normal again
+     (in the example the head finished turning, the bottom of the frame — 1.1–1.4 s later).
+  Photo finish: the X axis is time; the static background turns into horizontal stripes (vertical gradients 8–12 times
+  stronger than horizontal ones), while the moving subject reads as a figure.
+variants:
+  - row twist: a vertical time gradient, head and body turns become a spiral
+  - long arms: a horizontal gradient, arms and objects stretch behind their motion into continuous ribbons
+  - rubber background: the camera moves, verticals bend and stretch, the subject in the center is barely distorted
+  - photo-finish background: a clean subject (via a mask), the background unrolled into horizontal colored stripes
+  - stretch: facial features and hands stretch sideways in repeating contours
+  - displacement map: the delay is set by a blob or a radial gradient — part of the face "lags" behind the rest
+  - light corridor: graphic colored stripes fly from the center to the edges along two planes — "a flight through light"
+status: code
+fallback: a clean subject on a striped background — hybrid (person mask); the light corridor needs graphics or generation (with consent); if the source has no motion, the effect is invisible — add a digital move or pan, look for shots with turns, swings, walk-throughs
+params:
+  mode: rows (by rows) | cols (by columns) | radial (from the center) | map (delay map) | photo_finish (X axis = time)
+  span: delay across the whole frame 0.5–1.5 s (12–38 frames @25 fps); twist — ≈1–1.2 s, long arms — from 1 s
+  direction: top to bottom | bottom to top | left to right | right to left | from the center
+  smoothness: interpolate the source to 100–200 frames per second (minterpolate or blending adjacent frames), otherwise steps H/span rows high are visible
+  photo_finish: a 1–4 px slit in the center; background — horizontal stripes (|dy|/|dx| 8–12)
+  mask: optional — the subject clean, only the background distorted (or vice versa)
+  preroll: a buffer of at least span before the effect starts
+  duration: 1.5–6 s per shot
+when: a "time distortion", a dream, a trip, disorientation; dance and body movement (arms, head turns); tracking shots and pans in a music video; intros and art title sequences; a fashion portrait with a head turn; on long sustained parts of the track, not in fast cutting; 1–2 shots per video
+avoid: a static frame without motion (nothing happens); fast handheld shake — mush; a face during a line (mouth and eyes swim); short shots < 1 s — the effect does not have time to unfold; product and text
+sfx: a viscous sound with a slow-down and stretch effect (time-stretch, a sweeping flanger); at the start — a reverse or a riser; for the light corridor — a rising hum and whistle
+genres: {fanedit: allowed, fashion: allowed, teaser: allowed, drama: allowed, viral: allowed, sport: allowed, travel: allowed, motivation: allowed, epic: allowed, explainer: forbidden}
+detect: |
+  ed_motion: with a static camera — events with nonrigid 0.5–1.3 and conf low, ECC fallbacks, false zooms and rotations; the camera and the seam do not change.
+  Custom code: vertical edges that used to be straight are bent in proportion to the motion; the motion of the lower strips repeats the motion of the upper ones
+  with a delay (cross-correlation of frame-difference energy across strips); |dy|/|dx| > 5 in the background — photo finish; objects stretch along the scan axis
+  and "catch up" with themselves after stopping.
+  Difference from time.echo_trail: an echo is semi-transparent whole copies; here, opaque strips from different times stitched into one image.
+  Difference from glitch.datamosh: no blocks or color bleeding, the shape stretches smoothly along an axis. Difference from fx.glitch: the strips do not jump
+  randomly — the delay is smooth and constant.
+engine: |
+  slit_scan(mode='rows'|'cols'|'radial'|'map', span=1.0, direction='top_down', interp_fps=150, map=None, mask=None, t=[t0, t1]) — new primitive:
+    out[y] = src(t − span·y/H) (rows) — row-by-row sampling from a ring buffer of frames; radial — by distance from the center;
+    map — a gray delay map 0..1 (a blob, a gradient, text)
+  slit_scan(mode='photo_finish', slit_x=0.5, slit_w=2) — each frame advances the "tape" by slit_w pixels
+  + mask(method='mediapipe_person') and composite: the subject over the unrolled background
+  + speed(interp='flow') up to 150 frames per second before the scan; + sfx('reverse_whoosh', at=t0)
+gen_hint: slit-scan time displacement effect on <subject> turning their head, each horizontal line of the image delayed in time, the body twists like a spiral, rubbery stretched motion, static background stays normal
+commands: ["row slit-scan on the head turn in #3", "make long arms on the dance with time displacement", "background into stripes, subject clean, at 0:20", "light corridor on the intro"]
+related: [time.echo_trail, glitch.datamosh, fx.refraction, fx.duplicate, time.speed_ramp, trans.zoom]
+evidence: {examples: 8, sources: 8, measured: "photo-finish background: |dy|/|dx| 8–12 versus ≈1 in a normal frame; face stretch: 1.5; long arms: the arms grow to ≈70 % of the width in ≈1 s (14 frames @14 fps), frame anisotropy 0.44 → 0.99; twist: the bottom of the frame catches up with the head turn after 1.1–1.4 s (≈ 40 frames @33 fps, estimated from frames); light corridor: a continuous zoom-in ×3–10 over 1.2–1.4 s centered at [0.5, 0.5] and a palette change every 1–2 s; with a handheld camera ed_motion gives nonrigid 0.7–1.3", confidence: medium}
+---
+id: fx.talking_animal
+family: fx
+group: aesthetics
+level: B
+aliases: [talking animal, talking pet, animal lip sync, pet voiceover, talking fish]
+what: an animal speaks with a human voice — the mouth, beak or fish lips open syllable by syllable, the head nods on stressed syllables; from a pet's "inner monologue" to puppet animals in human clothes
+frames: |
+  1. A medium shot or close-up of the muzzle, the camera is static (jitter 0.03–0.17 % of the frame in 6 of 7), the animal's head is almost
+     still — only the mouth, eyes and ears move; shots of 1.8–3.7 s, dialogue as shot/reverse shot (a cut to the other speaker).
+  2. The mouth opens syllable by syllable: for a fish on a cutting board ≈2–3 openings per second, the open state holds
+     4–5 frames @20 fps (0.2–0.25 s), the closed one the same; between phrases the mouth stays closed for 0.4–0.6 s.
+  3. Expressions on top: a head turn, a squint, ear and brow movement on stressed syllables; for puppet animals the animation is
+     mostly "on twos" — change, hold, change (≈12 positions per second).
+  4. The body plays along with the voice: a plucked bird on a festive table flaps its wings ≈3.5 times per second (period ≈7
+     frames @25 fps) and opens its beak; sometimes a slow push-in ×1.67 over 1.1 s on the climax of the line.
+variants:
+  - live animal with lip-sync: a pet "talks" in a voiceover, only the mouth is animated
+  - talking food: a fish on a board or a plate, a bird on a platter — moving the mouth and fins or wings, absurd humor
+  - puppet animals in human clothes: stop-motion animation, shot/reverse-shot dialogues, a warm autumn palette (saturation median 160–197 of 255)
+  - inner monologue without lip-sync: the muzzle in close-up, the mouth closed, a voiceover — the cheap option
+status: hybrid
+fallback: |
+  simple lip-sync in code: deforming the lower jaw by the voice envelope (needs a hinge point and the mouth outline — automatic or
+  set manually); live expressions, head turns, puppet animals — generation: image-to-video with lip-sync to the voice
+  (with the user's consent); without mouth animation — the "inner monologue" variant with subtitles.
+params:
+  shot: muzzle 30–70 % of the frame height, static camera, the animal's head without sudden movements; shot 1.8–4 s
+  jaw: the lower jaw / beak / fish lip area, hinge at the corner of the mouth; rotation 6–15° (fish, bird) or a drop of 3–6 % of the muzzle height
+  envelope: openness = voice envelope (RMS over a 10 ms window), attack 1 frame, release 2–3 frames, silence threshold −35 dB
+  syllables: 2–5 openings per second; hold the open state ≥2 frames @25 fps; between phrases the mouth stays closed ≥0.4 s
+  mouth_interior: darken or substitute the inside of the mouth (a dark ellipse with a tongue), feather 2 px
+  head_bob: on stressed syllables a head tilt of 2–4° or a shift of 1–2 % of the frame, return within 4–6 frames
+  blink: every 3–6 s, 3 frames
+  anim_rate: for the puppet look — pose changes on twos (12.5 fps)
+  voice: pitch +2…+5 semitones for small animals, −2…−4 for large ones; voice level 3–6 dB above the music
+when: humor and viral pet videos, "what the cat is thinking", ads with an animal mascot, UGC sketches, explainer videos with a guide character; put the line in a pause in the track or with the music ducked; the punchline — on the last mouth opening
+avoid: the animal moves its head a lot or turns quickly — the jaw "comes unstuck"; fur covers the mouth and the hinge is unclear; lip-sync lagging by more than 2 frames; a serious or dramatic context; too frequent openings (more than 6 per second) — looks like chatter
+sfx: the character's voice dry and close, slightly pitched; chomping, wing flaps, a bloop for the fish; a comedic pause before the punchline
+genres: {viral: signature, ugc: signature, fanedit: allowed, product: allowed, explainer: allowed, drama: forbidden, teaser: forbidden, motivation: forbidden}
+detect: |
+  ed_motion: static (jitter ≤0.2 %), no global events; a local periodic frame difference of 2–5 Hz in a small
+  area of the muzzle while the head is still; in the puppet variant the frame difference in the face area alternates "change / hold"
+  (animation on twos). Correlation of mouth openings with the voice envelope on the audio track is the main sign.
+  Visually: an animal (including a dead one — a fish, a bird on a platter) moves its mouth syllable by syllable, sometimes a deformation
+  boundary is visible at the corner of the mouth; animals in clothes and with human poses — the puppet or CG variant.
+  Differences: fx.living_object — a face on an inanimate object; ordinary footage of a yawning or barking animal — no
+  link to speech syllables.
+engine: |
+  new primitive jaw_sync(region=polygon|auto, pivot=[x, y], max_angle=12, envelope=audio(voice), attack=1,
+  release=3, hold_min=2, interior='dark') — piecewise-affine deformation of the lower jaw by the voice envelope
+  + transform(rotate=[0, 3, 0], center=pivot_head, t=[stress, stress+0.24]) on stressed syllables
+  + duck(music, under=voice, gain=-8). Puppet look: step_print(hold=2) on the muzzle layer.
+  Complex expressions — Higgsfield image-to-video with lip-sync (prompt from gen_hint + the voice track), with consent.
+gen_hint: close-up of a fluffy ginger cat sitting on a kitchen counter looking into the camera and talking, its mouth moves naturally in sync with speech, subtle head tilts and blinks, static camera, soft daylight, realistic fur, comedic tone
+commands: ["have the cat in #3 say this line in my voice", "make a talking fish on a board for the hook", "the dog's inner monologue with subtitles at 0:04", "voice the pet, mouth moving syllable by syllable"]
+related: [fx.living_object, fx.bobblehead, anim.stop_motion, type.subtitles, address.direct]
+evidence: {examples: 7, sources: 3, measured: "camera static in 6 of 7 (jitter 0.03–0.17 %), 1 push-in ×1.67 over 1.08 s; shots 1.8–3.7 s; fish mouth ≈2–3 openings/s, open for 4–5 frames @20 fps; bird wings ≈3.5 Hz (period ≈7 frames @25 fps); puppet animals — the face changes every other frame (on twos) for most of the clip; saturation of the puppet shots 160–197; jaw deformation parameters — a practical estimate", confidence: medium}
+---
+id: fx.thermal
+family: fx
+group: effect
+level: B
+aliases: [thermal, thermal imager, thermal camera, thermal vision, heat vision, infrared thermal imaging]
+what: the frame in a thermal imager's palette — cold is black-violet, warm is orange, people and skin glow yellow-white; a soft "sensor" image, a feeling of surveillance or animal vision
+frames: |
+  1. Palette — one continuous "cold → hot" scale: black #010104 → indigo #10052e, #300657 →
+     violet #520969 → purple #8d1f65 → crimson #af2e57 → red-orange #d04442, #e85e29 →
+     orange #f67e10, #fa9f0d → yellow #f9bd27, #f3d94d → pale yellow #f3f27f. No green, no
+     light blue: in 97 % of pixels the red channel is not below green.
+  2. Distribution: ~21 % of the frame — almost black cold areas (L<8: walls, sky, glass, openings);
+     median L ≈ 100; skin, faces, hands — the top of the scale (L 200–245), clothing — orange-red, the background — violet.
+  3. The image is soft: no more detail than a sensor 160–200 px wide (downscaling to 128–160 px
+     and back changes the frame by only 2–5 %); around warm bodies — a halo gradient, blurry outlines.
+  4. Shooting: handheld camera, wide angle, lots of motion (roll up to ±17° in 0.75 s, jerks); cuts of
+     0.15–1 s in dynamic places, shots of 2–3.5 s in calm ones.
+  5. A hot spot covering the whole frame (a lamp, fire, a palm in front of the lens) gives a heat flash: 3 frames
+     @20 fps (150 ms, 4 frames @25 fps) of almost solid yellow, L 148–172 — a natural transition between shots.
+variants:
+  - up-close party: a crowd, handheld camera close to faces, frequent cuts — yellow silhouettes on violet
+  - calm shot: static or a slow drift of 1–3.5 s — a portrait in a car, a shoulder and hair in the foreground
+  - surveillance camera: a white monospaced timecode at the bottom left, horizontal scan lines, a ragged band of different brightness in the lower third, auto gain "breathes" — mean brightness jumps 90 → 55 → 93 → 28 over 2.85 s
+  - device screen: small icons in a corner and a grid icon — the frame reads as a thermal imager's interface
+  - heat flash transition: 3–4 frames of solid yellow between two shots
+status: hybrid
+fallback: without a mask — in code by luminance (bright = hot), but then the sky, windows and lamps "burn" — suppress them manually or with a sky mask; a real thermal imager — search the source footage, generation with consent
+params:
+  palette: "13 stops (position → color): 0 #010104, 0.1 #10052e, 0.2 #300657, 0.3 #520969, 0.4 #8d1f65, 0.5 #af2e57, 0.6 #d04442, 0.68 #e85e29, 0.76 #f67e10, 0.83 #fa9f0d, 0.9 #f9bd27, 0.95 #f3d94d, 1.0 #f3f27f"
+  heat: 0.55 × people mask (feather 3–5 % of the frame) + 0.25 × skin/face + 0.2 × blurred luminance; sky and windows — toward zero
+  sensor: downscale to 160–240 px wide, scale back up bicubically + gaussian 1–2 px; noise 0.01–0.02
+  black_share: 15–25 % of the frame in the coldest color
+  auto_gain: p2–p98 stretch on every frame, smoothing 0.2–0.5 s; for "surveillance" — no smoothing, jumps of ±30–60 L
+  flash: "3–4 frames (0.12–0.16 s) of color #f9d94d"
+  camera: handheld, roll up to ±15°, jerks of 1–4°/frame
+  cuts: 0.15–1 s (4–25 frames @25 fps) in dynamic parts; 2–3.5 s (50–88 frames) in calm places
+  cctv: scan lines every 2 px (strength 0.1–0.2), a ragged band 15–35 % of the height 1–2 times per second, a white monospaced timecode 4–5 % of the frame height
+when: a "hunter's gaze", surveillance, a night foray, an underground party in a music video, a "you are being watched" teaser; an explainer about heat (leaks, overheating, the body after a workout). An insert of 1–3 s or a whole verse; one thermal episode per video; the heat flash — on a downbeat
+avoid: daytime landscapes without people — no hot spots, the frame turns into mush; long static shots over 5 s; small text on top — it drowns in the palette; placing it next to other color effects in one episode
+sfx: a low hum of the device and quiet electronic scanner "beeps"; on the heat flash — a whoosh or impact; in the surveillance variant — short interference (glitch) on image jerks
+genres: {phonk: allowed, viral: allowed, teaser: allowed, fanedit: allowed, drama: allowed, clips: allowed, explainer: allowed, fashion: allowed, sport: allowed, calm: forbidden}
+detect: |
+  Color: ≥95 % of pixels with R ≥ G (no green or light blue); the pixels lie on a single curve —
+  at L 20–120 blue is above green (violet, purple), above L 120 — R > G > B (orange → yellow);
+  ~15–25 % of the frame almost black; the brightest areas are people and skin.
+  Low sharpness: downscaling to 160 px wide and back gives an error of ≤5 % of the brightness range.
+  ed_motion: no motion markers of its own, usually a handheld camera with rolls; heat flash = 3–4 flash frames in a row with L>145 at a cut.
+  Difference from fx.night_vision: there, green monochrome, grain and a round vignette.
+  Difference from fx.xray: there, a cold blue, a black background and bones.
+  Difference from rainbow "false color": a thermal imager's scale is monotonic (no green or blue tones at the top), details are blurred.
+engine: |
+  mask(method='mediapipe_person', feather=0.04) + mask(method='face')
+  + heat_map(person=0.55, skin=0.25, luma_blur=0.2, sky_cold=True)
+  + lowres(width=192, up='bicubic') + blur(kind='gaussian', amount=1.5)
+  + auto_gain(percentiles=[2, 98], smooth=0.3)
+  + gradient_map(source='heat', stops=[[0,'#010104'],[0.1,'#10052e'],[0.2,'#300657'],[0.3,'#520969'],[0.4,'#8d1f65'],[0.5,'#af2e57'],[0.6,'#d04442'],[0.68,'#e85e29'],[0.76,'#f67e10'],[0.83,'#fa9f0d'],[0.9,'#f9bd27'],[0.95,'#f3d94d'],[1,'#f3f27f']])
+  + grain(amount=0.015) + destabilize(profile='handheld')
+  Flash between shots: flash(color='#f9d94d', t=cut, dur=0.15)
+  Surveillance: auto_gain(smooth=0) + scanlines(gap=2, amount=0.15) + tear_band(rate=1.5, height=[0.15, 0.35]) + text(content=timecode, style='mono_white', position='bottom_left')
+gen_hint: thermal camera footage of <scene>, inferno heat palette, people glowing yellow-white against purple and black cold background, soft low-resolution sensor look, handheld wide angle, night surveillance aesthetic
+commands: ["the second verse in thermal", "thermal on #4–#6, as if they are being watched", "heat flash between #2 and #3", "intro like a thermal surveillance camera with a timecode"]
+related: [fx.night_vision, fx.xray, fx.color_shift, cut.quick, cut.flash]
+evidence: {examples: 8, sources: 1, measured: "palette from 6.5 million pixels: 13 key colors from #010104 to #f3f27f, R≥G in 97 % of pixels; ~21 % of the frame L<8, median L 100; effective resolution ≈160–200 px wide (2–5 % error when downscaled to 128–160 px); heat flash 3 frames @20 fps, L 148–172; in the surveillance variant brightness 90→55→93→28 over 2.85 s; cuts of 0.15–1 s in dynamic cutting", confidence: medium}
+---
+id: fx.tiny_planet
+family: fx
+group: effect
+level: B
+aliases: [tiny planet, little planet, mini planet, stereographic projection, rabbit hole, sky tunnel, polar unwrap]
+what: the whole surround view is wrapped into a small planet-ball — the ground in the center, sky all around, the subject standing on top; or the reverse, a "hole" — a circle of sky in the center, the ground as walls around it; the planet slowly rotates
+frames: |
+  1. The planet is centered in the frame (±5 %), diameter 0.3–0.85 of the frame height (typically 0.6); the ground/sky boundary is
+     an almost closed ring, houses, trees and streetlights stick out like rays; sky and clouds all around.
+  2. The subject is on the planet's "top" at 12 o'clock, 15–25 % of the frame height tall; a road runs through the ball
+     as an elongated lens.
+  3. The rotation is even: 16–26°/s (76° over 2.9 s as the subject walks — the planet rolls under their feet);
+     breathing in scale ×0.8–1.2 over 1–1.5 s.
+  4. The "hole" (inversion): the sky is a circle in the center, 0.4–0.6 of the height, the ground, water or grass recede as walls
+     to the edges, people look down into the center from above.
+  5. Entry: a normal wide shot folds into a planet or a hole over 2–3.5 s — the horizon bends
+     into a ring, with rotation up to 100–157°/s and ZOOM-OUT ×0.4–0.5.
+variants:
+  - classic little planet: sand or a field as a ball, the subject walks on top, clouds all around
+  - hedgehog city: buildings sticking outward as rays, the planet rotates against a blue sky
+  - road lens: a highway as an ellipse running through the ball, an autumn forest in a ring
+  - hole: a circle of sky in the center, walls of grass or water; people peer in from above
+  - folding: a wide view from a boat or a meadow turns into a hole with rotation over 2–3.5 s
+  - selfie planet: the subject with the camera in the center, a tunnel or a train car around in a ring
+  - catch the planet: a hand reaches for the ball and grabs it — a cut to the camera operator's face (vertical format)
+status: code
+fallback: best from 360 material (a stereographic projection with the nadir in the center); from regular video — a polar unwrap of a wide panorama or a shot with a level horizon (the seam at the bottom is hidden with a mirrored join); if the source is narrow — outpaint the sides or generation with consent
+params:
+  diameter: 0.3–0.85 of the frame height, typically 0.6; in vertical 9:16 — 0.5–0.55 of the width
+  center: "[0.5, 0.5] ±0.05"
+  fov: 360° in azimuth; for a regular shot — the frame width is stretched over 360°, the seam at 6 o'clock
+  subject: at 12 o'clock, 15–25 % of the frame height
+  rotation: 15–30°/s constant (≈0.6–1.2° per frame @25 fps); during folding — up to 100–160°/s
+  breathe: scale ×0.8–1.2 over 1–1.5 s
+  morph: 2–3.5 s (50–90 frames) from a normal view to a planet or a hole, ease inOutCubic
+  inverse: a sky circle 0.4–0.6 of the frame height
+  duration: 1.5–5 s
+when: intros and location changes in travel and weekend videos, "the whole world around me", skateboarding and tricks at a skate park, childlike playfulness; folding into a hole — a dramatic transition or climax; hold the planet for 2–4 s; 1–2 times per video
+avoid: cramped interiors with straight lines (except for the hole and the tunnel); large faces — they stretch; a seam in a crowded spot; too long (>5 s) — the effect gets stale; shots without a clear horizon
+sfx: a soft whoosh or swell on the folding, location ambience, a pop or impact when the hand grabs the planet
+genres: {travel: signature, viral: allowed, ugc: allowed, fanedit: allowed, sport: allowed, teaser: allowed, calm: allowed, motivation: allowed, product: allowed}
+detect: |
+  A compact ball in the center (±0.05) with a closed or nearly closed ground/sky boundary; vertical
+  objects point radially outward (planet) or inward toward the circle of sky (hole); sky on all four sides of the frame.
+  ed_motion: ROTATE at an almost constant 15–30°/s around the center (0.5, 0.5), no shift; folding — ROTATE up to 400° over 4 s + ZOOM-OUT ×0.4–0.5.
+  Difference from lens.fisheye: in a fisheye the horizon is an arc and the frame edges darken; here the horizon is closed into a ring.
+  Difference from fx.kaleidoscope: no mirrored sectors, the image is continuous.
+  Difference from fx.omni_360: there, unwraps and orbits at the scale of the scene; here the whole ground is squeezed into a small ball.
+engine: |
+  From 360: equirect_reframe(projection='stereographic', pitch=-90, fov=[240, 300], roll=[0, 90], t=[t0, t0+4], ease='linear')
+  From a regular shot: polar_warp(src=clip, mode='planet'|'tunnel', seam=6 o'clock, seam_blend='mirror', diameter=0.6, center=[0.5, 0.5])
+  + transform(rotate=[0, 25*D], t=[t0, t0+D], ease='linear') + transform(scale=[1, 0.85, 1], t=[t0, t0+1.2, t0+2.4])
+  Folding: polar_morph(amount=[0, 1], t=[t0, t0+2.5], ease='inOutCubic') + transform(rotate=[0, 180])
+  + sfx('swell', at=t0)
+gen_hint: tiny planet stereographic projection of <location>, the ground curled into a small sphere in the center with sky all around, <subject> standing on top of the planet, slow rotation, bright daylight, 360 camera look
+commands: ["turn #2 into a tiny planet", "intro — a planet with the subject on top, slowly rotating", "fold the boat shot into a hole on the drop", "a little planet for every new location in the travel video"]
+related: [fx.omni_360, lens.fisheye, fx.kaleidoscope, zoom.out, angle.birds_eye]
+evidence: {examples: 8, sources: 8, measured: "planet diameter 0.3–0.85 of the height (vertical — 0.54 of the width); center ≈(0.5, 0.5); rotation 76° over 2.88 s (26°/s), 26° over 1.6 s (16°/s); hole: sky circle 0.6 of the height; folding from the boat — ≈3.5 s, ZOOM-OUT ×0.51; in a neighboring 360 example — 399° over 3.9 s and ZOOM-OUT ×0.41–0.44", confidence: medium}
+---
+id: fx.volumetric_flythrough
+family: fx
+group: effect
+level: C
+aliases: [NeRF, gaussian splatting, gaussian splats, 3D splat, volumetric capture, volumetric video, frozen moment flythrough, flight through a frozen moment, impossible camera]
+what: the camera flies freely through a frozen moment reconstructed in 3D — people are frozen mid-action, dust and shards hang in the air, and at the edges the frame stretches into radial rays and "swims" — a digital, dreamlike presentation
+frames: |
+  1. The moment is frozen: two people lying on a bed, football players mid-kick, shards and papers in the air above a street,
+     a person standing in a square; only the camera moves.
+  2. The camera path is free, unsupported: a push-in ×5.2 over 3.1 s with acceleration (ease-in) and a +39° roll, then
+     a pull-out ×0.27 over 2.6 s with braking (ease-out) and a −45° roll; a gentle pull-out ×0.68 over 2.6 s almost
+     linearly; an orbit with push-ins ×1.2–1.7 and a roll of up to 38° over 2.1 s; a shuttle ×1.4 forward over 0.7 s and ×0.86 back.
+  3. Artifacts as style: when the camera leaves the captured volume, the edges stretch into radial rays
+     (a "star"): the share of radial strokes in the outer ring is 0.5–0.8 versus 0.1–0.3 for regular video;
+     the center stays sharp. Also: "clouds" in the sky, a smeared floor, mushy foliage up close.
+  4. Transformation: the background breaks up into points and vertical colored stripes, the characters remain on a floating
+     diorama island against a sunset.
+  5. Volumetric video: people made of white points walk inside a lattice space.
+variants:
+  - flight through a moment: a frozen scene, the camera dives in and flies back out, a star artifact at the edges
+  - hanging debris: an explosion or objects flying apart, a slow pull-out
+  - orbit around the subject: a person standing still in a square, the camera circles, blobs float in the sky
+  - diorama island: the background falls apart, the scene turns into a floating piece of land
+  - volumetric point video: moving people as point clouds
+status: generation
+fallback: generating a "frozen moment, the camera flies through the scene" video with consent; if the user has an orbit of a static scene (20–60 s of video around it) — training a 3D splat offline (footage); simulation in code from a single frame — 2.5D (depth map + a camera path with a small offset of ±10–15 % of the frame + deliberately stretching the edges into rays)
+params:
+  freeze: the scene is static; only the camera moves (2.5D — a freeze frame)
+  path: push-in ×2–5 over 2.5–3.5 s (ease-in) / pull-out ×0.25–0.7 over 2.5 s (ease-out) / orbit 30–60° over 2 s
+  roll: 10–20°/s along the flight, the sign changes at the turnaround
+  edge_streak: radial stretching of edge pixels in the outer 20–30 % of the frame, strength by the camera's distance from the starting point; stroke share 0.5–0.8 at the peaks
+  floaters: 2–6 soft blobs (blur 2–4 % of the frame) in empty areas
+  fps: 10–16 fps in real examples; in the video 25 fps with motion_blur 0.3
+  duration: 1.3–6 s (30–150 frames @25 fps)
+  depth_warp_limit: 2.5D — camera offset ≤15 % of the frame width, beyond that holes appear — cover them with outpaint or rays
+when: the climax and the "moment of truth" in a teaser, sports — a kick or a jump frozen in the air, a dream and a memory, a techno music video; as a transition — flying out of a scene into the star → flying into the next one; once per video, on a pause or a long note
+avoid: relying on faces in close-up (reconstructed faces are scary); long aimless flights — the meaning gets lost; combining it with fast cutting nearby — the flight needs room to breathe; a 2.5D simulation with a large camera move — it tears
+sfx: silence or a "sucking" reverse ambience on the freeze, a long whoosh along the flight, a low hum; on the exit into rays — a swell and a riser into the next scene
+genres: {teaser: allowed, epic: allowed, sport: allowed, fanedit: allowed, product: allowed, motivation: allowed, drama: allowed, viral: allowed}
+detect: |
+  The camera moves noticeably (ZOOM ×1.5–5, ROTATE 30–45°, nonrigid 0.12–0.4 — real parallax), while people and objects
+  in the frame are still (local difference after motion compensation ≈0).
+  Edges: the share of radially oriented coherent strokes in the outer ring (r > 0.75) ≥ 0.5 in some of the frames;
+  smeared "blobs" in the sky and on the floor; a sharp center.
+  Difference from time.bullet_time: there, an arc around the subject along a camera array, no radial rays and no free flight.
+  Difference from time.freeze: there, a freeze frame without camera movement.
+  Difference from fx.scan_3d: there, the model as an object on a gray background, a wireframe or points.
+engine: |
+  Generation: generate_video(prompt=gen_hint, duration=4) → speed(rate=1) + motion_blur
+  From the user's orbit footage: splat_train(clip, steps=7000) → render_3d(style='splat', camera_path=spline(points), t=[t0, t0+3])
+  2.5D simulation: freeze(at=t0, dur=D) + depth_map(model='midas')
+  + depth_warp_flythrough(path=dolly(scale=[1, 2.5]), roll=[0, 25], t=[t0, t0+D], ease='inCubic', edge='radial_stretch', floaters=3)
+  + sfx('whoosh', at=t0, align='attack') + sfx('swell', at=t0+D-0.5)
+gen_hint: frozen moment, everything suspended in mid-air, the camera flies smoothly through the scene and around <subject>, neural radiance field look, slight radial streak artifacts at the frame edges, dreamy volumetric light
+commands: ["freeze the moment of impact and fly the camera through the scene", "a star-ray transition from #3 to #4", "orbit around the frozen subject in the square", "make the jump shot a NeRF flythrough"]
+related: [fx.scan_3d, time.bullet_time, time.freeze, zoom.infinite, fx.omni_360]
+evidence: {examples: 6, sources: 6, measured: "push-in ×5.17 over 3.12 s (ease-in, roll +39°), pull-out ×0.27 over 2.64 s (ease-out, roll −45°); pull-out ×0.68 over 2.6 s almost linear, nonrigid 0.16; orbit: ×1.24, ×0.49, ×1.72 and a 38° roll over 2.1 s; shuttle ×1.4 over 0.72 s and ×0.86 over 0.36 s; radial strokes in the outer ring 0.70–0.81 at the far points of the flight versus 0.09–0.32 for a regular flight; 10–16.7 fps in 4 of 6", confidence: medium}
+---
+id: fx.wigglegram
+family: fx
+group: effect
+level: B
+aliases: [wigglegram, wiggle stereoscopy, 3D wobble, stereo wobble, wiggle 3D, multicam shake, 4-lens wiggle]
+what: time freezes while the viewpoint rocks back and forth between 2–4 neighboring angles — the subject stays in place, the background and foreground "float" around them, the volume reads without 3D glasses
+frames: |
+  1. Classic (5 of 8 examples): 4 angles from a single four-lens camera, a 6-frame loop
+     1-2-3-4-3-2 (frame 2 = 6, 3 = 5 — identical pixel for pixel), each 70–100 ms → a 0.42–0.6 s loop.
+  2. The pivot is the subject: their mean shift is ±0.7 % of the width, while whatever is nearer and farther moves apart
+     in opposite directions — between neighboring angles the spread of shifts (p10…p90) is 1.2–3.8 % of the frame width,
+     between the outermost ones — up to ≈10 %. The vertical almost stays put (≤0.3 %), roll ±0.5–1°, scale ±0.8 %.
+  3. Film texture: grain, warm analog color, sometimes the frame edges and neighboring film frames are visible,
+     the angles have slightly different exposure.
+  4. Video variant: the video plays while the angle switches every 2–5 frames (80–200 ms) with a small
+     shift of 0.3–1 % — a nervous stereo jitter of the live frame.
+  5. Multicam variant: every frame is a different camera around the subject (a switch every 1 frame, 50 ms),
+     roll jumps ±5–10°, scale ×0.86–1.16, shift spread 2–12 %; the subject's face is glued to one point in the frame.
+variants:
+  - classic loop: 4 angles, 1-2-3-4-3-2, 10–14 fps — a portrait, a party, a workshop, a street
+  - film strip: B&W or color with the frame edges and neighboring film frames at the sides
+  - video stereo: live video with the angle switching every 2–5 frames, shift ≤1 %
+  - multicam shake: a crowd around the subject, each frame from a new camera, the face in place — a hit on the rhythm
+status: hybrid
+fallback: from a single photo or video — 2.5D (a midas depth map or a subject mask + background), rendering 3–4 angles with a depth-based shift; a real four-lens camera or a multi-camera rig — search the source footage; generating angles around the subject (Higgsfield/3D) — with consent
+params:
+  views: 3–4 (typically 4), order 1-2-3-4-3-2 (ping-pong)
+  hold: 70–100 ms per angle (2–3 frames @25 fps), loop 0.4–0.6 s; on the rhythm — 1/16 at 120 BPM (125 ms)
+  disparity: neighboring angles 1.2–4 % of the width for near and far objects, the outermost up to 10 %
+  pivot: track(face) or the main object — shift 0 at the pivot
+  jitter: roll ±0.5–1°, scale ±0.8 %, exposure ±3–5 % between angles, vertical ≤0.3 %
+  look: grain 0.04–0.08, warm film color; optionally film edges
+  duration: 1.5–4 s (3–8 loops) as an insert; video stereo — the whole shot
+  video_mode: angle change every 2–5 frames, shift 0.3–1 %
+  multicam: a change every frame, roll ±5–10°, scale ×0.85–1.15, aligned on the face
+when: photo memories and behind-the-scenes, a party with friends, a lookbook and a fashion portrait, a cover or a "living" freeze frame between video shots; loops — on the beats; multicam shake — on the beats in a verse (1–2 bars); 1–3 inserts per video
+avoid: shots without depth (a flat wall, macro on a plain background) — the wobble does not read; fast motion inside the frame in the classic variant; too large a shift (>5 % between neighbors) — it doubles and causes motion sickness; long loops of more than 6–8 s
+sfx: a shutter click and film winding at the start, a light tick on each loop; multicam shake — a hi-hat or a snare roll in sync with the camera changes
+genres: {fashion: signature, ugc: allowed, viral: allowed, fanedit: allowed, travel: allowed, clips: allowed, calm: allowed, product: allowed, phonk: allowed, teaser: allowed}
+detect: |
+  Classic: a short cycle with a period of 4–6 frames, frame i matches frame (6−i) (difference ≈0);
+  ed_motion: tx ±0.5–1.7 % with alternating sign, no net motion, nonrigid 0.4–0.7 (parallax);
+  custom check — dense flow between neighbors: median ≈0 (the pivot), p10…p90 spread 1.2–3.8 % of the width.
+  Video stereo: the sign of the "edges minus center" difference alternates with a period of 2–5 frames at a shift of ≤1 %.
+  Multicam: a frame difference of 22–36 on every frame (like a cut), but the face stays in place; rot jumps ±5–10°, s ×0.86–1.16.
+  Difference from shake.beat: shake moves the whole frame (nonrigid <0.15); here, parallax around the pivot.
+  Difference from time.boomerang: there time goes back and forth and the subject moves; here time stands still.
+  Difference from time.bullet_time: there, a continuous orbit through many cameras in one direction; here, rocking between 2–4.
+engine: |
+  depth_map(model='midas') | mask(method='mediapipe_person')  # 2.5D: layers by depth
+  + wiggle_stereo(views=4, disparity=0.025, pivot=track(face), order='pingpong', hold=0.08, roll_jitter=0.7, exposure_jitter=0.04, inpaint='hf_outpaint'|'edge_stretch')
+  + grain(amount=0.06) + color(lut='warm_film')
+  Video stereo: wiggle_stereo(..., disparity=0.006, hold=0.12, video=True)
+  Multicam: multicam_cycle(clips=[cam1..cam4], every=0.04, align=track(face), roll=±8, scale=[0.86,1.16]) + beat_sync(event='cam_switch', grid='1/16')
+  + sfx('click', at=t0)
+gen_hint: wigglegram, stereoscopic wiggle loop of <subject>, shot on a four-lens analog film camera, viewpoint rocks left and right around the subject who stays frozen, strong background parallax, 35mm grain, warm film colors
+commands: ["make a wigglegram from photo #3", "insert the party shot as a 3D wobble for 2 seconds", "wobble in time on every sixteenth note", "multicam shake around the face on the verse"]
+related: [time.boomerang, time.bullet_time, shake.beat, time.step_print, look.photo_prints]
+evidence: {examples: 8, sources: 8, measured: "5 of 8 — a 6-frame loop = 4 angles in ping-pong (frames 1=5, 2=4 with a difference of 0.0–0.5 levels), 70–100 ms per frame; parallax spread between neighbors 1.2–3.8 % of the width, median ±0.7 %; roll ±0.5–1°, scale 0.99–1.008; video stereo — angle change every 2–5 frames, shift 0.3–1 %; multicam — a change every frame, roll ±5–10°, scale 0.86–1.16, spread 2–12 %", confidence: high}
+---
+id: fx.xray
+family: fx
+group: effect
+level: B
+aliases: [x-ray, x-ray effect, x-ray look, skeleton through the body, x-ray vision, see-through]
+what: the frame becomes an x-ray image — a black background, a translucent cold-blue body through which the bones and skull glow; an eerie or "inner" look at the subject
+frames: |
+  1. Background — solid black: 41–88 % of pixels darker than L 20 of 255, median frame brightness 1–28.
+  2. The figure is translucent, steel-blue: hue 196–212°, the blue channel higher than red by 22–35
+     units, moderate saturation (median 14–38 %). The densest parts are brightest: skull, teeth, ribs,
+     spine, hand bones, the body outline; highlights cold white ≈ RGB (135–150, 150–160, 170–180),
+     peaks L 170–230.
+  3. Clothing — dark transparent layers of a teal shade, the folds visible right through. What stays warm is
+     hair, lips, fire, small metal — 1–25 % of the figure's pixels with R > B: the only
+     "live" color in the frame.
+  4. Presentation — long shots of 2–7.6 s; the camera either stays still or floats: a slow push-in ×2–2.65 over
+     4.75–5.2 s with a 30–53° roll. Entry from black over 6–8 frames, exit to black over ~0.75 s.
+variants:
+  - static portrait shot: a skull inside the head, 3.5 s without camera movement, only the subject moves
+  - floating examination: a slow push-in ×2–2.65 over ~5 s with a roll of up to 50°, the frame "scans" the body — ribs, belly, two people's skulls pressed together
+  - gesture to the camera: a hand or an object pointed at the viewer, the hand bones show through, metal and fire — a warm accent
+  - lite version without anatomy: an object on an almost entirely black background (88 % of the frame), only the edges and the brightest parts glow — negative neon
+  - x-ray depth: a foreground figure as a frame, behind it — distant figures in the same style
+  - scanner window (not seen in the examples, a typical short-video device): the x-ray is visible only inside a rectangle that travels across the subject
+status: hybrid
+fallback: without a mask — simplified, in code over the whole frame (negative + a cold gradient map + clipping the shadows to black), works only on a dark background; real bones — overlaying a stylized skeleton by pose (mediapipe pose) or video-to-video generation with the user's consent
+params:
+  background: black, L ≤ 10; a person or object mask, feather 2–4 px
+  invert: luminance negative inside the mask (Y' = 1 − Y), gamma 0.8–1.2
+  gradient_map: "0 → #000000, 0.3 → #142834, 0.6 → #5f7080, 0.85 → #96a5b4, 1.0 → #e1eef8 (hue 200–212°, B−R +25…+35 in the midtones)"
+  saturation: 15–35 % (typically 25 %)
+  edge_glow: high frequencies ×1.5–2 + glow(threshold 0.6, radius 1–2 % of the frame height)
+  opacity: body 60–80 %, layers blended with screen — overlaps are brighter
+  warm_keep: hair and lips from segmentation — the original tone with saturation ×0.6
+  bones: skeleton from the pose — white bones, blur 2–4 px, opacity 0.5–0.7; skull from the face mesh
+  camera: static or a push-in ×1.5–2.5 over 4–6 s + roll 20–50°, ease linear
+  shot: 2–7 s (50–175 frames @25 fps); entry/exit through black 0.25–0.75 s (6–19 frames)
+  scan_window: a window 20–35 % of the frame width, travels across in 1–2 s
+when: a teaser and an intro with a mystery; "looking inside" a subject or an object (fear, illness, love "to the bone"); a reality → another world transition; an explainer about how something works; in a music video — a whole verse in x-ray. No more than one x-ray episode per video; the scanner window — a one-off viral accent on the drop
+avoid: a light or busy background without a mask (after the negative it turns white); a small figure in a wide shot — the bones do not read; frequent short 0.5 s inserts — the eye does not have time to realize it is an x-ray; calm, warm, family videos
+sfx: a low hum or drone under the whole episode; on the appearance — a reverse_whoosh or sub_drop; for the scanner window — an electric hum and a click at the start and end of its pass
+genres: {teaser: allowed, fanedit: allowed, phonk: allowed, drama: allowed, viral: allowed, explainer: allowed, product: allowed, fashion: allowed, sport: allowed, calm: forbidden}
+detect: |
+  Color: share of pixels with L<20 ≥ 0.4; figure pixels (L>40) have hue 195–215°, B−R ≥ +20, saturation
+  14–38 %; highlights cold white with B > G > R; inside the silhouette — thin white structures (ribs, teeth,
+  finger bones), only hair/lips/fire stay warm (≤25 % of the figure).
+  ed_motion: no signature of its own — static or a slow push-in ≤×1.012/frame with roll; at the episode's edges — a fade from/to black.
+  Difference from fx.night_vision: there, green monochrome, noise and a vignette, the background is not black.
+  Difference from fx.thermal: there, a "heat" palette (violet → yellow/white), no bones visible.
+  Difference from a plain negative: a negative has a light background, no black around the figure and no skeleton.
+engine: |
+  mask(method='mediapipe_person'|'hf_remove_background', feather=3)
+  + gradient_map(source='inv_luma', stops=[[0,'#000000'],[0.3,'#142834'],[0.6,'#5f7080'],[0.85,'#96a5b4'],[1,'#e1eef8']], layer='subject')
+  + composite(layers=[solid('#000000'), subject_xray(opacity=0.75), hair_keep(sat=0.6)], blend='screen')
+  + glow(threshold=0.6, radius=0.015) + grain(amount=0.03)
+  + xray_skeleton(pose=track(person), skull=track(face), opacity=0.6, blur=3)  # optional
+  + transform(scale=[1, 2], rotate=[0, 30], t=[t0, t0+5], ease='linear')  # floating examination
+  + fade(to='black', t=t_in, dur=0.3) / fade(to='black', t=t_out, dur=0.75)
+  Scanner window: composite(layers=[orig, xray], mask=window_reveal(rect=[0.3, 1.0], path=[[-0.3,0],[1.3,0]], t=[t0, t0+1.5]))
+gen_hint: x-ray vision shot of <subject>, translucent glowing cyan-white body on pure black background, skeleton, skull and ribs visible through skin, radiograph aesthetic, slow floating camera push-in with gentle roll, eerie music video look
+commands: ["put #3 in x-ray so the skull shows through", "x-ray at 0:12–0:17 with a slow push-in", "scanner window across the subject on the drop", "the whole second verse in x-ray style"]
+related: [fx.thermal, fx.night_vision, mask.window_replace, fx.color_shift, trans.double_exposure]
+evidence: {examples: 8, sources: 1, measured: "8 clips from one source; background 41–88 % of pixels L<20; figure: hue 196–212°, B−R +7…+35 (in 6 of 8 — +21…+35), saturation 14–38 %; highlights (L>120) RGB 131–188/150–202/168–210; warm details 0.5–25 % of the figure; 2 of 8 — push-in ×2–2.65 over 4.75–5.2 s with a 30–53° roll; fade from black 6–8 frames, to black ~0.75 s; shots 2–7.6 s", confidence: medium}

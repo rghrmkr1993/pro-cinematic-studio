@@ -1,0 +1,113 @@
+id: crane.pedestal
+family: crane
+group: camera
+level: A
+aliases: [pedestal, vertical camera move, camera rise, camera descent, pedestal up, pedestal down, vertical tracking shot, elevator shot]
+what: the camera travels strictly up or down without tilting — it rises from behind the foreground, descends to the characters or moves from floor to floor
+frames: |
+  1. Start: the frame is often covered by the foreground (the back of a sofa, the edge of a table — up to 100 % of the frame dark) or sits on
+     one "floor" of the scene.
+  2. Move: a vertical shift of 20–140 % of the frame height over 1.5–4.8 s; the horizon and verticals do not tilt, the scale
+     does not change. Peak 3–4.7 % of the height per frame (≈50–80 %/s), then a long landing: the speed drops 10–40 times
+     over the last 1–2 s (ease-out), or an even S-curve.
+  3. Parallax: the near plane moves 3–10 times faster than the far one (the back of the sofa drops away in 0.5 s, the room
+     almost stands still); on a flat facade the shift is the same over the whole frame height.
+  4. Landing: the frame settles on the characters or on a new "floor" and holds for 0.5–2 s.
+variants:
+  - rise from behind the foreground: the camera rises above the back or the edge — the scene opens up (from black into the shot)
+  - descent behind the foreground: an object "grows" from below and covers the scene (a wipe)
+  - floors and windows: a move along a facade, a train car or a cutaway house from one window to another, without parallax
+  - through a surface: descending underwater or out from under a table, then a cut
+  - to eye level: from a high wide vantage point down to a couple in the foreground
+status: footage
+fallback: |
+  code: a vertical crop move over a tall or 4K frame — looks honest on flat scenes (a facade, a cutaway, a wall of windows);
+  for a scene with a foreground — 2.5D: the foreground mask moves 3–5 times faster than the background; otherwise search the source footage
+  or generate from the gen_hint
+params:
+  amplitude: 20–140 % of the frame height per move
+  duration: 1.5–4.8 s (38–120 frames @25 fps)
+  speed: peak 3–4.7 % of the height per frame (≈50–80 %/s), calm 0.5–1.5 %/frame
+  ease: outCubic (fast start, long landing) — reveal rise; inOutCubic — floors
+  parallax: near / far = 3–10× with a foreground; 1× on a flat facade
+  start_cover: up to 100 % of the frame covered by the foreground at the start of a reveal rise (0.3–0.6 s)
+  hold_after: 0.5–2 s
+  fake_parallax: foreground mask × speed 3–5, background × 1, no rotation
+when: revealing a scene or a hero at the start of an episode and in the intro; a rise from behind an object on a downbeat; a transition between "floors" and rooms within one scene (dollhouse); descending to a couple to lead into a dialogue; product — a rise from behind the edge of a table to the product
+avoid: mixing with a tilt (the verticals start to converge — reads as a sloppy tilt); a rise after which there is nothing to show; a crop imitation on a scene with a close foreground and no parallax (looks like the picture sliding); too fast a move without motion blur
+sfx: usually no effects; on a reveal — a build or a soft swell toward the landing; when passing through water — a gulp and muffled sound
+genres: {product: allowed, travel: allowed, drama: allowed, calm: allowed, explainer: allowed, teaser: allowed, fashion: allowed, epic: allowed, viral: allowed, clips: allowed}
+detect: |
+  ed_motion: a vertical SHIFT (content moves UP/DOWN) of 20–140 % over 1.5–5 s, horizontal < 5 %, ZOOM ±5 %, ROTATE < 3°;
+  black or dark frames at the start when rising from behind the foreground. Own check over three bands of the frame:
+  in a pedestal the near plane moves 3–10 times faster than the far one; on a flat facade the bands move equally.
+  Difference from tilt: in a tilt the camera rotates — all depths shift equally, but the verticals and horizontals
+  bend and converge (the perspective changes); in a pedestal the lines stay parallel.
+  Difference from a crane: a crane rises above human height and usually with an arc or a turn.
+engine: |
+  Real shot: cut(at) — the start of the move, the end 0.5–2 s after the landing.
+  Code (flat scene): transform(shift=[[0, y0], [0, y1]], t=[t0, t0+D], ease='outCubic') over a tall crop, |y1−y0| ≤ headroom.
+  2.5D: mask(method='hf_remove_background'|'mediapipe_person') for the foreground → transform(shift=[[0,0],[0, 3–5·dy]]) on the mask
+  + transform(shift=[[0,0],[0,dy]]) on the background + composite; at a speed above 4 %/frame — blur(kind='directional', angle=90).
+gen_hint: camera on a pedestal rises vertically from behind <foreground object> to reveal <scene>, no tilt, perfectly level, strong parallax between foreground and background, slow ease-out landing
+commands: ["raise the camera from behind the sofa on the first beat", "a vertical move along the building's windows from floor to floor", "lower the camera to the couple in #2", "do a reveal rise from behind the table edge to the product"]
+related: [tilt.basic, crane.telescopic, dolly.in, pan.basic, scene.diorama]
+evidence: {examples: 5, sources: 5, measured: "shift 20–139 % of the height over 1.5–4.8 s; peak 3.9–4.7 %/frame (≈60–80 %/s); ease-out landing — the speed drops from 4.7 to 0.1 %/frame over 2 s; near/far parallax 3–10× in 3 of 5, a flat facade (1×) in 1; in 1 of 5 the start is from complete darkness behind the foreground; horizontal shift < 5 %, no tilt", confidence: high}
+---
+id: crane.telescopic
+family: crane
+group: camera
+level: B
+aliases: [telescopic crane shot, crane shot, crane move, telescopic crane, jib arm, boom move, swoop shot, crane down onto the hero]
+what: a long smooth camera move on a telescoping arm — over tables, a sofa, a crowd, through a window or a door; in a single move the camera changes both height and distance, leading from a wide view right to the hero or revealing the space on a pull-out
+frames: |
+  1. Start: a wide view of the location — often from above or from behind an obstacle (outside a window, a door, behind the back of a sofa).
+  2. The move as a single continuous take of 1.5–5.5 s, the speed almost constant (6 of 8 — an even curve, 2 — accelerating toward the end):
+     push-in ×1.4–3.8 over 2.5–4 s (≈×1.004–1.02 per frame @25 fps); through openings — up to ×19 over 3 s (≈×1.04 per frame);
+     pull-out ×0.33–0.46 over 1–1.5 s (≈×0.955–0.98 per frame).
+  3. The height changes along the way (3 of 8): the camera descends from under the ceiling to a face or rises on a pull-out —
+     the picture slides by 24–38 % of the frame while the arm compensates the tilt. Sometimes a slight roll of ±5–10°.
+  4. Real parallax: near objects (tables, chair backs, window frames, dancers) float past faster than the background —
+     nonrigid 0.10–0.43 (median ≈0.27), whereas for a digital zoom it is below 0.15.
+  5. Landing: a medium or medium close-up shot of the hero or an object; on a pull-out — a wide shot of the room or the crowd.
+variants:
+  - descent to the hero — from under the ceiling over the chaos of a room, down and forward to the face (1 of 8)
+  - push-in through space — along a long corridor, through a glass door across the whole room to the hero (2 of 8)
+  - pass-through — from outside a car, through the cabin and a pickup window into a kitchen up to a large object, ×19 over 3 s (1 of 8)
+  - glide over a table — slowly along a serving counter or a table with dishes and hands (1 of 8)
+  - rise-and-push toward a window — up the facade and closer to the people behind the glass (1 of 8)
+  - reveal pull-out — back and up over a sofa or among dancers, revealing the room and the crowd (2 of 8)
+status: footage
+fallback: a real crane move is searched for in the source footage (long smooth push-ins and pull-outs with parallax, an indoor drone, a stabilizer on a pole); in code — a digital push-in over a 4K frame gives only ×1.3–2 and no parallax (nonrigid <0.15 gives away the fake); a layered imitation is better — cut the foreground out with a mask or by depth and move it faster than the background (parallax ×1.4–2); a pass-through via openings and a descent from a height — only generation with the user's consent
+params:
+  scale: push-in ×1.4–4 (typically ×2.5–3.8); pass-through up to ×20; pull-out ×0.33–0.5
+  duration: 1.5–5.5 s (38–138 frames @25 fps), typically 3 s
+  rate: push-in ×1.004–1.02 per frame @25 fps (pass-through up to ×1.04), pull-out ×0.955–0.98 per frame
+  ease: linear (constant speed) or inQuad toward the end; no hard landing — the move is cut off by a cut or settles softly over 0.3–0.5 s
+  vertical: with a height change the picture shifts by 24–38 % of the frame per move (descent — the picture moves up, rise — down)
+  roll: optionally ±5–10° during the move
+  parallax: nonrigid 0.1–0.45; in an imitation — the foreground 1.4–2 times faster than the background
+  landing: a medium or medium close-up shot of the hero or an object (push-in); a wide shot (pull-out)
+when: opening a scene with one "place → hero" move instead of a wide-medium-close-up cut sequence; a transition from outside to inside (through a window, a door, a shop window); revealing scale on a pull-out — the ending, a chorus, a crowd's entrance; a product video — gliding over a table or a counter to the product; music videos — a move through the choreography; no more than 1–2 such moves per video, the start of the move on a downbeat, the landing on the next phrase
+avoid: short pieces under 1.5 s — the move does not read and looks like a jerk; tight shots without a near plane — no parallax, the move is indistinguishable from a zoom; back to back with other big camera moves; speed breaks and shake on the landing; deliberately "everyday" videos — an expensive smooth crane breaks the shot-on-a-phone feel
+sfx: an even airy swell or a riser over the whole move, an accent or a hit on the landing; on a pass through a window — a short whoosh at the moment of the opening; in a product video — foley of the object on the landing (a hiss, a click, a clink)
+genres: {product: signature, epic: allowed, fashion: allowed, teaser: allowed, drama: allowed, travel: allowed, calm: allowed, motivation: allowed, sport: allowed, fanedit: allowed, viral: allowed, ugc: forbidden}
+detect: |
+  ed_motion: one long ZOOM-IN ×1.4–20 or ZOOM-OUT ×0.33–0.5 over 1.5–5.5 s without cuts, the curve almost straight
+  (or accelerating), nonrigid 0.10–0.45 (parallax), often together with a SHIFT of 20–40 % "[during zoom]" — a height change,
+  sometimes ROTATE ±5–10°. Visually: foreground objects (tables, chair backs, window frames, people) float under or across the frame.
+  Differences: zoom.in and zoom.slow — nonrigid <0.15, objects do not newly overlap one another; dolly.in — the camera
+  at one height, usually ×1.1–2, no flying over obstacles; dolly.float — eye height, a walking sway;
+  crane.pedestal — a purely vertical move, scale ±5 %; drone.fpv — rolls of 20–45°, high speed, outdoor locations;
+  pass.through — at the moment of passing 3–8 dark or blurred frames hide a cut.
+engine: |
+  Imitation on 4K: transform(scale=[1, S], center=track(target), shift=[[0, 0], [0, dy]], t=[t0, t0+D], ease='linear'),
+  S ≤ 2, dy = 0.1–0.2 of the frame for a "descent".
+  Layered imitation: layered_push(fg=mask(method='hf_remove_background'|'depth'), bg_scale=[1, S], fg_scale=[1, S·k],
+  k=1.4–2, t=[t0, t0+D], ease='linear') — a new primitive: the foreground grows faster than the background, holes in the background are filled by outpaint.
+  Placement: the start of the move — beat_sync('downbeat'), the landing — on the next phrase; sfx('riser', at=t0, align='attack') +
+  sfx('impact', at=t0+D) or a soft swell.
+gen_hint: smooth telescopic crane shot that starts high above <location> and glides down and forward over <tables/furniture/crowd> through <window/doorway> to land in a medium shot of <subject>, constant speed, real parallax, no shake, cinematic lighting
+commands: ["open the scene with a crane descent to the hero", "at the end, a crane pull-out up and back", "find long smooth camera moves in the source footage", "fake a layered crane push-in on #4"]
+related: [crane.pedestal, dolly.float, pass.through, dolly.in, drone.fpv, zoom.slow]
+evidence: {examples: 8, sources: 8, measured: "push-ins ×1.43, ×1.62, ×2.58, ×3.71, ×3.79 over 2.5–4 s and ×19.4 over 3 s (pass-through); pull-outs ×0.33 over 0.96 s and ×0.46 over 1.52 s; even curve in 6 of 8, acceleration in 2; nonrigid 0.10–0.43; height shift 24–38 % in 3 of 8; roll ±5–10° in 2 of 8; clips 1.56–5.46 s", confidence: high}

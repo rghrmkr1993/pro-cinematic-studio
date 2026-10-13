@@ -1,0 +1,499 @@
+id: sfx.glitch
+family: sfx
+group: sound
+level: B
+aliases: [glitch sound, glitch, digital glitch, digital crackle, stutter, beat repeat, track stutter, bitcrush, tape stop, record scratch, scratch, click, tick, static, interference]
+what: "glitch sound — digital clicks, crackle and track stutters to go with glitch effects; this also covers a single click-tick, tape stop and record scratch"
+frames: |
+  The sound runs frame for frame with the glitching picture.
+  1. Start: on the first frame of the glitch — a hard entry with no fade (0.2 ms), full volume at once.
+  2. Burst 40–400 ms (1–10 frames @25 fps, 1–12 @30 fps): a chain of 8–40 ms slices — bitcrushed noise, square-wave
+     beeps at 300–3000 Hz, a repeated snippet of the track, holes of silence; the slice changes with the state of the
+     picture (every 1–3 frames); the pan jumps from slice to slice within ±0.7.
+  3. End: a cut-off on the last frame of the glitch (≤10 ms); the music comes back with no fade, ideally on a beat.
+  Track stutter: a 1/16-note piece (125 ms at 120 BPM) repeats 4–16 times, speeding up to 1/32 and 1/64, and releases
+  the track exactly on a downbeat. Tape stop: the track speed goes 1 → 0 over 0.3–1 s, the pitch drops with it, then
+  silence. Click — 1–5 ms, a single point on the cut frame.
+variants:
+  - "digital burst: 40–400 ms of slices under fx.glitch, RGB shift, line shift, pixel sort"
+  - "track stutter (stutter, beat repeat): a 1/16 repeat accelerating into the drop; under cut.stutter and beat repeat"
+  - "track bitcrush: for the duration of a datamosh or pixel effect the track drops to 6–10 bits and 8–22 kHz"
+  - "static and signal loss: hissing crackle of 80–300 ms and holes in the music of 30–120 ms — TV interference, VHS dropout, \"no signal\""
+  - "click-tick: a single 1–5 ms click on a cut or on an element appearing; shutter — two clicks 40 ms apart"
+  - "tape stop and scratch: the track slows to zero or \"scratches\" back and forth — freeze frame, comedic stop"
+  - "8-bit blips: a square wave with a stepped 60–200 ms arpeggio — pixel art, game aesthetics; this also covers the 1 kHz censor bleep"
+  - "glitch transition: a 0.3–0.4 s swish through a 6-bit bitcrush with 2–3 holes — for a glitch transition between scenes"
+  - "glitch trill: an even texture of 12–24 clicks per second with bitcrush grain over a whole series of flashes or a 0.5–2 s strobe cut"
+status: code
+fallback: |
+  Code synthesis is always available: noise, square waves and pieces of the track itself. If the picture has no
+  glitch — don't add a glitch sound (a click on a cut is fine). Stutter and tape stop need an even beat grid: with
+  steady=false in ed_audio take the piece length from the nearest real beats, not from the BPM. A remake on the
+  reference's audio — everything is already baked in.
+params:
+  render: "48 kHz, stereo; slice edges without smoothing (0.2 ms) — the clicks at the joins are wanted; HPF 200 Hz on everything except the track stutter"
+  burst: "length = length of the visual glitch; slices of 8, 12, 16, 24, 32 or 40 ms at random; slice type: bitcrushed noise 30 % (white noise, 4–6 bits, sample-rate reduction by 4–12 times — down to 4–12 kHz), beep 25 % (square wave 300–3000 Hz or FM: modulator ×2.7, index 2–6), a repeated snippet of the track from the attack point 25 %, silence 20 %; slice level −6…0 dB, pan ±0.7 at random"
+  stutter: "a piece of the track from a beat, 1/16 note long (125 ms at 120 BPM), 4–16 repeats; acceleration into the drop — 2×1/16 → 4×1/32 → 8×1/64 (≈31 ms) over the last beat; joins — 2 ms crossfade (0 ms — deliberately dirty); +1 semitone per repeat — optional; the original track is replaced for this time, not mixed"
+  crush: "the track for the duration of the effect: 6–10 bits, sample-rate reduction by sample-and-hold without an anti-aliasing filter down to 8–22 kHz (pixel art — 8 bits and 11–22 kHz; datamosh — harsher, 6 bits and 8 kHz), mix 50–100 %; in and out on a beat"
+  static: "white noise, HPF 1 kHz, an envelope in 5–20 ms steps + crackle — sparse impulses at 100–300 per second; 80–300 ms; in the music 1–3 cutouts of 30–120 ms down to −40 dB; a tape-hiss bed for the whole episode — pink noise, HPF 2 kHz, steady, −24…−30 LU"
+  transition: "a swish (as in sfx.whoosh: white noise, band-pass 1.5 → 6.5 → 4 kHz, Q 3.5) of 0.3–0.4 s → 6-bit bitcrush at 8 kHz → 2–3 holes of 15–30 ms; peak on the cut"
+  trill: "clicks (as in click) at 12–24 per second, each with a random center of 2–6 kHz and level ±3 dB, with 6-bit bitcrush grain at −12 dB on top; length = length of the flash series (0.5–2 s); this is a single texture at −12 LU, not clicks on cuts"
+  click: "1.5 ms of white noise in a cosine window → band-pass 2–5 kHz, Q 1.2 (random center within this range); shutter — a 3 kHz click + a second one at 1.5 kHz 40 ms later at −4 dB + a dull 180 Hz sine of 15 ms at −10 dB"
+  tape_stop: "track playback rate r(u) = (1 − u)^1.5 over 0.3–1 s (the pitch drops with it), LPF 18 kHz·r, then silence until the next downbeat or event; the reverse, a tape start — r from 0 to 1 over 0.2–0.4 s"
+  scratch: "a 150–250 ms piece of the track at the event point, playback rate 2.5·sin(2π·4.5 Hz·t) — back and forth, band 200 Hz–4 kHz, 1–2 cycles (0.2–0.45 s), the music under it switched off"
+  blips: "square wave (duty cycle 50 % or 12.5 %), 3–4 steps of 30–60 ms (up — \"bonus\", down — \"error\"), 60–200 ms, dry; censor bleep — a 1 kHz sine for the length of the word, 5 ms fades, −6 LU, the word under it is muted"
+  placement: "align='attack' on the first frame of the visual glitch (+0 ms); slice boundaries — on the picture's state changes (every 1–3 frames: 40–120 ms @25 fps, 33–100 ms @30 fps); end — on the last frame of the glitch; stutter — start on a beat or half-beat, end exactly on the next downbeat; click — on the cut frame, no more than 8 per second (otherwise they merge into noise); tape stop — start on a beat, freeze frame of the picture from the same frame"
+  level: "rel_lu — K-weighted loudness in a 100 ms window from the attack: burst −6 LU (−9…−4), static −10 (−14…−8), click −14 (−18…−10), blips −10; stutter, bitcrush, tape stop and scratch — the track itself at 0 dB: they replace the music rather than add to it; the reference is never below I_music − 12 LU"
+  ducking: "a glitch reads through holes, not loudness: in the \"silence\" slices the music is gated down to −30…−40 dB (attack 1 ms, release 5 ms), in the other slices −3…−6 dB"
+  variation: "a seed per burst; one set of slice types per video (a palette), different sequences"
+  limits: "bursts — ≤2 per 10 s outside glitch series; a series ≤1 s (a trill under a stream of flashes — up to 2 s) and no more often than 1 per 4 bars; stutter — 1–2 per 30 s; tape stop — 1 per video; clicks — only in series that are visible in the picture, ≤8 per second; faster than that is already a trill"
+when: |
+  In sync with the glitching picture (fx.glitch, datamosh, RGB shift, VHS dropout, TV interference, pixel sort) — a
+  burst for every visual burst; track stutter — the last beat or half-bar before the drop and under cut.stutter;
+  bitcrush — for the duration of a datamosh or pixel effect; tape stop — a freeze frame, a comedic "stop", the end of
+  the video; clicks — photo series, quick inserts, banners and interface elements appearing; themes of digital, games,
+  hacking, memory glitches.
+  hook — a short glitch on the first glitch frame; build — stutters and bursts on the snare (2 and 4); drop — not on
+  the first beat (the glitch comes before the drop, the drop itself is clean); outro — a tape stop or a glitch cut-off
+  into the ending.
+  Limit: ≤2 bursts per 10 s outside series.
+avoid: |
+  An audio glitch without a glitching picture — the viewer will think the player broke; over key words of speech and
+  vocals; epic and calm genres; a glitch longer than 1 s at a stretch (except a trill under a stream of flashes, up to
+  2 s); a glitch on the downbeat of the drop — it eats the payoff; clicks faster than 8 per second;
+  the same burst on every join; bitcrush over the whole video; tape stop more than once per video; stutter with an
+  unsteady tempo without fitting it to the real beats.
+sfx: |
+  It is itself the audio glitch. Pairs: after a stutter — sfx.impact or sfx.sub_drop as the track returns on the
+  downbeat; clicks — with sfx.whoosh in transition series (a click on the cut, a whoosh on the jerk); after a tape
+  stop — silence and a hit on the return.
+genres: {phonk: allowed, fanedit: allowed, viral: allowed, teaser: allowed, sport: allowed, clips: allowed, motivation: allowed, fashion: allowed, product: allowed, explainer: allowed, ugc: allowed, epic: forbidden, calm: forbidden, drama: forbidden, travel: forbidden}
+detect: |
+  With a clean track (remake): the difference of log spectra after ed_audio.align and band equalization (6 dB threshold)
+  plus the reverse difference — the mix is quieter than the track by ≥10 dB (holes and replacements). Analysis at a 5 ms
+  hop (window 512, hop 256 at 48 kHz): ed_audio frames of 11.6 ms are too coarse for 8–40 ms slices.
+  Burst: a 40–400 ms section with ≥3 changes per 100 ms inside, spectral flux with frequent peaks, flatness ≥0.45, the
+  centroid jumping between slices by ≥×1.5, holes of 8–60 ms with a dip of ≥20 dB; bitcrush — mirrored spectral images
+  above half the reduced sample rate and a raised noise floor.
+  Stutter: the mix is self-similar at a lag of a 1/16 or 1/32 note (log-mel frame correlation ≥0.9) for at least 4
+  repeats, while the track at that point is not; it ends on a downbeat.
+  Tape stop: the whole spectrum slides down — the cross-correlation peak of adjacent log-frequency frames shifts by
+  −0.5…−3 semitones per frame, accelerating, the onset fades, the level falls −30 dB over 0.3–1 s, then silence while
+  the track keeps playing.
+  Scratch: the centroid oscillates at 4–6 Hz with a swing of ≥1 octave. Click: ≤15 ms, 2–8 kHz, flatness ≥0.6, on cuts.
+  Picture (ed_motion): flash/black frames, strobe flips, "cuts" on adjacent frames inside a shot, jitter; the sound and
+  the visual glitch coincide within ±1 frame.
+  Distinctions: impact — energy below 200 Hz and a tail; whoosh — a smooth envelope; the track's hats and rolls follow
+  the grid and repeat in neighboring bars.
+engine: |
+  sfx('glitch', t=[t0, t1], align='attack', slices_ms=[8, 40], mix={crush: 0.3, bleep: 0.25, retrig: 0.25, gap: 0.2}, sync=visual_states, rel_lu=-6, seed=k)
+    = concat(slice(kind) by picture states) → pan_jump(0.7) → hp(200);
+      slice: crush(bits=4–6, sr_hz=4000–12000) | square(300–3000) | fm(ratio=2.7, index=2–6) | retrig(track) | gap
+    + music_gate(t=[t0, t1], holes=<gap slices>, depth_db=-40, attack_ms=1, release_ms=5) — new
+  sfx('click', at=t_cut, align='attack', fc=2000–5000, rel_lu=-14) | sfx('click', variant='shutter') | sfx('glitch', variant='static', dur=0.2)
+  sfx('glitch', variant='transition', at=t_seam, align='peak', dur=0.36) — for transition(kind='glitch');
+  sfx('glitch', variant='trill', t=[t0, t1], rate_hz=12–24, rel_lu=-12) — for a stream of cut.flash flashes
+  audio_stutter(track, at=t_beat, slice='1/16', repeats=8, accel=['1/16', '1/32', '1/64'], xfade_ms=2, pitch_step_st=0) — extends the cut.stutter primitive
+  music_crush(t=[t0, t1], bits=8, sr_hz=11025, mix=0.8) — new
+  tape_stop(music, at=t_beat, dur=0.6, curve=1.5, resume_at=next_downbeat) — new
+  sfx('scratch', at=t, dur=0.35, rate_hz=4.5, amp=2.5) — a piece of the track; the music under it mute(music, t=[t, t+0.35])
+  New blocks: crush, square, pan_jump, retrig, concat. Sync: states from glitch(...) (hold 1–3 frames) → slice
+  boundaries; beat_sync(event='stutter', grid='1/16'); mixing via sfx_bus; qa_sfx(per_10s=2).
+gen_hint: "not generated — synthesized in code from noise, square waves and slices of the track itself. For generated shots with native audio ask for no music and no sound effects. Reference description: a short digital glitch burst — bit-crushed static, tiny square-wave beeps and stuttering repeats of the music, hard cuts between fragments, synced to visual corruption"
+commands: ["a glitch sound on every visual glitch", "track stutter before the drop", "tape stop on the freeze frame at 0:21", "a click on every cut in the photo series", "bitcrush the track during the datamosh", "remove the glitch sounds from the drop"]
+related: [fx.glitch, glitch.datamosh, glitch.vhs, glitch.tv_noise, glitch.pixel_sort, fx.rgb_split, cut.stutter, cut.flash, time.freeze, fx.mosaic, fx.pixel_art, sfx.impact]
+evidence: {examples: 0, sources: 0, measured: "edit culture: parameters from editing practice; verify with a demo render", confidence: medium}
+---
+id: sfx.impact
+family: sfx
+group: sound
+level: A
+aliases: [impact, hit, boom, cinematic hit, bass hit, thud, punch hit, trailer hit]
+what: "impact — a short low hit on a cut, a punch-in or the landing of a move: a click, a body falling in pitch and a tail; from a dry punch to a cinematic boom"
+frames: |
+  Timing is counted from the hit frame: a cut, the landing of a jerk, a contact in frame, a white flash, the first frame
+  of a punch-in, a text "slam".
+  1. Attack 0–5 ms: a click transient (2 ms of noise above 2 kHz) and the body hit; the sound starts on the first frame
+     of the event (+0…+10 ms) and never earlier than −1 frame (−40 ms @25 fps, −33 ms @30 fps).
+  2. Body 40–150 ms: a "kick" with pitch falling 120–160 → 40–55 Hz and noise crackle up to 2.5–3 kHz; the body dies
+     away in 0.1–0.4 s.
+  3. Tail: dry — 0.3–0.6 s; cinematic — a 40 Hz sub tail for another 1–1.5 s and a hall reverb of 2–3 s at −10 dB.
+  An on-beat hit lands on the track's kick within ≤10 ms — otherwise a double attack is audible.
+variants:
+  - "dry punch: 0.4–0.6 s, click + body + short crackle — punch-in zoom, on-beat cut, text \"slam\", contact in frame"
+  - "cinematic boom: 2–3 s, sub tail and hall — drop, title drop, crash zoom landing, final packshot"
+  - "soft knock: 0.5–0.7 s, dark, no click, with a 250–600 Hz \"knock\" — product close-ups, calm cuts, silence in a teaser"
+  - "metallic (trailer): boom + inharmonic ring and a long hall — teaser cards, intertitles, a hit on every fly-in"
+  - "hit-stop: a punch or boom followed at once by 0.3–1 s of music silence — \"chaos → silence\", freeze frame, comedic stop"
+  - "stretched: a boom with pitch ×0.7, decays ×2 and a 4 s hall — the moment of contact in super slow motion, a heavy landing"
+  - "chord hit: boom + a short saw-wave chord in the track's key — a retro-style title, an \"orchestral\" accent on a cut"
+status: code
+fallback: |
+  Code synthesis is always available. If the track already has a powerful hit on this beat (kick with a cymbal, low_flux
+  in the top 2 % for the track) — don't double the body: only the click and crackle through a 150 Hz HPF at −10 LU, or
+  nothing. A remake on the reference's audio — the hits are already baked in. The user's own sounds — with the same
+  rules for attack, loudness and limits.
+params:
+  render: "48 kHz, float32; body and sub — mono in the center (everything below 150 Hz is mono), width only on the crackle and the reverb"
+  punch: "body: a sine with falling pitch f(t) = 50 + 110·exp(−t/25 ms) Hz, amplitude exp(−t/120 ms), attack 1 ms; crackle: pink noise, LPF 3 kHz, exp(−t/30 ms), −6 dB; click: 2 ms of white noise in a cosine window, HPF 2 kHz, 0 dB; tanh saturation, drive 2; reverb 0.35 s, −18 dB; D 0.6 s with a 60 ms fade"
+  boom: "body f(t) = 40 + 80·exp(−t/60 ms) Hz, amplitude exp(−t/350 ms); sub tail — a 40 Hz sine, 30 ms fade-in, exp(−t/0.6 s), −6 dB; crackle — pink noise, LPF 2.5–3 kHz, exp(−t/120 ms), −4 dB; click −3 dB; drive 2.5; hall RT60 2.5 s, wet −10 dB, reverb input through a 200 Hz HPF (a tail without mud); D 3 s, fade 0.2 s"
+  soft: "body f(t) = 55 + 35·exp(−t/30 ms) Hz, exp(−t/150 ms), no click; \"knock\" — band-pass noise 250–600 Hz, exp(−t/40 ms), −6 dB (without it nothing is audible on a phone); drive 1.2; LPF 1.2 kHz; reverb 0.4 s, −20 dB; D 0.7 s"
+  metal: "boom + ring: 6 sines f0 = 180–400 Hz × 1, 1.47, 2.09, 2.56, 3.14, 3.87, decay 1.2 → 0.4 s (the upper ones shorter), random phases, −8 dB; or FM: carrier f0, modulator ×1.41, index 8 → 0 along exp(−t/0.3 s), amplitude exp(−t/0.9 s); band 300 Hz–5 kHz; hall 3 s"
+  stop: "any variant + muting the music from the attack for 0.3–1 s (until the next downbeat), the music returns on a beat with no fade"
+  stretched: "a boom with all frequencies ×0.7 (body 28 + 56·exp(−t/0.12 s) Hz), all decays ×2, hall RT60 4 s, wet −8 dB; crackle and click −6 dB"
+  chord_hit: "boom + a saw-wave chord (root, fifth and octave of the track's key; 2 voices each at ±10 cents), attack 5 ms, decay exp(−t/0.4 s), LPF 4 kHz, −6 dB relative to the body; key from the ed_audio chroma, without it — boom only"
+  phone_check: "loudness of the first 400 ms after a 4th-order 180 Hz HPF — no lower than the full-band loudness −12 LU (soft −15 LU); otherwise raise the crackle or the knock by 2–3 dB"
+  placement: "align='attack' (attack = the first sample above −20 dB from the peak): event frame +0…+10 ms; an event within ±1 frame of a beat — attack on the beat, sample-accurate (≤10 ms from the track's kick), the cut on the nearest frame; crash zoom — the last frame of the jerk; punch-in — the first frame of the scale-up; text — the frame where the scale settles at 1.0; flash — the first white frame"
+  level: "rel_lu — K-weighted loudness of the hit and the music in the same window from the attack (100 ms for punch and soft, 400 ms for boom and metallic): punch −6 LU (−9…−4), boom on the drop −2 (−4…0), metallic −4 (−6…−2), soft −10 (−14…−8) and only where the music is sparse (M_music < I_music − 4); the reference is never below I_music − 12 LU"
+  ducking: "music in the 30–150 Hz band under the hit −3…−6 dB: attack 2 ms, hold 60 ms, release 200 ms (boom — 400 ms); on the main hit another −1…−2 dB broadband; on a beat with a strong track kick — the hit's body through a 60–80 Hz HPF or −3 dB"
+  stack: "impact + sub drop on one attack — both −3 dB, remove the boom's sub tail; whoosh + impact — the whoosh peak and the hit attack on the same frame; riser + impact — the end of the riser on the attack"
+  variation: "for each placement — a new seed, pitch ±1 semitone, decay ±15 %, level ±1.5 dB — no \"machine-gun\" effect; a series in the drop — each next one 1–2 dB quieter"
+  headroom: "master limiter on the hit — gain reduction ≤3 dB (main) and ≤1.5 dB (others), otherwise lower the hit by the difference; SFX bus true peak ≤ −3 dBTP before summing with the music"
+  limits: "main (boom) — 1 per drop or section, no more than 1 per 15 s; regular ones — ≤3 per 10 s; a phonk or sport drop — up to 1 per beat for no longer than 2 bars, then ≤1 per bar"
+when: |
+  Downbeat and drop — the main hit on the best frame; title drop and the final card; the landing of a crash zoom, a
+  whip transition, a camera throw; a punch-in zoom on the accent of a line (clips, motivation); a freeze frame with text
+  (sport); "silence → hit" in dramatic edits — after 0.3–1 s of silence; on-beat cuts at the start of phrases (secondary
+  hits — on 2 and 4).
+  hook — 1 hit on the first hook frame or title; build — sparse, on downbeats; drop — the main one on the first beat and
+  up to 1 per beat for 1–2 bars in energetic genres; outro — a final hit on the packshot or logo, or a hit-stop.
+  Limit: main 1 per 15 s, regular ≤3 per 10 s.
+avoid: |
+  A hit on every cut — it loses its value; the calm genre; a hit between beats with no visible contact; over a powerful
+  hit in the track itself (mud and limiter pumping) — only a light click there; under spoken words — only in pauses
+  ≥150 ms; impact + sub drop + riser at full volume at once (the limiter squashes more than 3 dB); the same buffer
+  twice in a row; a long hall tail in fast cutting — the tails pile up into a rumble.
+sfx: |
+  It is itself the sonic full stop. Pairs: before it sfx.whoosh (peak on the cut frame) or sfx.riser (ending on the
+  attack); under it sfx.sub_drop on the drop (both −3 dB); after a hit-stop — silence until the next beat.
+genres: {epic: signature, drama: signature, sport: signature, teaser: signature, phonk: allowed, viral: allowed, motivation: allowed, product: allowed, travel: allowed, fashion: allowed, fanedit: allowed, clips: allowed, explainer: allowed, ugc: allowed, calm: forbidden}
+detect: |
+  With a clean track (remake): the difference of log spectra after ed_audio.align and band equalization (6 dB threshold,
+  max filter on the track ±2 frames) — a section with an attack ≤1 analysis frame (11.6 ms; 4–6 ms for synthesis),
+  ≥80 % of the difference energy below 200 Hz, the centroid after the attack falls 5–40 times within 50 ms (click
+  4–7 kHz → body 60–170 Hz); the 30–150 Hz band decays by −20 dB in 0.25–0.4 s for a punch, 1–2 s for a boom; hall tail
+  in 0.2–2 kHz 0.5–3 s.
+  Without a clean track: a single peak of ed_audio onset and low_flux in the same frame; compare with the same position
+  in the bar in 4 neighboring bars of the section — a 30–150 Hz peak higher by ≥3 dB or a −20 dB decay longer by ≥×2
+  (boom ≈1.3 s versus 0.3–0.5 s for a kick) — a candidate. A hit that coincides with a kick of the same loudness and has
+  no tail barely separates (+2 dB) — confirm with the picture.
+  Picture (ed_motion): a cut within ±1 frame, flash/white frames, ZOOM-IN over 1–3 frames (punch-in), the start of shake
+  (jitter), hold (freeze frame) from this frame.
+  Distinctions: sub drop — pitch falls ≥1 octave over 0.5–3 s, no click; track kick — on the grid in every bar and
+  without a tail; crash cymbal — energy above 4 kHz and a long decay; whoosh — a smooth rise of ≥60 ms to the peak.
+engine: |
+  sfx('impact', at=t_hit, align='attack', variant='punch'|'boom'|'soft'|'metal'|'stretched'|'chord', rel_lu=-6, stop=0|0.3–1.0, seed=k)
+    punch = chirp(f=50 + 110·exp(−t/0.025), wave='sine') × env(a=1 ms, decay=0.12) + noise('pink') → lp(3000) × env(decay=0.03) @ −6 dB
+            + click(dur_ms=2, hp=2000) → drive(2.0) → verb(0.35, -18, hp_hz=200) → fade(out_ms=60)
+    boom  = chirp(40 + 80·exp(−t/0.06)) × env(decay=0.35) + sine(40) × env(a=30 ms, decay=0.6) @ −6 dB
+            + noise('pink') → lp(2800) × env(decay=0.12) @ −4 dB + click @ −3 dB → drive(2.5) → verb(2.5, -10, hp_hz=200) → fade(out_ms=200)
+    soft  = chirp(55 + 35·exp(−t/0.03)) × env(decay=0.15) + noise('white') → bp(250, 600) × env(decay=0.04) @ −6 dB → drive(1.2) → lp(1200) → verb(0.4, -20)
+    metal = boom + partials(f0, ratios=[1, 1.47, 2.09, 2.56, 3.14, 3.87], decay=[1.2 … 0.4]) @ −8 dB | fm(f0, ratio=1.41, index=8→0, tau=0.3) → verb(3.0, -10)
+    stretched = boom with pitch(×0.7) and decay(×2) → verb(4.0, -8); chord = boom + chord(key_root, [1, 1.5, 2], wave='saw', detune_c=10) × env(a=5 ms, decay=0.4) → lp(4000) @ −6 dB
+  New blocks: click(dur_ms, hp), partials(f0, ratios, decay), fm(carrier, ratio, index, tau), mono_below(150).
+  duck(music, under='sfx:impact', band=[30, 150], depth_db=4, attack_ms=2, hold_ms=60, release_ms=200);
+  stop>0 → mute(music, t=[t_hit, next_downbeat]).
+  beat_sync(event='impact', grid='1/4') — attack on the beat, sample-accurate; mixing via sfx_bus(hpf_hz=30, tp_ceiling_dbtp=-3);
+  qa_sfx(max_gr_db=3, per_10s=3, phone_delta_db=-12) — master-limiter gain reduction and the phone check.
+gen_hint: "not generated — synthesized in code. For generated shots with native audio ask for no music and no sound effects. Reference description: a deep cinematic hit — a tight click on top of a low thump that falls in pitch, a short crackle and a long dark hall tail, mono low end"
+commands: ["a hit on the drop on #7", "a boom when the title appears", "soft knocks on the packshot cuts", "a hit and silence on the freeze frame at 0:12", "keep the hit only on the drop", "hits on every beat for two bars in the drop"]
+related: [zoom.crash, zoom.punch, shake.beat, trans.flash, cut.crash, time.freeze, type.title_card, light.flash, cut.match, sfx.sub_drop, sfx.whoosh, sfx.riser]
+evidence: {examples: 0, sources: 0, measured: "edit culture: parameters from editing practice; verify with a demo render", confidence: medium}
+---
+id: sfx.riser
+family: sfx
+group: sound
+level: B
+aliases: [riser, uplifter, build-up, crescendo, rise, noise riser, noise sweep, reverse cymbal, swell, endless riser, filter build, filter sweep]
+what: "riser — a building sound before an accent or a drop: noise or a tone sweeps upward, grows and cuts off exactly at the point of resolution (a hit, the drop, a cut, a title)"
+frames: |
+  Timing is counted from the point of resolution: the downbeat of the drop, a cut to the best shot, a hit, a title or
+  product appearing.
+  1. Start: 1–8 beats earlier (0.5–4 s at 120 BPM; in a short video usually 2–4 beats = 1–2 s) almost inaudible — −30 dB
+     below its own peak, muffled (band center 300–500 Hz, centroid ≈1.3 kHz), a narrow stereo image.
+  2. Growth: loudness rises with acceleration, the band sweeps exponentially up to 6–10 kHz, the resonance increases,
+     the stereo opens up to 0.9; in the variant with a snare roll the amplitude pulses 1/4 → 1/8 → 1/16 → 1/32 over the
+     quarters of its length.
+  3. Top: loudest in the last 50–100 ms; a cut-off exactly at the point of resolution (≤10 ms) or a 1/16 note before it
+     (125 ms at 120 BPM — a "breath" of silence before the drop); the reverb tail is cut — the drop must sound clean.
+  4. Resolution: a hit, a sub drop or a cut to the best shot. A riser is never placed without a resolution (except the
+     swell and the endless one).
+variants:
+  - "noise — the main one: white noise with an upward-sweeping band-pass filter, 0.5–4 s, with or without a roll"
+  - "tonal: 3–5 detuned saw waves, the pitch rises 1–2 octaves; only when the track's key is known with confidence"
+  - "reverse cymbal: metallic noise grows for 1–2.5 s and cuts off — a short \"breath\" before a hit, a reveal, a flip"
+  - "endless: sines an octave apart creep upward forever and never reach the top — an infinite zoom, a loop, anxiety"
+  - "swell: a soft, warm 1–3 s rise of noise and a chord with a smooth decay, no hit — dissolves, reveals, calm transitions"
+  - "filter build: not a new sound but an HPF on the track itself, 20 → 300–600 Hz over 1–2 bars, reset on the drop"
+  - "short: 0.2–1 s under a crash zoom, a speed-ramp acceleration, a series of flashes, a camera throw"
+status: code
+fallback: |
+  Code synthesis is always available. If the track itself builds up before the drop — don't add your own riser (or only
+  the last beat, quietly); if the track's build is weak — prefer a filter build on the track itself. If it is a remake
+  on the reference's audio — the riser is already baked in. Tonal — only when the track's key is detected with
+  confidence, otherwise noise.
+params:
+  render: "48 kHz, float32, stereo; the end of the riser = the anchor point; length — in beats of the track"
+  noise: "white noise, 3 uncorrelated copies (center + 2 sides) → band-pass biquad fc = 400·20^(u^1.3) Hz (400 Hz → 8 kHz; u — fraction of the length, faster toward the end), Q 0.8 → 3.0 along u^1.5 → an HPF following the band, max(150 Hz, 0.5·fc) → LPF max(1.5 kHz, 3·fc); dark start, bright end: centroid ≈1.3 → 9.4 kHz"
+  tonal: "3–5 saw waves detuned ±8–15 cents, pitch root·2^(oct·u^1.3), oct 1–2, root — the track's tonic or fifth (ed_audio chroma, confidence ≥0.6); LPF 600 Hz → 9 kHz exponentially; mix with the noise riser at −6 dB"
+  reverse_cymbal: "6 square-wave oscillators at inharmonic frequencies (205 Hz × 1 : 1.48 : 1.8 : 2.55 : 2.63 : 3.9) + white noise, HPF 5–6 kHz, decay exp(−t/0.45 s) + reverb 1.2 s → reverse in time; D 1–2.5 s; centroid 11–13 kHz"
+  endless: "7 sines an octave apart: fk(t) = 40·2^((k + 0.5·t) mod 7) Hz (rising 0.5 oct/s), weight — a bell over log2(f/500) 1.3 octaves wide: the top ones fade out, new ones come in from below; constant level; any length, no seam"
+  swell: "pink noise with a 2.5 kHz LPF + a chord (root, third, fifth, octave; 2 voices each at ±3 cents) 50/50; sin² envelope from 0 to 1 over 0.7·D, then decay exp(−t/0.35 s); stereo 0.9; reverb 2.5 s, wet −8 dB; D 1–3 s; no cut-off"
+  level_curve: "level in dB g(u) = −30·(1 − u^1.5): midpoint −19 dB, at 80 % of the length −8.5 dB, end 0 dB"
+  roll: "roll: amplitude × (1 − depth·(0.5 − 0.5·cos φ)); rate by quarters of the length — 1/4, 1/8, 1/16, 1/32 notes from the BPM (at 120 BPM 2 → 4 → 8 → 16 Hz), depth 0 → 0.6 toward the end"
+  stereo: "width of the side copies 0.2 → 0.9 over the length, no auto-pan; tonal and endless — in the center, width only on the reverb"
+  reverb: "RT60 1.5 s (noise), 1.2 s (tonal), wet −12 dB, input through a 300 Hz HPF; at the anchor point the tail is cut within 10 ms (except the swell and the endless one)"
+  length: "1, 2, 4 or 8 beats (0.5 / 1 / 2 / 4 s at 120 BPM), starting on a beat or a bar; in a 15–30-second video the noise riser is usually 2–4 beats; short 0.2–1 s — matching the length of the visual acceleration"
+  placement: "align='peak' (peak = end): at = point of resolution − gap; gap 0 if a hit or a sub drop is there too (attack on the same sample), or a 1/16 note (125 ms at 120 BPM) — the \"breath\"; the drop — from ed_audio drops[] and the downbeat, sample-accurate; visually the end = the frame of the cut to the best shot ±0 frames; swell — peak at the middle of a dissolve or on the reveal"
+  level: "rel_lu — K-weighted loudness of the last 400 ms of the riser and of the music in the same window: −6 LU (−8…−3), so the entry is ≈−36 LU — inaudible; swell −10 (−14…−8) at the peak; endless −12 (−16…−10) steady; the reference is never below I_music − 12 LU"
+  ducking: "in the last quarter — duck the music in the 2–10 kHz band following the riser's envelope down to −3 dB (attack 50 ms), released exactly at the anchor point; or a filter build on the track — not both at full strength"
+  music_build: "a 12 dB/oct HPF on the track: 20 Hz → 300–600 Hz over the 1–2 bars before the drop, Q 0.9–1.2, inQuad curve; reset to 20 Hz exactly on the downbeat of the drop (together with the hit); the reverse, \"coming up from underwater\" — LPF 300 Hz → 20 kHz"
+  anti_double: "if the track itself builds over the 2 bars before the drop (centroid ≥×1.4, spectral flatness ≥0.35, loudness +3 dB) — don't add your own riser, or only the last beat at −12 LU"
+  variation: "a new seed for each; one riser type per video; lengths only in beats"
+  limits: "long (≥2 s) — 1 per 20–30 s of video; short — ≤1 per 10 s; two risers in a row without a resolution — not allowed; swell — no more than 1 per 8 s"
+when: |
+  build — the last 1–2 bars before the drop, if the track itself doesn't build tension; 2–4 beats before a title drop, a
+  product reveal, a crash zoom; short — under a speed-ramp acceleration, a series of flashes, a camera throw. hook — a
+  short one, 0.5–1 s, into the first cut after a cold open. drop — don't use: the drop itself is the resolution. outro —
+  endless or swell into the final card or the loop point. Speech genres — a short one in the pause before revealing the
+  result or a punchline, −6 dB under the voice. Every riser must end with an event on a downbeat.
+  Limit: long 1 per 20–30 s, short ≤1 per 10 s.
+avoid: |
+  Over the track's own build (a double build is mud); a riser after which nothing happens; a tonal one without a
+  confident key (dissonance with the track); under speech and a vocal phrase; in calm edits — only a swell without a
+  hit; two in a row; a reverb tail through the drop; 8-beat risers in a 15-second video; hissy highs above 12–14 kHz at
+  full volume; UGC — it breaks the "native" feel.
+sfx: |
+  It is itself the sonic setup. Resolution — sfx.impact or sfx.sub_drop exactly at the end (attack on the same sample);
+  on a whip transition after the riser — sfx.whoosh peaking on the cut; before the drop you can leave 1/16 of silence
+  after the cut-off.
+genres: {epic: signature, teaser: signature, motivation: allowed, viral: allowed, phonk: allowed, sport: allowed, product: allowed, travel: allowed, fashion: allowed, fanedit: allowed, clips: allowed, explainer: allowed, calm: allowed, ugc: forbidden, drama: forbidden}
+detect: |
+  With a clean track (remake): the difference of log spectra after ed_audio.align and band equalization (6 dB threshold,
+  max filter on the track ±2 frames) — a 0.5–8 s section that grows monotonically and ends on an event.
+  Noise: energy rises ≥15 dB over the section, peak in the last 10 %; the centroid rises ≥1.5 octaves (≈1.3 → 9 kHz),
+  flatness ≥0.4; spectral flux (ed_audio onset) low and even, without peaks; roll — an rms pulsation whose rate
+  doubles every quarter (2 → 4 → 8 → 16 Hz at 120 BPM); end — a cut-off of ≥15 dB within ≤50 ms exactly on a
+  downbeat (ed_audio downbeats, drops[]) or a transition into a hit.
+  Tonal: parallel harmonics creep upward (spectral peak +1–2 octaves), flatness ≤0.2.
+  Reverse cymbal: energy above 4 kHz (centroid 11–13 kHz), the level in dB rises almost linearly over 1–2.5 s, cut-off.
+  Endless: bands an octave apart creep upward while the centroid (±20 %) and the level (±3 dB) stay put — growth
+  without a top, ≥2 s.
+  Swell: 1–4 s, peak at 40–75 % of the length, the centroid barely moves (<0.6 octave), a soft decay ≥0.3 s, band
+  0.2–3 kHz; coincides with a dissolve (ed_motion: no cut, a smooth change of picture).
+  Without a clean track: a build in the last 1–2 bars before the drop is more often part of the track itself; count it
+  as SFX only if it doesn't start on a beat or bar, cuts off on a cut, or stands out from the bar-synchronous median by
+  ≥6 dB.
+  Picture: acceleration toward the end (ZOOM-IN with inExpo, speed ramp, cuts getting more frequent, flashes), a cut at
+  the end.
+  Distinctions: whoosh — peak in the middle and a decay after; swell — no cut-off; sub drop — goes down and below 150 Hz.
+engine: |
+  sfx('riser', at=t_drop - gap, align='peak', variant='noise'|'tonal'|'reverse_cymbal'|'endless', dur=beats(4), rel_lu=-6, roll=True, root=key_root(track), seed=k)
+  sfx('swell', at=t_peak, align='peak', dur=2.0, rel_lu=-10)
+    noise = noise('white')×3 → bp_sweep(fc=400·20^(u^1.3), q=0.8→3.0) → hp_sweep(max(150, 0.5·fc)) → lp_sweep(max(1500, 3·fc))
+            × env_db(-30·(1 − u^1.5)) × am(rate=['1/4', '1/8', '1/16', '1/32'], depth=[0, 0.6], bpm) → width(0.2→0.9)
+            → verb(1.5, -12, hp_hz=300) → cut_tail(fade_ms=10)
+    tonal = chirp(f=root·2^(2·u^1.3), wave='saw', voices=5, detune_c=12) → lp_sweep(600→9000); + noise at −6 dB
+    reverse_cymbal = (square×6 inharmonic + noise('white')) → hp(5500) × exp(−t/0.45) → verb(1.2) → reverse()
+    endless = Σk sine(40·2^((k + 0.5·t) mod 7)) × bell(log2(f/500), 1.3)
+    swell = (noise('pink') → lp(2500) + chord(root, [1, 1.26, 1.5, 2], detune_c=3)) × env(sin², a=0.7·D, decay=0.35) → width(0.9) → verb(2.5, -8)
+  New blocks: hp_sweep, lp_sweep, env_db, am, chord, bell, cut_tail. New primitives: key_root(track) — the tonic from
+  the ed_audio chroma or None; music_filter(kind='hp', f=[20, 400], t=[t_drop − 2 bars, t_drop], q=1.0, ease='inQuad',
+  reset_at=t_drop) — a filter build on the track itself.
+  duck(music, under='sfx:riser', band=[2000, 10000], depth_db=3, attack_ms=50, release_ms=0) — the last quarter.
+  beat_sync(event='riser_end', grid='1 bar'); resolution: + sfx('impact', at=t_drop, align='attack') or sfx('sub_drop', at=t_drop).
+  Mixing — via sfx_bus and a −14 LUFS master, like all SFX; qa_sfx(per_10s=1).
+gen_hint: "not generated — synthesized in code. For generated shots with native audio ask for no music and no sound effects. Reference description: a white-noise riser that sweeps upward in pitch and brightness over two bars, with accelerating snare-like pulses, getting wider and louder, stopping dead exactly on the drop"
+commands: ["a 2-bar riser before the drop", "a short riser under the crash zoom at 0:08", "a reverse cymbal before the product reveal", "a swell under the dissolve at the end", "remove the riser — the track has its own build", "a filter build on the track before the drop"]
+related: [sfx.impact, sfx.sub_drop, sfx.whoosh, type.title_card, cut.flash, cut.crash, cut.quick, time.speed_ramp, zoom.crash, zoom.infinite, loop.end, trans.dissolve]
+evidence: {examples: 0, sources: 0, measured: "edit culture: parameters from editing practice; verify with a demo render", confidence: medium}
+---
+id: sfx.sub_drop
+family: sfx
+group: sound
+level: B
+aliases: [sub drop, bass drop, sub boom, falling bass, low-end drop, sub sweep, suck-in]
+what: "sub drop — a falling low-frequency rumble on the entry into the drop: a pure 70–150 Hz sine glides down to 24–40 Hz within fractions of a second, with harmonics so it reads on a phone"
+frames: |
+  Timing is counted from the downbeat of the drop (or the frame entering slow motion, the first black frame, a title
+  appearing).
+  1. Attack 2–10 ms with no click (the sine starts from zero phase) — exactly on the beat.
+  2. Fall: the pitch goes down exponentially, fast at first and slow at the end: classic 110 Hz → 61 Hz by 0.35 s →
+     43 Hz by 0.7 s → 33 Hz by 1.4 s. The body is felt in the chest; on a phone the 2nd–5th harmonics are audible.
+  3. Tail: a hold of 50–150 ms, then a decay of 0.3–1.2 s to silence; total length 0.6–3.5 s; no reverb and no stereo.
+variants:
+  - "classic: 110 → 32 Hz, 2 s — entry into the drop after a pause, a reveal"
+  - "short: 90 → 36 Hz, 0.9 s — entry into slow motion, title drop, closing to black, a \"gut punch\" in fast cutting"
+  - "long heavy: 70 → 24 Hz, 3.5 s + a low noise rumble — epic and teaser, a giant's step, the final card"
+  - "reverse (suck-in): 28 → 70 Hz over 0.6–1.2 s, growing and cutting off on the event — a pull-in before a portal, a freeze, a drop"
+  - "paired with a hit: sub drop + sfx.impact on one attack (both −3 dB) — the most common \"epic\" drop"
+status: code
+fallback: |
+  Code synthesis is always available. If the track's drop has its own heavy sub bass — make the sub drop shorter
+  (≤0.8 s) and 6 dB quieter, or replace it with sfx.impact. Track key not detected — end frequency 30–34 Hz and length
+  ≤1 s. A remake on the reference's audio — the sub is already baked in.
+params:
+  render: "48 kHz; mono in the center (identical in L and R); no reverb and no stereo widening"
+  glide: "f(t) = f1 + (f0 − f1)·exp(−t/τ): classic f0 110, f1 32 Hz, τ 0.35 s; short 90 → 36, τ 0.15; long 70 → 24, τ 0.8; phase — the accumulated integral of frequency, starting from zero"
+  harmonics: "fundamental 0 dB + 2f −8 dB, 3f −12, 4f −16, 5f −20 → tanh saturation, drive 2.5 → LPF 600 Hz, HPF 22 Hz; the harmonics carry the drop to a phone (in the band above 180 Hz the tail is ≈8 dB more audible than a pure sine)"
+  envelope: "attack 5 ms, hold 80 ms, decay exp(−t/τa): τa 0.55 s (classic), 0.3 (short), 1.2 (long); a 50 ms fade at the end; length D 2 / 0.9 / 3.5 s"
+  rumble: "for the long one — brown noise, LPF 90 Hz, the same envelope, −14 dB"
+  reverse: "f 28 → 70 Hz over D 0.6–1.2 s, the level in dB rises linearly −30 → 0, a 5 ms cut-off on the event"
+  tuning: "the end f1 — the track's tonic in the 27.5–55 Hz octave (ed_audio chroma, confidence ≥0.6); no confidence — f1 30–34 Hz (below most bass notes) and D ≤1 s"
+  phone_check: "loudness of the first 400 ms after a 4th-order 180 Hz HPF no lower than the full-band loudness −10…−12 LU; otherwise harmonics +2–3 dB or drive up to 3"
+  placement: "align='attack': the downbeat of the drop (ed_audio drops[].t, downbeats), sample-accurate, ±0 ms; visually — the first frame of the best shot of the drop; slow motion — the frame where the slowdown starts; closing — the first black frame; reverse — align='peak' (the cut-off) on the event"
+  level: "rel_lu — K-weighted loudness of the sub drop and the music over 400 ms from the attack: −6 LU (−8…−4); paired with a hit — both 3 dB below their norms; the reference is never below I_music − 12 LU; in the 30–120 Hz band the sub drop sits 0–6 dB below the music after ducking"
+  ducking: "music in the 25–150 Hz band under the sub drop −4…−8 dB: attack 5 ms, release following the sub drop's envelope (until it reaches −20 dB, 0.4–1.2 s) — otherwise the low end stacks up and the master limiter makes the music \"pump\""
+  heavy_track: "if the 30–120 Hz low end in the first bar of the drop is ≥3 dB above the track average (a heavy sub in the track) — sub drop −6 dB and ≤0.8 s, or replace it with a hit"
+  headroom: "master limiter on the drop — gain reduction ≤3 dB; SFX bus true peak ≤ −3 dBTP before summing"
+  limits: "1 per drop or section; ≤2 per 30 s; two sub drops closer than 8 bars — not allowed; in speech genres — only in pauses ≥0.5 s"
+when: |
+  The first downbeat of the drop, especially after a "breath" pause (sfx.riser with a 1/16 gap); entry into slow motion
+  and bullet time; title drop and logo; closing to black and letterbox; a giant's step, a fall, a landing; a reveal in
+  a teaser.
+  hook — on the first logo or title of an epic or teaser edit; build — only the reverse one, at the very end; drop — the
+  first beat, once; outro — closing to black or the final card.
+  Limit: 1 per section, ≤2 per 30 s.
+avoid: |
+  A track with a constant heavy sub (rumble and beating, the limiter squashes); a pitch outside the track's key with a
+  long tail; under speech and vocals; calm, explainer, UGC; two in a row; sub drop + a boom with a sub tail at full
+  volume; reverb and stereo on the sub; without harmonics — it disappears completely on a phone; more than one per drop.
+sfx: |
+  It is itself the foundation of the drop. Pairs: before it sfx.riser (cut-off on the same beat) or a reverse whoosh
+  (sfx.whoosh) on entering slow motion; on the same attack sfx.impact (both −3 dB) — the click and crackle that the sub
+  lacks.
+genres: {epic: signature, teaser: signature, phonk: allowed, sport: allowed, viral: allowed, drama: allowed, motivation: allowed, fanedit: allowed, product: allowed, fashion: allowed, travel: allowed, clips: allowed, calm: forbidden, explainer: forbidden, ugc: forbidden}
+detect: |
+  With a clean track (remake): the difference of log spectra after ed_audio.align and band equalization (6 dB threshold)
+  — ≥90 % of the difference energy below 150 Hz, length 0.6–3.5 s; the dominant frequency in 20–160 Hz (STFT with a
+  frequency step of ≈2.7 Hz: window 8192 at 22.05 kHz) falls ≥1 octave over 0.3–1.5 s exponentially (classic by STFT:
+  98 → 61 → 44 → 37 → 34 Hz in steps of 0.34 s); start within ±20 ms of a downbeat (ed_audio downbeats, drops[]); not
+  repeated in the next 4 bars.
+  On ed_audio features: a low_flux peak in one frame without a mid_flux peak (no click), centroid below 200 Hz, the rms
+  of the 30–150 Hz band decays for longer than 0.8 s.
+  Without a clean track the pitch fall is visible only when the sub is louder than the track's bass (a pause before the
+  drop, a sparse drop); in a dense low end — a candidate by low_flux on the first beat of a section and a 30–120 Hz tail
+  of ≥0.8 s that is absent on the same beats of neighboring bars.
+  Picture: the start of a section (a change in cut density), the start of slow motion (holds, small frame difference),
+  black frames, a change in bars (letterbox), a title appearing.
+  Distinctions: the track's bass — long notes following the bars and the harmony; impact — a click and a tail ≤0.4 s for
+  a punch; whoosh — energy in 0.3–8 kHz.
+engine: |
+  sfx('sub_drop', at=t_drop, align='attack', variant='classic'|'short'|'long'|'reverse', f1=key_root(track)|32, rel_lu=-6)
+    classic = chirp(f=f1 + (110 − f1)·exp(−t/0.35), wave='sine', harmonics=[0, -8, -12, -16, -20]) × env(a=5 ms, hold=80 ms, decay=0.55)
+              → drive(2.5) → lp(600) → hp(22) → mono() → fade(out_ms=50)
+    short: f0 90, τ 0.15, decay 0.3; long: f0 70, τ 0.8, decay 1.2 + noise('brown') → lp(90) @ −14 dB;
+    reverse = chirp(28 → 70) × env_db(−30 → 0) → cut_tail(fade_ms=5), align='peak'
+  key_root(track) — new: the tonic from the ed_audio chroma (confidence ≥0.6) or None → f1 = 32, D ≤ 1 s.
+  duck(music, under='sfx:sub_drop', band=[25, 150], depth_db=6, attack_ms=5, release='follow') — release following the sub's envelope.
+  Stack: + sfx('impact', at=t_drop, align='attack', rel_lu=-5); both −3 dB relative to the norm.
+  Mixing via sfx_bus(hpf_hz=30, tp_ceiling_dbtp=-3); qa_sfx(max_gr_db=3, phone_delta_db=-12).
+gen_hint: "not generated — synthesized in code. For generated shots with native audio ask for no music and no sound effects. Reference description: a deep sub-bass drop — a pure low sine falling from about one hundred hertz to the bottom of hearing in about a second, soft upper harmonics so it reads on small speakers, no reverb"
+commands: ["a sub drop on the drop", "a bass drop on entering slow motion in #9", "a sub under the title", "remove the sub — the track already has heavy bass", "a long sub on the close to black", "a sub in the track's key"]
+related: [sfx.impact, sfx.riser, sfx.whoosh, time.slow_motion, time.super_slow_motion, time.bullet_time, fx.letterbox, type.title_card, trans.portal, scene.giant]
+evidence: {examples: 0, sources: 0, measured: "edit culture: parameters from editing practice; verify with a demo render", confidence: medium}
+---
+id: sfx.whoosh
+family: sfx
+group: sound
+level: A
+aliases: [whoosh, swoosh, swish, woosh, zip, transition whoosh, fly-by, reverse whoosh]
+what: "whoosh — a short moving noise that builds to a peak and fades away; for fast camera moves and transitions, with the sound peak on the cut or at the peak speed of the jerk"
+frames: |
+  Timing is counted from the visual peak: the cut frame in a whip transition or the frame of maximum speed of the jerk
+  (peak_at in ed_motion).
+  1. Approach: noise rises out of silence — muffled at first (band center 400–500 Hz), brighter and louder with every
+     frame, the build accelerating toward the end. The air whoosh approaches in 0.2–0.5 s (5–12 frames @25 fps, 6–15
+     @30 fps), the swish in 0.1–0.2 s, the heavy one in 0.5–0.9 s.
+  2. Peak: on the cut frame or at peak speed — the loudest and brightest moment (band center 3–4 kHz for the air
+     whoosh, 6–7 kHz for the swish, 1.5–2 kHz for the heavy one); the pan passes through the center — the sound "flies past".
+  3. Exit: 0.15–0.3 s (4–8 frames @25 fps) of decay darkening to 600–900 Hz, then a reverb tail of 0.2–1 s at −14…−10 dB.
+  A reverse whoosh is the opposite: 0.6–1.5 s of build-up (the reverb is "sucked in", the pitch rises) and a cut-off
+  exactly on the event within ≤5 ms.
+variants:
+  - "air — the main one: 0.35–0.8 s, soft, mid-spectrum; whip pans, whip transitions, crash zooms, spins, roll jerks"
+  - "swish — short and bright, 0.15–0.3 s: a swipe-away, text and banners flying in, a swipe gesture, a micro-jerk of the camera"
+  - "heavy fly-by — 0.8–1.5 s, with a low rumble and a long tail: a big transition into the drop, a fly-through an object, epic and sport; for a full orbit or rotation — up to 3 s, peak at maximum speed or at the turn to a frontal view"
+  - "reverse whoosh (reverse_whoosh) — a build-up with a cut-off: entry into slow motion, a zoom pull-back, an object \"assembling\", a reveal, a move into a card"
+  - "series — 2–5 whooshes in a chain of whip transitions or orbits, each with its own seed and its own pan direction"
+status: code
+fallback: |
+  Code synthesis is always available (48 kHz, no sample files). If the remake is built on the reference's own audio (the
+  same music with the SFX baked in) — don't synthesize on top: the whoosh is already there. If the user supplied their
+  own sounds — use them, but with the same rules for peak, loudness and limits. If there is no fast motion at the cut —
+  no whoosh: replace it with a click-tick (sfx.glitch, the "click" variant) or leave silence.
+params:
+  render: "48 kHz, float32, stereo; numpy/scipy only; every placement — a new seed; buffer length = D + reverb tail"
+  air: "pink noise (−3 dB/oct) → band-pass biquad (0 dB peak) with a moving center fc: 450 Hz → 3.2 kHz at 0.6·D → 700 Hz, interpolated on log frequency; Q 1.5 → 2.5 (at the peak) → 1.5; D 0.35–0.8 s, typically 0.5"
+  swish: "white noise → band-pass fc 1.5 kHz → 6.5 kHz at 0.7·D → 4 kHz, Q 3–4; + a \"whistle\" tone: a sine following fc×0.5 at −18 dB; D 0.15–0.3 s, typically 0.22"
+  heavy: "pink noise → band-pass fc 220 Hz → 1.8 kHz at 0.62·D → 320 Hz, Q 1.1; + a low layer: a sine 85 → 70 → 42 Hz on the same envelope at −8 dB; tanh saturation, drive 2; D 0.8–1.5 s, typically 1.1; orbit or rotation — D up to 3 s, peak point = the frame of maximum speed (or the turn to a frontal view), reverb 1.5 s"
+  reverse: "forward sound: pink noise → band-pass fc 3.2 kHz → 450 Hz, Q 1.4, attack 3 ms, decay exp(−t / 0.22·D) + reverb RT60 = 0.7·D, wet −4 dB → reverse in time → 2–6 ms cut-off; D 0.6–1.5 s, typically 0.9"
+  filter_update: "recompute the biquad coefficients every 64 samples (1.3 ms), keeping the filter state; an equivalent alternative — an STFT mask (window 1024, hop 256) with a bell-shaped band ≈1/Q octave wide"
+  envelope: "A = 0.6·D along a u^2 curve (D 0.5 s → A 300 ms), no sustain, R = 0.4·D along a (1−u)^1.6 curve (200 ms); swish — A 0.7·D (u^2.5), R 0.3·D ((1−u)^1.3); an attack shorter than 60 ms is not allowed — it becomes a hit, not a whoosh"
+  stereo: "center — the main noise layer; on the sides two independent uncorrelated copies of the noise through the same filter (width 0.5, swish 0.6, heavy 0.7), no delays — no comb filtering in mono; equal-power pan −0.4 → 0 (at the peak) → +0.4 in the direction of the camera: SHIFT \"content moves LEFT (camera pans right)\" → left to right; a passing object — along its path; |pan| ≤ 0.6"
+  reverb: "convolution with a synthetic impulse response: noise × exp(−6.91·t/RT60), LPF damping at 6 kHz, pre-delay 10–20 ms, reverb input through a 150–200 Hz HPF; air — RT60 0.4 s, wet −14 dB; heavy — 1.0 s, −10 dB; swish dry (≤0.2 s, −18 dB)"
+  eq: "HPF 120 Hz (air), 300–400 Hz (swish), 40 Hz (heavy — the low end is needed); LPF 12–14 kHz always: hiss above 14 kHz also sounds \"cheap\""
+  duration: "D = length of the visual movement + 0.25–0.35 s: whip pan 5 frames @25 fps / 6 @30 fps (0.2 s) → D ≈ 0.5 s; crash zoom 0.4 s → D 0.65–0.75 s; text fly-in 4–6 frames → swish 0.2 s"
+  placement: "align='peak' (peak = maximum of the RMS envelope with a 10 ms window): the cut frame of the whip transition or the jerk's peak_at ±1 frame; if a beat or half-beat is within ±60 ms — the peak goes on the beat, sample-accurate, and the cut on the frame nearest the beat; start = peak − 0.6·D (with D 0.5 s — 7–8 frames earlier @25 fps, 9 @30 fps); swish on a text fly-in — peak 40–80 ms (1–2 frames) before the landing, a click or a hit on the landing; reverse — peak = the cut-off point, exactly on the event"
+  level: "rel_lu — loudness relative to the music: K-weighted loudness of the whoosh and the music in the same ±200 ms window around the peak (for reverse — 400 ms before the cut-off); air −6 LU (−8…−4), swish −10 (−14…−8), heavy −4 (−6…−2), reverse −8 (−10…−5); the reference is never below I_music − 12 LU, so quiet passages don't get pushed too loud"
+  ducking: "usually leave the music alone; on the main transition — duck the music in the 1–6 kHz band by 2–3 dB (attack 30 ms, release 150 ms); under a voice the whoosh goes another −6 dB with a 300 Hz HPF, peak in a pause between words (≥150 ms), not on a stressed syllable"
+  variation: "for each placement — a new seed, D ±15 %, all frequencies ×0.89–1.12 (±2 semitones), level ±1.5 dB; the same buffer twice in a row — not allowed; 1–2 variants per video (a single palette)"
+  limits: "≤3 whooshes per 10 s; a series of whip transitions in travel and viral edits — up to 5 per 10 s, but no more than 1 per beat and no closer than 0.5 s; only where the frame really moves fast: SHIFT ≥8 %/frame, ZOOM ≥×1.1/frame, ROTATE ≥5°/frame"
+when: |
+  Only under fast camera movement: a whip transition and whip pan, a crash zoom, a spin, a roll jerk, a fly-by past the
+  camera, a speed-ramp acceleration (a whoosh on the acceleration), text and banners flying in (swish), a zoom pull-back
+  and entry into slow motion (reverse).
+  hook — one whoosh on the first transition (0–2 s) grabs attention; build — on transitions with movement, more frequent
+  toward the drop (from 1 per 2 bars to 1 per bar); drop — a whip or zoom transition exactly on the downbeat of the drop,
+  the whoosh paired with a hit; outro — a reverse whoosh into the final card or the loop point. Peak — on a beat or
+  half-beat of the track, in the drop — on the snare or the downbeat. Speech genres — only in pauses between phrases.
+  Limit: ≤3 per 10 s (a series of transitions — up to 5, no more than 1 per beat).
+avoid: |
+  Static cuts, dissolves and fades to black — a sound without movement gives away a "stock" edit; the calm genre; a
+  whoosh on every cut in a row; the same whoosh twice in a row; a sound longer than the movement by more than 0.3 s; a
+  peak missing the cut by more than a frame; key words of speech and a vocal phrase; the track's own sweep or whoosh at
+  the same spot; hissy highs without an LPF; a hard pan to ±1 (on a phone — a "hole" in one channel).
+sfx: |
+  It is itself the sound support. Pairs: whoosh → sfx.impact on the landing (the whoosh peak and the hit attack on the
+  same cut frame); before a long jerk — a short sfx.riser of 0.3–0.5 s; reverse whoosh → a hit or sfx.sub_drop at the
+  cut-off point.
+genres: {viral: signature, travel: signature, phonk: allowed, sport: allowed, fanedit: allowed, teaser: allowed, epic: allowed, product: allowed, fashion: allowed, clips: allowed, explainer: allowed, ugc: allowed, motivation: allowed, calm: forbidden, drama: forbidden}
+detect: |
+  The best route is a remake on the same music: ed_audio.align gives the offset and stretch; stretch the clean track and
+  match it band by band (the median of the log-spectrum difference at each frequency), then the difference
+  R = reference log spectrum − max filter(track log spectrum, ±2 frames, ±1 bin) − 6 dB; regions with R > 0 longer than
+  30 ms are SFX (on a test mix this finds whooshes at −6 LU and quieter). Without a clean track — a bar-synchronous median
+  of the log spectrum over 4–8 neighboring bars of the same section (bars — ed_audio downbeats) as the music estimate,
+  with the same threshold; these are only candidates: breaks and fills in the track give false positives — confirm
+  with the picture.
+  Whoosh cues in a region: length 0.15–1.5 s; a smooth envelope — the 10→90 % rise ≥60 ms (≈200 ms for air, ≈400 ms
+  for heavy), spectral flux (ed_audio onset) rises over 5+ frames of 11.6 ms with no single spike; peak at 35–75 % of
+  the length; the centroid rises ≥×1.6 toward the peak (air 1.8 → 4.1 kHz) and falls ≥×1.15 after the peak; spectral
+  flatness in 0.3–10 kHz ≥0.25 (noise, not a tone); ≥70 % of the energy in 0.3–8 kHz (heavy also has lows < 120 Hz).
+  Reverse: peak in the last 10 % of the region, the centroid rises ×2–3 right to the end, a cut-off of ≥20 dB within
+  ≤2 frames (≤23 ms).
+  Picture (ed_motion): the sound peak within ±2 frames of the peak_at of a SHIFT ≥8 %/frame, ZOOM ≥×1.1/frame or
+  ROTATE event, of a cut inside a smear (whip transition) or of a fast fly-by.
+  Distinctions: impact — attack ≤12 ms and energy below 200 Hz; riser — 0.5–8 s, monotonic growth to the end without a
+  decay; the track's cymbal — a sharp attack and a long decay above 4 kHz on section downbeats.
+engine: |
+  sfx('whoosh', at=t_peak, align='peak', variant='air'|'swish'|'heavy', dur=D, rel_lu=-6, pan=[p0, p1], width=0.5, seed=k)
+  sfx('reverse_whoosh', at=t_event, align='peak', dur=0.9, rel_lu=-8)
+    — an extension of sfx(): variant, dur, rel_lu (loudness relative to the music in a window), pan, width, seed.
+  Synthesis — sfx_synth(graph) from new blocks: noise(color, seed), bp_sweep(fc, at, q, block=64), hp(f), lp(f),
+  chirp(f, wave, db), env(a, r, a_curve, r_curve), width(w), pan_move(p, at), drive(k),
+  verb(rt60, wet_db, pre_ms, damp_hz, hp_hz), reverse(), fade(in_ms, out_ms):
+    air   = noise('pink') → bp_sweep(fc=[450, 3200, 700], at=[0, 0.6, 1], q=[1.5, 2.5, 1.5]) × env(a=0.6·D, a_curve=2, r=0.4·D, r_curve=1.6)
+            → width(0.5) → pan_move([-0.4, 0, 0.4], at=[0, 0.6, 1]) → hp(120) → lp(12000) → verb(0.4, -14, 12, 6000, 150)
+    swish = noise('white') → bp_sweep([1500, 6500, 4000], at=[0, 0.7, 1], q=3.5) + chirp(f=fc·0.5, wave='sine', db=-18) → hp(400) → lp(14000)
+    heavy = noise('pink') → bp_sweep([220, 1800, 320], at=[0, 0.62, 1], q=1.1) + chirp([85, 70, 42], wave='sine', db=-8) → drive(2) → hp(40) → verb(1.0, -10)
+    reverse = (noise('pink') → bp_sweep([3200, 450], q=1.4) × env(a=3 ms, decay=0.22·D) → verb(0.7·D, -4)) → reverse() → fade(out_ms=4)
+  From the picture: D = event length + 0.3 s; pan — the sign of SHIFT (camera direction); at — the cut or peak_at.
+  Mixing: sfx_bus(hpf_hz=30, tp_ceiling_dbtp=-3) — new; bus + music → master −14 LUFS, TP ≤ −1 dBTP (render_audio);
+  duck(music, under='sfx:whoosh', band=[1000, 6000], depth_db=2.5, attack_ms=30, release_ms=150) — main transition only;
+  beat_sync(event='whoosh_peak', grid='1/8') — peak on the beat if it is within ±60 ms; qa_sfx(per_10s=3) — new, checks the limits.
+  Remake: detect_sfx(ref_audio, track, downbeats, motion) — new, returns [{kind, at, align, dur, rel_lu}].
+gen_hint: "not generated — synthesized in code. If a shot comes from a video model with native audio, ask for: no music, no sound effects, only quiet natural ambience, so the code whoosh does not double. Reference description of the sound: a short airy whoosh of moving air that rises in pitch and loudness, passes the listener at the cut, then fades darker; smooth, not hissy"
+commands: ["a whoosh on every whip transition", "a swish on the title fly-in at 0:03", "a heavy fly-by on the transition into the drop", "a reverse whoosh on entering slow motion in #6", "remove the whooshes from static cuts", "whooshes 3 dB quieter"]
+related: [trans.whip, pan.whip, pan.whip_back, tilt.whip, roll.whip, zoom.crash, trans.zoom, trans.spin, time.speed_ramp, time.velocity, sfx.impact, sfx.riser, sfx.glitch]
+evidence: {examples: 0, sources: 0, measured: "edit culture: parameters from editing practice; verify with a demo render", confidence: medium}

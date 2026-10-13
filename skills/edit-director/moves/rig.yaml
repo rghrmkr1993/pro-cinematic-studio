@@ -1,0 +1,329 @@
+id: rig.body_mount
+family: rig
+group: camera
+level: B
+aliases: [body-mounted camera, body cam, body mount, chest camera, back-mounted camera, chest rig, camera on a body rig]
+what: the camera is rigidly mounted on the subject's body — their face or the back of their head stays locked in frame while the whole world around sways, tilts and drifts; a move about an inner state
+frames: |
+  Front-facing (a chest camera looking at the face):
+  1. The face is large, 20–45 % of the frame height, near the center (x 0.4–0.55), shot from below — behind the head
+     a ceiling, vaults, the sky. A wide lens with slight barrel distortion.
+  2. The subject barely moves in the frame (median 0.04–1.4 % of the frame per frame — only neck nods), while the
+     background behind them sways: a vertical "gait" bob of 1–6 % of the frame peak to peak at 2–2.4 Hz when walking
+     (4.5–5.5 Hz when running), a sideways sway of 1–2 Hz, a background roll of 4–18° edge to edge at 1–3 Hz.
+     Background speed 10–25 % of the frame per second, up to 55–60 %/s when running.
+  3. Lasts 1.5–7 s; exit — a cut or the camera breaking away into a smear (a 0.15–0.3 s jerk).
+  Back-facing (camera behind the back): the back of the head and the shoulders take up the bottom 30–45 % of the
+  frame or one side of it (40–50 % of the width), the world ahead advances and sways — the subject walks through a
+  street, a crowd, a celebration.
+variants:
+  - front-facing from below: panic, intoxication, euphoria — the face in the center, the ceiling spinning
+  - back-facing: a walk through a crowd, a street or a celebration, the back of the head at the bottom of the frame
+  - on a seat: the camera on a chair, a wheelchair or a gurney — the person is still in profile or from behind, the world turns around them (≈14 %/s)
+  - running: 5 Hz shake, strong rolls and background blur
+  - series: the same rig on several people, cuts between them keeping the head position
+  - exit into a smear: at the end the camera jerks away from the subject
+status: footage
+fallback: |
+  1) search the source footage (detect) — arm's-length selfies on the move also fit here: they are a ready-made
+     front-facing variant;
+  2) imitation (hybrid) from a shot where the subject walks or sways: lock_on on the face (pos + rot) makes the face
+     still and the world starts to drift; extra sway on the background only — via a person mask, the edges are
+     covered with outpaint or blur;
+  3) generation with the user's consent from gen_hint
+params:
+  framing_front: face 20–45 % of the frame height, x 0.4–0.6, y 0.3–0.5, low angle
+  framing_back: back of the head and shoulders in the bottom 30–45 % of the frame (or 40–50 % of the width from the side)
+  subject_drift: < 1.5 % of the frame per frame (median 0.04–1.4)
+  bg_speed: 10–25 %/s walking, 50–60 %/s running
+  bob: 1–6 % of the frame peak to peak; 2–2.4 Hz walking, 4.5–5.5 Hz running
+  roll: background roll 4–18° peak to peak at 1–3 Hz
+  lens: wide, slight barrel distortion (k ≈ −0.05…−0.12)
+  duration: 1.5–7 s (38–175 frames @25 fps)
+  fake: lock_on(face, pos+rot, crop 1.2–1.3) + background shake(rot 6–10°, 1.2–2 Hz) + shake(y 2–4 %, 2 Hz) via the mask
+when: |
+  the subject's inner state — intoxication, panic, nausea, euphoria, "the world is swimming"; the subject walking through
+  a crowd, a celebration, a city (back-facing); a performer singing or walking straight at the viewer in a music video;
+  the entry into the drop in phonk and fan edits; in UGC — selfies on the move. 1–2 times per video, 2–5 s each;
+  strongest right after a calm tripod shot.
+avoid: calm informational content and interviews; longer than 7–8 s (causes motion sickness); a face in shadow or backlit with no detail; digital shake on top of real shake; imitation without a mask (the subject rotates too — it becomes just a frame roll)
+sfx: breathing and a heartbeat, muffled music (low-pass filter) in intoxication scenes; footsteps and crowd noise; a whoosh as the camera breaks away
+genres: {drama: signature, fanedit: allowed, phonk: allowed, viral: allowed, ugc: allowed, teaser: allowed, fashion: allowed, sport: allowed, clips: allowed, motivation: allowed}
+detect: |
+  ed_motion gets fooled: the large still subject fills 17–86 % of the frame, so global events are weak
+  or contradictory (small ROTATE and SHIFT of different signs). Mask check: the area that is stable in 60 %+ of frame
+  pairs is the subject; the background outside it moves 0.5–2 % of the frame per frame with a 4–18° roll at 1–3 Hz
+  and a vertical bob of ≈2 Hz.
+  Visually: a large face from below with the ceiling behind the head, or the back of the head at the bottom of the
+  frame; a wide lens.
+  Difference from rig.locked_on: there it is digital stabilization — edges or a black field are visible, no real parallax.
+  Difference from handheld.shaky: with a handheld camera the subject wanders around the frame along with the shake.
+  Difference from a tracking shot following the subject: there the subject is seen whole and farther away, the
+  background doesn't roll in time with the steps.
+engine: |
+  Real shot: cut(at), 2–5 s; exit — transform(shift=[[0,0],[0.3,0.1]], t=[t1-0.25, t1], ease='inCubic') + blur(kind='directional').
+  Imitation (hybrid) from a shot with the subject walking or swaying:
+    lock_on(target=track(face), lock=['pos','rot'], screen_pos=[0.5, 0.42], smooth=3, fill='crop', crop=1.25)
+    + mask(method='mediapipe_person', feather=8) → background layer: shake(amp=8°, freq=1.5, axes='rot') + shake(amp=3 %, freq=2, axes='xy')
+      + outpaint or blur(kind='gaussian') in the revealed edges → composite(layers=[background, subject])
+    + lens_distort(k=-0.08) + vignette(0.2)
+  Series of people: cut(at) on beats + lock_on(..., the same screen_pos) for each.
+gen_hint: body-mounted camera shot, camera rigidly mounted on <subject>'s chest pointing up at their face, the face stays locked in the center of the frame while the world behind sways, tilts and rolls with every step, low angle, wide lens, <subject> stumbling through <place>, disorienting
+commands: ["body-mounted camera on the main character in the club, 3 seconds", "turn my walking selfie into a body-cam effect", "camera behind the back: a walk through the crowd on the drop", "the world sways around the face on #4"]
+related: [rig.locked_on, handheld.shaky, rig.spin_lock, pov.first_person, track.follow]
+evidence: {examples: 14, sources: 14, measured: "the subject is stable (median drift 0.04–1.4 %/frame, fills 17–86 % of the frame); background 10–25 %/s walking, 57 %/s running; background bob 1–5.7 % peak to peak at 1.9–2.4 Hz (running 4.6–5.5 Hz), roll 4–18° peak to peak at 1.2–2.8 Hz; front-facing from below in 6 of 9, back-facing in 5; 2 examples — camera on a chair or wheelchair; 1 — exit into a smear; 1 example is generated", confidence: high}
+---
+id: rig.locked_on
+family: rig
+group: camera
+level: B
+aliases: [locked-on, lock-on, lock onto a point, pinned to an object, frame glued to the object, object stabilization, object lock, point lock, frame on black]
+what: a chosen point — an object, a face, a ball — stays dead still in one spot of the frame while the whole world around it slides, spins and scales
+frames: |
+  1. Anchor: the object sits at one point on screen, usually the center (0.5, 0.45–0.5); its drift is < 0.4 % of the
+     frame per frame, while the background next to it moves 2–30 times faster (0.65–5.5 % of the frame per frame).
+  2. What is compensated: always position; optionally rotation (the object keeps its orientation while the world
+     rotates at 50–110°/s, up to 150–320° per take) and scale (a person running at the camera doesn't grow — the
+     background around them shrinks ×0.55 over 2.6 s).
+  3. Edges: either the frame is scaled up in advance and the edges are not visible, or dark or blurred
+     triangles of the rotated frame flash in the corners — this is part of the style too.
+  4. "Frame on black" mode: the source is scaled down to 0.55–0.7 of the canvas side (0.34–0.40 by area),
+     with a black field around it; the frame visibly slides and spins around the motionless subject. Sometimes previous
+     frame positions are not erased and stack into a fan (the visible area grows from 0.40 to 0.75 over 2.5 s).
+  5. Lock across cuts: in a series of shots with different people, the object stays at the very same point on screen.
+variants:
+  - product: a cup, an earbud, a bottle in the center, the world and the person sway around it (rotation up to 40° in 0.2 s)
+  - sport: the ball in the center, the frame spins and flips with the play (up to 8° per frame), cuts matched on the ball
+  - with scale lock: a person running toward the camera stays the same size, the background shrinks
+  - top-down: the object in the center, the ground below it rotates ≈95°/s
+  - frame on black: the source frame is a square, rectangle or circle on a black canvas, rotating around the subject
+  - fan: the frame on black leaves a trail of its previous positions
+  - across cuts: the object at one point over 5–10 different shots in a row
+status: code
+fallback: if the object gets close to the edge or a rotation beyond ±10° is needed and there is no margin — the "frame on black" mode (the edges are legitimately visible), outpaint for the edges, or a search for a wider take; if tracking breaks (motion blur, occlusion) — manual keyframes on 2–3 points
+params:
+  anchor: a point or an object (track(object:<name>)|track(face)), screen position [0.5, 0.45–0.5]
+  lock: pos always; + rot (keep the object's orientation); + scale (keep the size)
+  residual_drift: < 0.4 % of the frame per frame (smooth the tracking jitter with a 3–5 frame window)
+  world_motion: background 0.65–5.5 % of the frame per frame; world rotation 50–110°/s, peaking at 7–8° per frame
+  crop_fill: crop margin ×1.2–1.5 for pos, ×1.6–2 with rotation of ±30° or more — or visible edges
+  shadow_box: frame scale 0.55–0.7 of the canvas side (or 0.96 by width for 16:9 inside a square), black background, rectangle or circle shape
+  trail: off | a trail of frames fading 0–3 %/frame
+  cut_lock: at a cut the new shot is aligned so that the object lands on the same screen point (±3 % of the frame)
+  duration: 1.5–7 s per take; frame on black 4–12 s
+when: |
+  a product video — the product in the center, life around it; a sport edit — the ball or the athlete at the center of
+  the trick; fan edit and phonk — on the drop the world starts rotating around the subject; "frame on black" — for
+  vertical edits from horizontal source footage (the edges are legitimately visible); lock across cuts — editing a
+  series of different people with one object.
+  1–3 such fragments per video; put the lock's entry and exit on beats.
+avoid: the object is often occluded or leaves the frame (the track breaks, the anchor jerks); a close-up face with rotation beyond 30° (causes motion sickness); low resolution with a heavy crop; over real handheld shake without smoothing the track; a calm talking shot — the lock doesn't read there
+sfx: a whoosh or a whistle on fast world rotations; in product videos — soft clicks on the cuts that keep the point; a bass hit at the start of the rotation
+genres: {sport: signature, product: signature, fanedit: signature, phonk: allowed, viral: allowed, fashion: allowed, teaser: allowed, clips: allowed, ugc: allowed, motivation: allowed, explainer: allowed, calm: allowed}
+detect: |
+  ed_motion sees the background motion: large ROTATE (60–320° over 2–4 s, peak 4–8°/frame) or a long ZOOM-OUT ×0.5–0.6
+  while the subject's size stays constant; meanwhile the central zone is almost still. Custom check: an affine fit on a
+  disk around the anchor versus a ring of background — anchor drift < 0.4 %/frame, background 2–30 times faster.
+  Visually: dark or blurred triangles in the corners during rotation; a black field with a sliding frame; the object at
+  one point across cuts.
+  Difference from rig.body_mount: there the camera is on the body, the subject is a large foreground at the edge, real
+  parallax, no visible frame edges.
+  Difference from roll (camera roll): with roll everything rotates together with the subject, while here the subject
+  keeps its orientation.
+  Difference from rig.spin_lock: there the frame doesn't move, only the background behind the subject spins.
+engine: |
+  lock_on(target=track(object:<name>)|track(face), lock=['pos'] | ['pos','rot'] | ['pos','rot','scale'],
+          screen_pos=[0.5, 0.47], smooth=3, fill='crop'|'edges'|'shadow_box', crop=1.3–2.0, box_scale=0.6,
+          box_shape='rect'|'circle', bg='black', trail_decay=0)
+    = frame-by-frame track (CSRT or a point-based homography) → inverse transform(shift, rotate, scale) on each frame.
+  + blur(kind='directional') on frames where the world rotates more than 5° per frame
+  + series: cut(at) + lock_on(..., screen_pos=the same one) on every shot of the series
+  + sfx('whoosh', at=start of the rotation)
+gen_hint: camera locked onto <object> so it stays perfectly fixed in the center of the frame while the world rotates and moves around it, product-centric stabilized motion, dynamic background, sharp subject
+commands: ["lock the ball in the center and let the frame spin around it", "do a locked-on on the cup in #2–#4", "frame on black around the dancer in vertical format", "cut these 6 shots so the earbud stays at the same point"]
+related: [rig.spin_lock, rig.body_mount, roll.camera, handheld.shaky, cut.match]
+evidence: {examples: 11, sources: 11, measured: "anchor drift 0.02–0.37 %/frame (median), background 0.65–5.5 %/frame; world rotation 54–110°/s, up to 318° in 3.3 s; scale lock — background ×0.55 over 2.6 s with the subject unchanged; frame on black 0.58–0.71 of the canvas side (area 0.34–0.40) or 0.96 by width, a frame trail in 1 of 4; lock across cuts — 9 shots in a row with the object at one point ±0.05", confidence: high}
+---
+id: rig.mounted
+family: rig
+group: camera
+level: B
+aliases: [car mount, hood mount, object mount, camera on the hood, door mount, camera on an object, mounted action camera, rig-mounted shot]
+what: the camera is rigidly mounted on a moving object — a hood, a door, a tool, a cart; part of the object stays dead still in frame while the whole world rushes, glides or tumbles around it
+frames: |
+  1. In frame — a piece of the object the camera is mounted on: a hood, a door with a window and a passenger, the edge
+     of a convertible, a shovel, a steering wheel, a cart. It enters from the bottom or side edge and takes up 15–50 % of
+     the frame; relative to the frame it doesn't move at all (flow < 0.1 % of the frame width per frame), only
+     reflections and light glide over it.
+  2. The world moves with the object: from the hood the road flies out of the vanishing point, from the door the street
+     flows sideways (0.4–4.8 % of the frame width per frame at the edge), when the tool swings the world turns over —
+     23° in 0.7 s, up to a full flip.
+  3. The contrast between the still object and the moving world is 4–40 times; mount vibration shakes the frame together
+     with the object (0.2–0.9 % on a car, 5.5 % when working with a tool).
+  4. Take 1.3–9.6 s; in a series — a cut every 1–2 s between mount points on the same car.
+variants:
+  - on the hood: the hood at the bottom, 20–30 % of the frame, the road from the vanishing point; often sped up, rushing through tunnels and intersections
+  - on the side: the door and window with a passenger at the frame edge, the street flies sideways, at night — lights as streaks
+  - behind someone in a convertible: the person's back in the center and the seat below are still, the world recedes backward
+  - on a tool or object: a shovel, a bat, a board — the world tumbles on the swing
+  - on a cart among objects: the foreground (a plant, goods) stays still, a greenhouse or warehouse slowly glides past
+  - mount series: hood → door → trunk of one car, a cut on every beat
+status: footage
+fallback: |
+  hybrid imitation: a mask of the object (remove_background or manual) over a separate moving background shot
+  (shift or zoom-in 0.5–2 % of the frame per frame) + overall vibration 0.2–0.5 %; without parallax it works on a night
+  street and with fast motion. If the object was shot handheld — stabilize on the object (see rig.locked_on). No
+  source — generation with the user's consent.
+params:
+  duration: 1.3–9.6 s; in a series 1–2 s per mount point (25–50 frames @25 fps)
+  mount_area: 15–50 % of the frame, touching the bottom or side edge; flow < 0.1 % of the width per frame
+  world_speed: 0.4–1.7 % of the frame width per frame @25 fps (median), up to 4.8 % at the edge
+  contrast: world / object 4–40
+  roll: car 0–8°; tool up to 23° in 0.7 s and a flip
+  vibration: 0.2–0.9 % (car), up to 5.5 % (tool)
+  series_cut: 1–2 s, on the beat
+when: |
+  Road and journey (hood, side), a ride with the subject, action and sport from the point of view of the gear, handwork
+  (camera on a tool), a product in motion. A series of mounts on one car — a rhythmic build or verse, cuts on the beats;
+  a tumble with a tool — a sharp accent or a transition.
+avoid: a mount with no visible part of the object — that is just a travelling shot; strong vibration and rolling-shutter "jello" on a cheap camera; the world standing still (the car is parked) — the point is lost; longer than 4–5 s with no event in a dynamic genre
+sfx: engine hum, wind, tire noise; suspension thumps on bumps; on the tool tumble — a whoosh and a hit at the stop
+genres: {travel: signature, sport: signature, ugc: allowed, fanedit: allowed, viral: allowed, clips: allowed, teaser: allowed, product: allowed, drama: allowed, epic: allowed, motivation: allowed}
+detect: |
+  Custom measurement (a 4×4 grid of dense-flow medians over textured pixels): 1–6 adjacent cells at the bottom or
+  side edge with flow ≤ 0.1 % of the width per frame, the rest 0.4–4.8 % (ratio 4–40); for a hood with reflections
+  the ratio is lower (≈2.5). ed_motion: global events are contradictory (the static piece breaks the frame model),
+  overlay-mask 0.05–0.44, nonrigid 0.25–0.45; on a tool — ROTATE 20–25° in 0.7–0.9 s.
+  Difference from rig.locked_on: there the object is stabilized in code — it is usually in the center and doesn't touch
+  the edge, and there may be black corners at the edges. From rig.body_mount: a person is still (face, torso), with the
+  mount on the body. From track.subject: the subject "floats" and moves rather than staying dead still. From a static
+  tripod: the world doesn't move.
+engine: |
+  footage: search by the flow grid (a static zone at the edge + a moving world); cut into 1–2 s pieces, switch mount
+  points on the beats.
+  hybrid: mount_sim(fg=mask(method='hf_remove_background', target=object), bg=clip, bg_motion='forward'|'side',
+  speed=0.5–2 %/frame, vibration=0.3) — a still foreground over a moving background.
+  code: stabilize(strength=1.0, anchor=track(object:<name>)) — "stitch" the object to the frame (see rig.locked_on).
+gen_hint: camera rigidly mounted on the side of a moving car at night, the car door and the passenger leaning out of the window stay perfectly still in frame while the street lights rush past, slight vibration
+commands: ["put the hood-cam shots into the road section", "car door camera on #4", "mount series: hood, door, trunk — one beat each", "fake a bike-mounted camera from #2 and #3"]
+related: [rig.locked_on, rig.body_mount, pov.object, track.subject, drone.fpv, time.hyperlapse]
+evidence: {examples: 8, sources: 8, measured: "a still zone at the bottom (3) or side (4) edge, or a person's back in the center (1); flow in it ≤ 0.1 % of the width per frame versus 0.4–4.8 % for the world (ratio 4–41, hood with reflections 2.5); takes 1.25–9.6 s; 1 example — a mount series with cuts every 1–2 s; 1 — a tool with a 23° roll in 0.7 s and a flip", confidence: high}
+---
+id: rig.robot_arm
+family: rig
+group: camera
+level: B
+aliases: [robotic camera arm, high-speed robot camera, motion control, camera on a robot arm, robot arm, high-speed robotic crane, robo-arm move, snap orbit]
+what: a camera on a high-speed robot arm performs, in half a second, a move no camera operator could — an orbit, a swoop from top to bottom, a lunge at a detail with a roll — and freezes exactly on the frame, with no jitter or overshoot
+frames: |
+  1. Start: the subject or a group in frame, the camera is static or drifts slowly; often a sterile environment (a white
+     box, a corridor, a studio) or an urban location with a group.
+  2. Snap: in 0.3–0.8 s (8–20 frames @25 fps) the camera runs a complex path along several axes at once —
+     a 90–180° orbit around the head (back of the head → face), a swoop from a high point down to eye level, an arc
+     pass with a 20–45° horizon roll, a lunge at a detail (glasses, an eye, a hand). Motion blur mid-path, strong
+     background parallax.
+  3. Landing: the camera brakes within 2–4 frames and settles exactly into the intended composition — no residual
+     shake, no "settling" correction; the horizon often stays tilted.
+  4. Series: 2–4 such snaps in a row within one shot, with 0.3–1 s holds between them; the move repeats
+     frame-accurately (takes can be cut together and clones composited).
+variants:
+  - head orbit: from behind or from profile to the face, 90–180° in 0.4–0.6 s
+  - top swoop: straight top-down view → eye level (or the reverse) in 0.5 s, the subject at the center of rotation
+  - rolling pass around a group: the camera arcs with a tilted horizon, a rap crew or dancers, B&W
+  - lunge at a detail: medium shot → macro of glasses, an eye, jewelry in 0.3–0.4 s
+  - white box: the subject in a glowing corridor or cube, the camera flips around them
+  - with slow motion: the action is in high-speed slow motion while the camera moves fast and smoothly — splashes, fabric, hair
+status: footage
+fallback: code imitation on a 4K or wide shot — a fast 2D move (transform with a 20–45° rotation, a shift and a scale of ×1.3–2) with ease inOutExpo, directional blur and a hard landing; without parallax it is honest only on short snaps ≤ 0.4 s; a head orbit — generation with consent or searching the source footage for a sharp stabilizer pass; repeatable passes for clones — only a dedicated shoot
+params:
+  move: 0.3–0.8 s (8–20 frames @25 fps), typically 0.5 s
+  rotation: orbit 90–180° (up to 360°/s); roll 20–45° along the way
+  translation: 0.5–2 m per move; frame shift up to 100 % of the width
+  ease: inOutExpo — very fast acceleration and braking within 2–4 frames; no overshoot or jitter
+  landing_jitter: ≤ 0.1 % of the frame after landing (steadier than any manually operated move)
+  hold: 0.3–1 s between snaps; 2–4 snaps per shot
+  motion_blur: strong mid-move (180° shutter), none on landing
+  hfr: in product and sport — shooting at 120–1000 fps, so on screen the move looks smooth while the action is in slow motion
+when: performance in a music video (verse or hook — a snap on every line), fashion and product (a lunge at a detail, an orbit around a model), the entry into the drop, a wow shot in a teaser, splashes and liquids in product videos; snaps on downbeats or hits; 1–2 shots with a series of snaps per video
+avoid: a slow, contemplative tone; snaps not synced to the beat (looks chaotic); code imitation on close-up faces during an orbit (no parallax — the fake shows); too many snaps in a row without holds (causes motion sickness)
+sfx: a whoosh on every snap, peaking mid-move; a mechanical servo sound or a "shh-shoosh" on the swoops; an impact or a bass hit at the moment of landing
+genres: {fashion: signature, product: signature, viral: allowed, phonk: allowed, sport: allowed, teaser: allowed, fanedit: allowed, epic: allowed, clips: allowed, motivation: allowed, calm: forbidden, ugc: forbidden}
+detect: |
+  ed_motion: within 0.3–0.8 s several large events at once — ROTATE 20–180°, SHIFT 30–100 % of the frame, ZOOM ×1.3–3 —
+  peaking at 10+ %/frame with nonrigid > 0.3 (real camera displacement, parallax); before and after the move shake
+  jitter ≈ 0 (≤ 0.1 %), the move ends without oscillation (no opposite-sign peaks after landing); a series of identical
+  moves with holds of 0.3–1 s.
+  Difference from pan.whip and tilt.whip: there it is a rotation around one axis, the whole frame smeared and an
+  imprecise landing with jitter. From handheld.shaky: no high-frequency shake. From orbit.turntable: there it is a
+  slow, even orbit. From zoom.crash: the angle and parallax change, not just the scale.
+engine: |
+  footage: search by the detect signature; put the landing of the move on a downbeat.
+  code imitation (4K/wide shot): transform(scale=[1.2, 1.8], rotate=[0, 30], shift=[[0,0],[0.2,-0.1]],
+     t=[t0, t0+0.45], ease='inOutExpo', motion_blur=0.5) + blur(kind='directional', amount∝speed)
+     + a landing without overshoot; series: robo_moves(count=3, hold=0.6, sync='beats').
+  + sfx('whoosh', at=t0, align='peak') + sfx('impact', at=t0+0.45).
+gen_hint: high-speed robotic camera arm move, the camera whips around <subject> in half a second from behind the head to a frontal close-up, tilted horizon, motion blur during the move, then stops dead perfectly framed, music video, white studio box
+commands: ["a robot-arm snap around the head on every line of the hook", "a half-second orbit around the model on the drop", "camera lunge to the glasses at 0:09", "fake a robot arm on #5 — a fast turn with a roll and a hard stop"]
+related: [pan.whip, tilt.whip, orbit.turntable, zoom.crash, dolly.crash, time.speed_ramp]
+evidence: {examples: 18, sources: "≈8", measured: "visual review only, of all examples in the section at 5 points of the animation (scripted frame capture was blocked by browser permissions); move durations, orbit and roll angles are estimates (≈) from the frames", confidence: medium}
+---
+id: rig.spin_lock
+family: rig
+group: camera
+level: C
+aliases: [world spins around the subject, rotating with the subject, subject and camera on a turntable, spin lock, world spin, rotating platform shot]
+what: the subject and the camera rotate together on one platform — the person is frozen in the center of the frame while the room or the city races around behind them
+frames: |
+  The subject — a medium shot or close-up in the center, often from below; relative to the frame they barely move
+  (< 0.6 % of the frame per frame, only their own gestures). Everything standing on the platform with them (a table,
+  a machine, dishes) is also still. The background behind them sweeps evenly sideways: 30–80 % of the frame width per
+  second in the calm variant, 135–225 %/s in the energetic one — with strong horizontal motion blur of lights and
+  walls. With the camera below, the ceiling also turns in the frame plane (≈2.5° per frame). Duration 0.7–5 s.
+  The room light glides over the subject during the rotation — the face moves between highlight and shadow.
+variants:
+  - performer on a revolving stage: from below, smoke or lights behind them, hands up
+  - working at a machine or a desk: the person is focused, the workshop flies around in a blur
+  - view from below: a ceiling with pipes and lamps rotates around the head
+  - change of places: behind the still subject at a table, the blurred background changes to other locations (hidden cuts)
+  - table with guests: the camera and the dishes on the turntable are still, the guests change with cuts (a transitional case toward pan.round_table)
+status: hybrid
+fallback: |
+  1) a real shot from the source footage (detect);
+  2) imitation: a subject mask + a circular scroll of the background — a panorama, a 360 frame or a wide shot of the
+     location, with motion blur; convincing with fast rotation (the blur hides the flat background), with slow rotation
+     the "cardboard" look shows;
+  3) generation with the user's consent from gen_hint
+params:
+  bg_speed: 30–80 %/s calm; 135–225 %/s energetic (≈20–150°/s with a normal lens)
+  subject_drift: < 0.6 % of the frame per frame; a sway of ±3 % is acceptable
+  roll_bg: when looking from below, the background turns 2–3° per frame in the frame plane
+  blur: directional along the rotation, length ≈ the background shift per frame (5–15 % of the width on fast ones)
+  duration: 0.7–5 s (18–125 frames @25 fps)
+  light_sweep: brightness variation on the subject of 15–30 % with the period of one revolution
+when: the subject's inner state — euphoria, dizziness, total absorption in the task, "the whole world spins and I'm at the center"; the climax of a music video or the drop; a transition between locations where the subject stays and the world changes; no more than once or twice per video
+avoid: the subject moves a lot in the frame (the "lock" is lost); hair, smoke and anything transparent at the mask edges in an imitation; a slow imitation on a flat background; longer than 5–6 s (causes motion sickness); on top of handheld shake
+sfx: a rising whistling pass or wind over the whole rotation; on a change of place — a whoosh at the moment of the blur; on the drop — a hit at the start of the rotation
+genres: {fashion: allowed, drama: allowed, viral: allowed, fanedit: allowed, teaser: allowed, product: allowed, motivation: allowed}
+detect: |
+  ed_motion often reports "no global motion" (the frame is filled by the still subject) or gives a one-directional
+  SHIFT with ROTATE when looking from below. Reliable check with a person mask: inside the mask the displacement is ≈0,
+  in the background ring — a constant horizontal flow of 1.5–9 % of the frame per frame in one direction; blur only on
+  the background.
+  Difference from rig.locked_on (digital lock): there the whole frame moves together with the subject and the edges
+  wander; here the frame is full and only the background moves.
+  Difference from an orbit (arc): in an orbit the subject is seen from a changing angle (they turn relative to the
+  camera); here the angle on the subject doesn't change.
+  Difference from orbit.turntable: there the subject spins against a still background.
+engine: |
+  Imitation (D = 1–4 s):
+    mask(method='mediapipe_person'|'hf_remove_background', feather=6)
+    + background: reframe360(yaw=[0, 120–300], t=[0, D], ease='inOutQuad') or transform(shift=[[0,0],[-1.5,0]], t=[0, D], ease='inOutQuad') over a wide panorama
+    + blur(kind='directional', amount∝background speed) on the background only
+    + transform(rotate=[0, 45]) on the background when the subject is shot from below
+    + light_sweep(angle=0, period=D, strength=0.2) on the subject mask
+    + composite(layers=[background, subject])
+  Change of places: in the middle of the blur, transition(kind='whip') on the background layer only.
+gen_hint: <subject> stands still at the center of a rotating platform together with the camera, the subject stays locked in the frame while the room spins around behind them with strong horizontal motion blur, low angle, light sweeping across the face
+commands: ["make the world spin around the subject on the drop", "cut me out and spin the city behind me for 2 seconds", "rotation together with the subject, blurred background, from below", "change locations behind the subject through the rotation"]
+related: [rig.locked_on, orbit.turntable, pan.round_table, rig.body_mount, dolly.double]
+evidence: {examples: 10, sources: 9, measured: "in 6 of 10 the subject is locked (displacement < 0.6 %/frame), the background sweeps 1.5–4 %/frame (≈30–80 %/s) or 6–9 %/frame (135–225 %/s) with strong blur; when looking from below the background also turns ≈2.6°/frame; duration 0.65–4.65 s; in one example the locations change behind the subject in the blur; 3 of 10 are essentially pan.round_table, 1 unclear", confidence: medium}

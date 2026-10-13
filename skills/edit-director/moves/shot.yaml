@@ -1,0 +1,419 @@
+id: shot.close_up
+family: shot
+group: angle
+level: A
+aliases: [close-up, CU, tight shot, face close-up, choker, tight close-up]
+what: close-up — the face from forehead to chin (or an object, hands) fills almost the whole frame; emotion and reaction become the main event
+frames: |
+  1. Entry: usually a cut from a wider shot of the same subject or scene — the face height changes 2–5 times
+     at the cut (in one example 5 s of close-up → a cut to a wide shot, where the faces are 3–5 times smaller).
+  2. Frame: the face (forehead–chin, detector box) takes up 75–120 % of frame height; both eyes and the mouth are in frame,
+     the top of the head touches the top edge or is cut off, at the bottom the chin and the edge of the shoulders or collar.
+     The eye line at 0.32–0.35 of the height from the top; a frontal face stands in the center (x 0.44–0.54).
+  3. Within the shot the camera is static or barely "breathes" (jitter ≤0.5 % of the frame); movement comes from facial expressions, hands
+     near the face, water, makeup. A variant with camera movement — a slow pull-out ×0.7–0.76 over 1.1–1.45 s with an 8–16° roll.
+  4. Holds 1.5–5 s (38–125 frames @25 fps) — until the end of the reaction; exit with a cut to the object of the gaze or a wide shot.
+  Object close-up: a hand or an object fills 30–70 % of the frame, the background blurred (sharp zone 30–45 % of the area).
+variants:
+  - frontal and centered, looking into the lens or just past it — maximum contact (2 of 8)
+  - tight (choker): forehead or chin cut off, face 105–125 % of frame height (2 of 8)
+  - face in action — hands, water, makeup; the camera pulls out or tilts to follow the head (2 of 8)
+  - object: a hand or hands at work in close-up on a blurred background, sometimes handheld (2 of 8)
+  - wide 2.4:1 format — the face takes about a third of the width, the surroundings read on the sides (1 of 8)
+status: code
+fallback: a real close-up from the source footage is always better; in code — a crop of a wider shot by track(face) (lossless up to ×1.3 from 1080p and ×2 from 4K); beyond that — upscale the fragment; if there is no close-up of the subject and the crop can't handle it — generate a close-up with consent
+params:
+  face_h: face (forehead–chin by the detector) 60–125 % of frame height, typically 80–90 %
+  iod: interpupillary distance 22–46 % of frame height
+  eye_line: 0.30–0.36 from the top (typically 0.33); with a hand or an object above the head — up to 0.5–0.65
+  face_x: 0.45–0.55 for a frontal face; when looking sideways 0.35 / 0.65 with lead room in the direction of the gaze
+  headroom: 0 — the top of the head at the edge or cut off
+  duration: 1.5–5 s (38–125 frames @25 fps); an accent close-up in a montage 0.6–1.2 s (15–30 frames)
+  camera: static or jitter ≤0.5 % of the frame; optionally a slow push-in ×1.05–1.15 over the shot
+  size_jump: from the neighboring shot of the same subject ×2–5 in face height, no less than ×1.5
+  crop: S = 0.85·H / face_h_px, centered on the face, eyes at 0.33; limit without upscaling ×1.3 (1080→1080), ×2 (4K→1080)
+when: an emotional peak, a reaction to an event, a punchline, a moment of decision; the hook in the first 0.5–1 s (a big face stops the scroll); going "inside" the subject after a wide shot; quiet parts of the track and long notes; in fast genres — a short close-up on a downbeat. No more than 2–3 close-ups in a row without a wider shot if the geography matters to the viewer
+avoid: a ×2+ crop from 1080p (mushy); the face smeared by motion or blinking in the middle of the shot; a wide-angle lens right up to the face (distorts proportions); a fight or sport in motion without a wide shot — the space gets lost; two close-ups of the same subject in a row with a size difference under ×1.5 — reads as a jump cut
+sfx: the shot itself doesn't need a sound — bring the music down, voice and breathing close and dry; when entering with a cut on the beat — a soft impact or a low hit; on an object close-up — foley of the action (rustle, drops, click)
+genres: {drama: signature, ugc: signature, fanedit: signature, viral: allowed, motivation: allowed, sport: allowed, fashion: allowed, teaser: allowed, epic: allowed, calm: allowed, explainer: allowed, product: allowed, clips: allowed}
+detect: |
+  Face detector (YuNet or mediapipe, threshold 0.7) on frames every 0.5 s: face box 60–125 % of frame height,
+  all 5 points (eyes, nose, mouth corners) inside the frame, eye line 0.30–0.36 (up to 0.65 with a low composition),
+  usually one face. Without a face: one object or hands at 30–70 % of the frame, the background blurred — sharp zone ≤45 % of the area
+  with a sharpness contrast (p95/p20 of blocks) of ×8 or more.
+  ed_motion: most often "no significant global motion" or jitter ≤0.5 %; if there is movement — slow (≤×1.03/frame).
+  Differences: shot.extreme_close_up — only part of the face is in frame (eyes or mouth past the edge), the detector loses the face,
+  box >125 %; shot.medium_close_up — box 28–60 %, the shoulders fully and the upper chest in frame, eyes at 0.33–0.45.
+engine: |
+  classify_shot(clip, by='face') → size='CU' with a median face_h of 0.60–1.25·H and all 5 points in frame (frames every 0.5 s);
+  without a face — by='subject' (share of the sharp zone + a VLM check "object in close-up").
+  Synthesis from a wider shot: shot_crop(size='CU', target=track(face), face_h=0.85, eye_line=0.33, lead_room=0.1,
+  max_scale=2.0, upscale='auto') ≡ transform(scale=[S, S], center=track(face), t=whole_shot), S = 0.85·H / face_h_px.
+  With S > max_scale — look for a close-up in the source footage, otherwise generation. Entry on the beat: cut(at=beat) + sfx('impact', at=beat).
+gen_hint: close-up of <subject>'s face filling the frame from forehead to chin, eyes on the upper third, shallow depth of field with a soft dark background, static camera, subtle natural expression, cinematic soft light
+commands: ["close-up for the reaction in #4", "make #2 a close-up on the face", "insert a close-up of the hands before the drop", "find all close-ups of the subject in the source footage"]
+related: [shot.extreme_close_up, shot.medium_close_up, zoom.slow, zoom.punch, cut.insert, frame.central]
+evidence: {examples: 8, sources: 8, measured: "face 75–119 % of frame height (medians of 6 clips with a face), per frame 67–124 %; interpupillary 23–46 % of the height; eye line 0.32–0.35 in static frontal shots, 0.47–0.66 with a low composition; all 5 face points in frame in 5 of 6; 4 of 8 — static or jitter ≤0.5 %, 2 — a slow pull-out ×0.7–0.76 over 1.1–1.45 s; 2 object shots: sharp zone 30–67 % of the area; a close-up → wide cut changes the face ×3–5", confidence: high}
+---
+id: shot.extreme_close_up
+family: shot
+group: angle
+level: A
+aliases: [extreme close-up, ECU, XCU, detail, detail shot, macro insert]
+what: extreme close-up — only part of the face (eyes, lips) or a detail of an object is in frame; it pins the eye to a single feature and makes for short rhythmic inserts
+frames: |
+  1. Frame: one detail fills the frame — lips with the chin, the nose with the lips, the eyes with the bridge of the nose, a patch of skin
+     with a design, a line of text on paper, a mechanism, a piece of jewelry. The whole face doesn't fit: the eyes or the mouth are past the edge,
+     the face detector loses it or places points outside the frame.
+  2. Within the shot: static or a very slow push-in ×1.04–1.12 over 0.5–0.8 s; any shake is noticeable at this shot size,
+     so jitter is usually ≤1 % of the frame. Movement comes from a micro-action: lips saying a word or singing,
+     a finger sliding over skin, a typebar striking paper, a hand touching jewelry.
+  3. Length: in a series of details — 0.55–1.1 s per insert (14–27 frames @25 fps), 3–4 inserts in a row cut together;
+     a single detail under a voice or an action — 0.8–4.7 s.
+  4. The light is often low-key: a dark background, light that models the texture (3 of 8 — mean brightness 22–43 of 255); 2 of 8 — b/w.
+variants:
+  - part of the face: lips on a line or vocals, eyes, nose with lips; a series of details of different people cut together at 0.9–1.1 s each (4 of 8)
+  - body texture: skin, a design on the skin, fingers — dark background, slow push-in (1 of 8)
+  - object detail: lines on paper, a mechanism, jewelry — a series of inserts of 0.55–0.6 s each or a continuous action (3 of 8)
+  - detail "pulse": a fast push-in ×1.5 over 0.2 s and a pull-out ×0.65 over 0.3 s reveal and hide the detail (1 of 8)
+status: footage
+fallback: a ×1.6–2.5 crop from a close-up toward an anchor (eyes, mouth, object) by track(face) or track(object) — lossless only from 4K, from 1080p — upscale the fragment; object details — search the source footage for macro shots, otherwise generation with consent
+params:
+  scale: the detail fills 50–100 % of the frame; the face, if measured whole, exceeds 125 % of frame height (interpupillary over 45 % of the height, or the eyes and mouth don't fit together)
+  duration: in a series 0.55–1.1 s (14–27 frames @25 fps) per insert, 3–4 inserts; a single shot 1–3 s (25–75 frames)
+  camera: static or a slow push-in ×1.04–1.12 over 0.5–0.8 s; jitter ≤1 % of the frame
+  pulse: optional push-in ×1.3–1.5 over 0.2 s (5 frames) and return over 0.3 s (8 frames)
+  focus: focus on the detail, the background (if visible) blurred; sharp zone 15–85 % of the area depending on the plane of the detail
+  crop_from_cu: S = 1.6–2.5 toward the anchor; without upscaling only from 4K
+  light: low key, side light raking the texture; b/w as a stylistic option
+when: tension before a twist (eyes, fingers, a mechanism); a series of 3–4 inserts on the beats before the drop or under a drum fill; the texture of a product and material; lips on a key word or in the vocals; teaser — show a part without showing the whole; a "breath" transition between scenes. No more than one series of details per 15–20 s of video
+avoid: a detail without context — the viewer doesn't understand whose it is, so a close-up or wide shot is needed nearby; a ×2+ crop from 1080p; shaky handheld footage without stabilization; missed focus; a series of details longer than 4–5 inserts — tiring and loses the rhythm
+sfx: foley of the detail, close and loud — a click, a rustle of fabric, a typebar strike, a breath, a drop; lips — the voice dry and close; in a rhythmic series — a tick or click on each cut; for tension — a low drone
+genres: {product: signature, fashion: signature, teaser: signature, drama: allowed, fanedit: allowed, phonk: allowed, viral: allowed, epic: allowed, motivation: allowed, sport: allowed, explainer: allowed, ugc: allowed}
+detect: |
+  The face detector (threshold 0.7) on a frame with a person loses the face or places the eyes/mouth beyond the frame edge; if it does find one —
+  box >125 % of the height, interpupillary >45 %. Without people — a VLM check of the frame "only a detail is visible, larger
+  than a palm" + signs: coarse texture (skin pores, paper fibers, letters 10–25 % of the frame high), one object
+  or one plane, few contours. ed_motion: static or a slow ZOOM-IN ×1.04–1.12 over 0.5–0.8 s;
+  in series — cuts every 14–27 frames @25 fps.
+  Differs from shot.close_up: in a close-up both the eyes and the mouth are in frame (all 5 face points inside).
+  Trap: false "faces" on letters and patterns (box 10–30 %) — filter them out with a 0.7+ threshold and stability across frames.
+engine: |
+  classify_shot(clip, by='face'|'vlm') → size='ECU': face points outside the frame, face_h > 1.25·H, or the face lost
+  while a person is present in neighboring shots; for objects — by='vlm'.
+  Synthesis: shot_crop(size='ECU', target=track(face, anchor='eyes'|'mouth') | track(object:<name>), scale=1.6–2.5 from CU,
+  upscale='auto'). Series of details: cut(at=beats[i]) × 3–4, insert 0.5–1 s (1–2 beats at 120 BPM)
+  + sfx('click', at=each_cut, gain=-10 dB). Optionally transform(scale=[1, 1.08], t=whole_shot, ease='linear').
+gen_hint: extreme close-up macro shot of <detail such as eyes, lips, skin texture or an object part>, the detail fills the entire frame, very shallow depth of field, dark background with raking side light, static camera with a slow subtle push in
+commands: ["a series of details before the drop: eyes, lips, hands", "extreme close-up of the lips on the chorus lyrics", "macro inserts of the product, half a second each", "make an eye detail out of #3"]
+related: [shot.close_up, shot.medium_close_up, cut.insert, cut.quick, focus.shallow, zoom.in_out]
+evidence: {examples: 8, sources: 8, measured: "a whole face was not found in any of the 8 (threshold 0.7): in 1 — eye points outside the frame with a box of 85–155 %, in 2 — false detections on letters and a pattern; series: cuts every 0.55–0.6 s (4 inserts) and 0.92–1.08 s (3 inserts); slow push-in ×1.04–1.12 over 0.5–0.8 s in 2 of 8; pulse ×1.54 over 0.2 s and ×0.65 over 0.3 s in 1; jitter 0.02–2.2 %; 3 of 8 low key (brightness 22–43), 2 — b/w", confidence: high}
+---
+id: shot.extreme_wide
+family: shot
+group: angle
+level: A
+aliases: [extreme wide shot, EWS, extreme long shot, ELS, very long shot, panoramic shot, landscape with a tiny figure]
+what: extreme wide shot — a landscape or a huge interior where a person or a car is a small dot, or absent altogether; scale, emptiness and place say more than the subject; the shot opens up the world, separates chapters and shows loneliness
+frames: |
+  1. Scale: a person 3–12 % of frame height (a splash in a lake ≈3 %, a running silhouette ≈5 %, figures by a pool
+     10–12 %), a car 4–11 % (6.7 and 10.8 % measured). In 2 of 8 there are no people — an empty road at dusk,
+     a giant object above a mountain. A borderline case — a figure ≈24 % of the height but only ≈2 % of the area: everything
+     else is the dark volume of a huge hall with a beam of light.
+  2. The environment — 85–100 % of the area: forest and water, a field in fog, hills and a road, the sky. The horizon is placed boldly:
+     high (0.08 — a field up to the fog), around a third (0.35 — a ridge), low (0.78 — sky over three quarters).
+  3. The event is a dot: a splash, a car driving away down a road, a runner on a ridge, a figure in a beam. Often night or
+     dusk, the light paints the frame (4 of 8): streetlights, a beam, a sunset, lights.
+  4. The camera is static in 7 of 8 (jitter ≤0.09 %); in one — a follow move after a car with 0.69 % jitter and
+     a final 4 % reframe over 0.4 s.
+  5. Length 1.7–4.7 s, typically 3 s.
+variants:
+  - a dot-event in nature — a splash in a lake, a runner on a ridge at night (2 of 8)
+  - a car in a landscape — driving away down a winding road or standing in a field shot obliquely from above (2 of 8)
+  - an empty landscape — a road to the horizon at dusk, sky over three quarters, no people (1 of 8)
+  - people in the environment — two figures by a pool in backlit sun with flares (1 of 8)
+  - the scale of architecture and wonder — a figure in a beam in a huge hall; an object the size of a mountain (2 of 8)
+status: footage
+fallback: an extreme wide shot can't be made in code from a tighter one; from a 4K extreme wide shot you can cut two shots — the extreme wide itself and a wide shot; a simple background (sky, field, water) can be extended 1.5–2 times via outpaint, turning a wide shot into an extreme wide; if the location isn't in the source footage — generate a landscape with a small figure with the user's consent (cheaper and more honest than replacing the subject)
+params:
+  subject_h: a person 3–12 % of frame height, a car 4–11 %; or no subject; the figure ≤2 % of the frame area
+  environment: 85–100 % of the frame area
+  horizon: 0.08–0.35 (the ground dominates) or 0.65–0.80 (the sky dominates); not at 0.5
+  duration: 2.5–5 s (63–125 frames @25 fps), typically 3 s; in fast cutting no shorter than 1.5 s
+  camera: static (jitter ≤0.1 %); a slow follow move after a car or a drift ≤0.5 % of the frame per frame is acceptable
+  light: dusk, night, backlit sun — a frequent choice (4 of 8)
+  vertical: 9×16 from 16×9 loses the landscape — a window on the dot-event with the horizon on a third, or generate a vertical extreme wide shot
+when: opening a video or a chapter — "the world" in 3 s, before the wide shot; a transition between locations and times of day; loneliness, smallness, waiting, the end of the road — a small subject in a huge world; the scale of an event — a splash-dot, lights, an object the size of a mountain; the ending — the subject walks away or remains a dot; a breather after a dense scene; in travel and epic videos — the backbone; 1–3 times per video
+avoid: moments where the face and a line matter; low resolution — the dot-event gets lost in the pixels, especially in vertical; fast cutting over an extreme wide shot — the landscape doesn't have time to read; several extreme wide shots in a row without a change of scale; a shaky or tilted horizon for no reason
+sfx: wide ambience — wind, a distant rumble, silence with a single event sound (a splash, an engine, distant footsteps); a musical pad or a long note; at a chapter opening — a low hit or a swell on the cut
+genres: {epic: signature, travel: signature, calm: signature, drama: allowed, motivation: allowed, teaser: allowed, sport: allowed, fashion: allowed, product: allowed, fanedit: allowed, clips: allowed, viral: allowed, explainer: allowed, phonk: allowed}
+detect: |
+  Person detector or pose (mediapipe) on frames every 0.5 s: a person ≤0.15 of frame height or no people;
+  YuNet finds no faces even on a frame upscaled ×4 (7 of 8; in the eighth — a single false detection of 2 % on lights). There is a horizon or an environment boundary (field, water,
+  ridge, tree line) offset from the middle of the frame (0.08–0.35 or 0.65–0.80).
+  ed_motion: "no significant global motion" in 7 of 8, jitter ≤0.1 %; brightness is often low (night, dusk).
+  Differences: shot.wide — a person 18–50 % of the height, the face 2–8 %; angle.birds_eye — a view straight down with no horizon;
+  drone.aerial — the camera flies, the horizon and the high angle are tilted, the movement is visible in ed_motion.
+engine: |
+  classify_shot(clip, by='person') → size='EWS' with person_h ≤0.15·H, or with no people and a horizon in frame.
+  Placement: chapter opening — EWS (3 s) → shot.wide → tighter (scene_funnel(order=['EWS', 'WS', 'MS', 'CU'])).
+  Synthesis: outpaint(scale=1.5–2) of a wide shot with a simple background; from a 4K extreme wide — two shots: the full frame and
+  shot_crop(size='WS', target=track(person)).
+  Vertical: reframe('9:16', target=track(person)|object:<dot_event>, keep_horizon='thirds').
+gen_hint: extreme wide shot of a vast <landscape / architecture>, a tiny lone <figure / car> occupying a small point of the frame, horizon on the <lower/upper> third, huge negative space, <dusk/night> light, static camera, epic sense of scale
+commands: ["open the video with an extreme wide shot", "find landscapes with a small figure in the source footage", "put an extreme wide shot before the ending", "extend #2 to an extreme wide shot via outpaint"]
+related: [shot.wide, angle.birds_eye, drone.aerial, frame.central, light.silhouette, time.timelapse]
+evidence: {examples: 8, sources: 8, measured: "people 3–12 % of frame height (visually, by a grid), cars 6.7 and 10.8 % (measured with a mask), no subject in 2 of 8, a borderline figure ≈24 % of the height at ≈2 % of the area; horizon 0.08–0.78; no faces in 7 of 8 (in the eighth — one false detection on lights); 7 of 8 — static (jitter ≤0.09 %), 1 — a follow move with 0.69 % jitter; clips 1.65–4.65 s", confidence: high}
+---
+id: shot.medium_close_up
+family: shot
+group: angle
+level: A
+aliases: [medium close-up, MCU, chest-up portrait, head and shoulders, talking head]
+what: medium close-up — head and shoulders down to mid-chest; the face reads, but gestures, clothing and a bit of the environment are visible — the workhorse shot for speech, dialogue and a reaction with a gesture
+frames: |
+  1. Frame: the face (forehead–chin, detector box) takes up 30–55 % of frame height; the bottom edge cuts across the chest
+     or the armpits, the shoulders fully in frame, 0–10 % headroom above the head. The eye line at 0.33–0.45 of the height from the top.
+  2. A frontal subject stands in the center (x 0.48–0.50); one turned to 3/4 or looking sideways — on a third
+     (x 0.32–0.44) with lead room in the direction of the gaze.
+  3. Within the shot the camera is static or barely breathes (jitter 0.1–0.6 % of the frame); hands, food, jewelry enter the frame
+     from below. A variant — a slow push-in ×1.4 over 1.25 s (face 28 → 37 % of the height) or the camera moving down the body.
+  4. Holds 2–4.5 s (50–110 frames @25 fps) — a whole phrase or reaction; exit with a cut to the other speaker
+     or to a close-up of the same subject (the face 1.6–2.5 times larger).
+variants:
+  - frontal and centered — a monologue, an address, a character's entrance (2 of 8)
+  - 3/4 or profile on a third, looking off-screen — a reaction in a dialogue (3 of 8)
+  - with action near the face — food, hands on the neck, someone else's hand touching the face and chest (3 of 8)
+  - no eyes: the frame from the lips to the chest, the emphasis on the body, the outfit and touch; the camera slides down by 55 % of the frame over 1.5 s (1 of 8)
+  - unusual orientation — an upside-down face shot from above a lying subject (1 of 8)
+  - borderline with the waist shot: with the face at 20–25 % of the height the frame already reads as a medium shot (1 of 8)
+status: code
+fallback: a real medium close-up from the source footage is better; in code — a ×1.5–2 crop of a waist or medium shot by track(face) (lossless from 4K, from 1080p no more than ×1.3); if the subject exists only in wide shots — another take from the source footage or generation with consent
+params:
+  face_h: 28–60 % of frame height, typically 40–50 %
+  iod: interpupillary 10–22 % of frame height
+  eye_line: 0.33–0.45 from the top (typically 0.36)
+  frame_bottom: mid-chest to the armpits; don't cut at the neck, elbows or waist
+  face_x: 0.48–0.52 frontal; 0.32–0.44 or mirrored 0.56–0.68 when looking sideways
+  duration: 2–4.5 s (50–110 frames @25 fps); in dynamic cutting 1–1.5 s (25–38 frames)
+  camera: static, jitter ≤0.6 % of the frame; optionally a slow push-in ×1.1–1.4 over 1–2 s
+  pair: a close-up of the same subject — face 1.6–2.5 times larger; a waist shot — 1.5–2 times smaller
+  crop: S = 0.45·H / face_h_px, eyes at 0.36; limit without upscaling ×1.3 (1080→1080), ×2 (4K→1080)
+when: speech to camera, an interview, a shot/reverse-shot dialogue, a reaction with a gesture; the base shot for a talking head — the meaning rests on it, while the close-up comes as an accent; alternating medium close-up ↔ close-up every 1–2 phrases holds attention; calm verses and instrumental breaks in music videos; introducing the subject after a wide shot
+avoid: two medium close-ups of the same subject in a row without a change of shot size or angle (jump cut); cutting at the joints — neck, elbows, waist; headroom over 15 % of the height; long medium close-ups in fast cutting for phonk or sport — they slow the rhythm; the subject at the very edge of the frame with no lead room for the gaze
+sfx: the voice is the main layer, the music under it ducked by −8…−12 dB; on cuts between the medium close-up and the close-up — no hits, at most a light tick on the beat
+genres: {explainer: signature, ugc: signature, drama: allowed, motivation: allowed, fashion: allowed, sport: allowed, travel: allowed, product: allowed, viral: allowed, teaser: allowed, calm: allowed, clips: allowed}
+detect: |
+  Face detector (threshold 0.7) on frames every 0.5 s: face box 28–60 % of frame height, all 5 points inside,
+  eye line 0.33–0.45; pose estimation (mediapipe): both shoulders in frame, elbows and hips not.
+  ed_motion: usually no events or jitter ≤0.6 %; sometimes a slow ZOOM-IN ×1.1–1.4 over 1–2 s.
+  Differences: shot.close_up — box >60 %, shoulders cut off; waist (medium) shot — box 15–28 %, elbows and waist visible;
+  the "no eyes" variant — eyes past the top edge with a box of 30–45 %: the presence of shoulders and chest in frame decides it.
+engine: |
+  classify_shot(clip, by='face') → size='MCU' with a median face_h of 0.28–0.60·H and all 5 points in frame
+  (+ pose: shoulders in frame, hips out of frame).
+  Synthesis: shot_crop(size='MCU', target=track(face), face_h=0.45, eye_line=0.36, lead_room=0.12, max_scale=2.0, upscale='auto').
+  Talking head: on the cuts between phrases alternate shot_crop(size='MCU') ↔ shot_crop(size='CU') (every 1–2 phrases),
+  no animation within the shot; duck(music, under=voice).
+gen_hint: medium close-up of <subject>, framed from mid-chest to just above the head, eyes on the upper third, both shoulders fully in frame, softly blurred background, static camera, natural gestures while talking
+commands: ["frame the talking head as a medium close-up", "alternate medium close-up and close-up on every phrase", "make #6 chest-up", "pick medium close-ups of the subject for the dialogue"]
+related: [shot.close_up, shot.extreme_close_up, zoom.slow, zoom.punch, cut.jump]
+evidence: {examples: 8, sources: 8, measured: "face 23–55 % of frame height (medians of 8 clips, 6 of 8 within 30–55 %), per frame 19–64 %; interpupillary 10–22 % of the height (except a face with glasses); eye line 0.33–0.46 in 6 of 8; face center x 0.48–0.50 frontal, 0.32–0.44 in 3/4; 6 of 8 — static or jitter ≤0.6 %, 1 — push-in ×1.39 over 1.25 s, 1 — a move down by 55 % of the frame over 1.5 s; length 1.9–7.6 s", confidence: high}
+---
+id: shot.realization
+family: shot
+group: angle
+level: C
+aliases: [epiphany moment, moment of realization, it dawns on them, realization shot, aha moment, reaction push-in]
+what: a close-up of the face at the moment it "dawns" on the subject — the eyes widen, the gaze drifts up or into the distance, while the camera slowly pushes in and the light on the face increases
+frames: |
+  1. Start: a medium close-up or a close-up, the face 25–45 % of frame height (up to 60–70 % for macro), the subject is busy with their own thing — talking,
+     smiling, looking down. The camera is already moving or static.
+  2. Slow push-in: the face grows ×1.1–1.5 over 0.8–2.5 s almost linearly (by face points), centered on the eyes;
+     a variant — an arc or a "swirl" around the face (roll up to 30–40°, shift up to 45 % of the frame over ≈2 s).
+  3. The turn at 35–80 % of the shot length: the smile fades, the eyes widen, the mouth opens slightly, the gaze goes up, to
+     the side or straight into the lens; sometimes a revealing gesture — lowering glasses, taking off a hood, raising the head.
+  4. Light: it increases on the face toward the end — face brightness ×1.1–2.4 (a cheek lights up, a backlight comes on, lights
+     switch on in the background); the background darker and softer than the face.
+  5. End: a hold on the face with the new expression for 0.5–1 s — or a cut right at the peak to what the subject has understood.
+  Shot 1.3–6.4 s, typically 2–3 s.
+variants:
+  - push-in with an expression switch: smile → a serious look into the lens, push-in ×1.5 over ≈1 s, the light on the face grows 2.4 times
+  - up and to the side: the face rises, eyes to the sky, the camera slowly circles in an arc, ×1.1 over 6 s
+  - swirl: a handheld camera circles near the face (roll ≈30–40°), the subject sharply lifts the head
+  - revealing gesture: a static macro of the face, the subject lowers their glasses — revealing widened eyes (≈0.25 s per gesture)
+  - lights in the background: profile, lights switch on one after another behind, face brightness grows by 75 %
+  - quiet: static, warm light from below, only the eyes change — the minimal version
+status: footage
+fallback: |
+  1) search the source footage: a close-up of a face with a change of expression (detect) — reactions, surprise, "got it";
+  2) enhance in code on any such shot: a digital push-in ×1.2–1.4 toward the eyes, raising face brightness with a mask by ×1.3–1.6
+     by the moment of the turn, slight darkening and blurring of the background, silence or a rise in the sound;
+  3) generation from gen_hint with the user's consent.
+params:
+  duration: 1.3–6.4 s (32–160 frames @25 fps), typically 2–3 s (50–75 frames)
+  face: 25–45 % of frame height at the start (macro up to 70 %), +10–50 % by the end
+  push: ×1.1–1.5 over 0.8–2.5 s, almost linear, centered on the eyes; arc — roll up to 30–40° and a shift of up to 45 % of the frame over ≈2 s
+  turn_at: the expression turns at 35–80 % of the shot length
+  face_light: face brightness ×1.1–2.4 by the end; the background 20–40 % darker than the face (≈)
+  gesture: (optional) revealing the face over 6–10 frames (0.25–0.4 s)
+  hold_after: 0.5–1 s on the new expression or a cut at the peak
+when: |
+  A plot twist: the subject understood, remembered, found the solution; the climax before the drop — the push-in under the build, the turn exactly
+  on a downbeat or a pause; the motivational "moment of decision"; in explainer and UGC — an "aha moment" before the answer;
+  comedic — a belated "it finally clicked". 1 per scene, keep it rare.
+avoid: |
+  No change of expression — then it is just a slow push-in. Too fast a push-in (×1.5 over 0.3 s) — that is already a crash zoom.
+  A bright background and flat light — the face doesn't stand out. Back to back with other close-up reactions — the effect drowns.
+sfx: |
+  The music drops away or holds a single note; under the push-in — a quiet rise (swell, riser without a hit) or a heartbeat; at the moment
+  of the turn — a soft hit, a chime or an inhale, then 0.3–0.5 s of silence. Comedic — a "ding".
+genres: {drama: signature, motivation: signature, teaser: allowed, epic: allowed, fanedit: allowed, viral: allowed, ugc: allowed, explainer: allowed, sport: allowed, phonk: forbidden}
+detect: |
+  ed_motion: often ZOOM-IN ×1.1–1.5 over 0.8–2.5 s, near-linear, conf ok (the push-in); or ROTATE up to 30–40° with SHIFT — an arc
+  around the face; otherwise static; no cuts inside.
+  Own checks: a large face (≥25 % of the height); the scale of the face points grows ×1.06–1.53; the brightness of the face area grows toward the end
+  (×1.1–2.4 in 4 of 7); the peak of local changes in the face area — at 35–80 % of the shot; the eyes and mouth open, the gaze goes
+  up or to the side.
+  Differs from zoom.crash: there ×2.5+ in ≤0.7 s with motion blur. From zoom.slow: there is no change of expression or light there. From
+  shot.close_up: the same shot size, but here there is a "turn" inside the shot. From frame.interview: the subject doesn't talk to
+  an interviewer but freezes.
+engine: |
+  footage: find_shot(face_h>=0.25, expression_change=True, gaze_shift='up|off|lens') → t_turn = peak of face changes.
+  push-in: transform(scale=[1, 1.35], center=track(face:eyes), t=[t0, t_turn+0.6], ease='linear').
+  light: relight(mask=mask(method='face', feather=40), gain=[1.0, 1.5], t=[t_turn-0.4, t_turn+0.3], ease='outQuad')
+        + color(params={exposure: -0.3EV}, mask='background') + blur(kind='gaussian', amount=3, mask='background').
+  arc (optional): transform(rotate=[0, -12], shift=[[0, 0], [-0.1, 0.05]], t=[t0, t_turn], ease='inOutQuad') on a 4K source.
+  sound: duck(music, -15dB, at=t_turn-0.5) + sfx('swell', at=t0, align='peak' at t_turn) + sfx('impact', at=t_turn, gain=-9dB).
+gen_hint: slow push-in on <person>'s face in close-up as a realization dawns, their smile fades, eyes slowly widen and lift past the camera, lips part, warm light gradually brightens on the face while the background stays dark and soft, quiet held moment, shallow depth of field
+commands: ["epiphany moment on #6: a slow push-in and light on the face", "on the line \"got it\" — a realization shot with silence", "a close-up of the face before the drop, the eyes widen exactly on the beat", "make an aha moment at 0:21 in the explainer video"]
+related: [zoom.slow, zoom.crash, shot.close_up, dolly.zoom, light.flash]
+evidence: {examples: 7, sources: 7, measured: "push-in by face points ×1.06–1.53 in 5 of 7 (×1.53 over ≈1 s, near-linear), an arc with a 40° roll and a 45 % shift over 2 s (1), static (2); face brightness grows ×1.1–2.4 in 4 of 7; the peak of face changes at 13–100 % of the shot (median ≈40 %); glasses reveal ≈0.25 s (1); lights switch on in the background (1); shot 1.3–6.4 s; shot size — by a grid (≈)", confidence: medium}
+---
+id: shot.video_portrait
+family: shot
+group: angle
+level: B
+aliases: [video portrait, living portrait, moving portrait, portrait shot, posing for the camera, people-of-place series]
+what: a person (or a group) poses for the camera as if for a photo but is filmed on video — almost motionless, looking into the lens or past it, while the wind, breathing and the background stay alive; a series of such portraits tells about a place and its people
+frames: |
+  1. Pose: the subject stands or sits upright, arms crossed, on the hips or down; looking into the lens (4 of 6) or past it
+     (2 of 6), with no lines — the face "holds" the pause.
+  2. Shot size: from a medium shot (face 12–20 % of the height, figure waist-up) to a waist shot or full body in a characteristic
+     environment; the face in the central band (x 0.40–0.60), eyes at 0.25–0.40 of the height.
+  3. Almost no movement inside: 2–12 % of the pixels change per frame. What lives is the wind in the hair, blinking, breathing and
+     especially the background: traffic passes, people walk, a kitchen is at work.
+  4. Camera: a tripod (jitter ≤0.11 %) — or a slow push-in ×1.2–1.45 over 0.6–0.9 s (almost linear); sometimes
+     a there-and-back "breathing" ×1.18 and ×0.85 of 0.9 s each; occasionally a handheld tilt of 15 % over 0.7 s.
+  5. In the edit — as a series: portraits of 0.5–3 s each, cuts on the beat (≈12 frames per portrait in a fast series), different people
+     in the same pose and shot size.
+variants:
+  - single, into the lens: a medium shot, the subject looks into the camera, their city or their work behind them
+  - people-of-place series: 3–6 portraits in a row of ≈0.5 s each, different people, the same pose, and a push-in on the last one
+  - group: a crew by a car or in a workshop poses as if for a photo, a light push-in and pull-out
+  - in the wind: a close-up from below, hair and fabric flying, a camera tilt follows the face
+  - past the camera: looking to the side, the face in profile or three-quarters, the background blurred
+status: footage
+fallback: |
+  1) search the source footage: shots where a person stands almost motionless, facing the camera, without speech (detect);
+  2) in code from any such shot: stabilization, a slow push-in ×1.2–1.4, slow-down ×0.5–0.8 (flow), centered
+     framing, color matched to the series; series — the same shot size and centering for all;
+  3) generation from gen_hint with the user's consent (with real people — only their approved footage).
+params:
+  duration: single 1.5–3 s (38–75 frames @25 fps); in a series 0.5–1 s (12–25 frames) per portrait
+  framing: medium or waist shot — face 12–20 % of the height; close-up in the wind — up to 30–35 %; group — full-body figures 40–60 %
+  position: face x 0.40–0.60, eyes at 0.25–0.40 of the height; angle — chest level or slightly below
+  gaze: into the lens (typical) or past it to the side
+  inner_motion: 2–12 % of the pixels change per frame — the pose holds, the background and the wind move
+  camera: tripod (jitter ≤0.11 %) | push-in ×1.2–1.45 over 0.6–0.9 s linear | "breathing" ×1.18 there and back, 0.9 s each
+  speed: often slow motion ×0.5–0.8 (≈)
+  series: 3–6 portraits, cuts on every beat or every two; one shot size, centering and color treatment
+when: |
+  A portrait of a place and its people: travel, a city, working professions, "meet the team" in a product video, a casting
+  of characters in fashion and music videos, the end of a documentary block. A series to a steady beat — on a verse or a bridge; a single one — at the start
+  or the end of a chapter. No more than one series per 20–30 s.
+avoid: |
+  The person talks or acts actively — then it is an interview or a reportage. Different shot sizes and centering in a series —
+  the rhythm breaks. Longer than 3–4 s on one portrait without camera movement. An awkward, "uncomposed" pose — a portrait rests
+  on the subject's confidence.
+sfx: |
+  Environment sound (city, wind, work noise) under the music; on each cut of the series — a kick or a shutter click; in a single
+  portrait — a pause in the music or a long note.
+genres: {travel: signature, fashion: signature, product: allowed, ugc: allowed, motivation: allowed, calm: allowed, drama: allowed, explainer: allowed, teaser: allowed, sport: allowed}
+detect: |
+  ed_motion: no events (jitter ≤0.11 %, 3 of 6) or a slow ZOOM-IN ×1.2–1.45 over 0.6–0.9 s, near-linear; in a series —
+  cuts every ≈12 frames with the same shot size.
+  Own checks: 2–12 % of the pixels change, motion is in the background and at the edges of the figure; one person (or a group) facing the
+  camera, the face in the central band; the mouth barely moves (no speech); the pose "arms crossed / on the hips / down".
+  Differs from frame.interview: there the person talks and looks past the camera at the interviewer. From address.direct: there they talk into
+  the lens. From frame.tableau: a tableau is a staging of the whole frame with several figures in a set, a portrait is about
+  one person or a group and their environment. From time.freeze: there is life inside a portrait.
+engine: |
+  footage: find_shot(persons>=1, facing_camera=True, speaking=False, inner_motion_max=0.12) → into the series.
+  single portrait: stabilize(1.0) + reframe(aspect, target=track(face), centered=True, headroom=0.25)
+                + transform(scale=[1, 1.3], center=track(face), t=whole_shot, ease='linear') + speed(rate=0.7, interp='flow').
+  series: portrait_series(clips[], per=0.5–1.0 s, cut='beat', match='face_size+center', grade='shared'),
+         the last portrait longer (2–3 s) with a push-in.
+gen_hint: video portrait, <person> stands still and looks straight into the lens like posing for a photograph, arms crossed, medium shot centered, <their workplace / neighborhood> busy behind them, wind moving hair and clothes, very slow push-in, natural light, shallow depth of field
+commands: ["a series of portraits of the city's people on the verse — half a second each, identically centered", "make #2 a living portrait: a slow push-in and slow motion", "chapter ending — a portrait of the subject into the camera, 3 seconds", "meet the team — portraits into the lens to the beat"]
+related: [frame.interview, address.direct, frame.tableau, frame.central, time.cinemagraph, time.freeze]
+evidence: {examples: 6, sources: 6, measured: "tripod in 3 of 6 (jitter 0.07–0.11 %), push-in ×1.44 over 0.56 s and \"breathing\" ×1.18/×0.85 of 0.88 s each, tilt 14 % over 0.68 s; 2–12 % of the pixels change per frame; series: cuts at frames 14 and 26 (portrait ≈0.5 s); looking into the lens in 4 of 6; shot size and face position — by a grid (≈)", confidence: medium}
+---
+id: shot.wide
+family: shot
+group: angle
+level: A
+aliases: [wide shot, WS, long shot, LS, wide, full-body subject in the environment]
+what: wide shot — the whole subject with the location around them; the shot answers the questions "where", "who stands where" and "how the subject relates to the space", so it opens scenes and gives the viewer back the geography
+frames: |
+  1. The whole figure: a standing subject 20–45 % of frame height (42–45 % closer, 20–29 % deeper), a seated or
+     crouching one 15–55 %; head and feet in frame. The face is small — 2–8 % of frame height (the detector finds it
+     only on an upscaled frame).
+  2. The environment takes up more than half the frame: a hall, a street, a field, a beach, a forest. The subject can also be an object — a car
+     at night at 8 % of frame height ≈.
+  3. Composition: the subject on a third (x 0.30–0.40 or 0.60–0.72) in 6 of 9, centered in 3 (a symmetrical hall,
+     a passage, an arch). On location the horizon is offset from the middle: low (0.62–0.70 from the top, the sky dominates) or
+     high (≈0.25, the ground and the road dominate).
+  4. The camera is static in all 9 examples (jitter ≤0.32 % of the frame); movement comes from the subject — walking, sitting down,
+     appearing in a lit doorway; sometimes a light in the frame switches on or off.
+  5. Length 1.9–6 s, typically 3–3.5 s — longer than close-ups: the viewer needs time to read the space.
+variants:
+  - a figure in a landscape — a silhouette at sunset, by a road, in a field; horizon low or high (3 of 9)
+  - figures in architecture — a hall, a gym, a city street; deep perspective, symmetry, two people far apart (3 of 9)
+  - emptiness around — a seated subject among empty rows of seats; a long static shot (1 of 9)
+  - a couple in the environment — two people sitting on a beach, mountains on the horizon (1 of 9)
+  - an object instead of a subject — a car in an empty lot at night under a streetlight (1 of 9)
+status: footage
+fallback: a wide shot can't be made in code from a close-up; if there is a tighter shot (full body or medium) with a simple background (sky, wall, field) — extend it 1.5–2 times via outpaint; from a 4K extreme wide shot a wide shot is cut out with a ×1.5–2 crop; if the location isn't in the source footage — generate a wide shot of the location with the user's consent
+params:
+  subject_h: standing 20–45 % of frame height (typically 30–40 %), seated 15–55 %; head and feet in frame
+  face_h: 2–8 % of frame height
+  environment: the environment takes more than half of the frame area
+  placement: the subject on a third (x 0.30–0.40 or 0.60–0.72); center — with a symmetrical hall, arch, corridor
+  horizon: on location 0.62–0.70 (sky) or 0.25–0.35 (ground), not at 0.5
+  duration: 2.5–5 s (63–125 frames @25 fps), typically 3.5 s; in fast cutting 1–1.5 s (25–38 frames)
+  camera: static (jitter ≤0.35 %); a slow push-in or pull-out ≤×1.1 over the shot is acceptable
+  crop: from a 4K extreme wide — a ×1.5–2 window on the subject; in 9×16 — a window on the subject with ≥30 % of environment above the head
+when: opening a scene or a change of location — "where are we" in 2–4 s, before medium shots and close-ups (the funnel wide → medium → close-up); returning to a wide shot after 3–5 close-ups to restore the geography and give a pause; loneliness, emptiness, scale — a small subject in a big space; the end of a scene — the subject walks off into the depth or stays alone; in music videos — the intro, the bridge, long notes; in travel and calm videos — the main material
+avoid: emotional peaks and lines where the eyes are needed; a wide shot cropped to 9×16 so that the environment is gone and the subject is still small; several wide shots in a row without a change of scale or angle; the horizon exactly in the middle and the subject exactly in the center without symmetrical architecture — static and empty; a shaky handheld wide shot for no reason
+sfx: the ambience of the place — wind, city, hall echo, surf, distant footsteps; the music opens up wider; on a cut from a close-up to a wide shot in fast cutting — a soft whoosh or an airy sweep
+genres: {travel: signature, calm: signature, epic: signature, drama: allowed, motivation: allowed, sport: allowed, fashion: allowed, product: allowed, explainer: allowed, teaser: allowed, ugc: allowed, viral: allowed, fanedit: allowed, clips: allowed, phonk: allowed}
+detect: |
+  Person detector or pose (mediapipe) on frames every 0.5 s: person box 0.18–0.5 of frame height, head and
+  feet inside the frame; YuNet on a frame upscaled ×3–4 finds faces of 2–8 % of the height (1.9–8.3 % in the examples).
+  Seated — box 0.15–0.55 with the environment visible around. Without people — one main object (a car, a house) ≤15 % of the frame.
+  ed_motion: almost always "no significant global motion" (9 of 9), jitter ≤0.35 %.
+  Differences: full shot (figure 60–100 % of the height) — more subject than environment; medium shot — face 15–28 %,
+  no feet; shot.extreme_wide — a person ≤12–15 % of frame height or indistinguishable, the shot rests on the landscape;
+  angle.birds_eye — a view straight down with no horizon.
+engine: |
+  classify_shot(clip, by='person') → size='WS' with a median person_h of 0.18–0.5·H and feet in frame;
+  fallback path — by='face' on an upscaled frame: face_h 0.02–0.08·H.
+  Scene structure: scene_funnel(order=['WS', 'MS', 'CU'], return_to='WS', every=4) — new primitive: opens
+  the location with a wide shot, leads to close-ups and returns to a wide shot after every 3–5 close-ups.
+  Synthesis: from a 4K extreme wide shot_crop(size='WS', target=track(person), subject_h=0.35, placement='thirds');
+  extending a shot filmed too tight: outpaint(scale=1.5–2) with a simple background.
+gen_hint: wide shot of <subject> standing full-body in <environment>, subject small on the right third, lots of surrounding space, horizon on the lower third, static camera, natural light, cinematic composition
+commands: ["start the scene with a wide shot", "insert a wide shot after three close-ups", "find wide shots of the location in the source footage", "extend #3 to a wide shot"]
+related: [shot.extreme_wide, shot.medium_close_up, shot.close_up, frame.two_shot, frame.central, angle.high]
+evidence: {examples: 9, sources: 9, measured: "standing figure 20–45 % of frame height (visually, by a grid), seated 15–55 %; faces on a frame upscaled ×4 1.9–8.3 %; subject on a third in 6 of 9; horizon 0.25 or 0.65–0.70; static camera in 9 of 9 (jitter ≤0.32 %); clips 1.9–6 s (one long take of 204 s)", confidence: high}

@@ -1,0 +1,749 @@
+id: scene.archival
+family: scene
+group: aesthetics
+level: B
+aliases: [archive, historical footage, archival footage, found footage, old recordings, family archive, newsreel]
+what: inserting real old material — newsreels, educational films, home movies and tapes, old photographs — as context, a memory or a rhythmic montage inside a modern video
+frames: |
+  1. Archive is recognized by the medium, not by an effect: black and white or sepia (saturation 0–73, sepia b* +19), the faded color
+     of film (saturation 37) or tape softness with a color fringe; 4:3 format, softness, grain, flicker of 0.6–3 levels.
+  2. A single insert: 1.2–5 s with the original sound or silence, with no grade adjustment — the contrast with the "fresh" footage is the whole point.
+  3. Archival montage: cuts every 0.12–0.4 s (3–10 frames @25 fps), often to the beat; shots from different years and media mixed together.
+  4. Photo series: old photographs one at a time in the center of a black frame (≈36 % of the width × 83 % of the height), changing every 0.16–0.48 s;
+     the photos show margins, borders, cut edges, handwritten notes.
+  5. Mosaic: 3 rows of 3–4 archival shots on black, the clips change out of sync every 0.12–0.36 s, with film light leaks and flashes on top.
+variants:
+  - educational or science film: a microscope, diagrams, faded blue-green color, a fade from black at the start
+  - silent film: black and white or sepia, sped-up motion, scratches
+  - home movie: a faded street seen from a car window, light leaks, smeared motion
+  - 80s/90s tape: a sunset, running, a color fringe at the edge of the frame, a title card in a serif font
+  - photo series: old portraits one at a time on a black background, to the rhythm
+  - memory mosaic: a grid of archival clips with light leaks
+status: footage
+fallback: search the user's source footage (family films, tapes, photo scans) or the public domain, checking the rights; imitation — a fresh shot + look.film or look.vhs (in code); generation of "archival" shots only with consent and without passing them off as authentic documents
+params:
+  insert_length: single insert 1.2–5 s (30–125 frames); montage — 0.12–0.4 s per shot (3–10 frames @25 fps)
+  photo_series: 0.16–0.48 s per photo, the photo 30–40 % of the width, centered on black, no animation or a slight zoom-in ×1.02–1.05
+  mosaic: 3×3 or 3×4, black gaps of 1–3 %, the clips refresh out of sync every 3–9 frames
+  aspect: native 4:3 (bars of 12.5 % on each side in 16:9) — do not stretch; vertical — crop to the center of interest
+  grade: do not "modernize"; leveling the exposure is acceptable; sepia b* +15…+25 or black and white
+  frame_rate: native 16–24 fps; silent film — played back at ×1.3–1.5
+  audio: the archive's original sound, film crackle or silence; duck the music by 6–12 dB under archival speech
+when: documentary and explainer videos (the context of an era), family and anniversary videos, nostalgic music videos, a "brand history" intro, social-cause videos; the montage — on the build to the drop, a single insert — in a pause or under the voiceover
+avoid: material without rights (newsreels and stock footage with watermarks); archive footage of real tragedies used for effect; passing off generated shots as an authentic document; stretching 4:3 to 16:9; archival blocks that are too long and unconnected to the main story
+sfx: projector whir, tape hiss, clicks; on a photo series — a shutter or slide projector click on each change; on a mosaic — a dense drum rhythm
+genres: {explainer: allowed, drama: allowed, motivation: allowed, fanedit: allowed, teaser: allowed, calm: allowed, clips: allowed, viral: allowed}
+detect: |
+  Saturation ≤40 (black and white) or sepia b* +15…+25, or film flicker and grain (see look.film), or tape color
+  softness (see look.vhs) — while the neighboring shots of the video are modern (sharp, 16:9, normal color): the medium
+  changes at the cut. 4:3 bars (bars left/right ≈0.12), native frame rate 16–24 fps.
+  ed_motion: montage — cuts every 3–10 frames; photo series — bars left/right ≈0.3 and content changes without movement.
+  Difference from look.film and look.vhs: this is real old footage (the content and the medium of the era), not a filter on top of a new shot.
+engine: |
+  footage_search(kind='archival', tags=['bw','sepia','home_movie','tape','photo']) → clips
+  + cut(at=beats) with a length of 0.12–0.4 s for the montage | cut for an insert of 1.2–5 s
+  + letterbox(ratio='4:3') (native format) + speed(rate=1.4) for silent film
+  photo series: photo_sequence(images, every=0.24, size=0.36, bg='black', sync='beats')
+  mosaic: split_screen(layout='grid', rows=3, cols=3, gutter=0.02, stagger=0.2) + flash(color='amber', every=1.5)
+  sound: sfx('projector', gain=-18) under the whole insert, duck(music, under=archive_voice)
+gen_hint: authentic-looking archival footage of <scene> from the <1920s | 1970s | 1990s>, period clothing and objects, <black and white with film scratches | faded home-movie colour | VHS tape softness>, 4:3 frame, era-appropriate camera
+commands: ["insert 3 seconds of archival newsreel before the drop", "a photo series of old photos, one per beat", "a mosaic of family films for the intro", "find old tape recordings in my source footage"]
+related: [look.film, look.vhs, look.retro_graphics, layout.split_screen, cut.quick, time.speed_ramp]
+evidence: {examples: 9, sources: 9, measured: "black and white (saturation 0–1) in 2, sepia (b* +19) in 1, faded color (37–73) in 2, tape in 2 of 9; montage — cuts every 0.2 s (5 frames @25 fps) and 0.12–0.36 s in the mosaic; photo series — a new photo every 0.16–0.48 s, photo ≈36 % of the width × 83 % of the height; flicker of 0.6–3 levels in the film ones", confidence: medium}
+---
+id: scene.diorama
+family: scene
+group: aesthetics
+level: B
+aliases: [diorama, scale model, model shot, miniature model, dollhouse, toy world, miniature set]
+what: a real scale model — a model of a building, a cutaway dollhouse, toy soldiers, toy cars, a figurine in a music box — filmed either as the real world or openly as a model; gives a fairy-tale feel, a "handmade" quality and ironic distance
+frames: |
+  1. The camera moves slowly and evenly, as on motion control: a push-in ×1.33 over 2.5 s, a pull-out ×0.79 over 2.3 s or ×0.30
+     over 5.6 s, a downward tilt of ≈2.5 % of the frame per frame for 6 s; the curves are almost linear, no shake (≤0.2 %).
+     The other shots are static (4 of 8). Shot length 2.4–9.4 s — the viewer is given time to examine the details.
+  2. The details are sharp; in macro shots of toys the background is heavily blurred, in "architectural" models everything is sharp.
+  3. Effects in scale: small explosions and fire, LED flashers (dark frames every 4 — strobing),
+     smoke; the figures are motionless, turned by a mechanism or animated frame by frame.
+  4. Reveal: a long pull-out shows the cutaway of a dollhouse with its floors and rooms; or a cut "real mansion
+     from above → its model from the same angle" (≈1 s of reality → ≈2 s of the model → reality again); or the shell of a model
+     airplane dissolves, revealing the inside.
+variants:
+  - toy war: toy soldiers with weapons among small explosions, a slow pull-out with parallax
+  - toy car as a real one: macro right at the "road", night, red and blue flashers
+  - model landscape: a building on a cliff, a pastel pink-lilac palette, a static wide shot
+  - cutaway dollhouse: a pull-out ×0.3 over 5.6 s reveals a multi-story cross-section
+  - a cut reality ↔ model with the same angle and framing
+  - music box and display case: a rotating figurine in an open box, a slow push-in
+  - puppet film set: a pan down from the night sky onto a stage with puppets
+  - model cutaway: the shell melts away, showing the internal structure
+status: footage
+fallback: |
+  no model in the source footage — generation of a model world with the user's consent; imitation in code from ordinary footage
+  shot from above — via focus.tilt_shift (blur bands, saturation, speed-up); a cut reality ↔ model is possible
+  only if both shots exist with the same angle.
+params:
+  camera_motion: slow and linear — ≈×1.005–1.012 scale or 0.5–2.5 % of the frame per frame @25 fps; shake ≤0.2 % of the frame
+  shot_length: 2.5–9.5 s (60–240 frames); shorter than 2 s and the model doesn't have time to register
+  dof: toys in macro — background blurred; architectural models — everything sharp
+  palette: toy-like saturation (median 135–159 of 255) or pastel with a pink-lilac shift (R>B>G)
+  reveal_pullback: ×0.3–0.8 over 2.3–5.6 s, linear or inOutSine, centered on the middle of the model
+  match_cut: the same angle, framing and center; reality ≈1 s → model ≈2 s → reality
+  scale_fx: slow down fire, smoke and water in a model by ≈×2–4 (by the rule "slowdown ≈ square root of the scale", for 1/16 — ×4)
+when: intro and outro in a "fairy tale" spirit, introducing a place (a model of a building or a city), an ironic transition reality → model ("everything is under control", "a toy world"), explainer videos (a cutaway, how something works), a product in miniature, nostalgic themes; 1–2 shots per video
+avoid: fast and jerky camera movements — they give away the scale and break the "model" feel; seams and rough texture in a close-up if the model is passed off as reality; fire and water in a model at normal speed — they look small; fast cutting at 0.5 s per shot
+sfx: a music box mechanism, clicks and ticking for an openly shown model; muted real ambience if the model is passed off as the world; for toy war — real explosions pitched down
+genres: {calm: allowed, explainer: allowed, teaser: allowed, fanedit: allowed, product: allowed, travel: allowed, drama: allowed}
+detect: |
+  ed_motion: long (≥2 s) ZOOM-IN/OUT or SHIFT with an almost linear curve and a small step (≤×1.012 or ≤2.5 % per frame)
+  with jitter ≤0.2 %; or static; cuts between shots with the same geometry but a different texture and color
+  (reality ↔ model); toys with LEDs show regular black frames (strobe).
+  Visually: surfaces that are too clean and simplified, a coarse "grain" of the materials, toy grass, frozen poses
+  of the figures, tiny practical lights; shallow depth of field on "large" objects (cars, buildings).
+  Differences: focus.tilt_shift — a real scene with blur bands, live cars and people sped up; scene.tiny_people —
+  a live person in a world of objects; stop-motion animation — the figures move in jerks with holds of 2–3 frames.
+engine: |
+  From the source: keep the speed at 1.0; if the shot is static — transform(scale=[1, 1.12], t=[0, 3], ease='linear').
+  Reveal pull-out from 4K: transform(scale=[2.5, 1], center=[0.5, 0.55], t=[0, 5], ease='inOutSine').
+  Cut reality ↔ model: match(on='shape') — cut(real, 1.0 s) → cut(model, 2.0 s) → cut(real).
+  Effects in the model: speed(rate=0.3, interp='flow') on fire, smoke and water.
+  Without a model: the focus.tilt_shift recipe + color(params={saturation: +35 %}) + speed(rate=2).
+gen_hint: handcrafted miniature diorama of <a seaside town>, tiny detailed model buildings and figurines, pastel colors, soft studio light, slow smooth motion-control camera push-in, shallow depth of field, cinematic model photography
+commands: ["cut: the real house from above → its model from the same angle", "a slow pull-out that reveals it is all a dollhouse", "an intro in the style of a toy diorama", "generate a model of our office for the start of the video"]
+related: [focus.tilt_shift, scene.tiny_people, scene.forced_perspective, cut.match, anim.stop_motion, time.slow_motion]
+evidence: {examples: 8, sources: 8, measured: "camera movement: push-in ×1.33 over 2.5 s, pull-outs ×0.79 over 2.3 s and ×0.30 over 5.6 s, tilt of 228 % of the frame over 6.3 s (peak 2.5 %/frame); static in 4 of 8 (jitter 0.01–0.06 %); reality↔model cut 0.96 s / 2.04 s; shots 2.4–9.4 s; saturation of the toy shots 135–159; flasher strobe — a dark frame every 4; the slowdown rule for fire is common practice, not a measurement", confidence: medium}
+---
+id: scene.falling
+family: scene
+group: aesthetics
+level: B
+aliases: [falling, free fall, falling camera, falling through, fall into darkness, tumble in the void]
+what: a fall of a person, an object or the camera itself — accelerating downward, with wind in the hair, a tumble in the void or a plunge into darkness; loss of control, a dream, a climax and the "drop"
+frames: |
+  1. The camera falls: a top-down shot of a city at night pushes in ×7.7 over 4.9 s, a camera above a person on the ground — ×3.4 over
+     3.25 s; an accelerating curve — half of the distance is covered in the last 6–15 % of the time (as in free fall),
+     the center is fixed; the ending — an impact and 2–4 black frames. The "down from the light" variant: a bright spot overhead
+     shrinks ×0.08 over 1.6 s with the same acceleration and fades out to black.
+  2. Falling together with the subject: the camera looks up into the face of the falling person, the background flies back in radial streaks
+     (≈9 % of the frame/s along each axis), hair up, the frame sways in roll by ±17–22° and shakes ≈1.3 %; or the subject
+     is "pinned" to the center of the frame with arms spread while the background creeps upward at ≈1 % of the frame/s.
+  3. Tumble in the void: the body rotates at ≈97 °/s (255° over 2.6 s) on black, drifting slowly.
+  4. Falling into darkness: the subject sinks toward the bottom of the frame, the light recedes upward, the frame darkens to black over ≈2 s.
+  5. Comedic jump: a jump off a cliff, the camera follows down (a tilt of ≈80 % of the frame over 1.2 s) and lands the subject
+     in an unexpected place — a cut or a landing exactly on the hit.
+  6. Falling objects in slow motion: bags and fruit float down against a wall at a constant speed of ≈6–7 % of the frame/s.
+variants:
+  - camera falls: a vertical dive toward a city or the ground with acceleration, ending in black
+  - falling with the subject: the face in close-up, radial background streaks, hair up, roll and shake
+  - tumble in a weightless void: rotation ≈100 °/s on black
+  - plunge into darkness: the subject goes down, the light goes up, a fade to black
+  - sinking: a view from below toward a bright surface, a hand reaches for the light, the light shrinks and goes out
+  - a comedic jump with an unexpected landing
+  - falling objects in slow motion against a wall or the sky
+  - dream fall: a shot of a lying person rotated by 90°, the person seems to hang or fall
+  - a top view of people lying down — the end of the fall, a static wide shot
+status: hybrid
+fallback: |
+  in code: a camera dive — an accelerating digital zoom-in on a top-down view (drone, rooftop, 4K) with increasing radial blur
+  and a black cut on the impact; sinking — an accelerating zoom-out from a bright spot with a fade to black; rotating the frame by
+  90–180°; slow motion for falling objects (flow interpolation). Falling with the subject — the subject cut out with a mask over
+  a moving background plate (sky, city, texture) with directional blur; if there are no suitable shots — generation via gen_hint
+  with the user's consent.
+params:
+  camera_drop: scale ×3–8 over 2.5–5 s, ease inCubic–inExpo (50 % of the distance in the last 10–20 % of the time), center fixed
+  drop_blur: the radial blur grows with speed, maximum in the last 0.3 s
+  impact: 2–4 black frames (0.08–0.16 s) or a white flash of 1–2 frames + a hit
+  sink: zoom-out ×0.1–0.3 over 1.5–2 s, ease-in, brightness down to zero over the last 0.5 s
+  with_subject: background 5–40 % of the frame/s upward or radially, directional blur 8–20 px @1080p, roll ±5–20° with a period of 1–2 s, shake 1–2 %
+  tumble: rotation 60–120 °/s without stops, drift 1–3 % of the frame/s
+  objects_slowmo: speed 0.2–0.4× (flow), a constant falling speed of 5–10 % of the frame/s
+  real_fall: without slow motion a fall from 2 m lasts ≈0.64 s (16 frames) — for "realism" do not stretch it by more than ×1.5
+  rotate_frame: 90° or 180° for the "dream" variant
+  shot_length: 1.5–5 s; a dive — up to the impact on a downbeat
+when: the track's drop (the fall right on the riser's falloff, the impact — on a downbeat), the climax and loss of control in drama, dreams and anxiety, a transition between scenes through the black frame of the impact, a comedic landing in UGC and viral videos, slow motion of a falling product in product videos; 1–2 falls per video
+avoid: a fall without acceleration (looks like an elevator); an endless fall longer than 5 s with nothing happening; a sharp impact without sound; real danger and injuries on screen without an artistic context; calm videos — the tone is anxious
+sfx: rising wind or a riser over the whole fall, whistling air, then a dull thud and silence; for sinking — an underwater rumble and bubbles; in comedy — a descending whistle and a splash or a "boom"
+genres: {drama: allowed, epic: allowed, teaser: allowed, fanedit: allowed, motivation: allowed, viral: allowed, ugc: allowed, sport: allowed, travel: allowed, product: allowed}
+detect: |
+  ed_motion: ZOOM-IN ×3–8 (or ZOOM-OUT ×0.1–0.3) with an ease-in curve (50 % of the distance after 0.8 of the time), the center stable,
+  black frames at the end — a camera fall; ROTATE 60–120 °/s without stops — a tumble; luma drops to zero as the subject
+  sinks — a plunge into darkness; for objects in slow motion — a constant downward speed of 5–10 % of the frame/s.
+  Visually: hair and fabric stretch upward, arms spread, the background smeared in streaks upward or radially, the gaze up
+  at the receding light; a top-down view from a height.
+  Differences: scene.levitation — no acceleration, swaying in place; scene.flying — the movement is controlled, sideways or
+  upward, wind head-on; zoom.crash — a snap in ≤0.7 s without acceleration all the way to the end and without a black impact.
+engine: |
+  Dive: transform(scale=[1, 6], center=[0.5, 0.5], t=[t0, t0+3.5], ease='inCubic')
+  + blur(kind='zoom', amount∝speed, t=[t0+2.8, t0+3.5]) + fade(to='black', t=t0+3.5, dur=0.12)
+  + sfx('riser', at=t0, align='peak') + sfx('impact', at=t0+3.5); the impact — on a downbeat.
+  Sinking: transform(scale=[1, 0.15], ease='inCubic', t=[t0, t0+1.6]) + fade(to='black', t=t0+1.1, dur=0.5).
+  With the subject: mask('hf_remove_background') → composite over a background plate with a new primitive
+  plate_scroll(direction='up'|'radial', speed=0.2, blur=12) + transform(rotate=[-12, 12], t, ease='inOutSine')
+  + shake(amp=0.012, freq=6). Tumble: transform(layer, rotate=[0, 260], t=[t0, t0+2.6], ease='linear').
+  Objects: speed(rate=0.3, interp='flow').
+gen_hint: a young woman free-falling through the sky toward the camera, the camera falls with her facing her face, hair whipping upward, arms spread, clouds and city streaking past with radial motion blur, slight camera roll, cinematic, intense
+commands: ["camera dive onto the city into the drop, impact to black at 0:30", "make a fall into darkness at the end", "objects slowly falling in slow motion against a wall", "a tumble in the void on #6"]
+related: [scene.levitation, scene.flying, zoom.crash, time.slow_motion, time.speed_ramp, cut.flash, drone.fpv]
+evidence: {examples: 12, sources: 12, measured: "camera dive ×7.7 over 4.9 s and ×3.4 over 3.25 s, ease-in curves (50 % at 0.85 and 0.94 of the time), black at the end; sinking ×0.078 over 1.6 s ease-in → black; tumble 255° over 2.64 s; radial background ≈9 %/s along the axes, roll 17–22°, shake 1.3 %; tilt following the jumper 80 % of the frame over 1.2 s; falling fruit 6.4–7 % of the frame/s, constant; the real duration of a fall from 2 m is a calculation", confidence: medium}
+---
+id: scene.flying
+family: scene
+group: aesthetics
+level: B
+aliases: [flight, flying person, superhero flight, takeoff, wind in the face, flight shot, flight chase cam, flying object]
+what: a person, a vehicle or an object flies through the air under control — takes off, speeds over the ground, soars in the wind toward the clouds; freedom, superpowers, a dream, humor
+frames: |
+  1. A close "flight in the wind": face and shoulders against the sky, hair and clothes whipping sideways, the subject is almost still,
+     the clouds behind creep barely noticeably (≈0.3–0.4 % of the frame/s) — the sense of speed comes only from the wind and the clothes; 2–2.5 s.
+  2. Takeoff seen from above: the camera above the subject looks down, the ground drops away — the background plate shrinks ×0.39 over 3 s almost linearly,
+     the houses blur, clouds appear; the subject stays the same size in the frame.
+  3. Lift-off and departure: a series of huge jumps and somersaults in a field, then the figure shrinks from ≈40 % to ≈5 % of the frame height
+     over ≈4 s and leaves into the sky; the camera sometimes follows, sometimes stays on the ground.
+  4. Chase camera: behind and slightly above a flyer with wings, approaching a building ×1.7 over 1.9 s almost
+     linearly; or an object flies into the camera (×2 over 1.1 s, ease-out) and gets caught at the end.
+  5. Dash and impact: the subject bolts off horizontally, rushes through a forest with motion blur and crashes into a wall in a cloud
+     of dust — a cut on the impact, a push-in ×1.7 over 1 s with ease-out afterwards.
+  6. Composite against the sky: a flying car with a person hanging out of the door against the clouds; a night jump under a helicopter's
+     searchlight beam with flashes on the cuts.
+variants:
+  - a close-up in the wind against the sky (a fan + the sky), minimal background movement
+  - takeoff seen from above: the ground drops away and blurs
+  - lift-off in a field: jumps, somersaults and the figure leaving into the sky
+  - chase from behind: the camera flies after the subject or the object
+  - a horizontal dash ending in an impact against a wall with dust
+  - a flying vehicle or object against the sky
+  - comic imitation: people flapping their arms like wings on an embankment
+  - graphic flight: jet boots, a starry sky, riding a drawn comet over a planet
+  - an animated character takes a run-up and takes off over a forest and clouds
+status: hybrid
+fallback: |
+  in code: the subject cut out with a mask over a moving background plate (sky, clouds, aerial footage from the source footage) with bobbing and
+  roll; takeoff from above — an accelerating zoom-out of the view of the ground; leaving into the sky — shrinking the subject's layer with ease-in; a dash —
+  a layer shift with motion blur and a cut on the impact. Wind in the hair can't be done in code: look for footage with wind in the source footage
+  or generate via gen_hint with the user's consent.
+params:
+  sky_plate: clouds or aerial footage, drift 0.3–5 % of the frame/s (close-up) or 10–40 % of the frame/s (fast flight), direction opposite to the flight
+  hover_bob: vertical 1–2 % of the frame, 0.4–0.6 Hz; roll ±3–8° with a period of 2–3 s; shake 0.3–1 % for "turbulence"
+  ascent_topdown: background plate ×1 → ×0.35–0.5 over 2.5–3.5 s, linear or inQuad, increasing blur 0 → 6 px @1080p
+  takeoff: subject layer ×1 → ×0.1 over 1.5–4 s, ease-in, trajectory up and to the side; at lift-off — dust and a short shake
+  chase: push-in ×1.5–2 over 1–2 s almost linearly, the camera behind and above by 10–20 % of the frame
+  dash: layer shift of 60–100 % of the frame width over 0.3–0.6 s, directional blur 20–40 px, a cut or a flash on the impact, then a shake of 3–5 % over 0.3 s
+  object_to_camera: object scale ×1 → ×2–2.5 over 0.8–1.2 s, ease-out, roll 10–20°
+  shot_length: 1.5–5 s; leaving into the sky — up to 4 s
+when: intro and climax, a "takeoff" on the rise and the drop, dreams and freedom in motivation, superhero moments in fan edits and sport, travel with aerial footage, humor (imitating flight, an object flying into the camera); 1–2 flights per video
+avoid: a still background with no wind in the clothes — the subject looks pasted in; light on the subject and on the sky coming from different sides; hard mask edges against the sky; cutting the flight too fast — no sense of space; a flight with no goal and no event longer than 5 s
+sfx: a rush of wind (rising on takeoff), a whoosh on a fly-by past the camera, a low hum at altitude, an impact and falling debris on landing; in a graphic flight — a synth swoosh and sparkles
+genres: {epic: allowed, motivation: allowed, fanedit: allowed, teaser: allowed, fashion: allowed, travel: allowed, sport: allowed, viral: allowed, ugc: allowed}
+detect: |
+  ed_motion: a close-up against the sky — no global events, overlay-mask ≈0.3, movement only in the hair and clothes;
+  takeoff from above — a long ZOOM-OUT ×0.35–0.5 almost linearly with the subject still; a chase — ZOOM-IN ×1.5–2 over 1–2 s;
+  a dash — a short ZOOM-OUT with ease-in, a cut, then a ZOOM-IN with ease-out (the impact); leaving into the sky — the figure shrinks.
+  Visually: a person without support in the sky, hair and fabric fluttering sideways or backward, the horizon or the ground far below,
+  an "arms forward" pose or arms spread; an object flies straight into the lens.
+  Differences: scene.levitation — hanging in place; scene.falling — downward acceleration and loss of control;
+  drone.fpv — only the camera flies, there is no subject in the frame.
+engine: |
+  Close-up in the wind: mask('hf_remove_background', feather=3) → composite over the sky + plate_scroll(direction='left',
+  speed=0.02) + hover(layer, amp=0.012, freq=0.5, tilt=4) + sfx('whoosh', gain=-12) backed by wind.
+  Takeoff from above: transform(plate, scale=[1, 0.4], t=[t0, t0+3], ease='inQuad') + blur(kind='gaussian', amount=[0, 6]).
+  Leaving into the sky: transform(layer, scale=[1, 0.1], shift=[[0, 0], [0.15, -0.35]], t=[t0, t0+2.5], ease='inCubic').
+  Dash: transform(layer, shift=[[0, 0], [0.9, 0]], t=[t0, t0+0.4], ease='inQuad', motion_blur=0.6) + cut(t0+0.4)
+  + shake(amp=0.04, freq=12, t=[t0+0.4, t0+0.7], decay=0.8) + sfx('impact').
+gen_hint: superhero-style flight, a woman in a pink jacket and sunglasses flies through a bright blue sky with white clouds, close-up from the side, her hair and clothes blown back by strong wind, subtle bobbing, clouds drift past slowly, cinematic, sunny
+commands: ["make me take off over the house on the drop — view from above, the ground dropping away", "a close-up of flight against the clouds with wind in the hair", "an object flies straight into the camera on #5", "the subject leaves into the sky at the end"]
+related: [scene.levitation, scene.falling, drone.fpv, time.speed_ramp, mask.bg_replace, track.follow]
+evidence: {examples: 12, sources: 12, measured: "close flight — cloud drift 0.3–0.4 % of the frame/s, overlay 0.34; takeoff from above ×0.39 over 3.0 s almost linearly, shake 1.7 %; chase ×1.73 over 1.9 s; object into the camera ×1.98 over 1.1 s ease-out; dash: pull-out ×0.51 over 0.5 s ease-in → cut → push-in ×1.73 over 1 s ease-out; wing imitation — shake 1.9 %; the figure shrinking 40 % → ≈5 % of the height — an estimate from frames", confidence: medium}
+---
+id: scene.forced_perspective
+family: scene
+group: aesthetics
+level: C
+aliases: [forced perspective, scale illusion, perspective trick, holding it in the palm, optical size illusion]
+what: an optical trick on a static camera — a near and a far object are aligned at one point of the frame, and the brain reads them as the same scale; a person "picks up" a car with two fingers, "steps" on a street, drops a potato that lands as a boulder
+frames: |
+  1. Setup: the camera is static (jitter 0.02–0.12 % of the frame in measurements), wide angle, focus across the whole depth —
+     the near object 0.3–2 m from the lens and the far one tens of meters away are equally sharp.
+  2. The illusion, 0.8–2 s (20–50 frames): the "contact" point matches on screen — fingers on the roof of a car, a person on top
+     of a monument, a palm at the edge of rocks. The ground between the planes is hidden by the angle: shooting from above, from ground level, from behind an edge.
+     Apparent magnification of the near object ≈×3–100 (a hand = a car, a potato = a house).
+  3. Action, 0.5–2 s: the near one "picks up", pushes, steps, drops, pours; the far one responds in sync (the car
+     drives off, the rocks fall like dominoes). The giant's "landing" is often reinforced by a frame shake of ≈5 % for 2–8 frames.
+  4. Reveal (in 3 of 7 tricks), 1.5–3 s: the near one walks off into depth or "jumps down" toward the camera — the sizes even out
+     right in the frame without any zoom; this is the punchline. The whole move 1.8–5.6 s.
+variants:
+  - touching or holding: a hand at the lens takes a distant object — a car below seen from a balcony, a person, a building; often handheld
+  - stepping on: a foot or shoe enters right at the lens and covers the distant scene within 2–4 frames; product variant — close-ups of the shoes follow
+  - dropping into the world: a small object falls next to the lens and lands as a boulder on the road; the elliptical shadow and dust are drawn in, the clip is looped back and forth
+  - reveal through depth: the "small" person turns out to be far away, the "giant on the monument" jumps down toward the camera and walks off toward the monument at normal height
+  - swap through a cut: a cup in the hand → the same one, huge, on the ground; a toy car → a real one, the cut hidden in a pan following the car (81 % of the frame over 0.96 s)
+status: footage
+fallback: |
+  hybrid — cut out a person or an object (mask hf_remove_background) and insert it into another shot at a scale of ×0.05–0.25
+  ("tiny") or ×3–10 ("giant") anchored on the contact line, with a contact shadow and color matching; search the source footage for
+  static shots where a hand or a foot at the lens lines up with a distant object; generation — via gen_hint with consent.
+params:
+  camera: strictly static (jitter ≤0.15 % of the frame); camera movement gives the trick away through parallax; handheld — only if the contact holds
+  lens: wide angle (≈16–28 mm equiv., a phone works), stopped-down aperture — sharp from 0.3 m to infinity
+  distances: near 0.3–2 m, far 10–300 m (≈)
+  contact_tolerance: the contact point matches to within ≈1–2 % of the frame; the joint is hidden behind the edge of an object, the horizon or a railing
+  light: light and shadows on both planes fall the same way; the color and contrast of the near plane do not differ from the far one
+  hold_illusion: 0.8–2 s (20–50 frames) of static illusion before the action
+  action: 0.5–2 s (12–50 frames)
+  reveal: 1.5–3 s; cut no later than 0.5 s after the sizes become equal
+  impact_shake: on the giant's "landing" ≈4–6 % of the frame, 0.15–0.5 s, decaying
+  loop: optionally back and forth (normal + reverse) for short social videos
+  composite_fallback: scale ×0.05–0.25 / ×3–10; anchor — feet or palm on the contact line; shadow — a blurred ellipse 1.2–1.5 times the width of the support, opacity 0.35–0.5 (≈)
+when: the hook in the first 1–3 s (the illusion stops the scroll); the reveal — on the drop or a downbeat; travel at landmarks; a product "the size of a house"; humor and UGC; no more than 1–2 tricks per video — repetition kills the surprise
+avoid: a drifting camera, a moving stabilizer, a zoom during the trick; shallow depth of field (a blurred far plane gives away the distance); shadows in different directions; an illusion longer than 3 s without action; the contact is not visible or is blocked — the trick doesn't read; a serious and calm tone
+sfx: on the "contact" — a pop, a click or a cartoon "bloop"; on the giant's "landing" — a heavy hit with sub-bass under the shake; on the reveal — a whoosh or a scratch
+genres: {viral: signature, ugc: signature, travel: signature, product: allowed, fanedit: allowed, teaser: allowed, explainer: allowed, clips: allowed, motivation: allowed, drama: forbidden}
+detect: |
+  ed_motion: no global ZOOM/SHIFT events or jitter ≤0.15 % of the frame (static), while there is a large local difference
+  between frames in one zone; a near object flying in at the lens covers ≥50 % of the area within 2–4 frames (a false
+  cut is possible, nonrigid >1); the object's size changes ×2–5 over 1–3 s with no ZOOM — the object moved into depth (the reveal).
+  Visually: two objects of the same class (people, cars) with an on-screen height ratio ≥3 and in "contact"; both sharp; the near one
+  cropped by the frame edge; the ground line between them hidden by the angle.
+  Differences: scene.giant and scene.tiny_people — the scale holds as a rule of the world (composite, CG), no "contact" gag;
+  focus.tilt_shift — the whole shot looks like a model because of the blur bands; dolly zoom — the background changes, not the object.
+engine: |
+  From the source: cut(at=start of the illusion) — hold ≥0.8 s before the action; sfx('click', at=contact);
+  shake(amp=0.05, freq=12, t=[land, land+0.3], decay=0.8) + sfx('impact', at=land) on the "landing";
+  cut(at=reveal_end+0.3); for social videos loop(mode='pingpong').
+  Without a source — a new primitive scale_composite(subject=mask('hf_remove_background'), plate, scale=0.12|5,
+  anchor='feet'|'hand'|[x,y], shadow=contact_shadow(width=1.3, blur=12, opacity=0.4), color_match=True, t)
+  + transform(shift) for "steps" across the shot. Swap through a cut: transform(shift, motion_blur=0.5) as a pan following the
+  object + cut in the middle of the blur (match(on='shape')).
+gen_hint: forced perspective trick shot, locked-off wide-angle camera, deep focus, a person in the foreground appears to pinch a distant <car/landmark/person> between two fingers, contact point perfectly aligned, consistent daylight and shadows, single continuous take, then the illusion breaks as the person walks back into the scene
+commands: ["a hook with an illusion: I'm \"holding\" a car in my palm", "find a shot in the source footage where someone \"touches\" a distant object and put it first", "the trick's reveal exactly on the drop at 0:12", "put a tiny me on the table from #3"]
+related: [scene.giant, scene.tiny_people, scene.diorama, focus.tilt_shift, cut.match, time.boomerang]
+evidence: {examples: 16, sources: 16, measured: "of the 16 examples 7 are contact tricks, 3 are giants, 5 are miniatures and macro; in static ones jitter 0.02–0.12 % of the frame, handheld 0.2–2 %; trick 1.8–5.6 s; reveal through depth in 3 of 7; shake on landing ≈5 % of the frame; swap pan toy→reality 81 % of the frame over 0.96 s; magnification of the near object — an estimate from frames", confidence: medium}
+---
+id: scene.giant
+family: scene
+group: aesthetics
+level: C
+aliases: [giant, colossus, kaiju shot, giant over the city, titan, scale reveal]
+what: a person, an animal or an object the size of a mountain towers over the ordinary world — waist-deep behind hills, in the clouds or in haze, with tiny people and cars at its feet; the shot sells scale, dread or epic grandeur
+frames: |
+  1. The shot is wide and static (in 6 of 8 jitter 0.01–0.11 % of the frame), the camera low or high up; the horizon in the lower
+     third, tiny scale references at the giant's base — people, cars, trees (≈1–5 % of the frame height).
+  2. The giant's visible part takes up ≈35–70 % of the frame height, and below the waist or knees it is hidden by terrain, clouds or
+     fog (in 6 of 8 examples). A distant giant sinks into atmospheric haze: its dark areas are lifted toward the sky tone
+     (the silhouette at ≈0.7 of the sky brightness versus an almost black foreground).
+  3. The movement is slow and weighty: a turn of the head, a gesture, a slow rise from behind the horizon or from behind the frame edge;
+     a cloud drifts in front of it as a natural wipe. The shot is held for 2–5.4 s.
+  4. Reveal (variant): first a detail — a paw like a tree trunk next to a person, ≈1.6 s — then a cut to the wide shot,
+     where it is clear the creature is the size of a house.
+variants:
+  - silhouette in fog: a waist-up figure behind hills in dawn haze, almost motionless, low saturation (median 50)
+  - waist-deep in clouds over mountains or a planet: the clouds drift in front of the giant and serve as wipe transitions; animation or 3D
+  - giant animal next to a person: a detail with a child by its paw → a wide shot with a house
+  - giant head: a huge profile at the front edge of the frame and a tiny crowd on a beach; or a head rises from behind the edge next to a small person
+  - low-budget: a real animal "looms" over a model hill with relief letters, the camera low by the model
+  - giant among dunes: a huge figure behind the sand dunes, tiny people and cars at its feet, clear air, a warm palette
+status: hybrid
+fallback: |
+  the giant is assembled from two shots: a wide static background plate (from the source footage or stock) + a person against a
+  plain background, cut out with a mask and enlarged; if there is no suitable plate or interaction with clouds is needed —
+  generation with the user's consent; if a giant object is needed — a cut-out product instead of a person.
+params:
+  plate: a wide shot without camera movement, the horizon at 25–40 % from the bottom of the frame, small scale references present
+  giant_height: visible part 35–70 % of the frame height, the full figure by calculation ×0.8–1.5 of the frame (cut off by the horizon or the edge)
+  occlusion: the bottom of the figure behind terrain, clouds or fog; the giant is drawn only over the sky and the far plane
+  haze: mix the sky color into the giant by 30–60 %, lift the shadows, contrast ≈30 % relative to the sky (measured silhouette 109 versus sky 153), blur 0.5–1 px
+  references: people and cars at the base ≈1–5 % of the frame height
+  motion: slow — the giant's speed ×0.5–0.8 (≈), short movements; the camera static or a very slow tilt (≈6 % of the frame over 0.5 s)
+  shot_length: 2–5.4 s (50–135 frames); reveal — a detail ≈1.5 s (≈40 frames), then the wide shot from 2 s
+  step_shake: on the giant's steps ≈1–3 % of the frame, 4–6 Hz, decaying over 0.3–0.5 s
+  light: the light on the giant from the same side as on the plate; no shadow on the terrain is needed if the bottom is hidden
+when: intro and outro, the climax, a "big idea" and a metaphor for anxiety or loneliness, epic music videos, teasers; a giant product over a city in advertising; 1–2 times per video, hold for at least 2 s
+avoid: fast cutting — the scale doesn't have time to register; a giant without haze and with hard edges in the far plane (looks like a sticker); light and shadows in different directions; no scale references — the figure reads as an ordinary person up close; a giant standing with its feet on the ground without a shadow or contact
+sfx: a low rumble or drone over the whole shot; sub-bass and a dull thud with an echo on steps and touches; wind; on the reveal — a rising riser and a heavy hit
+genres: {epic: signature, teaser: signature, drama: allowed, fanedit: allowed, motivation: allowed, viral: allowed, fashion: allowed, product: allowed, explainer: allowed}
+detect: |
+  ed_motion: a static camera (no events, jitter ≤0.11 %) or a slow tilt; holds with an almost motionless
+  giant; in the variant with clouds — false cuts and white frames when a cloud covers the lens.
+  Visually: a human or animal figure ≥35 % of the frame tall, its bottom cut off by the horizon, terrain or clouds;
+  at its base, objects of the same class 10–50 times smaller; atmospheric haze on the figure (darks lifted toward the sky tone,
+  saturation lower than in the foreground); a low angle or a view from above the clouds.
+  Differences: scene.forced_perspective — the "giant" is actually close to the camera, sharp, without haze and in a contact gag;
+  scene.tiny_people — a small subject in the ordinary world; fx.bobblehead — only the head is enlarged.
+engine: |
+  scale_composite(subject=mask('hf_remove_background'), plate, scale=height of 1.0 frame, anchor=[x, horizon_y+0.15],
+  occlude=sky_mask(plate), haze={amount: 0.45, color: median(sky)}, blur=0.7, color_match=True, t=[t0, t0+4])
+  + speed(rate=0.65, interp='blend') for the giant's layer
+  + shake(amp=0.02, freq=5, t=[step, step+0.4], decay=0.7) + sfx('sub_drop', at=step) on each step
+  Reveal: cut(detail, 1.5 s) → cut(wide, ≥2 s) + sfx('riser') before the cut and sfx('impact') on it.
+  New primitives: sky_mask(plate) — a mask of the sky and the far plane; haze(amount, color) — atmospheric haze on a layer.
+gen_hint: static wide shot from a low angle at dusk — tiny people and cars in the foreground, distant hills behind them, and above the hills, half hidden in haze, an enormous figure seen from the waist up that moves slowly and deliberately; soft light, overwhelming scale
+commands: ["make me a giant over the city from #2", "a giant in the fog for the intro", "scale reveal: first the paw next to a person, then the wide shot", "a giant behind the mountains on the drop with a rumble"]
+related: [scene.forced_perspective, scene.tiny_people, scene.diorama, fx.bobblehead, light.haze, shot.extreme_wide]
+evidence: {examples: 10, sources: 8, measured: "8 examples from the section + 2 giants from the general scale section; camera static in 6 of 8 (jitter 0.01–0.11 %); the bottom of the figure hidden in 6 of 8; shots 2.0–5.4 s; detail→wide reveal with the cut at 1.62 s; silhouette in fog at 0.71 of the sky brightness, foreground ≈21 of 255, saturation 50; cloud wipes produce false cuts", confidence: medium}
+---
+id: scene.levitation
+family: scene
+group: aesthetics
+level: B
+aliases: [levitation, hovering, hanging in mid-air, hover, weightlessness, zero gravity, floating, floating person]
+what: a person or an object hangs or slowly drifts in the air without visible support — feet a few centimeters above the floor, a body above a bed or a crowd, an object under a streetlight; magic, a dream, superpowers, weightlessness
+frames: |
+  1. The support is removed from the frame: a gap under the feet or body of 2–15 % of the frame height in a close-up, or a figure high in the sky
+     above a crowd (≈5–8 % of the frame height); the camera is static (jitter 0.02–0.2 % in 8 of 16) or drifts slowly.
+  2. The hovering is "alive": a soft vertical bob of 1–2 % of the frame height with a period of ≈2 s (0.45–0.55 Hz), no jerks;
+     in weightlessness — a slow rotation of the whole body at ≈20 °/s (127° over 6 s).
+  3. Ascent and descent are always smooth: a figure descends over a crowd with deceleration (≈28 % of the frame/s at the start, ≈7 %/s near the ground,
+     ease-out), an ascent above the audience in slow motion with slight motion blur on the limbs.
+  4. Signs of "floating": hair, fabric and arms hang freely or stretch upward; people below look up; under the figure
+     there is emptiness or a soft shadow. Shot 1–6 s.
+variants:
+  - hovering above a surface: shoes a couple of centimeters above the stage, a body above a bed, a flying carpet against clouds
+  - floating object: a thing hangs in the air under a streetlight, swaying slightly, with smoke around it
+  - figure in the sky above a crowd: a tiny person high in the sky, the crowd looks up, then a cut to a view from above
+  - slow descent or ascent: figures descend to the ground with deceleration; a person rises above a hall in slow motion
+  - weightlessness: a body tumbles in a black void or in space, ≈20 °/s
+  - flipped frame: a person filmed lying down or hanging, the frame rotated — hair and fabric "flow" upward, the background is treetops
+  - flying vehicle: a car hangs and moves off over hills
+  - only the head floats: the body is invisible, the head hangs by a wall
+status: hybrid
+fallback: |
+  in code: (a) cut out the person or object with a mask + a clean plate from the same shot → raise the layer by 3–15 % of the frame,
+  bobbing and a soft shadow; (b) a jump with a hang — slow motion at the top point; (c) rotating the frame by 180° for footage shot
+  lying down or upside down; search the source footage — jumps, swings, trampolines, footage of someone lying on the grass shot from above; generation — via
+  gen_hint with the user's consent.
+params:
+  lift: raise the layer by 3–15 % of the frame height (close-up) or a figure of 5–10 % of the frame high in the sky; gaining height over 0.8–1.5 s, ease inOutSine
+  hover: vertical sine of 1–2 % of the frame, 0.4–0.6 Hz, plus a tilt of ±1–2° phase-shifted by a quarter period
+  spin: weightlessness — rotation 10–25 °/s without stops; drift 1–3 % of the frame/s
+  descent: descent with deceleration 25–30 % of the frame/s → 5–8 %/s, ease outCubic, 2–2.5 s
+  jump_hang: a jump — slow motion 0.1–0.2× at the top point for 0.6–1.2 s, in and out over 0.25–0.35 s (speed ramp)
+  shadow: an elliptical shadow under the object 0.8–1.2 times the width of the support, blur and transparency grow with height (opacity 0.5 → 0.15)
+  clean_plate: a median background from frames without the person, or outpaint; mask feathered by 2–4 px
+  flip: 180° rotation for footage shot from above lying down or upside down
+  shot_length: 1–6 s (25–150 frames); a static camera or a very slow push-in ≤×1.1
+when: a magical or "dreamy" moment, the climax of the chorus and the drop (rising on the build-up, hovering on the downbeat), the cover and the key shot of a music video, fashion videos and teasers, "weightlessness" in epic and motivational videos; 1–2 times per video
+avoid: the support, a cable or the edge of a mat is visible; sharp jerks and shake — they break the weightlessness; the light and the shadow under the object don't match; clothes and hair behave as on the ground during a long "flight"; fast cutting — the floating should last ≥1 s
+sfx: a low ambient pad or a quiet choir on the rise, a reverse cymbal or a swell on the takeoff, silence and air during the hover, a soft hit on landing
+genres: {fashion: signature, epic: allowed, drama: allowed, teaser: allowed, fanedit: allowed, motivation: allowed, viral: allowed, calm: allowed, product: allowed}
+detect: |
+  ed_motion: a static camera or a slow tilt; the object shows a slow vertical movement of 1–2 % of the frame with a period of
+  ≈2 s or a smooth descent with ease-out and no signs of falling (no downward acceleration); in weightlessness — ROTATE ≈20 °/s without
+  stops; often overlay-mask 0.3–0.5 (a large still part of the frame).
+  Visually: a gap between the body and the support, freely hanging hair and clothes, people looking up, a soft or
+  absent shadow under the object.
+  Differences: scene.falling — downward acceleration, wind in the clothes; scene.flying — fast directed movement;
+  time.freeze — the whole frame freezes, not just the object.
+engine: |
+  Layer: mask(method='hf_remove_background', feather=3) + clean_plate (median of frames or outpaint) →
+  new primitive hover(layer, lift=0.06, rise=1.0, amp=0.015, freq=0.5, tilt=1.5, shadow=contact_shadow(fade=True))
+  — raises the layer over rise seconds and bobs it around the new height.
+  Jump: speed(curve=[[apex-0.3, 1], [apex, 0.15], [apex+0.9, 0.15], [apex+1.2, 1]], interp='flow').
+  Flipped: transform(rotate=[180, 180]) for the whole clip. Weightlessness: transform(layer, rotate=[0, 120], t=[0, 6]).
+  sfx('swell', at=rise_start) + sfx('impact', at=landing, gain=-6).
+gen_hint: a young woman in a flowing red dress floating peacefully in mid-air a meter above a forest clearing, hair and fabric drifting weightlessly, gentle slow bobbing, static low-angle camera, soft diffused daylight, dreamy and magical, no visible support
+commands: ["lift me off the floor on the drop and leave me floating", "a hang at the top of the jump in #4", "make the mug hang in the air and sway", "flip the frame so it looks like I'm floating in the treetops"]
+related: [scene.falling, scene.flying, time.speed_ramp, time.freeze, mask.bg_replace, time.slow_motion]
+evidence: {examples: 16, sources: 15, measured: "camera static in 8 of 16 (jitter 0.02–0.2 %); bobbing of hanging objects and bodies 1.8–2 % of the frame p2p, ≈0.45–0.55 Hz; weightlessness — rotation of 127° over 5.95 s (≈21 °/s); a figure descending 41 % of the frame over 2.3 s with deceleration; layer lift and shadow — a practical estimate; the flip trick — 2 of 16", confidence: medium}
+---
+id: scene.liminal
+family: scene
+group: aesthetics
+level: C
+aliases: [liminal space, empty corridor, empty rooms, tiled pool, familiar yet eerie place]
+what: a shot of an empty transitional space — a corridor, a staircase, a pool, an enfilade of arches or columns — in a single color, with the vanishing point in the center and an even, slow tracking move; familiar and unsettling at the same time
+frames: |
+  1. Empty: no people (8 of 9 examples) or one small figure; no small objects and no "traces of life".
+  2. Composition: central perspective, the vanishing point near the center (X 0.49–0.62, Y 0.26–0.54), the left and right halves
+     almost mirror each other (mirror correlation 0.77–0.99 in 5 of 9); repeating elements — lamps, arches, columns, tiles — recede into infinity.
+  3. The light is even and shadowless: ceiling light panels or a single warm beam; the shadows don't crush (p2 14–147,
+     median ≈60 of 255), no clipping.
+  4. Single-color palette: one tone fills the whole frame (tone concentration 0.99–1.0 in 8 of 9) — most often yellow-beige
+     (b* of the neutrals +17…+29), less often turquoise tiles, blue-violet fog, white, red-orange.
+  5. Movement: static (4 of 9) or an even forward tracking move without acceleration or turns (5 of 9; ×1.6–4 over 1.1 s in
+     computer-generated loops, the end matches the start); the camera at eye level. The shot is held for 3–8 s.
+variants:
+  - yellow office rooms: wall-to-wall carpet, wallpaper, light panels, a tracking move between columns
+  - tiled pools and corridors, partly flooded with water, sun glints
+  - an endless staircase, an enfilade of arches, rows of columns with a narrow beam of light
+  - an empty hall in fog with a lone person at a table
+  - dark infinity: glowing columns in black water, a "moon" sphere
+status: footage
+fallback: search the source footage for empty shots using the features from detect; in code — a "single tone + lifted shadows" grade and an even digital zoom-in ×1.1–1.3 over 4–6 s on a wide 4K shot of an empty room; generation with consent (gen_hint), a seamless loop
+params:
+  emptiness: 0 people (or one figure ≤5 % of the frame area)
+  composition: vanishing point in the center ±0.1; mirror symmetry ≥0.7; camera at eye level
+  palette: one dominant tone (concentration ≥0.95); yellow-beige — CIELAB hue 60–80°, b* +17…+29, a* +7…+10; otherwise turquoise, white, lilac
+  tone: p2 40–100 (typ. 60), p98 180–245, no crushed shadows or clipping; noise ≤3 levels
+  motion: static or a tracking move at a constant speed of ×1.003–1.01 per frame @25 fps (×1.1–1.3 over 4–6 s), ease linear, no roll
+  shot_length: 3–8 s (75–200 frames); a series of 2–4 empty spaces in a row
+when: intro and outro, an atmospheric pause between scenes, a "suspension" before a plot twist, horror and mystery teasers, ambient and lo-fi, edits about dreams, loneliness and nostalgia; on the quiet parts of the track
+avoid: energetic parts and drops; shots with people, litter, signs; a jerky handheld camera and fast cuts — they destroy the sense of infinity; holding one space for longer than 8–10 s without changes
+sfx: the hum of lamps (a low tone at 50–100 Hz), the steady room tone of an empty space, echoing footsteps, water drops, muffled music with a long reverb; silence as a device
+genres: {calm: allowed, teaser: allowed, drama: allowed, fanedit: allowed, fashion: allowed, viral: allowed, sport: forbidden, phonk: forbidden}
+detect: |
+  No people (person and face detectors — 0); mirror symmetry ≥0.7; tone concentration ≥0.95 and a strong tint in the neutrals;
+  p2 ≥40 with zero crushed shadows and zero clipping; few small details.
+  ed_motion: no events or an even "near-linear" ZOOM-IN centered at 0.45–0.62, nonrigid 0.15–0.3 (a real tracking move), no ROTATE or SHIFT.
+  Difference from look.dreamcore: there it is a faded pastel look and an impossible detail; here a realistic empty space.
+  From scene.void: there are no walls or perspective there at all, the background is uniform.
+engine: |
+  footage_search(empty=True, symmetry>=0.7, people=0) → clip
+  + color(params={tint: {hue: 'yellow-beige', amount: 0.25}, black: 0.2, contrast: 0.85})
+  + transform(scale=[1, 1.2], center=vanishing_point, t=[t0, t0+5], ease='linear')
+  Series: chain_zoom(clips[], per_link=4, rate=ln(1.2)/4, seam=0.6, center=vanishing_point) — an endless passage
+  through several empty spaces; for a loop — loop(mode='cycle').
+gen_hint: empty liminal space, long symmetrical <corridor with yellow wallpaper and carpet | tiled indoor pool corridor half-flooded with water>, flat fluorescent ceiling panels, no people, eerie stillness, camera at eye level gliding slowly forward at constant speed, one-point perspective, seamless loop
+commands: ["insert a liminal corridor between #3 and #4", "find empty corridors in the source footage for the intro", "generate an empty tiled pool, 5 seconds of an even tracking move", "an endless passage through empty rooms on the ambient part"]
+related: [look.dreamcore, look.weirdcore, scene.void, zoom.infinite, frame.central, dolly.in]
+evidence: {examples: 9, sources: 9, measured: "no people in 8 of 9; symmetry 0.77–0.99 in 5 of 9; tone concentration 0.99–1.0 in 8 of 9, yellow-beige (b* +17…+29) in 5 of 9; p2 14–147 (median ≈60), crushed shadows 0; an even tracking move ×1.6–4 over 1.14 s, center 0.49–0.62 in 5 of 9; 8 of 9 are computer-generated loops", confidence: medium}
+---
+id: scene.magic_realism
+family: scene
+group: aesthetics
+level: C
+aliases: [magic realism, everyday surrealism, miracle as the norm, the impossible in the ordinary, surreal everyday]
+what: a shot where one impossible thing calmly exists in an ordinary, realistically filmed setting — clones, a living photograph, a mountain of bodies, a car on a lift in the desert — and people behave as if this were normal
+frames: |
+  1. The camera is static (7 of 10 — no global motion) or barely breathes; the shot is held for 1.2–4 s so the viewer has time to notice the oddity.
+  2. The image is realistic: natural light, normal saturation (HSV-S 75–140 in 8 of 10), no grain, distortions or
+     effects (local deformation ≤0.2 % of the width in 7 of 10); a soft tint in the neutrals (|a*|, |b*| ≤7 in 8 of 10),
+     often blue hour or dusk with a lilac sky.
+  3. There is a single impossible element and it takes up 10–50 % of the frame, lit and shaded like everything around it; the composition is often central.
+  4. Only the "miracle" or a person next to it moves: only the image in a frame on the wall moves while the frame itself stays still; dogs' muzzles
+     sprout from a person's profile; a crowd of identical people sways slightly.
+  5. No reaction: the subject is calm, looks into the camera or is busy with their own thing; the sound is everyday.
+variants:
+  - creature in everyday life: a mermaid on an ordinary beach, a hybrid animal
+  - clones: dozens of identical people in one frame, a dense crowd
+  - living picture: a photo on a wall or in a frame moves, everything else is static
+  - impossible physics: a tower of people, a car on a lift in the middle of a desert, an infinitely tall ladder tower
+  - body transformation: animal muzzles sprout from a face, against a dark gradient background
+  - quiet installation: a person in a suit stands in a bathtub, a person inside a transparent crystal under the stars
+status: generation
+fallback: clones — hybrid (a static camera, several takes with one person, mask('mediapipe_person') and layer assembly); a living photograph — track the quadrilateral of the frame and insert video into it, freeze the rest; inserting an object — remove_background + composite with a shadow matching the scene light; otherwise generation with consent or a search of the source footage
+params:
+  camera: static (shake ≤0.3 %) or a push-in ≤×1.1 over the shot; no roll
+  shot_length: 1.2–4 s (30–100 frames), the miracle is visible from the first frame or appears within the first 0.5 s
+  grade: natural — saturation ×0.9–1.1, neutrals' tint ≤7 units, no grain and no vignette stronger than 0.15
+  anomaly: one element, 10–50 % of the area, light and shadows match the scene (shadow direction ±20°)
+  clones: 8–60 copies, scale spread according to perspective, slight independent movements
+  living_photo: movement only inside the frame (the rest is a freeze), loop 1–3 s
+  reaction: neutral, no surprise
+when: intro and the first 3 seconds (a hook without editing tricks), music videos, brand image and product videos ("the product stands where it can't stand"), a turn in the story, a final riddle shot; on a quiet part of the track or in a pause. 1–3 such shots per video
+avoid: characters reacting to the miracle (the genre breaks into fantasy); visible compositing seams and wrong shadows; next to psychedelic and glitch looks; a long series in a row — the effect is lost
+sfx: the everyday sound of the scene without "magical" effects; silence or a steady background; the music doesn't emphasize the strangeness
+genres: {teaser: allowed, drama: allowed, product: allowed, fashion: allowed, viral: allowed, calm: allowed, fanedit: allowed}
+detect: |
+  ed_motion: no global events (static camera), holds or a mask of still pixels with movement in one area
+  (living picture); a natural grade without effects (deformation ≤0.2 %, no grain or bands).
+  Semantics (VLM check): "is there a physically impossible element in a realistic scene that people are indifferent to?";
+  clones — ≥5 faces with almost identical embeddings.
+  Difference from look.dreamcore: there it is a faded pastel look and emptiness; here a natural image and people.
+  From look.weirdcore: there it is low quality and deliberate creepiness. From look.psychedelic: no distortions and no color "chemistry".
+engine: |
+  generate_video(prompt=gen_hint, camera='locked_off', dur=3) → clip           # main path, with consent
+  hybrid recipes:
+    clones: stabilize(1.0) + [mask('mediapipe_person') on each take] → composite(layers=passes, blend='normal')
+    living picture: track_quad(target='frame') + composite(video→quad, perspective=True) + freeze(rest of the frame)
+    insert: mask('hf_remove_background') → composite(scale, position, shadow='match_light')
+  Editing: cut to a clean 1.2–4 s shot; no effect transitions; color(params={sat: 1.0}) — leave the grade alone.
+gen_hint: realistic everyday scene, <ordinary location> in natural light, <one impossible element, e.g. a mermaid resting on beach rocks | dozens of identical men standing in a dark room | a car lifted on a scissor lift in an empty desert at dusk>, people calm and unbothered, locked-off camera, photorealistic, no visual effects
+commands: ["insert a magic-realism riddle shot at the start", "make clones of the subject in one room", "bring the framed photo on the wall to life", "put the product where it can't be, calmly, with no effects"]
+related: [look.dreamcore, fx.duplicate, time.cinemagraph, mask.bg_replace, scene.liminal, look.weirdcore]
+evidence: {examples: 10, sources: 10, measured: "static in 7 of 10 (shake ≤0.3 %); HSV-S 75–140 in 8 of 10; neutrals' tint ≤7 in 8 of 10; local deformation ≤0.2 % in 7 of 10; living picture — holds outside the frame; symmetry ≥0.78 in 2 of 10", confidence: medium}
+---
+id: scene.tiny_people
+family: scene
+group: aesthetics
+level: C
+aliases: [tiny people, miniaturized person, tiny human, thumb-sized person, shrunk person, mini copy, tiny world]
+what: a finger-sized person lives in the ordinary world — dances on a carpet, stands on fingertips, dangles as a keychain, climbs over a laptop, drags a giant bag; everyday objects turn into a landscape
+frames: |
+  1. The camera is at the tiny subject's eye level — a few centimeters above the surface: the texture underfoot (carpet pile,
+     tiles, the skin of a palm, crumbs) is huge and sharp, the background in macro blur — background sharpness ≈0.2–0.33 of the
+     foreground (measured on two shots with a dancer).
+  2. The subject takes up 8–40 % of the frame height; next to them is an ordinary object — a palm, a laptop, a bag, feet in shoes, a podium —
+     against which a scale of ≈1:10–1:20 reads (the subject is 8–20 cm). The camera is static in 7 of 14 examples.
+  3. The action is ordinary for a person — dancing, climbing, performing, bathing — the mismatch of scale creates humor
+     or poetry. Shot 1.5–5 s.
+  4. Scale reveal: a cut from a "normal-looking" shot (a person in front of an audience) to a wide shot where they stand on a podium
+     the size of a palm (shots 3.2 / 4.4 / 3.6 s); or a pull-out ×0.1–0.3 over 1.5–2 s from a giant object to the tiny
+     person beneath it, sometimes through 2–3 white frames.
+  5. The moment of shrinking (variant): a beam and a glow, a push-in ×2.6 over 0.4 s with radial blur, the subject "collapses".
+variants:
+  - macro dance: a tiny dancer on a carpet among a huge book and discarded clothes, the camera right at the floor
+  - on the palm: a figure on the fingertips of a huge hand, a black-and-white image, a dark background
+  - everyday life as landscape: a tiny person climbs down the edge of a laptop, bathes in milk in the hollow of a cookie, dangles as a keychain in front of two people
+  - fashion and product: a tiny model walks between huge feet in shoes, carries a giant bag over her head; people examine a bottle the size of a bus in the mountains
+  - mini copies: two people and their half-size copies dance side by side on a plain background
+  - figurine person: a jointed "toy" body hanging on wires in colored light — borders on fx.bobblehead
+  - shrinking event: a beam, an electric glow, a push-in with motion blur — the entry into the "tiny world"
+status: hybrid
+fallback: |
+  look for the background plate in the source footage (macro or close-up shots of a table, a palm, a keyboard, a carpet, filmed from a low point);
+  cut out the subject with a mask and scale it down; if there is no suitable shot or complex interaction with an object is needed — generation from
+  a photo of the subject with the user's consent.
+params:
+  subject_height: 8–40 % of the frame height; scale relative to reality ×0.05–0.12 (the subject 8–20 cm); mini copies ×0.5
+  camera: at the subject's eye level, ≈2–10 cm above the surface; static or a slow pull-out
+  dof: the far plane blurred — sharpness ≈0.2–0.35 of the foreground (measured), on the "revealing" wide shot everything is sharp
+  contact: a soft shadow under the feet with opacity 0.4–0.6, a reflection on gloss; the subject must not "hover" above the surface
+  reveal_cut: a "tiny world" shot of 3–4 s → a wide shot of 3–4 s (75–100 frames each)
+  reveal_pullback: ×0.1–0.3 over 1.5–2 s (measured ×0.27 over 2 s and ×0.094 over 1.56 s), ease-out, optionally 2–3 white frames in the middle
+  shrink_event: the subject's scale 1→0.1 over 0.4–0.8 s (10–20 frames), a glow and radial blur, a flash at the end
+  light: the direction of light on the subject as on the plate; warm light strengthens the "doll-like" feel
+when: a surprise intro and a reveal on the drop, cute and funny moments, a giant product with tiny people, fashion videos, explainer videos ("let's look inside"); 1–3 shots per video
+avoid: a sharp background with the camera at the surface — the scale doesn't read; shooting from above at an adult's eye height — the subject looks like a sticker; shadows and light don't match; the subject not in contact with the surface; long static shots without action
+sfx: thin "clicking" footsteps and ringing touches; on shrinking — an electric hum and a whoosh with a falling pitch; on the reveal — a swell and a short "plink"
+genres: {product: signature, fashion: allowed, viral: allowed, fanedit: allowed, explainer: allowed, teaser: allowed, ugc: allowed, calm: allowed}
+detect: |
+  ed_motion: a static camera (jitter ≤0.08 % in 7 of 14) or a long ZOOM-OUT ×0.1–0.3 over 1.5–2 s with ease-out
+  (the reveal), sometimes white frames in the middle; the shrinking event — ZOOM-IN ×2+ over ≤0.5 s with sharpness dropping to ×0.1 and
+  cuts.
+  Visually: a human figure 8–40 % of the frame height stands ON an everyday object or next to an object bigger than itself (a palm,
+  a laptop, a bag, shoes); the surface texture is magnified; the background in macro blur; the camera right at the surface.
+  Differences: scene.forced_perspective — the "small" person is simply far away, focus across the whole depth, there is a contact gag;
+  scene.diorama — the whole world is a model, the figures are toys; focus.tilt_shift — an ordinary scene looks like a model because of the bands
+  of blur at the top and bottom; fx.bobblehead — only the body is shrunk.
+engine: |
+  scale_composite(subject=mask('hf_remove_background'), plate=macro shot, scale=0.08, anchor=surface point,
+  shadow=contact_shadow(opacity=0.5, blur=6), color_match=True) + a new primitive depth_blur(focus=subject, amount=0.03)
+  — blurs the plate by a depth map if it was shot sharp.
+  Reveal: transform(scale=[1, 0.25], center=subject, t=[t0, t0+1.8], ease='outCubic') over a composite assembled at
+  high resolution; or cut(close-up "tiny world") → cut(wide).
+  Shrinking: transform(layer=person, scale=[1, 0.1], center=track(feet), t=[t, t+0.6], ease='inCubic') over a clean
+  background (outpaint) + glow(threshold=0.7, radius=25) + blur(kind='zoom') + flash(dur=0.08) + sfx('reverse_whoosh').
+gen_hint: a tiny person about 10 cm tall dancing on a thick living-room carpet, camera at the tiny person's eye level a few centimeters above the floor, giant book and sofa legs blurred in the background, macro lens shallow depth of field, warm evening light, realistic miniature scale
+commands: ["shrink me to the size of a palm and put me on the table from #4", "reveal: a pull-out from a huge bag to a tiny model", "a shrinking moment with a flash on the drop", "our mini copies dance next to us"]
+related: [scene.forced_perspective, scene.giant, scene.diorama, fx.bobblehead, focus.tilt_shift, focus.shallow]
+evidence: {examples: 14, sources: 13, measured: "camera static in 7 of 14 (jitter 0.01–0.08 %); reveal pull-out ×0.27 over 2 s and ×0.094 over 1.56 s (with white frames); reveal by a cut — shots 3.2/4.4/3.6 s; shrinking — push-in ×2.6 over 0.4 s, sharpness ×0.1; macro background at 0.2–0.33 of the foreground sharpness; the subject's height 8–40 % of the frame — an estimate from frames", confidence: medium}
+---
+id: scene.underwater
+family: scene
+group: aesthetics
+level: B
+aliases: [underwater footage, underwater, underwater shot, diving in frame, plunge, splash-in, underwater light]
+what: a shot underwater — a blue-turquoise or colored murky medium, weightless hair and fabric, bubbles, a glowing surface above, a floating camera; in the edit also a "dive" with the sound going muffled
+frames: |
+  1. (optional) Entry: a jump or fall above the water → impact with the surface → 1 dark frame (brightness drops by half) → underwater
+     a cloud of bubbles, brightness ×1.5–2 relative to the above-water shot.
+  2. Medium: the water tints everything — the blue channel is 2.8–6.7 times higher than red (turquoise or deep blue); in a staged setup
+     — a monochrome gel wash (red: blue and green channels ≈0). The blacks are lifted, the contrast is soft, the sharpness
+     low; when shooting upward, the rippling surface glows (the top of the frame brighter than the bottom by 50–120 levels).
+  3. Inside: hair, fabric and arms float, people slowly sink or "fly"; bubbles rise, particles hang; rays and
+     glints wander over the body.
+  4. Camera: floats — drift and roll of 5–50° over 0.4–2 s, jitter 0.3–3.5 %; or almost still in front of a dancing figure.
+     The subject's movement is often slowed down.
+  5. Shot length 1.8–3.8 s; exit — surfacing toward the light, a fade to black or a cut to an above-water shot.
+variants:
+  - pool at night: a blue wash (B/R ≈4.6), a spotlight in the frame, a body enters the water in a cloud of bubbles, a slow push-in ×1.5 over 1.8 s
+  - jump through the surface: an above-water shot of the jump → a dark frame → underwater bubbles and the bottom, roll up to 50°
+  - churning water: daylight, a silvery surface above, white bubbles, a figure in a bright dress thrashing
+  - studio wash: monochrome red, a figure floats toward the camera and sinks into darkness
+  - underwater dance: a static camera, the figure lit by a cold backlight, turquoise (B/R ≈6.7), fabric and bubbles glow
+status: footage
+fallback: |
+  1) search the source footage via detect (blue cast, bubbles, bright ripples above, a floating camera);
+  2) imitation in code on an above-water shot (preferably slowed down, with flowing hair or fabric): a blue-turquoise
+     grade with lifted blacks, caustics, a slow wave distortion, bubbles as particles, a floating drift, muffled sound;
+  3) generation via gen_hint with the user's consent.
+params:
+  duration: 1.8–3.8 s (45–95 frames @25 fps)
+  grade_blue: B/R 2.8–6.7, G/R 1.6–4.1 (turquoise — more G, depth — more B); blacks lifted to 16–41, whites 128–207
+  grade_mono: (variant) a monochrome wash — one channel 80–100, the others ≈0, a dark background
+  softness: Laplacian variance 2–20 times lower than in an above-water shot of the same scene (≈); a light haze
+  surface_glow: when shooting upward, the top of the frame is brighter than the bottom by 50–120 brightness levels, the ripples move
+  camera: drift and roll of 5–50° over 0.4–2 s, jitter 0.3–3.5 %; or static
+  speed: slow motion ×0.4–0.7 for "weightlessness" (≈)
+  entry: impact with the water → 1 dark frame (brightness ×0.5) → a cloud of bubbles for 6–10 frames, brightness ×1.5–2
+  bubbles: rising at ≈10–30 % of the frame height per second, size 0.5–3 % of the width (≈)
+when: |
+  A "plunge" as a transition: on the drop, a cut into the water — the music goes muffled; when the chorus returns — surfacing and the sound opens up.
+  A dream, suffocation, loss of control, catharsis — drama and music videos. Sport (swimming, diving), travel (snorkeling, a pool),
+  fashion (floating fabric). Hold 2–4 s; 1–2 underwater episodes per video.
+avoid: |
+  Imitation on a sharp, contrasty shot without slowing it down — reads as a filter. Bubbles and caustics covering the face
+  too densely. An underwater fragment longer than 5–6 s without an event. Sharp, snappy cutting inside an underwater episode —
+  the medium demands smoothness.
+sfx: |
+  Music through a low-pass filter (cutoff 400–800 Hz) for the whole underwater fragment; gurgling and bubbles, a dull rumble, a
+  heartbeat. Entry — a splash and a hit, then instant muffling; exit — an inhale and a sharp opening of the filter on a downbeat.
+genres: {travel: signature, sport: allowed, fashion: allowed, drama: allowed, epic: allowed, calm: allowed, fanedit: allowed, motivation: allowed, viral: allowed}
+detect: |
+  ed_motion: rgb_med skewed toward blue (B/R ≥2.5) or a single-channel monochrome; luma_med 24–83; a floating camera —
+  ROTATE and SHIFT with a high nonrigid (0.5–1.0, the water and bubbles move on their own), jitter 0.3–3.5 %; on entry — a black frame
+  and a jump in brightness.
+  Own checks: lifted blacks (2nd percentile 16–41) with compressed whites in clear water; low sharpness; the top of the frame
+  brighter than the bottom with horizontal ripples; small bright round spots rising upward (bubbles); hair and fabric
+  sway without wind.
+  Difference from a night blue grade: there the edges are sharp, there are no bubbles or ripples. From light.haze: no blue cast and no bubbles. From angle.water_level: there the camera is at the waterline and the surface line splits the frame.
+  From time.slow_motion: here slow motion is a consequence, and the defining sign is the medium.
+engine: |
+  footage: find_shot(color_bias='blue', bubbles=True, surface_glow=True) → cut(at).
+  imitation: color(params={wb: 'teal', b_over_r: 3.5, lift: 30, gain: 0.7, sat: -10 %})
+             + caustics(scale=0.12, speed=0.4, opacity=0.2) + wave_distort(amp=0.4 %, freq=0.5)
+             + particles(kind='bubbles', rate=6/s, size=[0.5, 3] %W, rise=0.2 H/s) + blur(kind='gaussian', amount=1.2)
+             + speed(rate=0.6, interp='flow') + destabilize(profile='float').
+  entry: cut(at=water impact) + flash(color='black', dur=1fr) + sfx('impact', at=impact) + muffle(cutoff_hz=600, t=[impact, exit]).
+  exit: transition(kind='luma', dur=0.3) to a bright above-water shot + removing the filter on a downbeat.
+gen_hint: underwater shot of <person> slowly sinking in deep teal water, hair and loose clothing floating weightlessly, streams of bubbles rising, rippling bright surface glowing above, soft hazy light rays, slow drifting camera, slow motion, low contrast
+commands: ["a dive on the drop: cut into the water and the sound goes muffled", "make #4 underwater: turquoise, bubbles, a floating camera", "surfacing when the chorus returns", "underwater shots for the bridge, 3 seconds"]
+related: [time.slow_motion, angle.water_level, light.haze, reflect.surface, fx.refraction, trans.wipe]
+evidence: {examples: 6, sources: 6, measured: "blue cast B/R 2.8–6.7 in 3 of 6, monochrome red wash in 2, neutral daylight water in 1; blacks 16–41 with whites 128–207 in clear water; Laplacian variance 4–90 (except churning bright water — 495); top brighter than bottom by 47–117 when shooting upward; floating camera with roll of 8–52° and jitter 0.3–3.5 % in 5 of 6; entering the water — a dark frame, brightness 19→9→28; bubble sizes and rising speed — by eye (≈)", confidence: medium}
+---
+id: scene.void
+family: scene
+group: aesthetics
+level: B
+aliases: [void, infinite background, cyclorama, seamless backdrop, black void, white void, white cyc]
+what: a subject or an object in an infinite empty space — an even black or white background without walls, horizon or details; all attention is on the figure, a sense of isolation, a dream or being "outside of time"
+frames: |
+  1. The background takes up 70–99 % of the frame and is perfectly even: a dark void — brightness 0–10 of 255, a light one — 185–228;
+     local variation ≤1 level (no texture, no noise), no visible floor-to-wall seam or horizon.
+  2. The figure is small and central (2–25 % of the area: loneliness, scale) or a large portrait at the edge of the frame.
+  3. Light: in a dark void — a pool of light from above or from the side, only the subject and the circle of floor beneath them are lit
+     (the bottom of the frame brighter than the top: 17–43 versus 5–7), often a cool tint (b* −2…−8) or a blue spotlight;
+     in a light one — soft shadowless light, neutral white (a*, b* ≈0), a faint shadow at the feet.
+  4. The camera is static (5 of 16) or moves slowly: a push-in ×1.04–1.5 over 1–2 s, a smooth roll or an orbit of 11–23° over 2 s;
+     in a black void the camera can "fall" through space toward the subject.
+  5. Editing: long shots of 2–12 s; the void often alternates with ordinary shots as the subject's "inner world".
+variants:
+  - black void with a pool of light: a figure in a spotlight beam, the floor glows around the feet
+  - low-key portrait: face and hands picked out by light, everything else in absolute black
+  - object in the darkness: a building at night or an object, the surroundings "eaten" by darkness
+  - space: a figure or an object floats in black with stars
+  - white cyclorama: a dancer or a model at full height in the center, a soft shadow at the feet
+  - white haze: endless rows of identical figures dissolve in a light fog
+  - white minimalism: a figure and its upside-down reflection on white, tiny in the center
+status: hybrid
+fallback: best of all — a shot on a black or white background from the source footage (search via detect); otherwise a mask of the subject (mediapipe or remove_background) and filling the background in code with an artificial pool of light or a shadow; complex motifs (rows of figures in fog, space) — generation with consent
+params:
+  background: dark — 0–10 of 255 (typ. 6), light — 200–228 (typ. 215); even, no noise (σ ≤1)
+  bg_share: 70–99 % of the frame (typ. 88 %)
+  subject_size: 2–25 % of the area (loneliness, scale) or a close-up of 60–85 %
+  light_pool: dark — an ellipse of light under the subject with a radius of 0.3–0.5 of the width, soft edge 0.1–0.2, floor brightness 20–45
+  contact_shadow: light — a shadow at the feet with opacity 0.2–0.35, blur 2–4 % of the height
+  tint: dark — cool b* −2…−8 or a colored spotlight; light — neutral (a*, b* ≈0) or slightly warm
+  camera: static or a slow push-in ×1.04–1.5 over 1–2 s (25–50 frames), ease inOutQuad; an orbit of up to 25° over 2 s
+  edge_mask: mask feather 1–3 px, no halo; hair — a mask with refinement
+  shot_length: 2–12 s
+when: intros and pauses before the drop, an "inner monologue", fashion and product shots (nothing distracts), the subject's statement, dramatic portraits, a scene of loneliness; on quiet parts of the track and on accents right after a sudden silence. Works well as a contrast to busy scenes
+avoid: long series in the void without a change of shot size (nothing for the viewer to hold on to); a dirty mask and a halo around the hair (the void emphasizes it); noise and banding on a black background (steps after compression — add light grain over the whole frame); visible studio walls and seams
+sfx: silence or a steady hum, a long reverb on the voice and footsteps (a sense of a huge space), a single hit or note when the subject appears; on a light void — airy ambient
+genres: {fashion: signature, product: signature, drama: allowed, calm: allowed, teaser: allowed, motivation: allowed, epic: allowed, sport: allowed, phonk: allowed, explainer: allowed, viral: allowed, fanedit: allowed}
+detect: |
+  The median of the pixels along the frame edge ≤10 or ≥185; background share (|Y − background| < 22) ≥0.7; local background variation σ ≤1 (for starry
+  space — noise of dots on black); a figure of 2–25 % of the area near the center; no horizontal horizon or floor line.
+  Dark: the bottom brighter than the top (a pool of light). ed_motion: static or a slow ZOOM-IN ×1.04–1.5; background tracking is impossible
+  (method fail/ecc on a uniform background) — a sign of a void.
+  Difference from scene.liminal: there are walls, perspective and space there. From light.silhouette: there the background is light and the figure
+  is dark without details. From ordinary studio footage: visible walls, a seam, background texture.
+engine: |
+  dark:  mask('mediapipe_person' | 'hf_remove_background', feather=2)
+         → composite(layers=[solid('#050608'), light_pool(center=[0.5, 0.85], radius=0.4, softness=0.15, luma=35), subject])
+         + color(params={black: 0, temp: -0.05}) + grain(amount=0.01) + transform(scale=[1, 1.08], t=[t0, t0+2], ease='inOutQuad')
+  light: mask(...) → composite(layers=[solid('#dcdcdc'), contact_shadow(target=subject, opacity=0.3, blur=0.03), subject])
+         + color(params={white: 0.86, sat: 0.95})
+  If the source is already in a void — only color(black=0 | white=0.86) to even out the background and grain(0.01) against banding.
+gen_hint: <subject> alone in an infinite <pitch-black | seamless white> void, no walls, no horizon, single soft <top spotlight creating a pool of light on the floor | shadowless light with a faint contact shadow>, minimal, centered, slow push-in
+commands: ["place the subject in a black void with a pool of light", "an infinite white background for the product in #2", "find shots on a black background in the source footage for the intro", "insert a shot of the subject in a void between #4 and #5"]
+related: [scene.liminal, light.spotlight, light.silhouette, mask.bg_replace, product.hero, look.dreamcore]
+evidence: {examples: 16, sources: 16, measured: "dark (10 examples): background 0–9.5, share 0.69–0.99, background σ ≤0.9 (space 8.9), figure 1–23 %, bottom brighter than top (17.5–43 versus 4.5–7) in 4 of 10, background b* −1.5…−7.5 in 4 of 10; light (6): background 185–226, σ 0.5–2.5 in 4 of 6, a*/b* ≈0; static in 5 of 16, push-ins ×1.04–2.2, orbit 11–23°", confidence: high}

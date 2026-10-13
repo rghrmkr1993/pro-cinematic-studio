@@ -1,0 +1,61 @@
+id: pass.through
+family: pass
+group: camera
+level: B
+aliases: [pass-through shot, fly-through, flying through, pass through an object, camera passes through glass, through the keyhole, through-the-object move]
+what: the camera flies into an opening, glass, a screen or even into the subject and comes out the other side — in a new space, and at the moment of passing 3–8 dark or blurred frames hide the cut
+frames: |
+  1. Approach: the camera accelerates toward an obstacle — a peephole, a hole in a wall, a windshield, a helmet visor, the frame
+     of a screen, a person's dark silhouette. A push-in ×2–9 over 0.7–3.4 s, accelerating (×1.06–1.2 per frame at the end @25 fps),
+     centered exactly on the opening (0.46–0.54).
+  2. Pass: 3–8 frames (0.2–0.6 s) while the frame is filled with the surface: glass and a lens give a solid
+     blur, a body and a helmet give darkness. Brightness drops from 50–90 to 5–30 out of 255, sharpness to ×0.05–0.3.
+     This is where the cut is hidden in 4 of 7 examples.
+  3. Exit: the camera is already on the other side — in a car interior, in a room, in front of another person, in the "mirror world". The motion
+     continues forward while braking (×1.04–1.1 per frame for another 0.5–1 s) or the camera pulls back from the frame (×0.37 over 1.2 s);
+     after a peephole — a round vignette that opens up over 0.3–0.4 s.
+variants:
+  - through an opening: a peephole, a hole, a ring — the lens fills the frame, the exit with a round "gaze" vignette
+  - through glass: a windshield or a window, a pass into the car interior or a room and on inside in one move
+  - through the subject: a helmet, a head, a dark silhouette fills the frame → darkness → the exit toward another person or into another place
+  - through foreground objects: the letters of a sign, branches, frames fly past at the edges, the camera comes out to the subject
+  - through a screen or a mirror: flying into the frame and pulling back already from the other side, the subject seen "from inside"
+status: footage
+fallback: |
+  Code — a "fly-through" transition: an accelerating push-in into a dark or plain area of shot A (an opening, glass, a silhouette)
+  + radial blur → 3–6 dark or blurred frames → shot B starts by continuing the push-in and brakes
+  (or with a round vignette if the entry was through a peephole). A clean physical fly-through — an FPV drone or a probe lens
+  in the source footage; if there is none — generation with the user's consent.
+params:
+  approach: push-in ×2–9 over 0.7–3.4 s, ease inQuad–inExpo, peak ×1.06–1.2 per frame @25 fps
+  center: on the opening or obstacle, 0.46–0.54
+  transit: 3–8 frames @25 fps (0.12–0.32 s) in code; in real passes 0.2–0.6 s
+  transit_look: darkness (brightness 5–30) or a solid blur (sharpness ×0.05–0.3)
+  seam: the cut on the darkest or most blurred frame of the pass
+  exit: continuing the push-in ×1.3 → ×1 over 0.5–1 s (outCubic) | pull-out ×0.37 over 1.2 s | round vignette, opening over 0.3–0.4 s
+  total: 1.5–4.5 s for the whole move
+when: |
+  A change of world or location "in one move": from the street into a car interior, from a corridor into a room, from reality into a screen,
+  from one character to another. Intros and transitions between chapters; the fly-in — the lead-up, the pass — on a downbeat or the drop.
+  No more than 1–2 times per video — otherwise the device wears thin.
+avoid: the obstacle off center or the camera missing the opening; a pass longer than 0.6 s (the viewer gets lost); brightness on the other side sharply different without a darkening; repeating the same fly-through in a row; a calm tone without a change of space
+sfx: a rising whoosh or riser on the approach, a dull thud or a "glassy" sound at the moment of passing, a change of ambience (street → car interior, silence → music) on the exit
+genres: {teaser: signature, fanedit: allowed, viral: allowed, travel: allowed, epic: allowed, product: allowed, drama: allowed, sport: allowed, clips: allowed, motivation: allowed, ugc: allowed}
+detect: |
+  ed_motion: ZOOM-IN ×2–9 with ease-in or almost linear, center 0.46–0.54, then 1–3 "cuts", black or flash
+  frames, after that a new ZOOM-IN (continuation) or ZOOM-OUT (pulling out of a frame) on a different picture.
+  Custom measurement: between the two push-ins 3–8 frames with brightness 5–30 or sharpness ×0.05–0.3; the histogram before
+  and after the pass differs (a new space).
+  Unlike zoom.crash: it lands on the target and stops, there is no obstacle. Unlike zoom.infinite: there a chain
+  of identical links at a constant speed. Unlike trans.whip: the blur is directional, sideways, not radial.
+  Unlike drone.fpv: an FPV flight through openings is a special case, if the drone passes through an opening.
+engine: |
+  footage: find a ZOOM-IN with a dip in brightness or sharpness at the end and cut on the darkest frame.
+  code: pass_through(a, b, target=track(object:<hole>)|[0.5, 0.5], push=[1, 3], dur_in=0.8, seam='dark'|'blur'|'iris',
+  dur_seam=0.2, push_out=[1.3, 1], dur_out=0.6) = A: transform(scale=[1, 3], center=target, ease='inExpo')
+  + blur(kind='zoom', amount∝speed) + fade(to='black', dur=0.12) → cut → B: transform(scale=[1.3, 1],
+  ease='outCubic') [+ mask(shape='circle') opening over 0.35 s for a peephole]; sfx('whoosh', at=seam, align='peak').
+gen_hint: one continuous camera move that pushes forward and passes straight through <the car windshield / a door peephole / the visor of a helmet> and continues into <the space beyond>, seamless fly-through
+commands: ["fly through the car window between #2 and #3", "the camera passes through the door peephole into the room", "fly through the subject into the next scene on the drop", "a transition through a dark silhouette from #5 to #6"]
+related: [zoom.infinite, trans.zoom, drone.fpv, track.roam, zoom.crash, lens.fisheye]
+evidence: {examples: 7, sources: 7, measured: "approach ×2.1–9.2 over 0.7–3.4 s, peak ×1.08–1.31/frame at 14–20 fps, center 0.46–0.53; pass of 3–12 frames (0.2–0.6 s) with brightness 5–28 and sharpness ×0.05–0.3; the cut inside the pass in 4 of 7; exit: push-in continuing at ×1.04–1.1/frame, pull-out ×0.37 over 1.2 s or a round vignette of 0.35 s; 2 through an opening, 2 through glass or a frame, 2 through a person, 1 through the letters of a sign", confidence: high}

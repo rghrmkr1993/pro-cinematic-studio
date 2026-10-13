@@ -1,0 +1,58 @@
+id: handheld.shaky
+family: handheld
+group: camera
+level: B
+aliases: [handheld, shaky cam, handheld camera, handheld shot, shaky camera, documentary camera, reportage footage, organic camera]
+what: the camera is in the operator's hands — the frame constantly "breathes", sways and chases the action; it gives a sense of presence, reportage and nervous energy
+frames: |
+  The frame never stands still: on top of the main movement (following the subject, turning toward the action) runs
+  a non-periodic jitter. Three degrees, in increasing order:
+  1. Breathing: the operator stands; jitter 0.3–0.6 % of the frame (RMS), roll 0.3–0.6°, a slow drift of ≈5 % of the frame
+     per second; the subject sits loosely in the frame, the composition "floats" slightly.
+  2. Walking or running after the subject: a vertical "gait" at 1.8–2.4 Hz with an amplitude of 5–10 % of the frame peak to peak,
+     side-to-side sway at half that rate (0.6–1.2 Hz), roll ±3–8°; the camera is low or at waist level,
+     the subject, seen from behind or in three-quarter view, stays near the center.
+  3. Chaos: jerks and turns of 3–5 % of the frame per frame with motion blur, roll up to 25–30° within half a second, the framing
+     breaks, the subject drops out and comes back; often the ending is a sharp swing of the camera away into a blur (exiting the frame).
+variants:
+  - performance to camera: the performer right up against the lens, a low angle, the camera sways along with their movements
+  - chase: running after the subject at waist level, a strong vertical "gait"
+  - in the crowd: night footage inside a crowd, flashes and flares, may slip into a fisheye "peephole"
+  - action follow: the operator follows a jump or a trick, turning the camera with a roll
+  - barely noticeable: camera breathing on a calm scene so the frame does not look dead
+status: code
+fallback: real running after the subject produces parallax that code cannot create, so such shots are searched for in the source footage (detect); on a stable shot, code adds breathing and shake; generation via gen_hint
+params:
+  calm: jitter RMS 0.3–0.6 % of the frame, peak-to-peak ≤2.5 %; roll RMS 0.3–0.6°; 0.5–2.5 Hz; drift 3–6 % of the frame/s
+  walk_run: RMS 1.3–2.5 %, peak-to-peak 5–10 % (vertical larger than horizontal); roll RMS 0.8–1.5°; vertical 1.8–2.4 Hz, sideways 0.6–1.2 Hz
+  chaos: RMS 1.5–2.5 %, roll RMS 2–4°, roll range up to 25–30°; jerks of 3–5 % of the frame per frame; 1.5–3.5 Hz
+  noise: a sum of 2–3 sine waves with random phase + smoothed noise (not white); the amplitude follows the intensity of the scene
+  crop: margin ×1.05 (calm), ×1.10–1.15 (walk_run, chaos); a 4° roll on 16:9 already requires ×1.12
+  motion_blur: directional, only at speeds above 2 % of the frame per frame
+  shot_length: 1.5–4 s per shot in the edit; continuous chaos no longer than 5–8 s
+when: |
+  realism and presence (documentary, vlog, behind the scenes), tension and chases, fights, crowds, parties;
+  performance to camera in a music video; the shift from a calm part to a nervous one, switching from tripod to handheld.
+  Breathing (calm) on interviews and B-roll to bring a static frame to life.
+avoid: luxury and beauty product shots; the calm genre (except barely noticeable breathing); titles and graphics shaking along with the frame (do not shake the graphics); shake on top of an already shaky shot; chaos longer than 8 s in a row; alternating chaos with tripod shots without a narrative reason
+sfx: usually no sound; in chaos, rustling, the operator's breathing, a quiet whoosh on sharp turns and on the final swing of the camera
+genres: {ugc: signature, drama: allowed, viral: allowed, sport: allowed, travel: allowed, fashion: allowed, fanedit: allowed, teaser: allowed, clips: allowed, motivation: allowed, calm: forbidden, product: forbidden}
+detect: |
+  ed_motion: high shake.jitter_pct (1–10) and p90; many short SHIFT events in different directions (4–30 % over 0.1–0.6 s)
+  and ROTATE (2–15°) without long one-directional runs; small ZOOM events (×0.85–1.15) with nonrigid 0.2–0.6.
+  Check at step 1: after subtracting a 0.5 s moving average, jitter RMS 0.5–2.5 % of the frame, roll 0.3–4°,
+  dominant frequency 1.2–2.6 Hz; vertical stronger than horizontal when walking.
+  Difference from digital shake (shake.beat): that one is periodic, lines up with the beats and has no parallax (nonrigid < 0.1).
+  Difference from drone.fpv: no forward acceleration or banking turns, eye or waist height, a 2 Hz "gait".
+  Difference from a stabilizer: with a stabilizer, jitter RMS < 0.3 % and the motion is smooth.
+engine: |
+  destabilize(profile='handheld', amp=[0.3–2.5 % of the frame], rot=[0.3–4°], freq=[0.6–2.4 Hz], drift=[3–6 %/s], seed)
+    — profiles: calm (0.4 %, 0.4°), walk (1.8 %, 1.2°, vertical 2 Hz), chaos (2 %, 3°, jerks)
+  + transform(scale=1.05–1.15) against empty edges
+  + blur(kind='directional', amount∝speed) on frames faster than 2 %/frame
+  Final swing-away: transform(shift=[[0,0],[0.4,0.15]], rotate=[0,12], t=[t1-0.2, t1], ease='inCubic') + blur(kind='directional').
+  Reverse command: stabilize(strength=0.6–1.0).
+gen_hint: handheld camera, documentary style, natural irregular shake and breathing, operator follows <subject> at eye level, slightly imperfect framing, raw and immediate
+commands: ["make #2–#5 look handheld", "add light camera breathing on the interview", "chaotic handheld camera in the fight, 3 seconds", "remove the shake from #7"]
+related: [drone.fpv, rig.body_mount, shake.beat, dolly.float, frame.tableau, pan.whip]
+evidence: {examples: 7, sources: 7, measured: "at step 1 (5 clips): jitter RMS 0.5–2.5 % of the frame, peak-to-peak 2–10 %, roll RMS 0.25–3.8°, roll range 3–30°; dominant frequency 1.2–2.6 Hz (roll ≈2 Hz); vertical stronger than horizontal in 4 of 5; ed_motion jitter_pct 1.3–6.6; in 2 of 7 the ending is the camera swinging away into a blur; in the crowd, flashes and flares", confidence: high}

@@ -1,0 +1,277 @@
+id: lens.fisheye
+family: lens
+group: optics
+level: B
+aliases: [fisheye, fish-eye, circular fisheye, fisheye lens, action cam up close, peephole view, door peephole]
+what: an ultra-wide lens with barrel distortion — the center bulges, straight lines bend near the edges, the image is often inscribed in a circle with black margins; it brings energy, closeness and a "street" or anxious subjectivity
+frames: |
+  1. Geometry: one of four formats by the size of the image circle:
+     (a) full circle ≈1.0 of the frame height, black margins at the sides (40–60 % of the area);
+     (b) circle ≈1.2 H, cropped at the top and bottom, black only at the sides;
+     (c) circle ≈ the frame width (0.96–1.07 W) or the diagonal, only the corners are black (1–6 % of the area);
+     (d) full-frame: no black, straight lines near the edges bow outward, the horizon is straight only through the center.
+     The edge of the circle is sharp (feather 1–2 % H), often with a thin light ring of the lens rim or a blue fringe.
+  2. Distance: the subject is 10–50 cm from the lens. In 5 of 13 examples a face or palms are right at the lens:
+     nose, lips and hands are bloated, the face takes up 25–50 % of the width, the background sharply "runs away". In 3 of 13,
+     a low position near the ground behind a skater or a BMX rider (camera 20–50 cm from the wheels).
+  3. Motion: either static (3 of 13: observation, performing into the lens) or a ragged handheld
+     or follow camera: shake of 2–4.5 % of the frame per frame, rolls of ±30–37° over 0.4–0.7 s,
+     with BMX a tilt of up to ~90° and back over ~2.5 s; motion blur in fast sections.
+  4. Shot length 0.7–2.3 s (18–58 frames @25 fps), rarely up to 3.3 s. Dark corners:
+     corner/center brightness 0.24–0.35 in dark scenes; 3 of 13 are black and white.
+variants:
+  - full circle in the frame (≈1 H) — static observation or a handheld camera in a crowd with flashes
+  - peephole: a small circle ≈0.8 H inside a light metal ring and door texture — spying
+  - circle at frame width with black corners — selfies, indoor skating with curved arches
+  - full-frame, face at the lens — bloated features, the artist shouts or sings straight into the lens
+  - low follow shot — skateboard or BMX, camera near the wheels, big rolls
+  - b/w 90s street aesthetic — low angle looking up, light flares, large captions on top
+status: code
+fallback: a true 180° view comes only from a fisheye lens or an action camera, so first look for such shots in the source footage (detect); code on a regular shot gives a convincing imitation if the subject is close and the camera moves; for "face into the lens" without a suitable shot, generation with consent
+params:
+  distortion: barrel; ffmpeg lenscorrection k1 0.3–0.6 (typically 0.45), k2 0–0.1 — a line near the edge bends by 3–7 % of the height, the edges are compressed 1.4–1.7 times
+  fill_zoom: ×1.2–1.35 after the barrel to remove the black corners (full-frame format)
+  circle: diameter 1.0 H (full) | 1.2 H | 1.0 W (black corners) | 0.8 H (peephole); center 0.48–0.52; feather 1–2 % H; a 1–2 px light or blue ring, optional
+  vignette: 0.3–0.6 (corner/center brightness 0.25–0.35)
+  shot_length: 0.7–2.3 s (18–58 frames @25 fps)
+  camera: static or handheld — shake 1–4 % of the frame, rolls of ±20–40° over 0.4–0.7 s
+  subject: 10–50 cm from the lens; face 25–50 % of the frame width; source footage from an ultra-wide works best
+  look: optionally b/w or faded color, grain
+when: an energetic verse or drop; street, skate and hip-hop aesthetics; performing straight into the camera; a comic selfie with a bloated face; parties and crowds; spying through a peephole; paranoia and anxiety in drama. A series of 2–4 short shots or a single accent; if it is not the style of the whole video, no more than 20–30 % of the running time
+avoid: a product or face where proportions matter (beauty, luxury, product close-up); calm and meditative videos; a distant subject in the center, where the distortion is "empty" and looks like a mistake; different circle diameters in one scene; titles and captions near the edges of the circle (they bend and get cut off)
+sfx: no sound of its own; supported by dry, close sounds (wheels, hits, breathing into the mic); in comedy, a "boing" or a distorted voice; entering a series, a short whoosh or a scratch
+genres: {fanedit: allowed, ugc: allowed, viral: allowed, sport: allowed, clips: allowed, fashion: allowed, travel: allowed, drama: allowed, teaser: allowed, phonk: allowed, calm: forbidden, product: forbidden}
+detect: |
+  Circular formats: a region that is dark (brightness <22) in every frame of the clip covers 1–60 % of the area; its boundary
+  fits a circle (fitting error ≤2 px on a 256 px tile), center 0.48–0.52, diameter 0.8–1.95 H,
+  and it does not move when the camera moves; this separates the mask from dark content in the frame.
+  Full-frame: straight lines near the edges bow outward, near the center they are straight; objects near the edges are compressed.
+  ed_motion: nonrigid 0.3–0.8 even on simple moves, false ZOOM ×0.7–3.5 and ROTATE when approaching
+  the subject (the similarity model cannot describe barrel distortion), shake 2–4.5 %; corner/center brightness ≤0.35.
+  Difference from lens.vignette: a soft gradient with no bending of lines. From lens.ultra_wide: straight lines stay straight,
+  the edges are stretched rather than compressed. From lens.probe: long optics right at the subject, no circle and no barrel at the edges.
+engine: |
+  full-frame: lens_distort(model='barrel', k1=0.45, k2=0.05, center=[0.5, 0.5], fill_zoom=1.3)
+  circular: lens_distort(k1=0.5) + circle_mask(diam=1.0, of='H', center=[0.5, 0.5], feather=0.015, rim='light')
+  + vignette(amount=0.45); for a static source, destabilize(profile='handheld') with rolls of up to 20°.
+  ffmpeg: lenscorrection=k1=0.45:k2=0.05 → scale ×1.3 → crop to the original size; the circle via alphamerge with a mask.
+  Peephole: circle_mask(diam=0.8) + a 4–6 % H ring with a light gradient + texture around it (or generation).
+gen_hint: fisheye lens shot, camera inches from <subject's face / skateboard wheels>, 180-degree circular image with black corners, bulging center and curved horizon, handheld street energy, 90s skate video look
+commands: ["fisheye on #3", "circular fisheye on all the selfie shots", "simulated fisheye on the skate shots in the second verse", "a view through a door peephole at 0:15"]
+related: [lens.ultra_wide, lens.vignette, lens.probe, handheld.shaky, pov.first_person]
+evidence: {examples: 13, sources: 12, measured: "full circle ≈1.0 H: 2, cropped 1.2 H: 1, circle at frame width 0.96–1.07 W with dark corners of 5–6 % of the area: 3, on the diagonal: 1, peephole ≈0.8 H: 1, full-frame: 5; shot length 0.7–2.3 s (up to 3.3 s); shake up to 4.5 %/frame, rolls of ±30–37° over 0.4–0.7 s; corner/center 0.24–0.35 in dark scenes; b/w 3 of 13; ffmpeg calibration on a grid: k1 0.15→0.6 bends a line near the edge by 3.1→6.7 % H", confidence: high}
+---
+id: lens.magnifier
+family: lens
+group: optics
+level: B
+aliases: [magnifier in the frame, magnifying glass, magnifying glass shot, shot through a magnifier, loupe, magnifier effect, detective magnifying glass]
+what: a magnifying glass in the frame — inside the circle the area is magnified 1.6–2.5 times and slightly bulging, outside it the scale is normal; it reads a clue, text or a detail, or comically blows up an eye and a mouth
+frames: |
+  1. The magnifier takes up 0.6–1.05 of the frame height (median ≈0.8 H), centered near the middle (0.41–0.61 W, 0.39–0.63 H);
+     a dark or metal rim of 2–4 % of the diameter, on the glass an elliptical highlight near the top edge, along the edge a slight
+     rainbow fringe and compression (bulge).
+  2. Inside, magnification of ≈×1.6–2.5: handwriting, a halftone newspaper photo, fingerprints, film frames, an eye or teeth.
+     Sometimes everything outside is softer (focus on the image in the lens).
+  3. Motion: the camera is static (7 of 9, jitter ≤0.25 %), the magnifier is moved slowly over text or film,
+     0.3–2 % of the frame per frame, sometimes jumping to the next clue; a hold of 1–2 s on the key word or detail.
+  4. Shot 1.3–3.7 s; often an insert: a wide shot with the magnifier → cut to a close-up through the magnifier.
+variants:
+  - clue — the magnifier glides over a letter, a newspaper, fingerprints, film; the find sits in the center of the circle
+  - comic — the magnifier in front of an eye, a mouth or a face: the feature is blown up ×2–3, the rest of the face is normal
+  - inverted image — a magnifier held farther away than its focal length shows the face upside down
+  - a magnifier on a stand or with a ring light in front of the face — a distorted part of the face
+  - monocle loupe at a craftsman's eye — a subjective blurred view through it
+  - transition through the eye — macro on an object → an eye behind the magnifier → pull-out to the person holding the magnifier
+status: code
+fallback: a real magnifier in a hand is best found in the source footage or generated; code makes a plausible overlay, a round mask with digital magnification, bulge, rim and highlight; for a hand holding the handle, graphics or generation
+params:
+  diameter: 0.6–1.05 H, typically 0.8 H
+  zoom_inside: ×1.6–2.5 (typically ×2) around the same center
+  bulge: barrel inside the circle k1 ≈0.2–0.35, compression toward the rim
+  rim: a dark or metal ring of 2–4 % of the diameter; highlight is a white ellipse of 8–15 % of the diameter near the top edge, transparency 40–60 %
+  fringe: chromatic fringe of 1–2 px at the rim
+  outside: optionally blur the background outside, σ ≈0.3–0.6 % of the width
+  path: gliding at 0.3–2 % of the frame per frame across the text, ease inOutQuad; a hold of 1–2 s on the detail
+  shot: 1.3–3.7 s (33–93 frames @25 fps)
+when: explainer and detective videos, to show a detail, a figure, a line, fine print; an accent on a clue or a fact; product, to magnify texture, a seam, an engraving; comedy and memes, a blown-up eye or mouth; a transition from a detail to a face; 1–2 times per video, on a punchline
+avoid: moving the magnifier too fast, so the text cannot be read; magnifying without enough spare resolution (mush inside the circle); the magnifier covering the speaker's face at an important moment; several magnifiers at once; a serious tone combined with a comically blown-up face
+sfx: a quiet "squeak" or paper rustle as the magnifier moves; on the find, a "ding", a click or a short hit; in comedy, a "boing" on the blown-up eye
+genres: {explainer: signature, teaser: allowed, product: allowed, viral: allowed, ugc: allowed, fanedit: allowed, drama: allowed, clips: allowed}
+detect: |
+  A circle (Hough) with a diameter of 0.6–1.05 H persists in most frames, its center shifts slowly (0.3–2 % of the frame per
+  frame) while the camera is static (ed_motion: no global events, shake ≤0.25 %); texture inside the circle is larger
+  than outside by 1.6–2.5 times (letters, halftone, pixels); a dark ring and a highlight along the rim. Difference from lens.fisheye:
+  the magnified circle is part of the frame, with normal perspective outside; from lens.vignette: the boundary is sharp and the circle moves.
+engine: |
+  magnifier(center=path([[x0,y0],[x1,y1]]) | track(object:<name>), diameter=0.8, zoom=2.0, bulge=0.25, rim=0.03,
+  highlight=0.5, fringe=1, outside_blur=0.004, t=[t0, t0+2.5], ease='inOutQuad') — new primitive:
+  inside the circle transform(scale=zoom, center=the same center) + lens_distort(k1=bulge) + composite through a round mask.
+  Comic variant: center=track(face:eye|mouth), diameter=0.3–0.5, zoom=2.5.
+gen_hint: close-up of a hand sliding a round magnifying glass across <a handwritten letter / old newspaper photo>, the words inside the lens enlarged twice and slightly bulging, soft reflection on the glass, detective mood, static camera
+commands: ["show this number through a magnifier at 0:21", "glide a magnifier over the contract text on #4", "blow up the eye with a magnifier on the reaction", "magnifier effect on the product's seam"]
+related: [lens.fisheye, lens.vignette, zoom.punch, gfx.callout, focus.shallow]
+evidence: {examples: 12, sources: 10, measured: "magnifier diameter 0.61–1.03 H (median ≈0.8); center 0.41–0.61 W; magnification inside ≈×1.6–2.3 (estimated from letter height on close shots); static in 7 of 9 measured (shake 0.02–0.25 %); the magnifier moves 0.24–1.9 % of the frame per frame; shots 1.3–3.7 s; clue 6 of 12, comic face 3, inverted image 1", confidence: medium}
+---
+id: lens.probe
+family: lens
+group: optics
+level: B
+aliases: [probe lens, tube lens, insect's-eye view, bug's eye, macro fly-through, camera inside an object, tabletop glide]
+what: a thin tube lens, centimeters above a surface or inside an object, glides smoothly through a tiny world — grains, flowers, a table with food, a pocket, a bottle neck — at macro scale and yet with deep focus
+frames: |
+  1. Position: the lens is 1–5 cm above a table or the ground, inside an opening or a pocket, between objects;
+     near objects (grains, petals, plates) are huge and pass right at the edge of the frame, the background is readable.
+  2. Depth of field is large for macro: both near and far are sharp (people at the table, a landscape); at the same time
+     there is real macro texture: drops, fabric fibers, skin pores.
+  3. The motion is smooth and continuous, as on a motorized slider or a robotic arm:
+     a forward pass changes the apparent scale ×1.4–7.3 over 1.8–2.6 s (almost linear or an S-curve);
+     a pull-out ×0.2–0.5 over 2–6 s; jitter ≤0.5 % of the frame in 6 of 10; sometimes a roll of 20–50° over 0.4–0.9 s.
+  4. The story of the move is a journey or a reveal: coming out of a tube or a pocket toward the subject, gliding along the body from
+     the hand to the face and on into the space, a pass along a table past the guests, an approach to a product at plate level.
+  5. Shot 1.2–6 s (up to 12 s), typically 2–4 s; strong parallax (nonrigid 0.09–0.43).
+variants:
+  - fly-through a mass — grains, flowers, grass, a macro world in which the camera "sinks"
+  - from inside an object — a bottle neck, a pocket, a wallet: the object is taken out and the camera emerges
+  - gliding along the body — from the clothes to the face of a subject lying down, then a pull-out into the space
+  - a pass along the table — at plate height past hands, food and faces
+  - an approach to a product at table level — a slow ×1.4 push-in under a title
+status: footage
+fallback: a real pass comes only from a tube lens or a small camera on a slider; look in the source footage for moving macro shots and table-level footage; a phone in macro mode on a slider near the surface is an acceptable substitute; otherwise generation with consent (generators handle such shots well); it cannot be simulated in code on a regular shot
+params:
+  height: 1–5 cm above the surface; near objects take up 20–60 % of the frame and pass at the edge
+  move_in: apparent scale ×1.4–7 over 1.8–2.6 s, ease linear or inOutCubic
+  move_out: ×0.2–0.5 over 2–6 s
+  speed: 1–4 % of the frame per frame at the edges, the center nearly still
+  roll: optionally 20–50° over 0.4–0.9 s when coming out of an opening
+  stability: jitter ≤0.5 % of the frame, motorized smoothness
+  dof: deep, both near and far are sharp
+  shot: 2–4 s (50–100 frames @25 fps), a reveal up to 6 s
+when: product and food videos (grains, ingredients, a product at plate level); intros and reveals of the subject, with the camera coming out of an object; a transition from the macro world into the space; mystery and wonder in children's and fairy-tale stories; 1–2 times per video as a "wow shot", best on a calm or rising part of the track
+avoid: fast cutting, where the pass has no time to read; a shaky pass (smoothness is required); gaps that are too dark without extra light, giving noise and mush; repeating the same technique in every shot
+sfx: a quiet rustle and crunch of the material (grains, leaves), the "breathing" of the space; coming out of an opening, a soft whoosh or pop; the ambience swells as the frame opens up
+genres: {product: signature, teaser: allowed, calm: allowed, travel: allowed, epic: allowed, fashion: allowed, drama: allowed, explainer: allowed, fanedit: allowed}
+detect: |
+  ed_motion: a long smooth ZOOM-IN ×1.4–7 or ZOOM-OUT ×0.2–0.5 (actually a physical camera move) with nonrigid 0.1–0.45 and low shake
+  (≤0.5 %), the scale center near the middle; near objects pass the edge at high speed, the center almost stands still.
+  Visually: macro texture in the foreground and yet a sharp background; the camera position is at surface level or
+  inside an object (the dark frame of an opening, the edges of a pocket). Difference from zoom.in: a zoom has nonrigid <0.15 and no parallax;
+  from lens.ultra_wide: lines and perspective are not exaggerated, the subject is smaller, the motion goes through space; from focus.shallow:
+  the background is not blurred.
+engine: |
+  selection: classify_shot(macro_motion) — high texture detail in the foreground + smooth ZOOM with nonrigid 0.1–0.45
+  editing: cut on the start of the move, hold until the reveal (2–4 s), land the reveal on a downbeat;
+  speed(rate=0.8–1) — do not speed it up, smoothness matters more; if footage is missing, generation(prompt=gen_hint, dur=4)
+gen_hint: probe lens macro shot, camera glides a few centimeters above the <table / coffee beans / flowers>, huge foreground details passing by, deep focus with <people / landscape> sharp in the background, slow smooth motion-control move, bug's-eye perspective
+commands: ["a probe-lens fly-through the grains in the intro", "the camera comes out of a pocket toward the subject on #3", "a pass along the table at plate level", "find macro passes in the source footage and put them at the start"]
+related: [lens.ultra_wide, focus.shallow, pov.object, dolly.in, shot.extreme_close_up]
+evidence: {examples: 10, sources: 9, measured: "push-in passes ×1.38–7.28 over 1.8–2.56 s, pull-outs ×0.2–0.53 over 2–5.95 s; curves almost linear or S-shaped; nonrigid 0.09–0.43; jitter 0.04–0.51 % in 6 of 10, 1.4–2.6 % in the rest; roll up to 53° over 0.84 s when coming out of an opening; shots 1.2–12 s", confidence: medium}
+---
+id: lens.ultra_wide
+family: lens
+group: optics
+level: B
+aliases: [ultra wide, ultra-wide angle, ultrawide lens, wide-angle lens up close, rectilinear wide, 0.5x, wide angle without distortion, wide-angle close-up]
+what: an ultra-wide lens without barrel distortion (straight lines stay straight) right up close to the subject — the foreground is huge, the background far and small, the edges stretched, the space "inflates"; energy, comedy, scale
+frames: |
+  1. Distance: the subject is at 20–60 cm; a face, a hand or an object (a palm stretched toward the camera, a small vase, chewing gum)
+     takes up 25–45 % of the width, people and space behind are 3–5 times smaller; the foreground object "pushes" into the lens.
+  2. Geometry: straight lines stay straight up to the edges (in a hall, 17 of 20 long straight lines are in the outer quarters
+     of the frame), but when the camera tilts, verticals converge, up to ≈10° at the edge, ≈22° across the frame width;
+     objects at the side edges are stretched outward ≈1.2–1.5 times.
+  3. Angle: often low, with the ceiling or sky taking up 40–50 % of the frame and a small figure at the bottom; or the camera
+     at a table or on the floor, with the subject leaning down toward it from above and "looming".
+  4. Depth of field is large, almost everything is sharp; the corners are darker than the center (corner/center 0.07–0.46 in 5 of 12).
+  5. Camera: mostly static (9 of 12, shake ≤0.25 %), a slow push-in ×2 over 2.6 s or a tilt of 38 % of the frame over 3.3 s;
+     in energetic shots, a handheld camera with jerks of up to 7 % of the frame per frame. Shot 0.85–6.9 s, typically 1–3.5 s.
+variants:
+  - face or object up close — a scream, a grimace, an object held out into the lens (comedy, food ads)
+  - looming — the subject leans over the camera from above, the face stretches
+  - huge space — a low position in a hall, on a staircase, under a dome, the person is small
+  - a cramped interior wider than it is — a car, a room, a cabin; the subject's whole surroundings are visible
+  - a hand or a gesture at the lens against a city or a landscape — a contrast of scale
+status: footage
+fallback: the field of view cannot be widened in code; look in the source footage for shots from a phone's ultra-wide camera (0.5×) or an action camera in linear mode; from fisheye or 360 footage, reproject to rectilinear with a horizontal angle of 100–120°; if the edges are missing, outpaint; otherwise generation with consent
+params:
+  hfov: ≈100–120° horizontal (equivalent to 12–18 mm on full frame)
+  subject_distance: 20–60 cm; the near subject takes 25–45 % of the frame width, the background is 3–5 times smaller
+  angle: low, camera tilted 10–40° up, or from above up close
+  keystone: verticals converge ≈10–22° across the frame width when tilted; correct only if an "architectural" look is needed
+  vignette: light, corner/center 0.4–0.8 (the originals go down to 0.07–0.46)
+  camera: static or a slow push-in ×1.5–2 over 2–3 s; in energetic parts, handheld 2–7 %
+  shot: 1–3.5 s (25–90 frames @25 fps)
+  reproject: from fisheye, v360 input=fisheye, output=flat, h_fov=110, v_fov≈70
+when: comedy and grimaces, a reaction "in the face" of the viewer; food and product ads, with the product held out to the camera; music videos and rap, with the performer looming over the camera; showing the scale of a space (a hall, a temple, a staircase) with a small person; UGC selfies at 0.5×; a hook in the first 1–2 s of the video; a series of 2–4 shots as a style
+avoid: portraits and beauty, where the nose and forehead grow and a face at the edge stretches; people at the side edges in a group shot; calm, intimate moments; sport and action in the distance, where the subject is small; text and logos near the edges; frequent switching between wide and long focal lengths without purpose
+sfx: sound "close to the mic" — breathing, crunching, rustling; a booming hall reverb on wide shots; in comedy, a short "boing" on a grimace
+genres: {viral: signature, ugc: signature, fanedit: allowed, product: allowed, fashion: allowed, sport: allowed, travel: allowed, clips: allowed, phonk: allowed, motivation: allowed, teaser: allowed, drama: allowed, calm: forbidden}
+detect: |
+  Straight lines from 18 % of the height long stay straight near the frame edges (Hough: many long straight lines in the outer quarters),
+  unlike lens.fisheye, where lines bend near the edges. Strong perspective: verticals converge (the tilt grows
+  toward the edge, ≥10° across the frame width), the near subject is 3–5 times larger than the people behind, "looming" faces, stretched edges.
+  Sharpness across almost the whole frame (no soft background as with focus.shallow). ed_motion: with camera motion, nonrigid 0.3–0.9
+  (strong parallax between near and far); often static. Corner/center brightness ≤0.5 in half of the examples.
+  Difference from a regular wide shot: the subject is close and large, not small in the center.
+engine: |
+  selection: classify_lens(wide) — long straight lines at the edges + converging verticals + a large near subject
+  reprojecting fisheye or 360: ffmpeg v360=input=fisheye:ih_fov=180:iv_fov=180:output=flat:h_fov=110:v_fov=70
+  imitation on a regular shot: outpaint(expand=1.3) → lens_reproject(model='rectilinear', hfov=110) + vignette(amount=0.3);
+  editing: 1–3.5 s, enter on a downbeat; motion: transform(scale=[1, 1.3], t=[t0, t0+2.5], ease='outCubic')
+gen_hint: ultra wide angle 14mm rectilinear lens, <subject> leaning right into the camera inches away, exaggerated perspective, huge foreground <object/face>, background far and small, straight lines, low angle, deep focus, playful energy
+commands: ["make it look shot at 0.5×, face up close on #2", "ultra-wide from below in the hall for the intro", "find ultra-wide shots in the source footage and put them in the verse", "the product held out to the camera on a wide angle"]
+related: [lens.fisheye, angle.low, shot.close_up, focus.shallow, pov.first_person]
+evidence: {examples: 12, sources: 12, measured: "long straight lines at the edges: 17 of 20 in the outer quarters (hall), verticals converging up to 10.6° at the edge, ≈22° across the width; near subject ≈25–45 % of the width; corner/center 0.07–0.46 in 5 of 12; static in 9 of 12 (shake 0.03–0.25 %), push-in ×2.03 over 2.6 s, tilt −38 % over 3.3 s, handheld up to 6.8 %; shots 0.85–6.85 s", confidence: medium}
+---
+id: lens.vignette
+family: lens
+group: optics
+level: B
+aliases: [vignette, vignetting, darkened edges, round vignette, iris frame, iris vignette, scope view, view through a sight, view through binoculars, tunnel vision]
+what: the frame edges darken to black, leaving a round or oval "window" — focus on the center, a look through a tube, a scope, a peephole, a memory or anxiety
+frames: |
+  1. Window: a bright circle or oval in the center (center 0.45–0.52 in x, 0.43–0.56 in y), usually slightly elongated vertically
+     (aspect 0.8–1.2 in pixels); the visible area is 27–52 % of the frame, a hard "scope" 75 %; the corners are almost black (×0.01–0.04 of the center).
+  2. Edge: a soft falloff from 50 % to 10 % brightness over 5–25 % of the frame height (H), wide for a soft "old lens",
+     sharp at 1–5 % H with a dark rim ring for a scope or a peephole.
+  3. Light vignette: corners only ×0.4–0.8, no defined window, often combined with distortion and blurred edges (a cheap lens).
+  4. Dynamics: an "iris close", the window shrinks from 100 % to 8 % of the area over 1.2–2 s (30–50 frames) toward the point
+     of interest (center y 0.63) and holds; the reverse opening at the start of a scene; the vignette "breathes" with the camera.
+  5. Scope or binocular attributes: crosshair, scale, red dot; the frame drifts slightly (handheld optics).
+variants:
+  - soft round vignette on black — a memory, a dream, "old cinema"
+  - scope or monocular — a sharp circle covering 75 % of the frame, crosshair and scale
+  - peephole or spyglass — a small sharp circle, the rest black, an observer's POV
+  - iris close — the circle shrinks toward a detail and holds (the end of a scene)
+  - light corner darkening — a cheap or antique lens, corners ×0.4–0.8, soft frame edges
+status: code
+fallback: everything is done in code on any shot; an "iris close" needs an uncluttered frame with a clear point of interest (object track); draw the crosshair and the scope scale as our own neutral graphics
+params:
+  shape: circle or ellipse; window aspect 0.8–1.2 (in pixels), not stretched to 16:9
+  size: visible area 27–52 % of the frame (radius 0.3–0.45 H); scope 0.65–0.75 of the width; peephole 0.2–0.3
+  feather: soft 10–25 % H, hard 1–5 % H; a light vignette has no edge, only a falloff
+  darkness: corners ×0.01–0.05 of the center (black), ×0.4–0.8 (light)
+  center: frame center or the target track [0.5, 0.45–0.63]
+  iris_close: 100 → 8 % of the area over 1.2–2 s (30–50 frames), inOutCubic; hold 1–2 s, then a cut or a fade to black
+  scope_extras: 1–2 px crosshair, scale, a 2–3 % H rim, a slight drift of 0.2–0.5 % per frame
+  grade: +5–10 % contrast inside; b/w or a light sepia for "old cinema"
+when: memories and flashbacks, an observer's POV (binoculars, a scope, a peephole, a keyhole), ending a scene with an "iris" in a retro style, singling out one person in a crowd, anxiety and tunnel vision; a light vignette as a permanent part of the look
+avoid: vertical 9:16 (the circle eats the usable width, so reduce the strength); text and captions near the edges; overuse; a hard vignette in product and explainer videos, where the frame edges matter
+sfx: for a scope, an optics click and breathing; for an iris close, a mechanical "shhh" or an old projector; for a memory, muffled sound (low-pass filter)
+genres: {drama: allowed, teaser: allowed, fanedit: allowed, phonk: allowed, calm: allowed, travel: allowed, motivation: allowed, epic: allowed, viral: allowed}
+detect: |
+  Radial brightness profile: the center is bright and falls off toward the corners to ×0.01–0.05 (hard) or ×0.4–0.8 (light), regardless
+  of the content and fixed relative to the frame even as the camera moves; the visible area is a compact circle or ellipse
+  covering 27–75 % of the frame, center around 0.5. ed_motion: black-like edges in every frame, bars may catch the black sides;
+  "closing": the window area drops monotonically over 1–2 s without a cut.
+  Differences: a spotlight is darkness tied to the scene that moves with the subject; a window on a field (windowbox) is a rectangle
+  with straight edges; a fisheye is a circle with strong barrel distortion inside; an iris wipe transition
+  (trans.iris) closes the circle fully to black and opens a new scene.
+engine: |
+  vignette(amount=1.0, shape='ellipse', radius=0.38*H, feather=0.15*H, center=[0.5, 0.48], aspect=1.0)  # hard, round
+  vignette(amount=0.3)                                                                                    # light, corners ×0.6
+  iris close: vignette(radius=[0.9, 0.2]*H, center=track(target), t=[t0, t0+1.6], ease='inOutCubic')
+  scope: vignette(radius=0.36*W, feather=0.01*H) + shape(kind='crosshair', thickness=2) + shake(amp=0.003, freq=0.5)
+gen_hint: view through a vintage telescope or rifle scope, a sharp circular aperture in the middle of a pitch black frame, crosshair overlay, slight drift; alternatively an old film look with a soft round black vignette closing in on <subject>
+commands: ["a round vignette on the flashback #4", "iris the frame closed on the subject's face at the end", "a view through binoculars on #6", "light corner darkening on the whole video"]
+related: [trans.iris, light.spotlight, lens.fisheye, layout.windowbox, pov.first_person, frame.voyeur]
+evidence: {examples: 9, sources: 5, measured: "window 27–52 % of the frame for soft round ones, 75 % for the scope, center 0.45–0.52/0.43–0.56; corners ×0.01–0.04 of the center; falloff 50→10 % over 5–25 % H (scope ≈ 5 %); iris close 100→8 % of the area over ≈ 1.6–2 s toward the point at y 0.63; light lens vignette: corners ×0.4–0.8 and soft edges", confidence: medium}

@@ -1,0 +1,363 @@
+id: dolly.crash
+family: dolly
+group: camera
+level: B
+aliases: [sharp physical push-in, fast push-in, snap push-in, rush-in, camera lunge to the face, wide-angle lunge push-in]
+what: the camera with a wide-angle lens physically lunges at the face in a fraction of a second — the face grows from a wide shot to an extreme close-up and is distorted by perspective, while the background barely grows; often it springs right back, like a hit on the rhythm
+frames: |
+  1. Start: a medium shot of the subject in the center (face ≈10–15 % of frame height), a wide lens, a deep background
+     with recognizable objects (rows of cars, walls, windows).
+  2. Lunge: within ≈6–10 frames @25 fps (0.25–0.4 s) the camera comes almost right up to the face — the face grows
+     to 60–90 % of frame height (×4–7), the nose and eyes get bigger than the ears and chin (wide-angle barrel
+     distortion), while the background behind the head grows only ×1.3–1.8 and shifts — clear parallax.
+     Motion blur at the edges, the face in the center relatively sharp.
+  3. Hold at the face 0.3–1 s: the subject talks, sings, pulls faces right into the lens.
+  4. Snap back: an equally sharp pull-out back to the medium shot within 6–10 frames — or a cut on the extreme close-up.
+     The "lunge — hold — snap back" cycle can repeat 2–4 times on the beats.
+variants:
+  - lunge and snap back: in and out on the rhythm of lines or beats, 2–4 cycles
+  - single lunge landing on an extreme close-up: cut at the moment of maximum closeness
+  - lunge-through: the camera shoots past the subject or into an object — a transition (see trans.hidden_cut)
+status: footage
+fallback: code imitation — zoom.crash (digital zoom-in) + wide-angle distortion building to the peak (lens_distort k1 0 → −0.15…−0.25 centered on the face), + parallax (the subject mask scales ×4–6, the background only ×1.3–1.6; this is hybrid, the head itself covers the holes behind the head); the honest option — find a shot in the source footage where the operator with a phone or a stabilizer sharply brings the camera up to the face; generation — with consent
+params:
+  scale_subject: face ×3–7 (from 10–15 % to 60–90 % of frame height)
+  scale_background: ×1.2–1.8 — 2–4 times less than the face (a sign of physical movement)
+  duration: lunge 6–10 frames @25 fps (0.25–0.4 s), snap back the same; hold 0.3–1 s
+  ease: inOutCubic with a fast speed peak; landing without a slow tail
+  lens: 14–24 mm equivalent; distortion at the peak k1 ≈ −0.15…−0.25 (barrel)
+  motion_blur: at the frame edges, strength by speed; the center — the face — sharp
+  cycles: 1–4 lunge-and-snap-back cycles, each on a beat or a line
+  center: on the face (track(face)), deviation ≤ 10 % of the frame
+when: a punchline, a shout, a hard-hitting line of the track or a line to camera; a comedic reaction; entering the drop; rhythmic lunges on the downbeats in a music video; no more than once every 8 bars (a series of cycles counts as once)
+avoid: a long lens (no parallax or distortion — it is just a zoom); the face near the frame edge; a calm tone; several series in a row; an imitation on a shot where the background is flat and close (the parallax won't sell)
+sfx: a whoosh on the lunge peaking at the moment of maximum closeness, an impact or a bass hit on the landing; snap back — reverse_whoosh; the voice on the extreme close-up — closer and louder (proximity)
+genres: {viral: signature, fanedit: allowed, phonk: allowed, ugc: allowed, clips: allowed, teaser: allowed, sport: allowed, motivation: allowed, calm: forbidden}
+detect: |
+  ed_motion: ZOOM-IN ×2–4 over 0.25–0.4 s with high nonrigid (> 0.3 — the scale is uneven across the frame) and
+  conf "low (local motion/parallax dominates)"; often immediately a mirrored ZOOM-OUT of the same length.
+  Own check: the scale in the face area (face bbox track) grows 2–4 times more than the background scale at the edges;
+  barrel distortion grows on the face (the center bulges more than the periphery).
+  Differs from zoom.crash: with a zoom, face and background grow equally, nonrigid < 0.15, the perspective doesn't change.
+  From dolly.in / a slow push-in: the speed peak is 10+ times higher, the lunge is shorter than 0.5 s.
+engine: |
+  footage: search by the detect signature.
+  hybrid imitation: mask(method='mediapipe_person', feather=6) →
+    transform(subject, scale=[1, 5], center=track(face), t=[t0, t0+0.32], ease='inOutCubic')
+    + transform(background, scale=[1, 1.4], center=track(face), t=[t0, t0+0.32], ease='inOutCubic')
+    + lens_distort(k1=[0, -0.2], center=track(face), t=[t0, t0+0.32])
+    + blur(kind='zoom', amount∝speed, center=track(face))
+  snap back — mirrored after 0.3–1 s; + sfx('whoosh', at=t0, align='attack') + sfx('impact', at=t0+0.32).
+gen_hint: extremely fast physical push-in, the camera with a wide-angle lens rushes physically toward <subject>'s face in a split second, from a medium shot to an extreme close-up with strong wide-angle distortion, background shifts with parallax, then snaps back, music video energy
+commands: ["crash dolly onto the face on the shout in #2", "camera lunge to the face and back on every beat of the chorus", "sharp physical push-in with distortion on the punchline"]
+related: [zoom.crash, zoom.in_out, lens.fisheye, dolly.zoom, trans.hidden_cut]
+evidence: {examples: 1, sources: 1, measured: "the only example in the section was viewed at 10 moments of the animation (scripted frame capture blocked by browser permissions): medium shot → extreme close-up of the face and back, repeated 2–3 times, the background grows noticeably less than the face; durations and scales are approximate (≈) estimates from frames and practice", confidence: low}
+---
+id: dolly.double
+family: dolly
+group: camera
+level: B
+aliases: [double dolly, gliding subject, subject on the dolly, floating subject, float shot, carried without walking, subject glide]
+what: the subject stands or sits on the same dolly as the camera and "floats" through space without walking — their shot size and position in the frame don't change while the street, corridor or crowd is carried away behind; a feeling that the subject is carried by fate, a thought or the music
+frames: |
+  1. Frame: a medium shot or a close-up, the subject dead center (x ≈ 0.5), often looking straight into the camera or slightly
+     past it; a wide-angle lens, a deep background — a street, a corridor with lamps, a park, a train car, a night road.
+  2. Movement 2–6 s: the camera and the subject travel together — the subject fills the same 25–60 % of frame height, the head doesn't
+     bob to the rhythm of steps, the shoulders are still; meanwhile the background flows: recedes (shrinks) or advances,
+     streetlights, doors and passers-by go past along the frame edges with parallax.
+  3. The subject can act meanwhile — talk, sing, turn the head, hold an object, sit at a table
+     or on a chair — but the torso is "glued" to the frame. Sometimes the background is additionally stretched or
+     compressed by a zoom (combined with a dolly zoom), sometimes smeared by speed.
+  4. End — a cut, or the subject "steps off" the dolly (starts walking, the frame starts to sway).
+variants:
+  - classic walk-through: the subject looks into the camera, the street or corridor background drifts away behind, 3–6 s
+  - seated: the subject sits at a table or on a chair while a park, a square or a room moves around them
+  - couple or group: two or three people float side by side, looking the same way — a shared moment
+  - high-speed: the background smeared into streaks, lights stretch (camera and subject on a car, scooter, motorcycle)
+  - with background stretch: a simultaneous zoom in and out — the background "breathes", the subject keeps the same shot size
+  - symmetrical corridor: ceiling lamps and doors pass evenly along the edges, the subject in the center
+status: footage
+fallback: a casual setup — a phone on a stabilizer or a selfie stick in front of the face, the subject rides a scooter, skateboard, bicycle, sits in a chair or on a dolly (look in the source footage for shots where the face is stable and the background flows); hybrid — a subject mask from a static shot over a moving plate (pass-through, drive plate) with perspective matching and moving light on the face; generation — with the user's consent
+params:
+  subject_size: 25–60 % of frame height (close-up to medium), change per frame ≤ ±5 %
+  subject_pos: center x 0.45–0.55, eyes on the upper third; head jitter ≤ 0.5 % of frame height (no 1.5–2.2 Hz walking bob)
+  bg_flow: background 0.3–2 % of frame width per frame @25 fps; background scale ×0.7–0.85 (receding) or ×1.2–1.6 (advancing) per shot
+  duration: 2–6 s (50–150 frames @25 fps), typically 4 s
+  lens: wide, 18–35 mm equivalent — stronger background parallax
+  speed: walking pace 0.5–1.5 m/s for "floating"; high-speed variant 3–10 m/s with background motion blur
+  zoom_combo: optional ×1.2–1.8 change of background scale by zoom while the subject's shot size stays constant
+  light: the light travels with the subject (the face evenly lit), the background has passing light sources
+when: a moment of decision or realization, "the subject is carried along" — toward fate, into battle, toward a loved one; a walk to the stage; a monologue or a verse addressed to the camera; a shift into another state (a dream, a trance, falling in love); on a long note, on the build before the drop; 1 per video, at most 2
+avoid: visible walking bob (the effect is lost — it is just a regular walk); a flat or plain background (no sense of movement); fast cutting — it needs 2+ s; a mask imitation without matching light and perspective (the subject looks "pasted on"); a comedic context, unless a mock-solemn absurdity is intended
+sfx: street ambience, stretched and muffled as if under water; a low drone or reverse swell for the whole pass; the subject's voice closer and drier than the background; on the way out — a hit or an abrupt return of the sound
+genres: {drama: signature, epic: allowed, motivation: allowed, teaser: allowed, fanedit: allowed, fashion: allowed, viral: allowed, ugc: allowed, sport: allowed, clips: allowed}
+detect: |
+  ed_motion: a long ZOOM-OUT (background recedes) or ZOOM-IN (background advances) over 2–6 s with nonrigid > 0.3 — motion
+  with parallax, while the frame center (the subject) is almost static: own check — the face track or the subject bbox changes
+  size ≤ 5 % and position ≤ 2 % over the whole shot, vertical head oscillations without a 1.5–2.2 Hz peak.
+  The flow around the subject is radial (diverging from or converging to the center), and inside the subject mask ≈0.
+  Differs from track.lead (the camera leads a walking subject): there the walking bob of the head and shoulders and the changing leg pose are visible.
+  From dolly zoom: there the background perspective changes at a constant shot size, but both the camera and the subject stand still — the background doesn't
+  move away "with passers-by". From time.hyperlapse: no time acceleration. From a mask over a plate: the light on the face changes
+  together with the background.
+engine: |
+  footage: search by the detect signature (stable face_track + radial background flow).
+  hybrid: mask(method='mediapipe_person', feather=4) from a static shot of the subject → composite([bg=plate(drive|walk, dir='away'),
+          subject], blend='normal') + transform(subject, scale=[1, 1], shift=micro_drift(0.002)) + light_wrap(0.3)
+          + relight(subject, from=bg, strength=0.4);
+  stabilize(lock=track(face), strength=1.0) on a "selfie stabilizer on a scooter" shot — removes the residual bob;
+  optionally transform(bg, scale=[1, 1.4], ease='linear') to stretch the background;
+  + sfx('swell', at=t0) + duck(ambience, lowpass=1200).
+gen_hint: double dolly shot, <subject> stands still on a moving platform with the camera and glides toward the camera through <street or corridor>, no walking motion, the subject stays centered and the same size while the background flows past, wide lens, cinematic, looking into the lens
+commands: ["double dolly on the subject's final walk", "make me float down the street without walking during the verse", "turn the selfie video from the scooter into a floating walk-through", "the background moves away while I stand still — at 0:15"]
+related: [track.lead, track.subject, dolly.zoom, rig.locked_on, time.hyperlapse]
+evidence: {examples: 18, sources: "≈16", measured: "visual review only of all examples in the section at 4 moments of the animation (scripted frame capture blocked by browser permissions); subject shot size, duration and background flow are approximate (≈) estimates from frames", confidence: medium}
+---
+id: dolly.float
+family: dolly
+group: camera
+level: B
+aliases: [gimbal, stabilizer, gimbal tracking shot, gimbal push, smooth walk-through, gimbal push-in, gimbal pull-out, hovering camera, floating camera]
+what: the camera glides smoothly, without tracks, toward or away from the subject at walking speed — like a dolly, but it passes through doors, crowds, stairs and windows; a light "floating" feel and real parallax
+frames: |
+  1. Start: a wide or medium shot, the subject (or a group) centered horizontally (x 0.47–0.54), the head in the upper
+     half of the frame (motion center y 0.26–0.44).
+  2. Forward move: the camera moves toward the subject steadily — scale ×1.9–2.8 over 2–4 s (≈×1.014–1.05 per frame); half the distance at
+     0.45–0.7 of the time — steady or with a smooth acceleration toward the end. Real parallax (nonrigid 0.17–0.29):
+     the foreground drifts past, people and objects open up on the sides.
+  3. Backward move (less often): a pull-out ×0.22–0.32 over 2.9–3.9 s, almost steady — the subject gets smaller, the surroundings are revealed
+     (the stage, the crowd, the set).
+  4. "Floating": almost no shake (0.06–0.3 % of the frame), but a soft drift in height and roll up to 2–4° — livelier than a dolly.
+  5. End: stopping on a close-up of the face, the conversation continues on a "floating" close-up; or the camera passes
+     through a window, a door, a crowd into the next space without a cut (×6 over 5 s in one move).
+variants:
+  - push-in through a crowd: from a wide shot of a dinner party, a dance floor or a bar straight to the face of one subject, ×2.8 over 3.2 s
+  - closing-in push: slowly toward two people on steps or a bench, low camera, ×2 over 3.9 s
+  - going inside: the camera follows people through a shop door or into a building entrance, ×1.9 with acceleration
+  - through spaces: from the street through a balcony or a window into a room to the subject, ×6 over 5 s in one move, roll on the entry
+  - reveal pull-out: back from the subject, revealing the stage, the crowd or the emptiness around, ×0.2–0.3 over 3–4 s
+  - into the dark: in a dark room past furniture to a face that starts talking
+status: footage
+fallback: "code — a digital zoom-in on a 4K/wide shot (up to ×1.6–2, no parallax) + destabilize(profile='float', amp=0.15 %, roll=1°) for liveliness; pull-out — outpaint the edges; passing through spaces — only a cut between two moves on a dark object, or generation (with consent); search the source footage: long smooth shots with growing scale and nonrigid 0.15–0.3"
+params:
+  push: ×1.9–2.8 over 2–4 s (≈×1.014–1.05/frame @25 fps); passing through spaces — up to ×6 over 5 s
+  pull: ×0.22–0.32 over 2.9–3.9 s
+  ease: linear or inQuad (acceleration, half the distance at 0.6–0.7 of the time); at the end — a soft stop of 0.3–0.5 s
+  float: drift 0.06–0.3 % of the frame, roll ±1–4°, no high-frequency shake
+  height: chest level or lower (a low camera toward seated people), eye level on the close-up
+  subject: centered across the width, head in the upper third; final shot size — face 30–50 % of frame height
+  duration: 2–5 s of movement + hold; the whole shot is often 3–8 s
+when: entering a scene and introducing the subject, "singling out" one person from a crowd, closing in before an important line, rising tension under the build, revealing the scale with a pull-out at the end; passing through spaces — intros and links between locations; 1–3 times per video
+avoid: fast cutting (a shot shorter than 2 s — the move doesn't read); a shaky source passed off as a stabilizer shot; a digital imitation on 1080p with a zoom-in beyond ×1.5 (mushy image); an empty frame with no target for the movement; sharp jerks — that is already handheld
+sfx: a quiet rising pad or room tone, the subject's voice getting louder as the camera approaches; when passing through a window — a change of acoustics (street → room)
+genres: {drama: signature, epic: allowed, calm: allowed, teaser: allowed, travel: allowed, fashion: allowed, motivation: allowed, product: allowed, ugc: allowed, explainer: allowed, fanedit: allowed}
+detect: |
+  ed_motion: a long smooth ZOOM-IN ×1.9–2.8 over 2–4 s (or ZOOM-OUT ×0.2–0.3 over 3–4 s), near-linear or ease-in
+  (50 % at 0.45–0.7), nonrigid 0.15–0.3 — a real camera move with parallax, the zoom center on the subject (x≈0.5, y 0.26–0.44);
+  jitter 0.06–0.3 %, a slow roll up to 2–4°. Few lateral events.
+  Differs from zoom.slow and zoom.in: there nonrigid <0.1 (no parallax), the scale grows without the sides "opening up".
+  From track.follow: there the camera keeps a constant distance to the back of a subject walking away; here the distance changes.
+  From track.roam: there is no target subject and the path is curved. From handheld.shaky: shake of 0.7 % and above. From a dolly on tracks:
+  it is perfectly level in height and doesn't pass through doors and people.
+engine: |
+  Source with a real camera move — pick by detect and use as is (speed 1.0; if needed speed(0.8–1.2)).
+  Imitation: transform(scale=[1, 1.6], center=track(face), t=[t0, t0+3], ease='inQuad')
+  + destabilize(profile='float', amp=0.0015, roll=1.5, freq=0.3)
+  + parallax_push(layers=mask('mediapipe_person')+bg, fg_speed=1.3) — new primitive for fake parallax (2.5D).
+gen_hint: smooth gimbal shot gliding forward through <a crowded bar / a dark living room / a doorway> toward <subject>, walking speed, slight floating motion, strong parallax as foreground people and objects pass by, ends on a close-up of the face
+commands: ["smooth stabilizer push-in on the subject in #2", "reveal pull-out at the end", "the camera passes through a window into the room in the intro", "single out the subject from the crowd with a floating camera"]
+related: [dolly.in, track.follow, track.roam, zoom.slow, pass.through, handheld.shaky, crane.telescopic]
+evidence: {examples: 7, sources: 7, measured: "push-ins ×1.94–2.78 over 2.1–3.9 s (4 of 7), ×6 over 5.1 s through a facade and a window (1); pull-outs ×0.22–0.32 over 2.9–3.9 s (2); half the distance at 0.45–0.71 of the time; nonrigid 0.17–0.29; jitter 0.06–0.32 % (higher in examples with people in motion because of local motion); motion center x 0.47–0.54, y 0.26–0.44", confidence: high}
+---
+id: dolly.in
+family: dolly
+group: camera
+level: A
+aliases: [dolly in, push in, dolly shot, camera push-in, dolly push-in, physical push-in, dolly out, pull back, camera pull-out]
+what: the camera physically travels toward the subject (or away from them) steadily and slowly — the face grows faster than the background, the perspective changes; a push-in draws attention inward to the subject, a pull-out reveals where they are and who they are with
+frames: |
+  1. Start: a wide or medium shot, the subject centered (motion center x 0.45–0.53), the camera already moving or starting off without a jerk.
+  2. Push-in: the scale grows steadily (almost linearly in 7 of 8) — slow at 0.35–0.85 % per frame @25 fps (×1.09–1.24 per second,
+     adding up to ×1.26–1.5 over 1–4.5 s), energetic at 1.7–1.8 % per frame (×1.5–2.8 over 1–2.4 s, sometimes an S-curve).
+     The face grows noticeably faster than the background: the log growth of the face is 1.17–2.1 times that of the background — a sign of perspective;
+     nearby objects pass along the edges, the background "lags behind".
+  3. Landing: medium → close-up (face from ≈15–20 % to 35–45 % of frame height), the motion center on the face in the upper third
+     (y 0.17–0.33); the camera stops smoothly or the shot is cut while still moving.
+  4. Pull-out — the same in reverse: ×0.7 over 4.8 s (−0.3 % per frame) or ×0.28 over 6 s (−0.8 %), the face shrinks
+     faster than the background, neighbors, a car, a crowd enter the frame — revealing the context.
+  5. With the subject approaching: the person walks toward the camera while it travels toward them — face ×8 over 1.5–3 s, background only ×1.2–2.4;
+     ending on a close-up with a title or a flash (2 of 8).
+variants:
+  - slow push-in on a subject who is talking or smoking, 0.35–0.85 % per frame, 1–4.5 s (2 of 8)
+  - energetic push-in on a group or a couple in a music video, 1.7–1.8 % per frame, 1–2.4 s (2 of 8)
+  - reveal pull-out — from the face to the car and the street, from the podium to the whole row of people, 4.8–6 s (2 of 8)
+  - converging push-in — the subject walks out of smoke or out of a crowd toward the camera, ending on a close-up and a flash or a title (2 of 8)
+status: footage
+fallback: 'on a flat background a push-in is indistinguishable from a zoom — zoom.slow or zoom.in from 4K by track(face); for perspective — hybrid "2.5D": subject mask (hf_remove_background), fill in the background behind it, the subject scales k≈1.3–1.6 times faster than the background in log terms; a reveal pull-out beyond ×1.5 — outpaint the edges or search for a wide shot of the same scene; no suitable shot — generation with consent'
+params:
+  rate_slow: 0.35–0.85 % of scale per frame @25 fps (×1.09–1.24 per second) — tension, monologue
+  rate_fast: 1.7–2.5 % per frame (×1.5–2.8 over 1–2.4 s) — music video, energy
+  pull_rate: −0.3…−0.85 % per frame (×0.7 over 4.8 s … ×0.28 over 6 s)
+  duration: 1–6 s (25–150 frames @25 fps); a slow push-in — from 2 s, otherwise it doesn't read
+  ease: linear in the middle (7 of 8), soft start and stop of 0.3–0.5 s each; S-curve for the energetic one
+  perspective: k = log(face growth) / log(background growth) 1.15–2.2 (zoom ≈1.0; subject walking toward the camera — 2.4 and above)
+  nonrigid: 0.17–0.39 by ed_motion (with a long focal length and a flat background it can be <0.1 — check k)
+  center: on the face, y 0.17–0.33 for a single subject; 0.4–0.6 for a group or a couple
+  landing: face 35–45 % of frame height (close-up) after the push-in; pull-out — until the context comes in
+  jitter: ≤0.6 % (rails, slider, stabilizer); up to 0.85 % from a car
+when: push-in — rising tension, realization, an important line, "looking inside" the subject, attention to a detail; slow under a long note or a pause, energetic — on entering the chorus or the drop; a product on a slider. Pull-out — revealing the circumstances, loneliness, consequences, the end of a video or a scene. No more than 2–3 slow push-ins in a row; alternate with ordinary static shots
+avoid: hand shake where a smooth move is needed; a push-in on a flat background when depth is exactly what you need (reads as a zoom); a slow push-in shorter than 1.5 s in fast cutting; focus drifting off the face during the move; a ×2+ digital crop from 1080p instead of a real push-in
+sfx: slow push-in — a drone or a riser building with the move, silence around the voice; energetic — a whoosh on the start and a hit on the landing on the beat; pull-out — the background opens up (louder ambience, reverb), a reverse swell over the last 0.5 s
+genres: {drama: signature, product: signature, epic: allowed, calm: allowed, motivation: allowed, teaser: allowed, fashion: allowed, fanedit: allowed, viral: allowed, travel: allowed, explainer: allowed, ugc: allowed, sport: allowed, clips: allowed}
+detect: |
+  ed_motion: a single ZOOM-IN (or OUT) of 1–6 s, near-linear (sometimes S), peak ≤×1.03/frame, jitter ≤0.6 %, nonrigid 0.17–0.39
+  (in 7 of 8). The decisive own check is perspective: growth of the face box versus the background scale from LK points outside the body —
+  k = log(face)/log(background) 1.15–2.2 for a dolly (1.17–2.12 in the examples), ≈1.0 for a zoom; k ≥2.4 — the subject is also walking toward the camera.
+  With a long focal length and a flat background nonrigid can be <0.1 (0.088 in one example), but k is still >1.15 (1.55).
+  Differences: zoom.in and zoom.slow — k≈1, nonrigid <0.15; dolly.crash — a ×2–4 lunge over 0.25–0.4 s with barrel distortion; dolly.zoom —
+  the face keeps the same shot size while the background stretches or compresses; track.lead and track.follow — the camera travels together with a walking
+  subject, their shot size is constant; dolly.double — the subject is static in the frame, the background flows past.
+engine: |
+  footage: find_shot(motion='zoom_in'|'zoom_out', k_face_bg>=1.15, jitter<=0.006) → cut(at).
+  Flat scene or no shot: transform(scale=[1, S], center=track(face), t=[t0, t0+D], ease='linear'), S=1.1–1.5 over 2–4 s
+  (≡ zoom.slow). Perspective push-in from a static shot: parallax_push(subject=mask('hf_remove_background'), bg=inpaint,
+  s_subject=[1, S], s_bg=[1, S**(1/k)], k=1.4, t, ease='linear') — new primitive.
+  Reveal pull-out: transform(scale=[S, 1]) from 4K, with S>1.5 — outpaint the edges; landing an energetic push-in on the beat:
+  + sfx('whoosh', at=t0) + sfx('impact', at=t0+D).
+gen_hint: slow dolly push-in toward <subject>, the camera physically travels forward on a track, natural parallax with the background, steady and smooth, centered on the face, ending in a close-up (or a smooth dolly pull-back from the face revealing <surroundings>)
+commands: ["slow camera push-in on the subject during the monologue", "reveal pull-out at the end, from the face to the whole street", "make a push-in with parallax from the static #2", "find dolly push-ins in the source footage"]
+related: [zoom.slow, zoom.in, zoom.out, dolly.crash, dolly.zoom, dolly.double, track.lead, crane.pedestal]
+evidence: {examples: 8, sources: 8, measured: "push-ins ×1.26–2.82 over 1–4.55 s (0.35–1.8 % per frame @25 fps), pull-outs ×0.7 over 4.8 s and ×0.28 over 6 s; near-linear curves in 7 of 8, S-curve in 1; nonrigid 0.17–0.39 in 7 of 8, 0.088 for the long-lens one; face growth versus background k 1.17–2.12 for 6 clean moves, 2.43 and 10.7 when the subject walks toward the camera; jitter 0.05–0.54 %, 0.85 % from a car; center on the face y 0.08–0.33", confidence: high}
+---
+id: dolly.infinite
+family: dolly
+group: camera
+level: C
+aliases: [endless corridor, endless dolly, loop dolly, looped tracking shot, infinite pull-out]
+what: the camera travels forward (or backward) through a space that never ends — a corridor, an arcade, a row of trees or seats repeats, and the movement is looped or cut together so the seam isn't visible
+frames: |
+  1. A space with repetition: a long corridor, an enfilade of arches, a row of trees, a row of identical seats, nested openings;
+     the vanishing point sits in the center (0.48–0.56 in x).
+  2. Travel: an even movement without acceleration — the scale of the center grows linearly in log terms, ×1.15–2.6 per second
+     (×1.006–1.04 per frame @25 fps); walls and objects at the edges drift away with parallax.
+  3. Infinity is made in one of three ways:
+     a) loop — after one repeat period (one arch, one tree, one span) the frame matches the first one: ×3–5 over 1.7–1.8 s,
+        the video loops without a seam;
+     b) hidden cuts on the vanishing point — every 2 frames (80 ms) a new similar corridor, aligned to the same
+        perspective and slightly "deeper" than the previous one; it feels like the camera rushes through an endless building;
+     c) nesting outward — a pull-out from a screen to a shop, from the shop to the street through a chain-link fence: ×110 over 4.35 s with
+        a static center.
+  4. Length 1.8–10.5 s; in the edit — for as long as the music holds it.
+variants:
+  - endless corridor (3D or real): an even travel ×1.15/s, an arcade with raking light, 10 s without a seam
+  - recursive arches: an opening inside an opening, loop ×5 over 1.7 s — recursion in space
+  - forest loop: a pass through a row of trees at sunset, ×3 over 1.7 s, the branch at the start and at the end of the loop matches
+  - corridor montage: 40–50 different corridors of 2 frames each, all aligned on the vanishing point
+  - mirrored row: identical people in an endless row of seats, travel ×8.6 over 4.35 s (×1.64/s)
+  - infinite pull-out: screen → room → street, static center, ×110 outward
+status: hybrid
+fallback: |
+  A loop from your own material: a travel along repeating architecture (a colonnade, a corridor, a row of trees), find two frames
+  with a matching view one period apart and join them with a 4–8-frame dissolve. Corridor montage — in code from photos or
+  videos of similar spaces aligned on the vanishing point. Nested pull-out — in code (screen or window track + composite).
+  A pure endless space (a 3D corridor, recursive arches) — generation with the user's consent.
+params:
+  rate: ×1.15–2.6 per second (×1.006–1.04 per frame @25 fps), constant in log terms; typically ×1.6/s
+  center: vanishing point 0.48–0.56 in x, 0.45–0.55 in y (for the forest — 0.86 in y, horizon at the bottom)
+  loop_period: 1.7–1.8 s (43–45 frames @25 fps) per repeat; scale over a period ×3–5 = the ratio between neighboring repeats
+  loop_seam: the last frame matches the first; for a manual loop — a 4–8-frame dissolve on matching views
+  montage_hold: 2 frames @25 fps (80 ms) per corridor shot, sometimes 1; 40–50 link shots in 4 s
+  alignment: the vanishing points of neighboring links match within 2–3 % of the frame, each link's scale 3–8 % larger than the previous one
+  nested_out: ×2.5–3/s outward with a static center; nested frames — screen, shop window, window, chain-link fence
+  parallax: nonrigid 0.15–0.25 for a real or 3D travel; 0.08–0.1 for digital nesting
+  duration: 1.8–10.5 s (45–260 frames @25 fps)
+when: |
+  Intro and outro (a hypnotic loop under ambient or techno), an "endless maze" teaser, visualizing repetition,
+  routine, being stuck; a background for titles or text; corridor montage — to a fast steady beat (a change every 1/8 or 1/16);
+  nested pull-out — "it was all on a screen" at the end. 1 per video, hold until the next section of the music.
+avoid: |
+  Any jerk in speed or a turn at the seam — the infinity breaks. A space without an obvious repeat — the loop can't be built.
+  Different light and color between montage links — it flickers. Too long a travel without an event in the viral format (max 3–4 s).
+sfx: |
+  A continuous hum, drone or wind for the whole movement with no accents (otherwise the seam is audible); in the corridor montage — a quiet tick or
+  hi-hat on each change; on the nested pull-out — the sound gets muffled as the camera moves away.
+genres: {teaser: signature, fanedit: allowed, calm: allowed, travel: allowed, epic: allowed, drama: allowed, fashion: allowed, viral: allowed}
+detect: |
+  ed_motion: a long near-linear ZOOM-IN (or ZOOM-OUT) centered at 0.5±0.06 with conf ok, nonrigid 0.08–0.25, no cuts;
+  loop — accumulated scale ×3–5 per period and the last frame almost equal to the first (the difference at the seam is like between neighboring frames);
+  corridor montage — a "cut" every 2 frames with an almost unchanged histogram and a fixed vanishing point (ed_motion catches
+  only some of the cuts — compare neighboring frames at the edges: correlation 0.1–0.5 at a change versus 0.9+ within a link).
+  Differs from zoom.infinite: there it is a zoom into a picture within a picture (scene changes), here it is movement through one repeating
+  space with parallax. From dolly.in: a regular travel has a beginning and an end, and the speed changes.
+  From time.hyperlapse: a hyperlapse has jumping light and small shifts, here the geometry is precise.
+engine: |
+  loop: loop_dolly(clip, period=find_period(similarity='frame0', min=1.0, max=3.0), seam='crossfade', seam_dur=0.24)
+         + speed(curve=constant) — even out the speed before cutting the loop.
+  corridor montage: vp_align(clips[], target='vanishing_point', scale_step=1.05) + cut(every=2fr)
+                    + transform(scale=[1, 1.05], t=each_link, ease='linear') — a continuous "push" within each link.
+  nested pull-out: chain_zoom(clips[], per_link=1.5, rate=-ln(3), seam='nest(quad=track(screen|window))', center=[0.5, 0.5]).
+  sound: sfx('swell', at=t0, gain=-12dB) without hits; beat_sync(event='cut', grid='1/8') for the corridor montage.
+gen_hint: seamless looping camera dolly forward through an endless <corridor of arches / row of trees / hallway>, constant speed, perfectly centered one-point perspective, the space repeats so the last frame matches the first, no cuts, soft directional light
+commands: ["loop the corridor dolly so it looks endless", "intro: an endless pass through arches, 4 seconds", "cut the corridors from #2–#9 on the vanishing point, 2 frames per link", "an infinite pull-out at the end — it turns out it was all on a screen"]
+related: [zoom.infinite, dolly.in, pass.through, trans.hidden_cut, time.hyperlapse, frame.central]
+evidence: {examples: 6, sources: 6, measured: "travel ×1.15–2.6/s centered at 0.49–0.56, near-linear in all 5 continuous ones; loops — ×5 and ×3 over 1.71 s, the last frame almost equal to the first (difference 28.6 and 14.2 versus 29.8 and 11.6 between neighboring frames); corridor montage — a new link every 2 frames (80 ms), 47 links in 4.1 s, edge correlation 0.1–0.5 at a change and 0.86–0.99 within; nested pull-out ×0.009 (×110) over 4.35 s, nonrigid 0.08; mirrored row ×8.6 over 4.35 s", confidence: medium}
+---
+id: dolly.zoom
+family: dolly
+group: camera
+level: B
+aliases: [dolly zoom, contra-zoom, zoom with dolly, perspective stretch, trombone shot, zolly]
+what: the subject keeps the same shot size while the space behind them stretches or compresses — the camera travels one way, the zoom works the other way; "the ground slips from under the feet", shock, realization, a shift of reality
+frames: |
+  1. Start: a medium shot or a close-up, the subject centered (center 0.45–0.55), a deep background behind —
+     a street, buildings, a corridor, a horizon line; the camera stands on the axis.
+  2. Move: the subject's size stays within ±3–10 %, the background changes scale:
+     - the background "advances" (zoom in, camera back) — ×1.1–1.25 over 1–1.6 s for soft ones, ×2.85 over 4.8 s
+       for a slow climactic one, up to ×3 over 0.6 s for a sharp one;
+     - the background "recedes" (zoom out, camera forward) — ×0.92–0.96 over 1.9–3.1 s for barely noticeable ones,
+       ×0.55–0.67 over 0.7–2.1 s for strong ones; the horizon and the walls spread apart, depth grows.
+     The speed is even (near-linear), no jerk at the start.
+  3. Landing: a stop at the extreme position and a hold — or an immediate reverse move of the same length
+     (a "there and back" swing, 3 of 12 examples; one of them looped by reversing).
+  Often coincides with the subject's frozen face, the sound stopping or a pause in a line.
+variants:
+  - background advances — zoom in + camera pull-back, the world "closes in" on the subject
+  - background recedes — zoom out + camera push-in, the space stretches, the subject "falls away"
+  - barely noticeable — the background changes by 4–8 % over 2–3 s, felt as unease without obvious movement
+  - swing — there and back in 1.5–2 s, often in music videos on the beat, sometimes by reversing
+  - sharp — a background change of ×2–3 over 0.4–0.6 s on a hit
+status: footage
+fallback: the real effect is shot in camera; in code — hybrid "2.5D" (subject mask, the background without the subject filled in, the background scales one way, the subject stays put; for a deep scene — scale by a depth map, in layers); without a suitable shot — generate a shot with a contra-zoom with the user's consent
+params:
+  subject_scale: hold 1.0 (tolerance ±3–10 %), the subject's center static
+  bg_scale: advancing ×1.1–1.5 (up to ×3 when sharp), receding ×0.55–0.95; typically ×1.3 or ×0.75
+  duration: 0.6–5 s (15–125 frames @25 fps), typically 1.5–2.5 s
+  ease: linear or inOutSine — no jerk; for the sharp one — inOutCubic
+  rate: soft 0.3–0.6 %/frame on the background, strong 1–2 %/frame, sharp 4–8 %/frame
+  yoyo: optional reverse move of the same length, a pause of 0–4 frames at the end point
+  depth: the background at least 3–5 times farther than the subject (street, corridor, horizon), otherwise the effect doesn't read
+  framing: a close-up or medium shot centered, perspective lines converging on the head
+when: a moment of shock, realization, fear, dizziness, "the world slips out from under the feet"; the climax of a scene or a story twist; teaser and drama — once per video; in music videos — swings on the downbeats; in UGC and memes — a comedic "dramatic pause"
+avoid: a flat background close to the subject — the effect isn't visible; a shaky handheld camera; frequent use (more than 1–2 times) turns it into a meme; a calm or explainer video with no dramatic reason; when faking in code — hair and outline with a halo, a ragged fill behind the subject
+sfx: a low rising rumble or a "stretching" sound (reverse cymbal, stretched riser), the ambient sound sinks into a filter; in comedy — a dramatic "dun-dun"; a hit at the end of the move
+genres: {drama: signature, teaser: signature, epic: allowed, viral: allowed, fanedit: allowed, motivation: allowed, ugc: allowed, phonk: allowed, calm: forbidden, explainer: forbidden}
+detect: |
+  ed_motion often gets confused: either "no significant global motion" (the subject fills the center and doesn't change),
+  or ZOOM-IN/OUT with nonrigid 0.19–0.47 (conf low) — the scale comes from the background. The decisive own check is as
+  in dolly.in: subject scale (face box or LK points inside the mask) versus background scale (LK points outside the
+  body or a background template at several scales): for a dolly zoom the subject is 0.9–1.1, the background ×1.1–3 or ×0.55–0.95,
+  i.e. k = log(subject)/log(background) ≈ −0.3…0.3 (for a dolly push-in k 1.15–2.2, for a zoom ≈1).
+  Visually: the perspective lines "breathe", the distance between the subject and the background seems to change.
+  Differs from zoom.in/zoom.out: there the subject and the background grow equally. Differs from dolly.in: there the subject grows faster than the background.
+engine: |
+  footage: find_shot(k_face_bg in [-0.3, 0.3], bg_scale_change >= 1.1) → cut(at).
+  Imitation: mask(method='mediapipe_person'|'hf_remove_background', feather=2) → subject;
+  bg = inpaint(A without the subject) (or outpaint when bg_scale < 1, when the frame edge is needed);
+  dolly_zoom_fake(subject, bg, bg_scale=[1, 1.4], subject_scale=[1, 1], center=track(face), t=[t0, t0+2], ease='linear',
+                  depth=estimate_depth(A) | None) — new primitive: with depth — layer scale ∝ depth (farther layers scale more)
+  Swing: the same primitive with bg_scale=[1, 1.4, 1] and ease=['inOutSine', 'inOutSine'].
+  + sfx('riser', at=t0) + duck(music, under=riser) + sfx('impact', at=t0+2)
+gen_hint: dolly zoom (contra-zoom) on <subject> standing in <deep location>, the subject stays the same size in the center while the background <stretches away | rushes toward the camera>, smooth, locked on the face, dramatic realization
+commands: ["dolly zoom on the subject's face at the moment of shock", "contra-zoom on #4: the background closes in over 2 seconds", "dolly zoom swing on the drop", "make a fake dolly zoom from a static shot"]
+related: [dolly.in, zoom.slow, zoom.crash, shot.realization, dolly.double]
+evidence: {examples: 12, sources: 12, measured: "in 9 of 12 the subject holds the shot size (0.92–1.09) while the background changes: advances ×1.08–1.25 over 1–1.6 s, ×2.85 over 4.8 s, ≈×3 over 0.6 s; recedes ×0.92–0.96 over 1.9–3.1 s and ×0.55–0.67 over 0.7–2.1 s; 3 examples — a there-and-back swing (one by reversing); ed_motion: nonrigid 0.19–0.47 or \"no global motion\"; 3 examples are ambiguous (an even pull-out or the subject walking on their own)", confidence: medium}

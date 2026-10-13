@@ -1,0 +1,388 @@
+id: light.flash
+family: light
+group: optics
+level: B
+aliases: [flashing lights, light flash, blinking light, flicker, strobe, emergency lights, camera flash, lightning]
+what: the light inside the frame flashes, blinks or strobes — the scene is seen in bursts, without a cut; gives alarm, club energy or a "flash" on a hit
+frames: |
+  No cut: the shot continues, only the lighting changes, the frame's structure stays visible even in the flash.
+  1. Single flash (a camera flash, lightning, a gunshot): attack 1 frame, peak 1 frame, decay 1–3 frames — 2–4 frames @25 fps in total
+     (80–160 ms); mean brightness ×2.5–4 (32 → 138 of 255).
+  2. Flicker (a faulty lamp): on for 60–240 ms, off for 60–240 ms, a ragged rhythm; difference ×1.7–2.
+  3. Beacon or emergency lights: beacon — 350 ms of light / 350 ms of darkness (≈ 1.4 Hz), pure red; emergency lights — 50–150 ms each,
+     period 150–250 ms, blue and red alternate in bursts with pauses of 0.3–0.5 s.
+  4. Strobe in the dark: the scene is visible for 240–400 ms, then ≈ 1–1.5 s of almost complete darkness (brightness ≤ 15); difference up to ×7.
+  5. Passing light: every ≈ 2 s a wave of 250–350 ms — attack 2 frames, decay 4–5 frames, ×3, blue → red within the wave.
+  6. Single-frame inversion: in a backlit silhouette every 6 frames (0.3 s) one frame with a frontal flash on a black background.
+variants:
+  - a single flash on a hit — a camera flash, lightning, a gunshot
+  - a flickering lamp — a nervous ragged rhythm in a dark room
+  - a colored beacon and emergency lights — alarm, night, a chase
+  - a party strobe — the scene is snatched from the darkness in pieces
+  - passing light — a periodic colored wave over the walls and the figure
+  - single-frame inversion — a frontal flash instead of the silhouette on a beat, in the rhythm of the track
+status: code
+fallback: in code — exposure pulses and colored light with a gradient from the source side, the "off" state 1–2 stops darker; real shadows from the source and the single-frame inversion require filmed material (look for shots with emergency lights, a strobe, flashes, a thunderstorm) or generation
+params:
+  single: 2–4 frames @25 fps (0.08–0.16 s), attack 1 frame, decay 1–3 frames, brightness ×2.5–4
+  flicker: on 0.06–0.24 s, off 0.06–0.24 s, spread ±50 %, ×1.5–2
+  beacon: "period 0.7 s, duty cycle 50 %, color #ff1a1a, ×2"
+  emergency: flashes 0.05–0.15 s, period 0.15–0.25 s, blue/red bursts, pauses 0.3–0.5 s
+  strobe_reveal: light 0.24–0.4 s, darkness 1–1.5 s, brightness in the darkness ≤ 15/255
+  passing: every 1.5–2.5 s, duration 0.25–0.35 s, attack 2 frames, decay 4–5 frames
+  inversion: 1 frame out of 6–8 @25 fps, on the beats of the track
+  source: a light gradient from the source side (falloff toward the opposite edge 40–70 %), not a uniform fill
+  safety: no more than 3 flashes per second with a brightness change above 10 % over a large area; red flashes — even more cautiously
+when: alarm, a chase, a night street, a party and a club, a thriller; flashes on the snare or the kick in a verse of a phonk track or a music video; a single flash — an accent on a punchline or a change of topic; flicker — nervous anticipation before the drop
+avoid: photosensitive viewers — frequent full-frame flashes (> 3 Hz) are dangerous; calm and explainer videos; daytime scenes where a "flash" reads as an exposure error; filling the whole frame with one color without a gradient (looks like a color grade, not like light); flashes off the rhythm of the track
+sfx: single — a shutter click, a flash pop or a thunderclap on the attack; flicker — electrical crackle; emergency lights — a siren; strobe — in sync with the kick
+genres: {teaser: signature, fashion: signature, phonk: allowed, viral: allowed, fanedit: allowed, sport: allowed, motivation: allowed, epic: allowed, clips: allowed, calm: forbidden, explainer: forbidden, drama: forbidden}
+detect: |
+  Per-frame brightness is two-level (bimodal) with no cuts; ed_motion: cuts none, flash frames or strobe flips,
+  no global motion or it is smooth. hi/lo ratio ×1.5–7; "on" length 50–400 ms; the period is regular
+  (beacon, emergency lights, beat) or ragged (flicker). Flash color = RGB delta "on" − "off"
+  (blue/red — emergency lights). Brightness rises unevenly: stronger on the source side, shadows move.
+  Differences: a flash on a cut (trans.flash) — a white or solid frame at the join, the frame's structure disappears;
+  dynamic bloom (light.halation) — the source slowly turns into the lens over 0.4–1.2 s;
+  step printing — duplicated frames, not a change of light.
+engine: |
+  light_flash(at=beat, attack=0.04, hold=0.04, decay=0.08, gain=3.0, color='#ffffff', source='left'|[x, y], falloff=0.6)
+  light_flicker(pattern='irregular', on=[0.06, 0.24], off=[0.06, 0.24], gain=1.8, off_gain=0.6, t=[t0, t1], seed=7)
+  light_strobe(period=0.7, duty=0.5, colors=['#ff1a1a'], gain=2.0) | emergency: light_strobe(period=0.2, duty=0.4,
+               colors=['#2040ff', '#ff2030'], burst=4, pause=0.4)
+  + beat_sync(event='light_flash', grid='1/4') + sfx('click'|'impact', at=attack, align='attack'); limit 3 flashes/s
+gen_hint: dark location lit only by bursts of light, strobe flashes reveal the scene for a split second then darkness, red and blue emergency lights pulsing across faces and walls, flickering broken lamp, high contrast night cinematic, static camera
+commands: ["light flashes on every snare in the verse", "flicker like a broken lamp on #5", "red and blue emergency lights on the night scene #8–#9", "one camera flash at 0:12"]
+related: [trans.flash, cut.flash, light.halation, light.hard, light.silhouette, cut.quick]
+evidence: {examples: 7, sources: 7, measured: "per-frame brightness at full frame rate in all 7: single flash 3 frames @25 fps (32→138, attack 1 frame); flicker 60–240 ms, ×1.7; beacon 350/350 ms, pure red; emergency lights 50–150 ms with a period of 150–250 ms, blue/red; strobe 240–400 ms of light separated by 1–1.5 s of darkness (9→65); passing light every 2.05–2.1 s for 250–350 ms (31→91), blue→red; inversion 1 frame every 300 ms", confidence: high}
+---
+id: light.halation
+family: light
+group: optics
+level: B
+aliases: [halation, film halo, red halo, film glow, highlight glow, bloom]
+what: a film-like glow around bright points and edges — a narrow white glow and a wider red-orange halo; makes a digital picture look "filmic" and warm
+frames: |
+  This is not an event but a property of every frame (a look), sometimes with a dynamic burst.
+  1. Source: the core of the light is clipped (channel ≥ 235/255) — a street lamp, a headlight, a window, the sun, backlight on hair.
+  2. Around the core — a glow that is white or the color of the source: the excess brightness falls off to 10 % within 1–2 % of the frame height (H).
+  3. On top — a wider red-orange halo: for point lights the redness peaks at 2 % H, with a tail up to 4–5 % H
+     (the halo is about twice as wide as the white glow); for the sun and large windows a red disc holds up to 10–15 % H.
+  4. On sharp light/shadow boundaries (a backlit shoulder, a window frame) — a thin orange-red line of 0.3–1 % H.
+  5. Dynamic burst: headlights or a spotlight turn into the lens — the mean frame brightness rises ×3–4
+     over 0.4–1.2 s (10–30 frames), the halo swells to 15–35 % H and floods the frame, then subsides, or there is a cut at the peak.
+variants:
+  - classic red halation: a thin orange-red halo around lights on a night street or at dusk
+  - large source halo: the sun or a window in the frame inside a red disc up to 15 % H, often together with "ghost" flares
+  - warm backlight: hair and the edges of the figure glow warm, the frame brightness "breathes" ±20 % over 1 s
+  - neutral glow in b/w: the same pattern without a color shift (the halo is gray)
+  - bloom burst: the source shines into the camera, the glow floods the frame (headlights, a spotlight) — a borderline case with a light flash
+status: code
+fallback: if there are no clipped highlights in the frame, the effect is almost invisible — a dynamic burst needs a shot with a light source in the frame (search for bright spots in the source footage) or generation of a night scene with practical lights
+params:
+  threshold: 0.80–0.92 in luminance (typically 0.85), soft knee 0.08–0.12
+  glow_radius: white glow 0.5–2 % H (typically 1 %)
+  halo_radius: red halo 2–5 % H for point lights (typically 3 %), 8–15 % H for the sun and windows
+  tint: "halo R/G/B ≈ 1 / 0.25–0.45 / 0–0.15 (typically [1.0, 0.35, 0.1]); in b/w — neutral"
+  amount: 0.2–0.6 with screen blending (typically 0.35); a subtle "expensive" version 0.15–0.25
+  edge_line: 0.3–1 % H, only on high-contrast edges
+  dynamic_bloom: brightness ×3–4 and radius up to 15–35 % H over 0.4–1.2 s (10–30 frames), decay 0.3–0.8 s
+  scope: the same across a whole episode or the whole video; do not switch it on and off between neighboring shots of one scene
+  pairing: film grain, slightly lifted shadows, a warm balance
+when: night streets, neon, headlights, candles and lamps in the frame, a sunset, backlight on hair; when a "filmic", nostalgic or dreamy tone is needed; music videos and fashion; the dynamic burst — on the entry into the chorus or the drop, on the hero emerging from the light
+avoid: flat daytime shots without highlights (the effect does not read, white objects just turn pink); white text, UI and a product on a white background (pink edges look like a defect — apply before the titles); accurate color reproduction of a product; a blown-out sky (a red fringe along the whole horizon); different effect strength in neighboring shots of one scene
+sfx: a static look needs no sound; the dynamic burst — a soft swell or a riser on the build-up, the peak coincides with a downbeat
+genres: {fashion: signature, teaser: allowed, drama: allowed, calm: allowed, travel: allowed, fanedit: allowed, phonk: allowed, epic: allowed, motivation: allowed, viral: allowed, product: allowed}
+detect: |
+  Visually: around lights, windows, the sun and backlit edges — a soft halo shifted toward red/orange
+  relative to the color of the source itself; on light/shadow boundaries — a thin orange line.
+  Measurement: a mask of the cores (channel ≥ 225–235), rings by distance from the core; in the 1–5 % H rings the excess of
+  R−(G+B)/2 over the background is +30…+100, the brightness excess fades already by 1–2 % H, while the redness holds up to 4–5 % H.
+  ed_motion: no motion features; on a burst — luma rising ×3–4 over 0.4–1.2 s without a cut, sometimes flash frames.
+  Differences: a regular glow (bloom) — a halo of the same color as the source; a lens flare (flare) — ghosts,
+  rings and rays on a line through the center of the frame, shifting against the movement of the source; chromatic aberration —
+  colored fringes of 1–3 px on opposite sides of an object, stronger toward the frame edges; haze — an overall veil and a drop in contrast everywhere.
+engine: |
+  halation(threshold=0.85, knee=0.1, glow_radius=0.01*H, halo_radius=0.03*H, tint=[1.0, 0.35, 0.1],
+           amount=0.35, blend='screen', linear_light=True)
+  implementation: highlights = smoothstep(thr−knee, thr, luma)·frame → Gaussian on R with sigma=halo_radius, G — ×0.5, B — ×0.25
+  (red spreads the widest) + a neutral copy with sigma=glow_radius → screen over the frame.
+  Burst: the same parameters keyframed amount=[0.35, 1.0, 0.35], halo_radius=[0.03, 0.25, 0.03]·H, t=[t0, t0+0.6, t0+1.2], ease='inOutQuad'
+  + grain(amount=0.04–0.08) for a film look. Without the primitive — glow(threshold=0.85, radius=0.03*H) + color(tint red over the glow mask).
+gen_hint: shot on 35mm film, strong red-orange halation around every light source, glowing street lamps and car lights with soft red halos, warm backlit hair edges, fine film grain, night city, cinematic
+commands: ["add film halation to all the night shots", "a soft red halo around the lights in #3–#7", "on the drop, let the headlights bloom out", "a subtle highlight glow, without pink edges on the text"]
+related: [light.flash, light.haze, light.spotlight, light.hard]
+evidence: {examples: 7, sources: 7, measured: "red halo around point lights: R−(G+B)/2 peak +54…+69 at 1–2 % H, falling off by 4–5 % H, the white glow fades by 1–2 % H; for the sun the redness +70…+100 holds up to 15 % H; halo color R/G/B ≈ 1/0.23–0.48/0–0.17; bloom bursts — luma 47→175 and 28→110 over 0.4–1.2 s; 1 b/w example with a neutral glow", confidence: medium}
+---
+id: light.hard
+family: light
+group: optics
+level: A
+aliases: [hard light, high-contrast light, hard shadows, light and shadow, chiaroscuro, key light]
+what: light from a small bright source — sharp shadow edges, deep shadows and clipped highlights; gives the frame tension, a graphic quality and an "expensive" fashion look
+frames: |
+  A property of the frame, not an event; can be static or moving.
+  1. Source: the sun, a bare bulb, a spotlight, a flash, a narrow slit — the shadow of the nose and cheekbones with a crisp edge.
+  2. The light/shadow transition on faces and objects is 1–2 % of the frame height (H) or narrower; with soft light — 4–8 % H.
+  3. Contrast: brightness spread p2→p98 ≥ 190 of 255; in low key 35–70 % of the frame is darker than 20/255,
+     in high key (white background) up to 70–80 % of the frame in a clip is > 235, while clothes and hair are almost black.
+  4. Moving variant — a band of light: a hard bright band of 10 % H (or 15–17 % of the frame width on a diagonal)
+     passes over the figure; a fast pass — the whole frame in 0.36–0.5 s (≈ 10 % H per frame @25 fps), a slow one — 1.3 % of the width
+     per frame, 2–2.5 s per pass; after the pass the lighting setup may change (frontal → from below).
+  5. Colored hard key: the light on the face changes color red → amber → green over 0.8 s (20 frames), the background does not change.
+variants:
+  - low key (chiaroscuro): half of the face in deep shadow, the background almost black, median brightness 6–30
+  - high key: hard frontal or under-lighting on a white background, a graphic b/w portrait
+  - band of light: a narrow beam or slit slides over the body or the face with a still camera
+  - colored key change: hard colored light on the face changes hue, the background is neutral
+  - colored backlight: a sharp colored rim along the edge of the face in a dark room
+status: footage
+fallback: imitation in code — a contrasty S-curve, "crushed" shadows and clipped highlights across the whole frame; the band of light and the colored key change are done in code over a person mask (hybrid); code does not create real hard shadows — look in the source footage for shots with the sun, a lamp or a flash, otherwise generation
+params:
+  edge_width: shadow edge ≤ 1–2 % H (soft light — 4–8 % H)
+  contrast: p2→p98 ≥ 190; shadows < 20/255 — 12–40 % of the frame, in low key up to 70 %
+  grade_imitation: contrast ×1.3–1.6, black point +15–25, saturation ×0.85–1.0, vignette 0.2–0.3 for low key
+  sweep_width: 8–12 % H (a horizontal band) or 15–17 % of the width (a slanted beam)
+  sweep_feather: 0.3–1 % H — a hard edge
+  sweep_speed: a fast pass 0.35–0.5 s across the whole frame (9–12 frames @25 fps), a slow one 2–2.5 s (≈ 1.3 % of the width per frame)
+  sweep_gain: +2…+3 stops inside the band, almost clipping
+  key_color_shift: hue shift 0° → 35° → 140° over 0.8 s, only over the person mask
+  shot_length: a static hard-light portrait 2–4 s; with a band — the length of the pass plus a 0.3–0.7 s hold
+when: introducing the hero, a tense monologue, a fashion close-up, a product with crisp shadows; the moving band — on a downbeat or the entry into a verse; the colored key change — on a change of mood or a turn in the track; keep one type of light within a scene
+avoid: mixing hard-lit and soft-lit shots within one scene (the light "jumps"); shots with blown-out skin without detail; calm cozy and family videos; faces with shadows from a cap visor or hair over the eyes when the emotion matters; a code imitation on a flat overcast shot — the result is a dirty, over-processed picture
+sfx: the static variant has no special sound; the band of light — a short swell or a "whoosh" on the pass, a hit at the moment the band covers the face; the color change — a low drone or a pad
+genres: {drama: signature, fashion: signature, phonk: allowed, motivation: allowed, sport: allowed, teaser: allowed, product: allowed, epic: allowed, viral: allowed, fanedit: allowed}
+detect: |
+  Classifying the user's shots: the 10–90 % transition width on strong brightness edges ≤ 1–2 % H,
+  p98 − p2 ≥ 190, a bimodal histogram (a lot < 20 and/or > 235), a sharp cast shadow of the nose and chin.
+  ed_motion: the camera is mostly static (no events); in low key luma 25–35, in high key 190–200 with sat ≈ 0.
+  Band of light: with a static camera a near-clipping band (≥ 245) 10–17 % wide shifts monotonically
+  frame by frame, edges 1–2 px; colored change: the hue of the face mask shifts by 100°+ in ≤ 1 s with an unchanged background.
+  Differences: a pool of light (spotlight) — a round pool with a soft falloff and darkness around it; a silhouette — the object itself is black
+  against something bright; shadow patterns — a projected pattern (blinds, a grille); a flash — a brightness jump of the whole frame for 1–3 frames.
+engine: |
+  search: lighting_profile(shot) → {hardness=edge_width_pct, contrast=p98−p2, low_key=dark_frac, key_side}
+  imitation: color(contrast=1.4, blacks=+20, highlights_clip=0.97, saturation=0.9) + vignette(0.25)
+  band: light_sweep(angle=0|65, width=0.10, feather=0.005, gain=2.5, path=[0, 1], t=[t0, t0+0.4], ease='linear',
+        mask=mask('mediapipe_person', feather=2) | None)
+  key color: light_tint(mask=mask('mediapipe_person'), colors=['#e0504f', '#9a6a40', '#2fc070'], t=[t0, t0+0.8], ease='inOutQuad')
+gen_hint: portrait lit by a single hard light source, crisp shadow edges on the face, deep black shadows, high contrast chiaroscuro, specular highlights, dark background, cinematic still camera; optional - a narrow slit of hard white light slowly slides across the subject
+commands: ["pick hard-light shots for the intro", "sweep a band of light across the face on #6", "make #3 more contrasty, as if under hard light", "change the light on the face from red to green on the transition into the chorus"]
+related: [light.spotlight, light.silhouette, light.shadow_play, light.flash, light.halation]
+evidence: {examples: 6, sources: 6, measured: "shadow transition 1.0–2.4 % H on image tiles (a soft example on an LED wall — 3.5–7.5 % H); p2→p98 190–255 in 5 of 6; share < 20 — 12–70 %; a 10 % H band travels 7→93 % H in 0.36 s, the return pass after 0.7 s; a beam 15–17 % of the width, 81→10 % of the width over 2.1 s; key color 0°→35°→140° over 0.8 s with a constant background", confidence: medium}
+---
+id: light.haze
+family: light
+group: optics
+level: B
+aliases: [haze, fog, smoke, atmosphere, veil, diffusion, soft filter, dreamy glow, volumetric light, god rays, rays through smoke]
+what: the air in the frame becomes visible — a bright veil lifts the blacks, dampens saturation and contrast, light spreads and draws rays; a dreamy, nostalgic or mystical tone
+frames: |
+  A property of the frame (a look) or a slow event.
+  1. Veil: the darkest 1 % of pixels are not 0–10 but 35–150 of 255; the "dark channel" (the RGB minimum in a 5 % H window)
+     rises from 0–20 in a clean picture to 30–170; saturation drops 2–5 times, local contrast 3–10 times.
+  2. The color of the veil is the color of the light: in daytime a pale gray-blue (≈ [180–215, 180–220, 185–225]), on a stage — the color of the fixtures.
+  3. Depth: the distance and the top of the frame are "whiter" than the foreground — the dark channel at the top is 25–35 % higher than at the bottom;
+     in a night scene the veil exists only where the light passes.
+  4. Light flows: sources behind the haze turn into rays and cones, bright windows and lamps spread into a soft
+     blob over 10–40 % of the frame; the edges of figures in front of the light blur, silhouettes turn gray.
+  5. Dynamics: a backlight switches on — the haze "lights up": dark channel 0 → 90, saturation 252 → 57 over ≈ 2 s (50 frames);
+     or a short flare of light in the haze covers half the frame for 0.1–0.3 s.
+variants:
+  - dust or fog in daytime: the whole frame pale, almost no black, colors faded
+  - stage smoke with a backlight: figures first as silhouettes, then the light ignites the smoke as a glowing layer behind them
+  - a beam in the haze: a visible beam or cone of light in the darkness, the veil only in the lit zone
+  - diffusion filter: shadows stay deep but highlights spread, edges soft, tones pastel or warm
+  - light flood: a bright window or a fixture briefly floods half the frame with milky light
+status: code
+fallback: real smoke with rays is best filmed — look in the source footage for shots with backlight, dust, fog, steam; code gives a veil, diffusion and rays from a known source, but not volumetric shadows; otherwise generation
+params:
+  veil_amount: 0.15–0.65 (a mix with the air color); dreamy 0.15–0.3, dust and fog 0.45–0.65
+  airlight: auto — the color of the brightest areas of the dark channel, or set it (day [0.72, 0.75, 0.8])
+  depth_gradient: veil at the top/in the distance ×1.3–1.4 relative to the bottom of the frame
+  black_lift: p1 up to 35–100 of 255 (dreamy 20–40)
+  saturation: ×0.4–0.8
+  diffusion: glow from a threshold of 0.7, radius 2–5 % H, strength 0.2–0.4, no color shift; overall softness 0.1–0.3 % H
+  rays: length 0.3–0.6 of the frame from the source, decay 0.94–0.97 per step, strength 0.3–0.6
+  ramp: veil build-up 1.5–2.5 s (40–60 frames), ease inOutQuad
+  scope: one strength for the whole scene; changes only together with a light event
+when: intro and outro, a flashback, a dream, a memory, a slow verse; the hero emerging from smoke or light; a stage, a dance, a road, a desert, a forest at dawn; haze with rays — on the intro before the first hit of the track
+avoid: fast cutting and the hits of the drop (the veil eats the punch); shots where details of a face or a product matter; source footage that is already flat and washed out (the result is mud); text over the veil without a backing plate; alternating clean and hazy shots within one scene for no reason
+sfx: an ambient pad, wind, a low drone; light switching on in the smoke — a swell and a soft hit when the layer lights up
+genres: {calm: signature, drama: allowed, travel: allowed, fashion: allowed, teaser: allowed, epic: allowed, motivation: allowed, fanedit: allowed, phonk: allowed, product: allowed}
+detect: |
+  Per-frame measurement: dark channel median ≥ 30 (clean picture 0–20), brightness p1 ≥ 35, median saturation ≤ 60,
+  low local contrast; the color of the "foggiest" pixels is the air color; the veil is stronger in the upper or distant part.
+  Rays: elongated bright gradients from a source in a dark frame. Diffusion: highlights spread without a color change,
+  shadows can stay deep. ed_motion: for daytime dust luma_med 160–170 with sat 15–20; for haze that lights up
+  luma and the dark channel rise together with a static camera.
+  Differences: halation — only a red fringe around highlights, no veil; defocus — all details soft, blacks not lifted;
+  a dissolve to white — uniform across the whole frame and ends in white; a faded vintage look — lifted blacks without a depth gradient and rays.
+engine: |
+  haze(amount=0.3, airlight='auto', depth='gradient_y', top_boost=1.35, black_lift=0.12, saturation=0.7)
+  + glow(threshold=0.7, radius=0.03*H, amount=0.3)                       # diffusion
+  + god_rays(source=track(light)|[x, y], length=0.4, decay=0.95, amount=0.4)  # if there is a source in the frame
+  dynamics: haze(amount=[0, 0.45], t=[t0, t0+2.0], ease='inOutQuad') in sync with the light switching on
+gen_hint: thick atmospheric haze filling the space, volumetric light beams from behind the subject, milky low contrast, lifted blacks, muted pastel colors, soft diffusion glow around highlights, dreamy cinematic mood
+commands: ["add haze and a soft glow to the intro", "make the flashback in #4–#6 hazy and dreamy", "let the light behind the hero cut through the smoke in rays", "take the edge off: a soft filter over the whole verse"]
+related: [light.halation, light.silhouette, light.spotlight, light.flash, focus.shallow]
+evidence: {examples: 6, sources: 6, measured: "daytime dust — p1 97–154, dark channel 153–170, sat 8–18, the top 25–35 % brighter than the bottom; stage — dark channel 0→90 and sat 252→57 over ≈ 2 s when the backlight switches on; a beam in fog — the veil only in the lit zone (dark channel 60 versus 5); diffusion — a window bloom over ≈ 40 % of the frame with deep shadows p1 3–7; one example of a soft warm filter without a veil", confidence: medium}
+---
+id: light.shadow_play
+family: light
+group: optics
+level: B
+aliases: [shadow play, shadow as the hero, cast shadow, shadow on the wall, long shadows, shadows]
+what: the cast shadow becomes the main thing in the frame — on the ground or a wall it replaces the hero, doubles them or draws a pattern; mystery, graphics, the plasticity of movement
+frames: |
+  1. Conditions: a hard source (a low sun, a lamp) and an even surface — asphalt, sand, a floor, a wall, a lawn.
+  2. The camera looks at the surface: from above or at 45–90° to the ground (5 of 7) or straight at a wall (2 of 7);
+     the hero is out of frame or seen at the edge (feet at the top edge, entering the frame at the end).
+  3. The shadow is 1–4.3 stops darker than the lit surface (a light wall — 4, asphalt — 3, blue night lighting — 1.3),
+     the surface texture stays visible through the shadow.
+  4. Edge: from the sun or a fixture — 1.2–2 % of the frame height (H); the shadow of a distant tree — soft, 6–7 % H.
+  5. The shadow occupies 15–60 % of the frame; with a low sun it is 1.5–3 times longer than the hero and stretched along a diagonal.
+  6. The shadow repeats the movement (a dance, a trick, a step), often with a reveal at the end: in 1–2 s the camera moves from the shadow to the person,
+     or the person leaves the frame while the shadow stays.
+variants:
+  - shadow instead of the hero: only the shadow on the ground or a wall is in the frame
+  - double: the hero and their enlarged shadow on the wall beside them, the shadow repeats the movement
+  - reveal: from the shadow to the person or the other way round, with a pan or a tilt of the camera
+  - passers-by shadows: a high angle in harsh sun, the long shadows of a crowd set the rhythm
+  - shadow of the surroundings: a tree crown or a building covers a small hero with a pattern (top view)
+status: footage
+fallback: hybrid imitation on a static shot with an even floor or wall — person mask → fill → shear-skew onto the plane (angle 25–45°, length ×1.5–2.5) → blur 0.5 % H → multiply at 0.5–0.75 opacity; the direction must match the real light in the frame; otherwise search the source footage (sunny shots from above, backlit walls) or generation
+params:
+  shadow_depth: 1–4 stops darker than the surface (typically 2.5–3), in daylight with a slight shift toward blue
+  edge: 1–2 % H from the sun or a fixture, 5–7 % H from distant objects
+  area: 15–60 % of the frame
+  length: ×1.5–3 of the hero's height with a low sun
+  camera: from above at 70–90° or at 45–60° to the ground; for a wall — frontal
+  fake_shadow: "skew 25–45°, stretch ×1.5–2.5, opacity 0.5–0.75, blur 0.5 % H, tone #1c2a40 (multiply)"
+  reveal: transition from the shadow to the hero 1–2 s, inOutCubic
+  shot_length: 2–4 s
+when: introducing the hero (first the shadow, then the face), mystery or threat (a shadow on a wall), dance and tricks (the shape of the movement), summer and travel in harsh sun, inserts in a music video; a shadow crossing the frame — as a soft transition
+avoid: overcast shots (there is no shadow); moments that need the face; a fake shadow on an uneven surface or with a moving camera; a shadow falling in a different direction than the real light; long series of nothing but shadows
+sfx: footsteps, wind, ambience; threat — a low drone; revealing the hero — a soft whoosh
+genres: {teaser: signature, drama: allowed, fashion: allowed, sport: allowed, travel: allowed, fanedit: allowed, motivation: allowed, calm: allowed, phonk: allowed}
+detect: |
+  A dark area on a surface shaped like a figure (often stretched); the texture inside is preserved — the median
+  |Laplacian| in the shadow is 0.2–2 of the lit part, and normalized by brightness ×1–4 (a silhouette has ≈ no texture inside);
+  a 1–4 stop gap to the light, edge 1–2 % H;
+  shooting features: an angle from above or at a wall; motion estimate (ed_motion) — still, or the shadow tracked at 1–3 % of the frame per frame; the figure partly out of frame.
+  Differences: a silhouette — a separate move (light.silhouette); shadow patterns from blinds and grilles —
+  repeating stripes, not a figure; low key — the whole frame is dark.
+engine: |
+  search: shadow_region(shot) → dark areas with preserved texture and the shape of a figure; camera angle ≥ 45° to the ground
+  imitation: mask('mediapipe_person') → shadow_cast(angle=35, length=2.0, opacity=0.65, blur=0.005*H, tint='#1c2a40',
+             ground='feet_line', light_dir=auto)
+  reveal: transform(shift=[[0, 0], [0, -0.6]], t=[t0, t0+1.5], ease='inOutCubic') — needs a tall frame or 4K
+gen_hint: top-down shot of the long hard shadow of a dancer on sunlit asphalt, only the shadow is in frame, the person's feet barely visible at the top edge, low golden sun, crisp shadow edges, the shadow mirrors the movement, minimal graphic composition
+commands: ["start with the hero's shadow on the wall, then show the hero", "give the hero a long shadow on the asphalt on #3", "pick shots with long shadows from above", "a shadow crosses the frame — make a transition out of it"]
+related: [light.silhouette, light.hard, light.spotlight, angle.overhead]
+evidence: {examples: 7, sources: 7, measured: "shadow darker than the surface by 0.8–4.3 stops (Otsu pixels: light wall 194 versus 9–11, asphalt 149–179 versus 19–23, lawn 77 versus 43); edge 1.2–2 % H for sun shadows, 6–7 % H for a tree-crown shadow; shadow 15–60 % of the frame; 5 of 7 — a view of the ground from above or at an angle, 2 — a shadow on a wall", confidence: medium}
+---
+id: light.silhouette
+family: light
+group: optics
+level: A
+aliases: [silhouette, backlit silhouette, sunset silhouette, black silhouette, shadow figure]
+what: backlight turns the hero into a black outline — against a bright opening (a window, a door, a sunset, a white wall) only the shape reads; mystery, anonymity, the plasticity of movement
+frames: |
+  1. Background: a bright window, an opening, a sunset sky, a white wall or fog — median 100–230 of 255 (often a warm sunset or white).
+  2. Figure: median brightness 4–21, no detail inside; a 2.3–5.5 stop gap to the background
+     (in fog — gray silhouettes in layers, 1.4–1.9 stops).
+  3. A crisp outline: a transition of 1–4 % of the frame height (H); a profile or outstretched arms read best.
+  4. The bright zone is 10–75 % of the frame; in a "frame within a frame" the opening takes 10–45 %, darkness around it.
+  5. The shot holds for 2–4 s, the camera is static or moves slowly; the figure passes across the bright window, the movement reads through the shape.
+variants:
+  - window or opening: a dark interior, a bright opening, a figure in it (frame within a frame)
+  - sunset or sky: a full-length figure against a bright sky, a warm background
+  - foggy silhouettes: gray layers of figures or buildings in a bright haze
+  - profile on fabric or a wall: a head in profile passes across a backlit curtain
+  - graphic silhouette: the figure filled with black over a colored or white background (mask)
+status: hybrid
+fallback: the best option is filmed backlit shots (search by the brightness scale, see detect); if the backlit figure still has detail — a grade "pushes" it into a silhouette; if there is no backlight — a person mask, a near-black fill and a bright background (a sunset gradient, white, a poster color); generation for landscape silhouettes
+params:
+  subject_luma: "≤ 20/255 (fill #050505–#151515)"
+  background_luma: 100–235; gap to the figure ≥ 2.5 stops (foggy variant 1.4–2)
+  bright_area: 10–75 % of the frame; frame within a frame — opening 10–45 %
+  edge: 1–4 % H, for a mask — feather 1–2 px, no bright halo
+  grade_push: exposure −1…−1.5 stops, black point +20…+30 (crush the figure), keep the highlights, sky saturation +10 %
+  pose: a profile, outstretched arms, a step — shapes that read without a face
+  shot_length: 2–4 s; in rhythmic cutting no shorter than 1 s
+when: an intro and revealing the hero before showing the face, anonymity, a sunset and travel, dance (the plasticity reads through the shape), emotion without a face, the final shot; a silhouette → face transition on the drop
+avoid: moments that need emotions, lip sync and dialogue; product details; a series of many silhouettes in a row; a mask with a ragged or bright edge; light-colored clothes on the hero in backlight (the silhouette "breaks")
+sfx: no special sound; wind, ambience; when the figure passes close to the camera — a soft whoosh
+genres: {motivation: signature, teaser: signature, epic: allowed, drama: allowed, travel: allowed, fashion: allowed, fanedit: allowed, sport: allowed, calm: allowed, phonk: allowed, product: allowed}
+detect: |
+  Otsu threshold on brightness: dark class median ≤ 20 (fog ≤ 60), bright class ≥ 90, gap ≥ 2.3 stops;
+  the person mask (mediapipe) almost entirely in the dark class, no texture inside the mask (Laplacian variance ≈ 0),
+  and the ring around the mask is 4+ times brighter. ed_motion: the camera is mostly static or moves slowly, luma_med 25–65.
+  Differences: a spotlight — the opposite, the hero is bright on dark; shadow play — a dark shape lies on a surface
+  (a wall, a floor), distorted and often visible next to the hero; low key — the face is partly lit.
+engine: |
+  search: lighting_profile(shot).backlit and subject_luma ≤ 20 → silhouette candidates
+  push: color(exposure=-1.2, blacks=+25, highlights=0, saturation=1.1)
+  mask: mask('mediapipe_person', feather=1) → composite(layers=[fill('#0a0a0a', mask), background],
+        background=keep | gradient(['#ffb070', '#ff5a3c'], angle=90) | solid('#efefef') | posterize(3))
+gen_hint: silhouette of a person standing in a large bright window at sunset, the figure completely black with no detail, warm glowing sky behind, crisp outline, dark interior around the window, static camera, cinematic
+commands: ["make the hero a silhouette against the sunset on #2", "a black silhouette on a white background in the intro", "pick backlit shots for the start of the music video", "a silhouette on a red background on the drop"]
+related: [light.shadow_play, light.spotlight, light.hard, light.haze]
+evidence: {examples: 6, sources: 6, measured: "figure median 4–21, background 100–232, gap 2.3–5.5 stops (foggy example 1.4–1.9); bright zone 11–77 %, frame-within-a-frame opening 11–43 %; outline 1.2–4.5 % H on image tiles; 5 filmed backlit and 1 graphic (a fill over a mask)", confidence: high}
+---
+id: light.spotlight
+family: light
+group: optics
+level: B
+aliases: [spotlight, pool of light, light spot, spotlight beam, theatrical lighting, top light]
+what: a pool or a cone of light picks out the hero, everything around falls into darkness — isolation, "on stage", emerging from the dark
+frames: |
+  1. Pool: a compact zone of 4–18 % of the frame area (typically 8–10 %) around the hero is lit, center x 0.44–0.62,
+     y 0.4–0.67 (a pool on the floor — y 0.8–0.9).
+  2. Contrast: the median brightness inside is 4–15 times higher than outside; outside 0–45 of 255.
+  3. Pool edge: a hard fixture — a 90→10 % falloff over 4–6 % of the frame height (H); a soft one or a cone in smoke — 15–25 % H.
+  4. Cone: in haze a beam is visible from the top edge, widening toward the hero to ≈ 30–40 % of the frame width; the figure under it is often a silhouette.
+  5. Switch-on: out of darkness (brightness ≤ 7) the light rises over 0.6–2.4 s (15–60 frames @25 fps) along an S-curve, the lit zone
+     grows from 4 % to 75 % of the frame; switch-off — 1–3 s; a change of fixture or color — a jump within 1 frame (brightness ×2).
+  6. Handheld flashlight: a pool of 4–11 % of the frame wanders over faces, contrast ×10–15, almost black around it.
+variants:
+  - stage spot: a motionless hero in a circle of light on black
+  - cone from above in smoke: a visible beam, the hero as a silhouette or in top light
+  - fade-up and fade-out: the light smoothly opens the scene and then extinguishes it
+  - lighting cue change: the color or the fixture changes in a jump (warm → cold)
+  - circles on the floor: several pools on a runway floor, the hero walks through them
+  - flashlight in hand: a pool darts across faces in the dark
+status: hybrid
+fallback: imitation over a mask — darken everything outside an ellipse around track(person|face) by 2–4 stops with a soft edge, the pool follows the hero; add the cone as a gradient from the top edge (better on shots with haze); real shadows from the fixture and a beam in smoke — only in filmed material or generation
+params:
+  pool_area: 4–18 % of the frame (typically 8–10 %); ellipse radius 0.25–0.45 H around the target
+  inside_outside: ×4–15 (outside −2…−4 stops), outside ≤ 45/255
+  feather: hard 4–6 % H, soft 15–25 % H
+  position: centered on the target; for a full-length figure the center of the pool at chest level, in the lower half of the frame — a circle on the floor
+  fade_in: 0.6–2.4 s (15–60 frames), inOutCubic; fade_out 1–3 s
+  cue_switch: 1 frame, on a downbeat
+  cone: apex at the top edge, width at the target 0.3–0.4 W, needs haze of 0.2–0.4
+  tint: neutral or cool white; warm amber; colored — for a stage and a music video
+  tracking: the pool lags behind the target by ≤ 2 frames, otherwise the spotlight's "searching" is visible
+when: introducing the hero or a product, a solo and a monologue, a confession, "alone on stage"; intro — the light comes up, outro — it goes out instead of a fade to black; singling out one person in a group; a lighting cue change — on the drop or a turn in the track
+avoid: daytime and outdoor wide shots (a fake pool looks absurd); several fast-moving people — the track breaks; the pool lags or cuts across the face; using it too often — the "stage" feel is lost
+sfx: switch-on — a dull relay click or the thunk of a big spotlight, a lamp hum; a smooth fade-up — a soft swell; a lighting cue change — a low hit on the beat
+genres: {drama: signature, teaser: allowed, epic: allowed, motivation: allowed, fashion: allowed, product: allowed, phonk: allowed, explainer: allowed, fanedit: allowed, viral: allowed}
+detect: |
+  Brightness map (blurred by 3 % H): one compact bright zone of 4–18 % of the area, inside/outside contrast ≥ ×4,
+  the edge a smooth falloff (an ellipse, a circle, a cone from the top edge), the hero inside; the pool is static or follows the hero.
+  ed_motion: the camera is mostly static, luma_med 10–45, many black frames on a fade-up; mean brightness rising from ≤ 7
+  over 0.6–2.4 s without a cut = a fade-up. Differences: hard light — draws shadows, but the surroundings are lit;
+  a silhouette — the hero is dark on bright; a vignette — darkening from the center of the frame, does not follow the hero and falls off
+  over 50–100 % of the frame; a flash — a short pulse, not a constant pool.
+engine: |
+  spotlight(target=track(person), shape='ellipse', radius=0.32*H, feather=0.06*H, outside=-3.0, tint='#fff4e6',
+            follow_lag=1, t=[t0, t1])
+  fade-up: spotlight(level=[0, 1], t=[t0, t0+1.2], ease='inOutCubic'); fade-out — mirrored over 1.5 s
+  cone: light_cone(apex=[x_target, 0], width=0.35*W, haze=0.3, amount=0.5)
+  lighting cue change: color(tint, at=beat) as a jump within 1 frame + sfx('impact', at=beat)
+gen_hint: a lone figure in a pool of hard white spotlight in a pitch-black space, light cone visible through light haze from directly above, everything outside the circle falls into darkness, theatrical stage lighting, static camera, slow light fade-up
+commands: ["pick out the hero with a pool of light, everything else into darkness", "in the intro the light slowly comes up over the hero", "a spotlight from above in smoke on #2", "on the last phrase, kill everything except the pool on the face"]
+related: [light.hard, light.silhouette, light.haze, light.flash, lens.vignette]
+evidence: {examples: 7, sources: 7, measured: "lit zone 4–18 % of the frame, inside/outside contrast ×4–15 (144/21, 95/25, 208/46, 66–92/6); edge falloff 4–6 % H for a hard pool and 15–25 % H for a cone and a soft one; fade-up 5→66 over 2.4 s with the zone growing 4→77 % and a fade-out over 3 s; a fixture switching on over 0.6–1.3 s; a fixture color change as a jump 23→47 within 1 frame", confidence: high}

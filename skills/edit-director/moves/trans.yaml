@@ -1,0 +1,1426 @@
+id: trans.arc
+family: trans
+group: transition
+level: C
+aliases: [orbit transition, arc shot cut, orbit with a cut, orbit the subject and land somewhere else]
+what: "a swap of place, partner or look hidden inside an orbit: when the arcing camera's blur, the subject's body or hair fills the frame, everything behind the subject is replaced"
+frames: |
+  1. Orbit: the camera travels along an arc around the subject (or a couple) — the background runs sideways at 0.25–0.35 frame widths per second
+     (slow orbit) or breaks into a fast swing of 1.5–2 widths per second; in 4 of 8 examples the arc carries a 20–40° roll.
+  2. Occlusion: for 5–13 frames @25 fps (0.2–0.5 s) the frame loses detail — it is covered by the subject's hair or back,
+     a dark foreground object or the orbit's own motion blur; detail ≤0.3 of normal, brightness often drops to 16–35.
+  3. Seam inside the occlusion: a cut or a short 4–6 frame dissolve; the histogram changes over 0.25–0.5 s,
+     ed_motion usually does not see the cut.
+  4. Exit: the orbit continues in the same direction with the same roll, then slows down over 0.3–0.6 s; the subject (usually the same
+     person) is back in the center of the frame ±0.1, with a new scene around them.
+  Vertical arc: the camera tumbles over the subject from above (sky and ground flip over, ≈2.7 frame heights in 0.55 s),
+  the cut lands on the ground's motion blur, the exit lands on the subject in the new scene.
+variants:
+  - couple orbit: the hair or the back of the head of the nearer subject covers the frame, and behind it the partner and background change
+  - fast swing with roll: the frame goes into motion blur and darkness, the exit keeps the same roll into a new location
+  - through the foreground: during the orbit a car, a shoulder or a box passes the camera, and behind it is another world
+  - vertical tumble: the camera flips over the subject (sky → ground → subject in a new scene)
+  - rising orbit: the arc goes up into a top-down view, at the apex 1–2 frames of darkness and a new scene, sometimes with a return (loop)
+status: footage
+fallback: code — simulate the orbit on static or lateral shots — transform with a shift of 0.3 widths per second + 15–30° roll + directional motion blur for 6–10 frames around the cut, plus a mask of the subject (hybrid, mediapipe) laid over the seam so the subject stays continuous; the best result comes from finding orbits around the same subject in different scenes in the source footage; otherwise generate a pair of orbits with the same direction and speed
+params:
+  arc_speed: slow orbit 0.25–0.35 frame widths per second (1–1.4 % per frame @25 fps); fast swing 1.5–2 widths per second
+  roll: 0 or 20–40° of roll along the arc; the sign of the roll is kept across the seam
+  cover: 5–13 frames @25 fps (0.2–0.5 s) of occlusion — detail ≤0.3, brightness 16–35 or solid motion blur (sharpness ×0.03–0.1)
+  seam: a cut on the darkest or most blurred frame, or a 4–6 frame dissolve inside the occlusion
+  settle: 0.3–0.6 s of orbit deceleration in the new scene, ease outCubic
+  anchor: subject in the center of the frame ±0.1 before and after; the same person or a similar silhouette; the subject's height in frame matches ±15 %
+  direction: one orbit direction (clockwise or counterclockwise) and one camera height on both sides of the seam
+  vertical_flip: ≈2.7 frame heights in 0.55 s, cut on the motion blur
+when: a change of place or partner "around" one subject — music video, fashion, love story, sport ("same runner, different track"); a transition from a crowd to a solo; the entry into the chorus; no more than 1–2 times per video, each with a different kind of occlusion
+avoid: orbiting in opposite directions on the two sides of the seam; different camera heights and subject scales; occlusion shorter than 4 frames (the jump shows); static shots with no motion of their own — a digital arc without parallax gives the fake away; on-screen text during the orbit
+sfx: a soft whoosh over the whole orbit, peaking at the moment of occlusion; fast swing — a short swish and a hit on the exit; the new scene's sound comes in with a 0.2 s overlap
+genres: {fashion: signature, fanedit: signature, viral: allowed, drama: allowed, sport: allowed, travel: allowed, teaser: allowed, motivation: allowed, epic: allowed, product: allowed, ugc: allowed}
+detect: |
+  ed_motion: a long horizontal SHIFT with high nonrigid (0.3–1.0 — orbit parallax: background and subject move
+  differently), often ROTATE 10–40°; at the seam 5–13 frames with detail ≤0.3 and/or brightness ≤35 — with no clear cut or
+  with 2–3 "cuts" on blurred frames; the background histogram changes while the subject's silhouette stays in the center.
+  Difference from trans.whip: a whip transition's shift has almost no parallax and no anchor subject. From trans.spin: there the rotation is
+  around the lens axis (ROTATE 90–360°), here the roll is secondary. From trans.wipe: there an object passes a static or
+  laterally moving camera, rather than the camera orbiting the subject. From orbit.turntable: there the subject rotates, the camera stays and the scene does not change.
+engine: |
+  Real orbits: find_motion_peak(A, side='tail', kind='arc'|'shift', nonrigid>0.3) + find_cover_frame(A ∪ B, min_cover=0.7)
+  → cut or transition(kind='dissolve', dur=0.2) inside the occlusion; match(on='motion') — one direction and speed ±20 %.
+  Simulation: transform(shift=[[0,0],[-0.3,0]], rotate=[0, 20], t=[seam-0.4, seam], ease='inCubic') + blur(kind='directional')
+  on A; mirrored on B (shift [[0.3,0],[0,0]], rotate [-20, 0], ease='outCubic'); mask(method='mediapipe_person') of the subject
+  over the seam so the anchor does not jump. + sfx('whoosh', at=seam, align='peak').
+gen_hint: "two clips for an arc transition — clip A: the camera orbits clockwise around <subject> at chest height, close behind their hair/shoulder, the hair briefly fills the frame; clip B: the same subject, same height and framing, the camera continues orbiting clockwise from behind their hair and reveals <new place or partner>, then slows down"
+commands: ["orbit the subject and move them to another location between #3 and #4", "orbit transition through the hair at 0:22", "camera tumble over the runner into the next scene", "rolling swing from the meeting room to the kitchen"]
+related: [arc.orbit, orbit.turntable, trans.spin, trans.whip, trans.hidden_cut, trans.wipe]
+evidence: {examples: 8, sources: 5, measured: "ed_motion: slow orbit — background shift 0.25–0.32 widths per second at nonrigid 0.3–0.6, fast swing — 0.42 widths in 0.2 s with a 40° roll in 0.2 s; seam profile — detail ≤0.3 for 0.2–0.5 s (hair 0.5 s, blur and darkness 0.32 s, foreground 0.3 s, car and blur 0.25 s), brightness down to 16–35; 20–40° roll in 4 of 8; vertical tumble ≈2.7 heights in 0.55 s", confidence: medium}
+---
+id: trans.chain
+family: trans
+group: transition
+level: C
+aliases: [endless pan, continuous pan through scenes, one-move transition chain, endless tracking shot, transition chain, seamless pan, one pass through all scenes, recursive screens]
+what: one continuous camera move carries the viewer through 3 or more scenes in a row — new worlds are "docked" at the side (or nested inside a screen), the seams are hidden behind people, trees, posts and dark passes, and it feels like the move will never end
+frames: |
+  1. A steady lateral pan or tracking move: the frame content moves to one side at a constant speed of
+     0.15–0.3 frame widths per second (≈0.6–1.2 % of the width per frame @25 fps), with no speeding up or stopping.
+  2. Seam: the next scene stands "flush" against the current one and slides in from the edge in the direction of travel; the boundary between
+     them is vertical, soft or hidden behind a vertical object (a person, a tree trunk, a post, a door jamb, a column);
+     it crosses the frame in 1.3–1.7 s, i.e. 2–3 times faster than the pan itself (0.55–0.72 widths per second).
+  3. Link: the new scene fills the whole frame for 1.5–2.5 s, then the next one slides in the same way; 3–6 links in total.
+  4. Fast variant: a dark object near the lens (a back, a jacket) covers the frame every 0.6–0.8 s;
+     a pass takes 0.4–0.5 s, full occlusion 1–2 frames; the rhythm comes out almost musical.
+  5. Recursive screen: the camera keeps pulling out (×0.5 scale per second) — each time the frame turns out to be
+     the picture on a TV in the next scene, link ≈1.75 s; or it pushes into a phone in the subject's hand (×6 per second
+     slowing toward the end of the link), where the next scene with a subject and a phone is playing, link ≈1 s.
+variants:
+  - docked pan: the scenes are set side by side, the boundary is hidden by a person, a tree or a post (5 of 8)
+  - pendulum: the pan reaches the second scene, holds for 0.4 s and returns the same way to the first one (loop)
+  - fast passes through the dark backs of passers-by, link 0.6–0.8 s
+  - TV in a TV: a constant pull-out through nested screens (6 links in 10 s)
+  - phone in a phone: a push-in through phone screens in the hands of different subjects
+status: hybrid
+fallback: without source footage that has its own lateral motion — a digital pan across a "stitched canvas" of neighboring clips (scale ×1.15–1.3 for headroom); the boundary is hidden by a soft wipe or a mask of a vertical object (a person — mediapipe, everything else — remove_background); recursive screens — track the screen in each link or generate links of "a subject holding a phone with a chroma key screen"
+params:
+  pan_speed: 0.15–0.3 frame widths per second (0.6–1.2 % per frame @25 fps), constant, ease linear
+  direction: one for the whole chain — in 6 of 6 lateral ones the picture moves left and the camera moves right; pendulum — there and back with a 0.4 s pause
+  seam_sweep: 1.3–1.7 s for the boundary to cross the frame (0.55–0.72 widths per second), ease linear
+  seam_edge: vertical; feather 4–8 % of the width or a mask of an object (a person, a tree trunk, a post)
+  link: 1.5–2.5 s per link, 3–6 links; fast variant 0.6–0.8 s
+  fast_pass: dark pass 0.4–0.5 s, full occlusion 1–2 frames (≥90 % of the area)
+  recursive_out: pull-out ×0.5 per second (≈×0.973 per frame @25 fps), link ≈1.75 s, the screen takes 25–35 % of the width
+  recursive_in: push-in ×5–6 per second, slowing toward the end of the link, link ≈1 s, center 0.48–0.52
+  continuity: across the scenes — the same camera height and horizon, similar brightness; people move in the direction of the pan or stand still
+when: intro and outro of a music video, a fashion lookbook, "so much in a single day", showing several subjects, looks or locations in a row; recursive screens — the theme of social media and life on screens; one chain per video, usually 6–12 s; put the seams on the beat, a link lasts 2 or 4 bars
+avoid: scenes with different camera heights, horizons or perspective — the seam reads immediately; people and cars moving against the pan; the pan stopping at the seam; changes that are too frequent in a slow chain (less than 1.2 s per link); a calm video with the fast variant
+sfx: one continuous ambience or track for the whole chain; on each seam a light whoosh or the rustle of the passing object, in sync with the beat; in the fast variant short "fly-by" sounds on each back
+genres: {fashion: signature, fanedit: signature, travel: allowed, viral: allowed, teaser: allowed, product: allowed, ugc: allowed, clips: allowed, epic: allowed, motivation: allowed, calm: allowed, explainer: allowed}
+detect: |
+  ed_motion: a long series of SHIFT in one direction (0.15–0.3 widths per second) across several scene changes, often with no
+  cuts found; custom check by vertical strips of the frame — whether each belongs to the "old" or the "new" scene by histogram:
+  the boundary is vertical, crosses the frame in 1.3–1.7 s and repeats 2+ times. Fast variant — dark occlusions of
+  ≥90 % of the frame every 0.6–0.8 s. Recursive — endless ZOOM-OUT or ZOOM-IN (×0.003 over 9.5 s, ×378 over 3.4 s),
+  with a screen frame inside. Difference from trans.side_scroll: there the set walls move at the same speed as the
+  pan, while here the scene boundary runs 2–3 times faster (a composite seam). From trans.wipe: a single seam. From zoom.infinite:
+  there the push-in is the point, here the lateral motion is (or the screen as the frame of each link). From split-screen: the boundary does not stay in place.
+engine: |
+  pan_chain(clips=[A,B,C,...], dir='rtl', speed=0.2 (widths/s), per_link=2.0, seam='soft'|'mask(person)'|'mask(object)',
+  seam_speed=0.65, feather=0.06, scale=1.2) — the clips are placed edge to edge on a wide canvas, a virtual camera moves
+  at constant speed, the boundary between neighbors moves at seam_speed and, if there is a mask, follows the object's contour.
+  Pendulum: pan_chain(..., pingpong=true, hold=0.4). Fast variant: a series of occluder_pass(tone='dark', dur=0.45) every 0.7 s.
+  Recursive screens: chain_zoom(clips, per_link=1.75, rate=ln(0.5), seam='nest(quad=track(screen))') — pull-out;
+  rate=ln(6), per_link=1.0 — push-in. + sfx('whoosh', at=each seam, align='peak'), seams on the beats.
+gen_hint: "one continuous lateral tracking shot moving right at constant slow speed past <scene A>, then a person walks close to the lens and behind them <scene B> continues the same camera height and horizon, then a tree trunk passes and <scene C> appears, seamless single take, consistent lighting"
+commands: ["one continuous pan through all the looks #1–#5", "chain: each new outfit slides in from the right behind a passer-by", "make a loop — pan into the second scene and come back", "TV in a TV through all the intro scenes"]
+related: [trans.side_scroll, trans.wipe, trans.hidden_cut, zoom.infinite, trans.screen, truck.lateral]
+evidence: {examples: 8, sources: 4, measured: "ed_motion: lateral shift of 0.15–0.31 widths per second in one direction; the scene boundary, tracked by histogram strips, crosses the frame in 1.33–1.68 s (0.55–0.72 widths per second), link 1.7–2.9 s; pendulum — 1.68 s there, 0.4 s pause, 1.54 s back; fast passes of 0.42–0.5 s every 0.63–0.77 s; pull-out through TVs ×0.003 over 9.45 s (×0.954 per frame at 14.3 fps), push-in through phones ×378 over 3.36 s, center 0.48–0.52", confidence: medium}
+---
+id: trans.dissolve
+family: trans
+group: transition
+level: A
+aliases: [dissolve, shots flowing into each other, crossfade, cross dissolve, mix, match dissolve]
+what: the outgoing shot fades out smoothly while the next one emerges on top of it over 0.6–2.6 s — a soft change of time, place or thought; in the match variant the main shapes of both frames sit in the same place
+frames: |
+  1. Setup: the last 0.5–1 s of the outgoing shot — calm action or a static composition.
+  2. Dissolve: the share of the new frame grows almost linearly — 10→90 % over 0.6–2.6 s (15–65 frames
+     @25 fps), typically 1.4–1.8 s; 50 % is reached around the middle of the transition. Fast dissolves take 0.6–0.9 s.
+  3. Middle: both frames are visible at once for 0.3–1 s; matching shapes (face into face, horizon into horizon,
+     bright spot into bright spot) hide the seam; brightness changes smoothly from the level of A to the level of B.
+  4. Landing: the new shot at full strength, its motion already under way; often this is the start of a new episode or
+     a different time.
+variants:
+  - a regular crossfade between scenes, 1–2 s
+  - match — the same composition — portrait into portrait (different makeup, age), a horizon into a figure on the horizon
+  - through light — the frame goes into a flare or overexposure, the new one emerges from the light (50 % already within 0.3 s, tail up to 1.2 s)
+  - through darkness — the frame goes into shadow, the new one emerges from near black (0.1–0.5 s of darkness)
+  - title reveal — the text fades in over the shot in ≈0.4 s
+  - a chain of 0.7–0.9 s dissolves between close-ups (memories, a montage of faces)
+status: code
+params:
+  dur: "10→90 %: 0.6–2.6 s (15–65 frames @25 fps), typically 1.5 s (38 frames); fast 0.6–0.9 s; lyrical 2–3 s"
+  curve: linear (most cases) or inOutSine; ease-out for the through-light transition
+  handles: both clips have ≥ dur/2 of spare footage beyond the cut point
+  match: the main shape (face, horizon, bright spot) lines up within ±5 % of the frame, scale ±10 %
+  luma: if the mean brightness differs by more than 2 times — go through darkness or light (0.1–0.3 s) or even it out beforehand
+  colour: in black and white or a single tone the seam is softer
+  audio: an audio crossfade of the same length, or the new shot's sound 0.3–1 s ahead of the picture
+when: time has passed, a flashback, a dream; a change of place without a hit; portrait → place, thought → image; slow music, intro and outro, lyrical parts and the bridge; in a calm video it is the main transition, in a dynamic one no more than once every 10–15 s
+avoid: the downbeat and the drop (the hit gets smeared); fast cutting and action; frames of very different brightness or color without preparation (the middle sinks into a gray murk); the eyes of two faces in different places; a duration of 0.2–0.3 s — it looks like a mistake, a straight cut is better then
+sfx: an ambience crossfade of the same length; a soft swell or "air" in the middle; no hits
+genres: {calm: signature, drama: allowed, travel: allowed, motivation: allowed, epic: allowed, fashion: allowed, teaser: allowed, product: allowed, explainer: allowed, fanedit: allowed, ugc: allowed, viral: forbidden, phonk: forbidden, sport: forbidden, clips: forbidden}
+detect: |
+  ed_motion: no cut, the histogram changes gradually over 15–65 frames, the difference between frames
+  is moderate and even, little global motion, nonrigid rises toward the middle (two layers).
+  Custom check: frame ≈ (1−a)·A + a·B, fit residual ≤ 0.3 of the A–B difference for static shots,
+  a rises monotonically 0 → 1; measure the duration as 10→90 % of a.
+  Difference from trans.double_exposure: there a share of 0.3–0.7 holds for longer than 1–2 s.
+  Difference from trans.morph: here the contours do not shift, both images are visible at once.
+  Difference from a fade to black: in a fade/dip 2+ frames in the middle are nearly black (luma < 15) with no trace of either frame.
+engine: |
+  transition(kind='dissolve', dur=1.5, params={curve:'linear'|'inOutSine'})
+  Match: match(on='shape') — shift and scale B so that the face or the horizon lines up with A, then dissolve.
+  Through darkness: transition(kind='dip(black)', dur=0.8); through light: flash(color='white', dur=0.3, curve='outQuad') + dissolve(dur=1).
+  Title: text(anim='fade', dur=0.4).
+  Sound: an audio crossfade of the same length, or B's sound 0.3–1 s earlier.
+gen_hint: <subject B> framed exactly like the previous shot — same position, scale and horizon line, same soft light — for a slow match dissolve; calm, no camera shake
+commands: ["a one-and-a-half-second dissolve between #3 and #4", "match dissolve: portrait into portrait", "smooth dissolve into the flashback", "make every transition in the outro a dissolve"]
+related: [trans.double_exposure, trans.morph, cut.match, trans.fade, light.flash]
+evidence: {examples: 8, sources: 8, measured: "10→90 %: 0.8 and 0.6 s (chain of dissolves), 1.0 s through a flare (50 % within 0.3 s), 1.4 s portrait into portrait, 1.5, 1.6 and 1.8 s between scenes, 2.6 s face into foliage; the curve is almost linear in 5 of 8 transitions, ease-out in 3; mix-fit residual 0.0–0.3 for static shots; the title fades in over ≈0.4 s", confidence: high}
+---
+id: trans.double_exposure
+family: trans
+group: transition
+level: B
+aliases: [double exposure, frame overlay, superimpose, multi-exposure, semi-transparent overlay, superimposition, multiple exposure, overlay]
+what: two (less often three) full frames are superimposed semi-transparently and live together for 1–5 s — a face and a landscape, a person and a second angle of them, a dream over reality; a dissolve whose middle is stretched into an image of its own
+frames: |
+  1. Entry: the second layer fades in over the first in 0.3–1 s (8–25 frames @25 fps) — or a regular
+     dissolve "freezes" at its midpoint.
+  2. Hold 1–5 s (25–125 frames): both layers are visible at once, each at ≈35–65 %; the bright parts of one
+     fall into the dark parts of the other — a face on a dark background plus foliage, a city, a staircase or a second angle.
+     Levels: black point 1–19 of 255 (raised to 8–19 with a soft blend), contrast (σ of brightness)
+     22–53 — lower than in a regular frame of the same subject matter.
+  3. Motion: one layer is static or nearly so (a portrait, a person lying down), the other lives its own life —
+     walks, turns, drifts 0.5–2 % of the frame per second; the camera sometimes slowly pushes in on both.
+  4. Exit: the top layer fades out over 0.5–1.2 s, leaving a clean frame — or before it leaves a
+     third layer fades in (a chain of overlays).
+variants:
+  - portrait + space — a close-up face with a landscape, foliage, a room or a city showing through the shadows
+  - two angles of one person — front and profile, lying and walking — a split self, an inner voice
+  - motion ghost — the same person in two phases, the second layer blurred and semi-transparent (echo)
+  - chain of overlays — 2–3 layers at once, a new one enters before the old one leaves (a concert, memories)
+  - psychedelic — the color of the layers changes every 1–3 frames, with flashes and color shifts
+  - monochrome or duotone — the layers do not clash in color (half of the examples)
+status: code
+fallback: a pair of "dark close-up + bright texture" is needed — look for it in the source footage (portraits on a dark background, sky, foliage, lights); if there is no texture — generation with the user's consent; bring frames of different colors to black and white or duotone
+params:
+  layers: 2, at most 3
+  opacity: top layer 35–65 % (typically 50 %) with a normal blend; 80–100 % with screen/lighten
+  blend: screen or lighten (bright into dark) — the main one; normal 50/50 — soft; multiply — dark, graphic
+  hold: 1–5 s (25–125 frames), typically 3 s
+  fade: in 0.3–1 s, out 0.5–1.2 s, linear
+  drift: one layer is still, the other drifts or rotates 0.5–2 % of the frame per second or has its own action
+  grade: monochrome or duotone; black point 8–19 with normal 50/50; contrast σ 22–53
+  composition: the main face in one half of the frame, the texture in the other; do not cover the eyes with details of the other layer
+  chain: the next layer enters 0.5–1 s before the previous one leaves
+when: a memory, a dream, a thought or the subject's inner state; the bond between a person and a place; intro, outro, a lyrical part or the bridge of the track; a mood music video; 1–2 such segments per video, no more
+avoid: two layers of equal brightness and detail — mush; faces in both layers in the same place (eyes over eyes) without intent; fast cutting and hits on the beat; bright saturated layers of different colors without a common tone; videos where text or a product has to read clearly
+sfx: ambience or a reverb-drenched pad; the second layer's sound (street, nature, crowd) kept quiet, −12…−18 dB under the main one; a soft swell as the layer enters
+genres: {drama: signature, fanedit: signature, calm: allowed, travel: allowed, fashion: allowed, motivation: allowed, teaser: allowed, epic: allowed, viral: forbidden, phonk: forbidden, sport: forbidden}
+detect: |
+  ed_motion: no cuts for 1–5 s, little global motion, but the frames "cannot be explained by a single image":
+  two independent sets of contours (a double horizon, semi-transparent silhouettes), high nonrigid,
+  stable luma. Custom check: fitting a mix of the neighboring clean frames gives a share of 0.3–0.7
+  that holds for more than 1 s (in a dissolve it goes 0→1 monotonically and fast);
+  the black point is raised or the contrast is lowered relative to the clean frames.
+  Difference from trans.dissolve: there the overlay is only the middle of a 0.5–2.5 s transition.
+  Difference from mask.double_exposure: there the second frame sits inside a silhouette on a bright background.
+  Difference from time.echo_trail: there it is fading copies of one motion, not two different frames.
+engine: |
+  composite(layers=[A, B], blend='screen'|'lighten'|'normal', opacity=[1, 0.5], t=[t0, t0+3])
+  + fade(layer=B, in=0.6, out=0.8) + transform(layer=B, shift=[[0,0],[0.03,0]], rotate=[0, 3], t=[t0, t0+3], ease='linear')
+  + color(params={desaturate: 1.0} | lut='duotone') on both layers
+  Chain: overlap_chain(clips[], hold=2.5, overlap=0.8, blend='screen') — a new primitive.
+  Psychedelic: + color(hue_shift every 2 frames) + flash(dur=0.04) on the beats.
+gen_hint: double exposure, close-up portrait of <subject> on a dark background superimposed with <landscape | city lights | foliage>, both layers semi-transparent, the texture visible through the dark areas of the face, dreamy film double exposure, monochrome
+commands: ["double exposure: the subject's face and the night city for 3 seconds", "overlay #2 on #5 semi-transparently in the bridge", "split self: front and profile at the same time", "a chain of overlays in the lyrical part"]
+related: [trans.dissolve, mask.double_exposure, time.echo_trail, look.dreamcore, trans.morph]
+evidence: {examples: 10, sources: 10, measured: "overlays hold for 1–5.3 s; the second layer fades in or out over 1–1.2 s (share 0→0.93 in 1.0 s, 0→0.98 in 1.2 s); a chain has 2–3 layers, the new layer's share of 0.25–0.5 holds for ≈2.5 s; black point 1–19, contrast σ 22–53; monochrome or duotone in 5 of 10; the psychedelic variant changes color every 1–3 frames", confidence: medium}
+---
+id: trans.fade
+family: trans
+group: transition
+level: A
+aliases: [fade, fade to black, fade from black, fade in, fade out, dip to black, fade to white, cut to black, go to black, fade up from black, white-out, through black, black pause]
+what: a fade to black or to white — the shot fades to black (or goes to white), a pause holds, and the next shot emerges from it; it puts a full stop, separates chapters, opens and closes the video
+frames: |
+  1. Out: A darkens evenly to black — a multiplier 1 → 0 on sRGB values over 4–8 frames (fast dip) or
+     0.5–3 s (chapter, ending); mean brightness falls almost linearly (from 95 to 0 over 6 frames: 79, 63, 48, 32, 16).
+  2. Hold: pure black (brightness ≤ 8 of 255) — 0–2 frames in a dip, 0.5–2 s in a chapter break (often with a title), until the end
+     of the file at the ending. A fade to white is the same, but into white (brightness ≥ 245).
+  3. In: B emerges from black over 4–8 frames (dip) or 0.5–2 s (opening, new chapter); B's sound may
+     start in the black 0.2–0.5 s before the picture.
+  4. Asymmetry: often one side is hard — a cut to black and a slow fade-in, or a slow fade-out and a hard
+     cut from black straight into the first beat of the drop.
+variants:
+  - "fast dip: 4–6 frames down, 0–2 of black, 4–8 up (0.3–0.6 s) — a 'blink' between scenes, the darkest frame on the beat"
+  - "chapter: out 0.5–1 s, black 0.5–2 s with a title (type.intertitle), in 0.5–1 s — a change of day, place or topic"
+  - "opening from black: 0.5–2 s up to the first downbeat; in genres with a hook — no longer than 0.3 s, or none at all"
+  - "ending to black: 1–3 s on the last note or phrase, then 0.5–1 s of black; or a hard cut to black on the last hit"
+  - "black pause before the drop: a fade-out over 4–12 frames or a cut to black on the last beat of the build, 1–2 beats of black under the break or riser, the drop comes in with a hard cut from black"
+  - "trailer-style drops to black: in the build the shot goes black for 2–6 frames on every downbeat — a pulse of black under the hits"
+  - "white-out (fade to white): 0.3–1 s into white with a hold of 3 frames or more and back — a memory, a dream, light; white shorter than 3 frames is trans.flash"
+  - "blink (POV): black 'eyelids' with a soft edge close from the top and bottom over 3–4 frames, 1–2 frames of black, then open over 4–6 frames"
+  - "color dip: into a brand color or a night dark blue (#0b1020) instead of black — rare"
+status: code
+params:
+  out: "dip 4–6 frames @25 fps / 5–7 @30 fps (0.16–0.24 s); chapter 12–25 @25 fps / 15–30 @30 fps (0.5–1 s); ending 25–75 @25 fps / 30–90 @30 fps (1–3 s); trailer-style drop 2–4 frames"
+  hold: "dip 0–2 frames; trailer-style drop 1–3 frames; chapter 12–50 @25 fps / 15–60 @30 fps (0.5–2 s, at least 1.2 s with a title); pause before the drop 1–2 beats (at 120 BPM 12–25 frames @25 fps / 15–30 @30 fps); ending 12–25 @25 fps / 15–30 @30 fps"
+  in: "dip 4–8 frames @25 fps / 5–10 @30 fps; opening and chapter 12–50 @25 fps / 15–60 @30 fps (0.5–2 s); in hook genres no more than 8 frames @25 fps / 9 @30 fps, or 0 (hard entry)"
+  curve: "linear on sRGB values by default — looks even to the eye; inOutQuad — soft, 'cinematic'; fade-out inQuad — the picture holds longer and dies at the end; fade-in outQuad — the shadows appear right away; when blending in linear light use the multiplier (1 − p)^2.2, otherwise the frame 'hangs' bright and collapses at the end"
+  frames_rule: "the last frame of the fade-out is fully black, the first frame of the fade-in already is not (B share = k/(N+1)); the run of frames darker than 12 of 255 = the hold + 2–5 frames (the ends of the ramp are dark too: with 4-frame ramps +2, with 6 +3, with 12 +5)"
+  level: "black 0 (16 in limited range), white 255; with grain running through the whole video (look.film) keep 30–50 % grain strength in the hold so the black does not look 'dead'"
+  sync: "dip — the darkest frame on the beat; chapter — black on the last beat of the phrase, fade-in on the downbeat; opening — 100 % picture by the first downbeat; ending — black on the last note or the end of its tail"
+  audio: "in music genres do not fade the music on a dip; ending — volume linear in decibels down to −60 dB over the same time as the picture; chapter in speech genres — B's sound 0.2–0.5 s ahead of the picture, A's ambience fades out 0.2 s before the picture"
+  lids: "blink — two 'eyelid' masks with a feather of 8–12 % of the height, closing inQuad over 3–4 frames, opening outQuad over 4–6 frames"
+  limits: "dip — no more than once every 4–8 bars (except the trailer-style pulse in the build, 2–4 bars in a row); chapter — 1–3 per minute; ending — one; do not open or close a loop video with a fade"
+when: |
+  Opening (from black to the first downbeat) and ending (to black on the last note); a change of chapter, day, place or
+  topic, time has passed; a pause for meaning after a strong line or punchline; the trailer-style pulse in the build (drops to
+  black on the downbeats under the hits) and a black pause before the drop, exiting with a hard cut on the first beat of the drop;
+  fade to white — a memory, a dream, "light". By part: hook — only a short opening of up to 0.3 s in genres with a hook
+  (up to 2 s in cinematic ones); build — a pulse of drops to black or a pause before the drop; drop — not used (except
+  a cut out of black); outro — the final fade-out of 1–3 s. In speech genres — between blocks of meaning at
+  a pause in the speech, often with a chapter title. Limits: a dip no more than once every 4–8 bars, chapters 1–3 per minute.
+avoid: the middle of the drop and dense cutting — it kills the energy (use trans.flash or a straight cut there); mid-phrase in speech genres — looks like a freeze; a long opening from black in the first 1–2 s of a short video — the viewer scrolls on; a final fade to black in a loop video (breaks the loop, see loop.end); fading the sound together with a dip in a music video — the beat must not sag; drops to black in a row without a musical reason — a "blinking" edit; 1–2 frames of black without a ramp — that is the black hit from trans.flash
+sfx: in the hold — silence, a breath or sfx.riser peaking on the fade-in; trailer-style drop — a hit (sfx.impact) or sfx.sub_drop on the black frame; fade to white — a 0.4–0.8 s reverse cymbal peaking in the white; ending — the music goes out with the picture or is cut off by a hit, and the black holds for 0.5–1 s; chapter — A's ambience fades out, B's ambience comes in while still in black
+genres: {drama: signature, teaser: signature, epic: signature, calm: allowed, motivation: allowed, travel: allowed, product: allowed, explainer: allowed, ugc: allowed, phonk: allowed, sport: allowed, fashion: allowed, fanedit: allowed, clips: allowed, viral: forbidden}
+detect: |
+  ed_motion (verified on synthetic renders): black frames (brightness < 12) — a run as long as the hold + 2–5 frames (the
+  frames at the ends of the ramp are < 12 too); holds on pure black when the hold is 2 frames or longer; a slow fade has
+  no cuts at all (the histogram changes smoothly), a fast dip has 1–2 "cuts" on the darkest frames; a
+  cut to black has a cut exactly on the first black frame with no ramp. Fade to white — a run of white frames (> 225) and
+  a cascade of false "cuts" on almost every frame of the ramp (the histogram drifts into white). ed_analyze: cut_in
+  'dip_black' (a black frame within ±3 frames of the cut).
+  Custom check: the brightness curve falls monotonically below 12 and rises monotonically; on the ramp frame ≈ g·A (normalized
+  correlation with A ≥ 0.9 while brightness falls — A's structure is preserved, B is not mixed in); the number of frames with brightness
+  between 15 and 85 % of A's level: 0 — a cut to black, 3 or more — a fade.
+  Difference from trans.dissolve: there both shots are visible in the middle and there are no 2+ nearly black frames. From trans.flash: a peak of
+  1–4 frames with a fast decay and usually no fade-out ramp; 1–2 frames of black without a ramp are the black hit from there. From
+  look.drunk: drops of 1–5 frames inside one shot, the shot does not change. From trans.iris: the black comes in as a shape with a
+  hard edge. From light.silhouette and scene.void: the black is part of the frame's content, not a ramp of the whole frame. From
+  glitch.film_damage (film tail): black frames with dust and a flash.
+engine: |
+  transition(kind='dip(black)'|'dip(white)'|'dip(#0b1020)', dur=out+hold+in, params={out:0.24, hold:0.04, in:0.28,
+             curve:['linear', 'linear']|['inQuad', 'outQuad'], space:'srgb', hard_in:false, grain_keep:0.4})
+  Opening: fade(to='black', t=[0, 0.8], dir='in', curve='outQuad'); ending: fade(to='black', t=[T − 2.0, T − 0.5])
+  + 0.5 s of black; black pause before the drop: fade(to='black', t=[drop − 0.74, drop − 0.5]) + cut(at=drop).
+  Timeline: cut_in={id:'trans.fade', frames:N} — currently ed_render only does B's linear fade-in from black over N
+  frames (8 by default); A's fade-out is the clip field fade_out={frames, curve}; EDL: ops [{f:[k], op:'black', a}] on the
+  frames of the ramp.
+  Blink: transition(kind='wipe(shape)', dur=0.4, params={shape:'lids', close:0.14, hold:0.06, open:0.2,
+  feather:0.1}). Sound: duck(music, to=−60, t=[T − 2.0, T − 0.5], curve='linear_db') at the ending; in a chapter B's sound
+  comes 0.2–0.5 s ahead of the picture; text(...) in the chapter hold (type.intertitle).
+gen_hint: "<scene>, at the end of the shot the light slowly dies until the frame is completely black, static camera, no camera movement, clean pure black final second"
+commands: ["fade to black over 2 seconds at the end", "open the video from black to the first beat", "fade to black between #5 and #6 with a half-second pause and the title 'Day 2'", "fade to white on the memory", "a black pause of two beats before the drop, then a hard cut into the drop", "trailer-style drops to black on every downbeat in the build"]
+related: [trans.dissolve, trans.flash, type.intertitle, type.title_card, type.credits, look.drunk, trans.iris, fx.letterbox, glitch.film_damage, cut.crash, loop.end, sfx.riser, sfx.sub_drop]
+evidence: {examples: 0, sources: 0, measured: "edit culture: parameters based on editing practice; verify with a demo render", confidence: medium}
+---
+id: trans.flash
+family: trans
+group: transition
+level: B
+aliases: [flash transition, white flash, flash frame, dip to white, color flash, exposure flash, flash on the cut, white frame, overexposure on the cut, flash on the beat, black hit]
+what: a flash on the cut — 1–4 frames of white or colored overexposure (or a short fade to white and back out of it) hide the join and hit the beat of the track; an accent hit, not a change of time
+frames: |
+  1. Setup (optional): the last 1–2 frames of shot A "overheat" — white mixed in at 35 and 65 %
+     (or exposure +1 and +2 stops), mean brightness rises ×1.5–2.5.
+  2. Peak — on the cut frame, which is also the beat frame: solid white (brightness 245–255 of 255, spread < 5 — no frame
+     structure) or a single-color frame. 1 frame (40 ms @25 fps, 33 ms @30 fps) — a "hit"; 2 frames — a strong flash
+     on the entry into the drop; 3–4 frames — a "burn".
+  3. Decay: shot B emerges from the white exponentially with a time constant τ ≈ 60 ms — white share @25 fps: 1 → 0.51 → 0.26
+     → 0.14 → 0.07 (4 tail frames), @30 fps: 1 → 0.57 → 0.33 → 0.19 → 0.11 → 0.06 (5 frames). A "hit" has no tail
+     (a white frame and then clean B right away), a "memory flash" has τ 100–120 ms and 8–9 tail frames.
+  4. Landing: 0.04–0.45 s after the cut B is already at its own exposure; sometimes the bright areas keep glowing for another 2–4 frames
+     (glow, fx.glow).
+variants:
+  - "hit: 1 frame of pure white exactly on the cut, with no setup and no tail — the most common variant in phonk and beat-synced edits"
+  - "flash with a tail: a 1-frame peak + a 4–5 frame decay (τ 60 ms) — softer, B 'comes out of the light'"
+  - "short white-out (dip to white): A goes to white over 2–4 frames, white for 0–2 frames, B comes out over 4–8 frames — 0.3–0.6 s in total; white longer than 2 frames or the whole move longer than 0.6 s is trans.fade"
+  - "exposure burn: not a white fill but an exposure overdrive of +2…+5 stops with glow — the shadows stay, the frame 'burns out'; costlier and softer, for fashion, beauty and product"
+  - "color flash: 1–2 frames of a single solid color — from B's palette, the brand color or chosen by meaning (red — threat, acid — club)"
+  - "black hit: 1–2 frames of black on the cut with no ramp — a 'blink' on the bass; 3 frames or more, or with a ramp, is trans.fade"
+  - "negative flash: 1 frame of the inverted first frame of B (borderline with fx.glitch, where the negative is part of a glitch burst)"
+  - "double flash: white — 1–2 frames of picture — white (within 3–5 frames) on a snare roll or a 'double photo flash'"
+  - "photo flash with a freeze frame: a white peak, then B freezes for 0.3–0.8 s (time.freeze) under a shutter click — a 'photo shoot', presenting a look"
+  - "strobe across cuts: a flash on every cut of the drop alternating white / color / black — only within 3 flashes per second"
+status: code
+params:
+  peak: "1 frame @25 fps and @30 fps — hit (default); 2 frames — the first cut of the drop; 3–4 frames (120–160 ms @25 fps, 100–133 ms @30 fps) — burn; if frame rates are mixed — count in ms and round to whole frames"
+  pre: "0–2 frames at the tail of A with a white share of 0.35 → 0.65 (or exposure +1 → +2 stops); for a hit — 0"
+  decay: "white share after the peak a(t) = exp(−t/τ), cut off below 0.05; τ = 0 (hit) | 50–70 ms (flash, typically 60) | 100–120 ms (memory). With τ 60 ms — @25 fps: 1, .51, .26, .14, .07; @30 fps: 1, .57, .33, .19, .11, .06. With τ 110 ms and a 2-frame peak — @25 fps: 1, 1, .70, .48, .34, .23, .16, .11, .08, .05; @30 fps: 1, 1, .74, .55, .40, .30, .22, .16, .12, .09, .07"
+  mix: "solid — (1 − a)·frame + a·color on sRGB values (default); add — frame + a·color with clipping (the structure stays visible longer); exposure — linear light ×2^EV; black and invert — solid black or a negative on the peak frame"
+  luma: "white peak — brightness ≥ 245 of 255 with a spread ≤ 5; a 'near-white' peak of 0.85–0.95 (brightness 220–245, B barely shows through) — this is how ed_render currently renders it: frames=3 gives 0.92, 0.55, 0.25 (with frames=4 another 0.1)"
+  exposure: "peak EV = log2(0.85 / median frame brightness in linear light), within +2…+5 (dark frame +4…+5, bright frame +2); per frame +1, +2, peak, then decay with τ 80 ms; on dark frames mix in 0.2–0.4 white at the peak; glow threshold 0.7, radius 2–4 % of the height, strength 0.6 → 0 over the tail"
+  color: "white #ffffff (default) | warm #fff1dc | from B's palette — the most saturated of 5 k-means clusters, S 0.85, V 1.0 | presets — red #ff2a2a, cyan #29e6ff, magenta #ff2bd6, acid #b6ff2b, amber #ffb02e"
+  seam: "the peak replaces the first frame of B (B starts under the flash and loses no motion); peak frame = beat frame, 1 frame early is acceptable, never late; the video's duration does not change"
+  sync: "a beat at 120 BPM is 12.5 frames @25 fps (alternate 12 and 13) and 15 frames @30 fps; flashes on the kick or snare, the strongest one on the first beat of the drop"
+  spacing: "at least 9 frames @25 fps and 10 frames @30 fps between peaks (no more than 3 flashes per second); saturated red — no more than 1 time per second and never in series"
+  contrast: "A and B are bright (brightness > 180) — a white flash does not read and is not caught by the detector (it needs ×1.25 over its neighbors): use a black hit or a color flash; both dark night shots — peak 0.7–0.85 or τ ≤ 40 ms, so as not to blind"
+  budget: "a flash on no more than ≈40 % of the video's cuts; no more than two accents on one frame (flash + shake or flash + punch)"
+when: |
+  A cut on the downbeat, kick or snare; the entry into the drop (the first cut of the drop is the strongest, 2-frame peak);
+  a change of track section; an impact in frame (a punch, a landing, a shutter click); a "memory flash" into a flashback (τ 100–120 ms);
+  a photo flash with a freeze frame on each look in fashion. By part: hook — 0–1 flash (the first cut on the beat);
+  build — on the snare once every 1–2 bars, toward the end of the riser it can speed up to every beat; drop — on every on-beat cut
+  in stretches of 2–4 bars, then 1–2 bars without flashes; outro — one on the last hit. In speech genres
+  (clips, explainer, UGC, motivation) — only on a block change or a punchline, no more than once every 10–15 s and never
+  mid-phrase. Limits: no more than 3 per second, no more than 1 per beat, no more than ≈40 % of the video's cuts.
+avoid: a calm, contemplative tone (use trans.dissolve or trans.fade there); speech mid-phrase — reads as a glitch; both shots bright — the white is not visible; series of white flashes in dark night scenes — blinding; red flashes in series; the same flash on every cut of the whole video — cheap; a flash off the beat is worse than none; series faster than 3 per second are dangerous for photosensitive viewers
+sfx: a hit (sfx.impact) or a snare accent exactly on the peak frame; burn and photo variants — a shutter click or a short 60–120 ms noise "pfft"; short fade to white — a reverse cymbal or sfx.riser of 0.3–0.6 s peaking on the flash frame; no more than one sound accent per flash; if the track itself hits those beats, the drop flashes go without sounds of their own
+genres: {phonk: signature, fanedit: signature, fashion: signature, teaser: signature, viral: allowed, epic: allowed, product: allowed, sport: allowed, travel: allowed, clips: allowed, explainer: allowed, ugc: allowed, motivation: allowed, calm: forbidden, drama: forbidden}
+detect: |
+  ed_motion (verified on synthetic renders): on the cut, white frames (brightness > 225) and flash frames (a frame brighter than the
+  medians of frames k−5…k−2 and k+2…k+5 by 30+ and by 1.25+ times). A 1-frame white — two "cuts" in a row [k, k+1] around
+  the white frame and strobe flips 1; a flash with a tail — 2–4 "cuts" in a row on the decay frames, flash frames on the peak and
+  the next frame; "memory" with a 2-frame peak — white frames on both; black hit — black frames (< 12) on 1–2
+  frames between two cuts; strobe across cuts — one strobe flip per flash and flash frames every 9–15
+  frames. ed_analyze gives such a seam cut_in 'flash' (a spike frame within ±3 frames of the cut) or 'dip_black'.
+  Custom check: peak — mean brightness ≥ 225 with a spread ≤ 8 (no structure) or a single-color frame with a spread ≤ 8 and
+  saturation ≥ 0.5 — ed_motion does not see a color flash if its brightness is close to its neighbors (red #ff1e1e gives
+  ≈ 97 of 255); decay — (Y_k − Y_B) / (Y_(k−1) − Y_B) = 0.4–0.75 per frame; setup — A's brightness rises by 20 %+ over
+  the 1–2 frames before the cut. Negative flash: brightness shoots up, the spread stays the same, correlation with neighboring frames < −0.5.
+  Difference from cut.flash: there it is dozens of different images of 1–2 frames each (8–25 changes per second), not a single-color frame.
+  From light.flash: there is no cut, the structure stays visible even in the flash, the light is uneven — coming from the side of the source.
+  From trans.fade: a fade to black or white runs 3+ frames with a ramp and a hold (0.3–3 s), while a flash is a peak of
+  1–4 frames with a fast decay. From glitch.film_damage: a light burn there is an orange gradient blob from the edge (R/B 3–6), not
+  an even fill. From fx.glitch: there the negative sits inside a glitch burst with band shifts.
+engine: |
+  transition(kind='flash', dur=peak+decay, params={color:'#ffffff', mode:'solid'|'add'|'exposure'|'black'|'invert',
+             peak_frames:1, pre_frames:0–2, pre:[0.35, 0.65], tau:0.06, cutoff:0.05, bloom:None|{thr:0.7, r:0.03, k:0.6}})
+  = flash(color, t=seam, dur=peak, curve='exp(τ)') on the head of B + flash(t=[seam − pre, seam]) on the tail of A;
+  exposure — color(params={exposure: [+1, +2, EV_peak, …]}) in linear light + glow(threshold=0.7, radius=0.03).
+  Timeline: cut_in={id:'trans.flash', frames:N, tau:0.06, color:'#ffffff', pre:0}; EDL: ops
+  [{f:[k], op:'white', a:1.0}, {f:[k+1], op:'white', a:0.51}, {f:[k+2], op:'white', a:0.26}, …] (@25 fps, τ 60 ms).
+  palette_pick(B.first, mode='most_saturated', k=5) — new: the flash color from the palette of the incoming shot.
+  flash_guard(max_per_s=3, min_gap={25: 9, 30: 10}, red_min_gap=1.0, dY=0.1, area=0.25) — new: the planner does not
+  place flashes any denser, QA counts brightness jumps > 10 % over > 25 % of the frame area and warns.
+  + beat_sync(event='flash', grid='1/4') + sfx('impact', at=seam, align='attack').
+gen_hint: "<scene B> starting from a completely white overexposed frame, the bright light settles within a quarter of a second and reveals the scene, like the moment right after a camera flash; static framing, high energy music video moment"
+commands: ["white flash on every cut in the drop", "flash between #3 and #4 on the hit", "one-frame red flash at 0:12", "photo flash with a freeze frame on every look", "burn to white and come out into the next shot on the chorus", "black hit on every bass note in the first bar of the drop"]
+related: [light.flash, cut.flash, trans.fade, trans.dissolve, time.freeze, zoom.punch, shake.beat, fx.glow, fx.glitch, glitch.film_damage, fx.light_leak, cut.crash, cut.quick, sfx.impact]
+evidence: {examples: 0, sources: 0, measured: "edit culture: parameters based on editing practice; verify with a demo render", confidence: medium}
+---
+id: trans.hidden_cut
+family: trans
+group: transition
+level: C
+aliases: [invisible cut, hidden cut, one-take illusion, seamless transition, as if in one take]
+what: a cut the viewer does not notice — the camera moves into a "neutral" frame (darkness, fog, a cloud, a texture up close, an object filling the frame) or into a matching shape and comes out of it already in another scene, without stopping its motion
+frames: |
+  1. Approach: the camera continues its move (push-in, orbit, rise, tracking) and brings the frame to a "filler" —
+     goes behind a dark body, descends into darkness, runs into skin or foam, rises into the clouds, catches smoke.
+     Frame detail drops to ≤0.25 of normal over 0.5–1 s (when pushing into a texture — from ×6 to ×0.5).
+  2. Filler: for 4–20 frames @25 fps (0.15–0.8 s) the frame belongs to neither scene: darkness (brightness 8–24 of 255),
+     even fog or cloud (brightness 110–136, spread ≤25), a texture up close or an object filling the frame. The cut sits
+     in the middle of the filler; in clouds, foam and fog — a 0.4–0.9 s dissolve right inside it.
+  3. Exit: the next shot starts from the same kind of filler (darkness → darkness, fog → fog, texture → similar texture)
+     and continues moving in the same direction; after 0.3–0.6 s the frame is fully revealed.
+  4. Shape match (no filler): a round object in one scene dissolves into a round object in the other at the same
+     point — the center matches within 0.02 of the frame, the size within 10 %; a two-step dissolve: first the background (≈0.5 s), then the object itself (≈0.5 s).
+variants:
+  - through darkness: an orbit behind the subject's back or a descent into a dark passage, darkness 0.25–0.8 s, sometimes several cuts in one "take"
+  - through texture: a push-in on skin, foam or fabric until it fills the frame, exit from a similar texture in the new scene (coffee foam → sea foam)
+  - through fog, smoke, clouds: the frame turns flat gray or white, the new scene emerges from the haze in 0.4–0.6 s
+  - object filling the frame: a flag, a back, a jacket at the lens — details in trans.wipe
+  - shape match with a dissolve: circle → circle, a match flame → the sun (horizontally within 0.02 of the frame)
+  - window and reflection: the scene continues in a window or in the lens of a pair of glasses and the camera flies in or pulls out — details in trans.portal
+status: footage
+fallback: the engine itself looks for fillers in the tails and heads of clips (dark, even or textureless frames during continuous camera motion) and puts the cut inside; if there are none — code simulates a "pass-through" — a digital push-in ×1.5–3 into a dark or even area at the end of the shot, 3–5 frames of the filler color and a pull-out from a similar area of the next shot; shape match — align the second shot to the detected circle or contour and do a two-step dissolve; with no material — generate a pair of shots that go into darkness or fog
+params:
+  filler: 4–20 frames @25 fps (0.15–0.8 s), typically 6–10 (0.25–0.4 s)
+  filler_dark: brightness 8–24, spread ≤20, detail ≤0.25 of normal
+  filler_haze: brightness 110–136, spread ≤25 (fog, clouds, smoke)
+  filler_texture: the texture fills the frame; detail drops from ×6 to ×0.5 over ≈1 s of push-in
+  cut: on the darkest or most even frame of the filler
+  dissolve: 0 (hard cut in darkness) | 0.4–0.9 s inside fog, cloud or texture | two steps of 0.5 s for a shape match
+  motion: the direction of camera motion is the same before and after, the motion does not stop at the seam
+  shape_match: center of the matching object ±0.02 of the frame, size ±10 %
+  reveal: 0.3–0.6 s from the filler to a fully revealed frame
+when: the illusion of "one take" in promos, sport, travel, music videos; tying locations, times of day or subjects together with one move; an opener built from a chain of hidden cuts; calm genres — through fog, clouds, foam; 1–3 times per minute, unless it is the concept of the whole video
+avoid: a filler shorter than 3 frames (the jump shows); camera motion that changes direction or stops at the seam; a strong jump in brightness or color between the filler and the exit (blue darkness → warm darkness is fine, but fog 115 → darkness 15 is not); frequent repetition of the same method in a row; a shape match offset by more than 5 % — reads as a mistake
+sfx: under the filler — air, a hum or wind; start the new scene's sound under the filler 0.2–0.5 s before the reveal (a sound overlap); in darkness — a low hum, in clouds — rising wind
+genres: {travel: signature, epic: allowed, calm: allowed, product: allowed, sport: allowed, fashion: allowed, teaser: allowed, motivation: allowed, viral: allowed, ugc: allowed, drama: allowed, fanedit: allowed, explainer: allowed}
+detect: |
+  A run of 4–20 frames where detail is ≤0.25 of the clip median and brightness ≤24 (or an even 110–140 with a spread ≤25), in the middle
+  of continuous camera motion (ed_motion: events in one direction before and after the run); the histogram switches
+  from the outgoing scene to the incoming one inside the run. ed_motion may not find a cut at all (dissolve) or may place it
+  on one of the dark frames. Shape match: a circle or contour at the same point before and after the dissolve (Hough).
+  Difference from a fade to black: in a fade the camera does not move through anything, the frame dims entirely and evenly.
+  From trans.wipe: there the edge of an object travels across the frame. From trans.whip: the filler is the motion blur of a jerk, not the object itself.
+engine: |
+  seam_search(A_tail=1.5, B_head=1.5, kinds=['dark','haze','texture','occluder','shape'], max_window=0.8) →
+  the best frame pair (A_out, B_in): minimal difference in brightness, histogram and detail + matching direction of motion;
+  then cut(at=A_out) or transition(kind='dissolve', dur=0.4–0.9) inside the filler.
+  Simulation: push_through(A, region=darkest|uniform, scale=[1, 2.5], dur=0.4, ease='inCubic') + fade(to=filler_color, dur=0.12)
+  + push_through(B, scale=[2.5, 1], dur=0.4, ease='outCubic'); shape: match(on='shape') → transform(B) by the center and size
+  of the circle + a two-step dissolve (mask(object) last). sfx('swell', at=middle of the filler).
+gen_hint: "two clips for a seamless transition — clip A: <scene A>, the camera keeps moving forward and pushes into <dark doorway | thick fog | the subject's dark jacket> until the frame is completely filled; clip B: starts completely filled by the same <darkness | fog>, the camera keeps moving forward and emerges into <scene B>"
+commands: ["cut the locations together so it looks like one take", "seamless: from the coffee foam into sea foam", "hide the cut in the darkness between #2 and #3", "transition through the clouds at 0:12"]
+related: [trans.wipe, trans.portal, trans.whip, trans.morph, cut.match, zoom.infinite]
+evidence: {examples: 10, sources: 10, measured: "per-frame seam profile (brightness, spread, detail, histogram): darkness 8–24 with detail 0.02–0.25 lasts 0.21–0.8 s; fog and clouds 110–136 with a spread of 15–35, dissolve 0.4 s, reveal 0.4–0.6 s; push-in on a texture — detail ×6 → ×0.5 over 1 s, filler ≈0.8 s; circle match — center ±0.02, size +10 %, dissolve 2×0.5 s; flame → sun ±0.02 horizontally", confidence: medium}
+---
+id: trans.iris
+family: trans
+group: transition
+level: B
+aliases: [iris wipe, iris in, iris out, shape wipe, star wipe, iris, shape transition, circle wipe, diamond wipe]
+what: a graphic shape wipe — a circle, diamond, star, stripes or shards grow from a point (or shrink to a point) with a hard edge and reveal the next shot
+frames: |
+  1. Start: a small hard-edged shape appears in the frame (radius 0.05–0.15 of the frame height) — in the center of the frame
+     (4 of 7), on a round object in the outgoing shot or on a moving subject (2 of 7); inside it is the next shot at full
+     size. Iris from black: the outgoing side is a black frame.
+  2. Growth: the shape expands to a size that covers the frame (from the center a radius of ≈1.0 height is needed for 16:9).
+     The radius grows linearly by 0.025–0.035 of the height per frame @20 fps (diamond, star) or with acceleration (from an object, shards);
+     stripes along the frame diagonal do the opposite — fast at the start.
+  3. Finish: the shape goes past the edges and the new shot remains. Duration 0.6–1.9 s (15–48 frames @25 fps), typically 0.7–1.0 s.
+  4. Closing iris: a circle holding the outgoing shot shrinks to a point near the center in 0.4 s (10 frames @25 fps),
+     radius 0.65 → 0.07 of the height; the picture inside the circle shrinks with it, behind it the new shot is already playing.
+variants:
+  - circle from an object: the iris starts at exactly the size of a round object in frame (a scoreboard, a lamp, a porthole) and opens up
+  - circle on the subject: the circle is "glued" to the moving subject's back and grows for 1.9 s, following them
+  - diamond from black: opening of a video or chapter, center of the frame, linear growth over 1.3 s
+  - star: a five-pointed star from the center, 0.9 s — a deliberately playful tone
+  - diagonal stripes: the stripes run parallel to the frame's main diagonal (handrails, stairs), which matches in both shots, 0.85 s
+  - polygon shards: several angular pieces grow with acceleration, 0.7 s
+  - closing iris with the picture shrinking: 0.4 s, at the end of a scene
+status: code
+fallback: the "from an object" and "on the subject" circles require circle detection (Hough) or object tracking; if there is none — the center of the frame or the face (track(face))
+params:
+  dur: 0.4–1.9 s (10–48 frames @25 fps); opening typically 0.7–1.0 s, closing 0.4 s
+  shape: circle | diamond | star(5) | strips(angle = frame diagonal) | polygon
+  mode: open (the shape grows, the new shot inside) | close (the shape holding the outgoing shot shrinks)
+  center: frame center [0.5, 0.5] (4 of 7) | a round object | track(person|face)
+  r_start: 0.05–0.15 of the frame height or the size of the object
+  r_end: until the frame is covered — ≈1.0 height from the center for 16:9
+  ease: linear in radius (diamond, star); inQuad when starting from an object and for shards; outQuad for stripes
+  edge: hard, no feather and no outline (7 of 7)
+  content: with open the new shot is not scaled; with close the outgoing shot shrinks together with the circle
+when: opening or closing a video or chapter; retro, comedy, a cartoonish and playful tone; a "look here" accent when closing on a face or object; a change of act, product or location in a music video on the beat; no more than once per minute, except for deliberate stylization
+avoid: drama and tense scenes (it kills the seriousness); an epic tone; a star shape outside a playful style; a shape center that misses the important object; a soft edge — reads as a mistake, not as a style
+sfx: opening — a short pop or whoosh on the growth; star — a sparkly chime; iris close — a comedic "thunk" or a stop chord at the moment it snaps shut
+genres: {fanedit: allowed, viral: allowed, ugc: allowed, clips: allowed, explainer: allowed, product: allowed, fashion: allowed, travel: allowed, calm: allowed, drama: forbidden, epic: forbidden, teaser: forbidden, motivation: forbidden}
+detect: |
+  A sharp geometric boundary between two different images (no blur on the edge), the area of the "new" region
+  grows (or shrinks) monotonically over 0.4–1.9 s; the mask has a regular shape: circularity ≈1 (circle), 4 corners (diamond), 10 vertices
+  (star), parallel stripes; the center of mass near the frame center or on an object. Iris from black — ed_motion flags
+  black frames at the start. Custom check: a per-frame mask of "closer to the incoming frame than to the outgoing one" → area, center,
+  equivalent radius. Difference from trans.wipe: there the edge is a blurred real object. From a portal into an object
+  (the camera flies into a screen or window): there the boundary is a real object in perspective and moves with the camera.
+engine: |
+  transition(kind='wipe(shape)', dur=0.8, params={shape:'circle', mode:'open', center:[0.5,0.5]|track(face)|hough_circle(A),
+  r0:0.08, r1:1.05, ease:'linear', feather:0, scale_content:false})
+  Close: transition(kind='wipe(shape)', dur=0.4, params={shape:'circle', mode:'close', center:track(face),
+  r0:0.65, r1:0, scale_content:true}) + sfx('impact', at=end).
+  From black: fade(to='black') is not needed — A = a black frame, shape='diamond', dur=1.3.
+  + sfx('whoosh', at=start of growth, align='attack').
+gen_hint: "for a shape transition generate two ordinary shots; if an in-camera version is wanted: <scene A> with a round object (lamp, porthole, round sign) centered in frame, the camera slowly pushes toward it; the iris mask itself is added in edit"
+commands: ["close the scene with an iris on the subject's face", "star transition between #2 and #3", "open the video with a diamond from black", "circle wipe out of the street lamp at 0:21"]
+related: [trans.wipe, trans.portal, mask.window_replace, mask.silhouette_window]
+evidence: {examples: 7, sources: 2, measured: "per-frame 'new shot' mask: area, center and equivalent radius; opening 0.6–1.9 s (diamond 1.3 s with linear radius growth of 0.03 of the height per frame @20 fps, star 0.9 s, circle from an object 1.0 s with acceleration, stripes 0.85 s, shards 0.7 s, circle on the subject 1.9 s); closing 0.4 s, radius 0.65 → 0.07 of the height; hard edge in all 7; center in the middle of the frame in 4 of 7", confidence: medium}
+---
+id: trans.lens_distort
+family: trans
+group: transition
+level: B
+aliases: [lens distortion transition, lens warp transition, bulge transition, pinch transition, twirl transition, swirl transition, spherize transition, lens transition, bulge, bubble transition, pinch to a point, vortex, barrel punch]
+what: a transition through optical distortion — over 5–9 frames the image bulges like a lens, gets pinched into a point or twists into a vortex around a single center, is blurred at the peak of the deformation and gives way to the next shot, which straightens out of the same deformation
+frames: |
+  1. Setup: the last 0.2–0.4 s of shot A; the center of the deformation is the frame center or an object (a face, an item, a vanishing point).
+  2. Build-up (5–9 frames @25 fps, 6–11 @30 fps, ease inCubic): a non-rigid distortion grows around the center — bulge
+     (the center magnified up to ×1.8–3, the frame border stays put, straight lines bow into arcs), pinch (the center squeezed to
+     ×0.5–0.65, everything gets "sucked" inward), vortex (the center rotated by 180–540°, the angle falls off toward the edges, the edges do not
+     rotate) or barrel punch (the whole frame inflated as if by an ultra-wide lens, the edges squeezed). Displacements at the peak — 10–20 % of the short
+     side of the frame; radial or rotational motion blur grows toward the peak, sharpness drops to ×0.15–0.5.
+  3. Seam at the peak of the deformation and on the beat: a cut inside the motion blur, with no filler.
+  4. Straightening (6–10 frames @25 fps, 7–12 @30 fps, ease outCubic): B starts with the same deformation (mirrored) or with
+     the opposite one (the through variant — the motion continues) and settles flat within 0.25–0.4 s; the vortex keeps twisting in the same
+     direction as it settles.
+variants:
+  - "bulge: the center inflates ×1.8–3 toward the seam, B comes out of the same bubble — a 'bass hit'"
+  - "pinch: A gets sucked into the center (×0.5–0.65), B 'turns itself inside out' from the point — a teleport, a fall"
+  - "vortex (twirl): a 180–540° twist in the center fading toward the edges, B keeps twisting in the same direction and settles"
+  - "barrel punch (barrel): within 5–7 frames the whole frame goes into an ultra-wide barrel (k1 up to +0.9) with a push-in, B opens back out"
+  - "pincushion: an inverse barrel — the corners stretch outward, the center sinks in; an unsettling variant"
+  - "through: A bulges, B starts pinched and opens up — the 'forward' motion does not stop (borderline with trans.zoom)"
+  - "local bubble: a bulge only on the object (radius 35–60 % of the half-diagonal), the seam inside the bubble — a product, a face, a ball"
+  - "soft: 0.8–1.6 s, half the strength (×1.4–1.8, 90–180°) — a dream, a trip"
+status: code
+fallback: if A and B have no common center of interest — take the frame center and shift B so its object lands on the same point (± 5 % of the frame); if B has a close-up face — B comes out not from the deformation but with a short pull-out ×1.15 → 1 over 5 frames; if the source is smaller than 1080 on the short side — bulge no more than ×2, or use the pinch and vortex modes (they do not magnify the center)
+params:
+  mode: "bulge | pinch | twirl | barrel | pincushion; one or two modes per video"
+  out: "5–9 frames @25 fps / 6–11 @30 fps, typically 6 / 7 — that is ≈ a 1/8 note at 120 BPM (0.25 s); ease inCubic; for bulge and pinch the strength is interpolated on the log of the scale M(t) = M_peak^ease(p)"
+  in: "6–10 frames @25 fps / 7–12 @30 fps, typically 7 / 8; ease outCubic; soft variant — out 12–20 / 15–24 and in 12–25 / 15–30 frames"
+  peak_hold: "0 frames (default); 1 frame — a heavy hit"
+  bulge: "r_src = r·(1 − (1 − 1/M)·(1 − u²)²), u = r/R < 1, unchanged outside; M — the scale at the center, 1.8–3 (typically 2.4), locally 1.4–2; peak displacement with R = the half-diagonal — M 1.6 → 11 %, 2.0 → 15 %, 2.4 → 17 %, 3.0 → 20 % of the short side of the frame (118–210 px at 1080); the profile does not fold over for any M"
+  pinch: "the same formula, M 0.5–0.65 (typically 0.55); at M < 0.45 the profile folds into a ring — for 'into a point' add an overall scale ×0.6–0.8 on a black or mirrored field"
+  twirl: "φ_src = φ − θ·(1 − u)², θ at the center 180–540° (typically 300°), R 0.8–1.2 of the half-diagonal; A — from 0 to +θ, B — from −θ to 0, the direction of rotation does not change"
+  barrel: "r_src = r·(1 + k1·ρ² + k2·ρ⁴), ρ = r / half-diagonal (like ffmpeg lenscorrection, k1 and k2 within ±1); k1 0 → +0.6…+0.9, k2 0…+0.1; a fill push-in ×(1 + 0.5–0.6·k1) with mirrored corners on the 2–3 peak frames (the motion blur hides them) or a full ×(1 + k1 + k2); pincushion — k1 0 → −0.3…−0.5 with no push-in"
+  radius: "R as a fraction of the half-diagonal — whole frame 0.9–1.2 (at 1.0 the frame corners stay still), local bubble 0.35–0.6 on track(object)"
+  center: "[0.5, 0.5] or track(face|object) at the seam; one center for A and B"
+  blur: "motion blur along the deformation — an average of 4–6 sub-frames between the strength of the previous and the current frame; for the vortex sub-frames = Δθ at the center / 12°, within 4–16; sharpness at the seam ×0.15–0.5"
+  chroma: "on the 2–3 peak frames the R and B channels are distorted with strength ×(1 ± 0.03–0.05) — a color fringe of 0.5–1.5 % of the short side near the edges; vignette 0.2–0.35"
+  letterbox: "if the frame has letterbox bars or burned-in titles — distort only the active picture (crop the bars, distort, put the bars back), otherwise the bars bend into the frame"
+  cost: "one pass @1080×1920 — ≈ 70–85 ms when computing the grid from scratch, ≈ 35–40 ms with a precomputed radial profile (cv2.remap itself ≈ 8 ms); a motion blur of 5 sub-frames — only on the 4–6 frames near the seam"
+when: |
+  Entry into the drop or chorus (seam on the first beat), a change of track section, a bass or 808 hit; a "teleport" between places and
+  looks; a trip, a dream, intoxication (soft variant); a product or object "pops out" as a local bubble. By part:
+  hook — possible as a single transition on the first downbeat; build — not needed (that is the place for the riser and the speed-up); drop — the main
+  place, build-up from a 1/8 note to a beat, seam on the beat; outro — rarely. In UGC and motivation — once, at a block change
+  (problem → solution), not on a face during speech. Limits: no more than once every 8 bars (≈ 16 s at 120 BPM), no
+  more than 2–3 per 30–60 s video; never the same mode twice in a row; not on cuts adjacent to trans.spin and trans.zoom.
+avoid: a close-up face during a line and recognizable features (a bulge disfigures, unless it is deliberate comedy); text, captions, logos, prices — they bend and become unreadable; products where proportions and the label matter (luxury, beauty, tech in close-up); flat frames without lines or texture — the distortion is not visible; a low-resolution source with a bulge of ×2.5 or more — a mushy center; a serious cinematic tone (epic, drama); speech genres; different rotation directions on one seam
+sfx: a pitch-bending whoosh on the build-up, peaking at the seam; bulge — a low "whoomp" (a sine 200 → 60 Hz over 150–250 ms) or sfx.sub_drop on the seam; pinch — a reverse whoosh that pulls toward the seam; vortex — a whoosh with rotating stereo panning (2–4 turns per second); landing — sfx.impact on the beat, if the track itself does not hit
+genres: {fanedit: signature, viral: allowed, phonk: allowed, sport: allowed, travel: allowed, fashion: allowed, teaser: allowed, product: allowed, ugc: allowed, motivation: allowed, epic: forbidden, drama: forbidden, calm: forbidden, clips: forbidden, explainer: forbidden}
+detect: |
+  ed_motion (verified on synthetic renders): one cut with a pair of ZOOM events around it, centered at 0.45–0.55 —
+  ease-in before the seam, ease-out after. Bulge and barrel with a push-in: ZOOM-IN ×1.3–1.45 (peak ×1.1–1.15/frame) → ZOOM-OUT
+  ×0.8–0.95; pinch: ZOOM-OUT ×0.5 (peak ×0.7/frame) → ZOOM-IN ×1.7 (peak ×1.3/frame); the through variant — both
+  ZOOM-IN, as in trans.zoom. nonrigid 0.13–1.5, for bulge and vortex conf low on 1–3 pairs near the seam; min sharpness
+  ×0.13–0.5. Vortex: ROTATE 25–35° over 4–5 frames after the seam with nonrigid up to 1.1, before the seam the rotation barely registers
+  (the edges stay put), on the seam frames a cascade of 2–5 false "cuts". A local bubble (R ≤ 0.6) produces no events at all.
+  Custom check — dense optical flow (DIS) between neighboring build-up frames, decomposed around the center:
+  radial velocity per unit radius v_r/r in the inner ring (0.08–0.3 of the half-diagonal) relative to the outer one
+  (0.55–0.85): bulge ≥ 3 (≈ 0 outside for a local one), pinch ≥ 1.4, barrel ≤ 0.35 (grows toward the edge); for a
+  digital zoom 0.9–1.1. Vortex: angular velocity v_θ/r inside relative to outside ≥ 3, for a rigid rotation 0.9–1.1.
+  Visually: straight lines bend into arcs around one point, the frame border stays put, mirrored edges at the peak.
+  Difference from trans.liquid (the "melt" variant): there the displacement field is noisy, with no center or symmetry, 1–2 % of the width per
+  frame, A and B are mixed under ripples for 0.9–1.4 s and B shows through in patches; here it is one smooth axisymmetric field around
+  one center, displacements of 10–20 % of the frame, A and B do not mix — a single seam at the peak within 0.4–0.7 s.
+  From trans.zoom: there v_r/r is the same across the whole frame (similarity); the ZOOM-IN → ZOOM-OUT pair matches its "rebound" —
+  tell them apart only by the flow profile and the bent straight lines. From trans.spin: the rotation is rigid, ROTATE 24–36°/frame on both
+  sides. From lens.fisheye: a constant barrel for the whole shot, with no ramp or seam. From look.psychedelic: periodic "breathing" of
+  0.3–1.5 % of the width, with no cut. From lens.magnifier: a hard-edged circle stands in the frame. From
+  dolly.crash: real parallax, not a distortion around a point.
+engine: |
+  transition(kind='lens', dur=0.52, params={mode:'bulge'|'pinch'|'twirl'|'barrel'|'pincushion',
+             center:[0.5, 0.5]|track(face|object), radius:1.0, out:{frames:6, ease:'inCubic'},
+             in:{frames:7, ease:'outCubic', from:'mirror'|'through'},
+             peak:{M:2.4}|{M:0.55}|{theta:300, dir:'cw'}|{k1:0.9, k2:0.05, fill:'auto'},
+             blur:{samples:5}, chroma:0.04, vignette:0.25, edge:'mirror', active_area:'auto'}) — a new transition kind
+  lens_warp(frame, mode, strength, center, radius, profile='poly2') — a new primitive: cv2.remap using the formulas from
+    params (compute the grid once per frame size); per-frame strength — M(t) = M_peak^ease(p), θ(t) and k1(t) linear
+    in ease; motion blur = the mean of lens_warp sub-frames between neighboring strengths.
+  barrel and pincushion = lens_distort(k1, k2, fill_zoom) with time keyframes (ffmpeg lenscorrection) +
+    transform(scale=fill) — can be rendered without numpy.
+  + chroma_ab(amount=0.01, radial=True) and vignette(amount=0.25) on the 2–3 peak frames
+  + sfx('whoosh', at=seam − out, align='attack') + sfx('sub_drop'|'impact', at=seam); seam — beat_sync(grid='1/4').
+gen_hint: "transition between <scene A> and <scene B>: the image of <scene A> bulges outward from the center like a giant fisheye bubble with radial motion blur, then <scene B> appears from the same bulge and relaxes back to a normal flat frame; alternatively the frame twists into a swirl vortex and untwists into <scene B>"
+commands: ["lens bulge transition between #2 and #3 on the drop", "suck the frame into a point and turn it inside out into the next shot", "clockwise vortex into the next scene at 0:15", "barrel punch on the bass at the start of the chorus", "local bubble on the product with the cut inside it"]
+related: [trans.liquid, trans.zoom, trans.spin, lens.fisheye, lens.magnifier, look.psychedelic, fx.refraction, dolly.crash, zoom.crash, trans.portal, shake.beat, sfx.whoosh]
+evidence: {examples: 0, sources: 0, measured: "edit culture: parameters based on editing practice; verify with a demo render", confidence: medium}
+---
+id: trans.liquid
+family: trans
+group: transition
+level: B
+aliases: [liquid transition, ink transition, luma fade, luma wipe, luma key transition, displacement transition, melt transition, brightness-based transition, luma transition, blot transition, frame melt]
+what: a cut "through liquid" — the boundary between shots is organic — the new shot shows through in patches in the dark or bright areas of the old one, grows as a soft blot, or the whole frame melts into ripples like glass under water and the next shot assembles out of them
+frames: |
+  1. Setup: the last 0.3–1 s of the outgoing shot; almost always a high-contrast frame — a silhouette, a back, a shadow,
+     night lights and bokeh; large dark areas take up 30–70 % of the frame.
+  2a. Patches by brightness: the new shot appears inside areas of the old one — in 2 of 3 examples first in the dark ones
+     (a boot, a shadow, a silhouette), the boundary follows the contours of light and shadow and stays ragged; the new shot's share goes
+     10→90 % in 0.32–0.6 s (8–15 frames @25 fps). Burn: in the middle the frame sinks almost to black
+     (mean brightness 46 → 18 of 255), ragged patches with a grainy edge eat the picture, and the new shot comes out
+     of the black.
+  2b. Blot: a single rounded drop grows from a point inside a dark area (sometimes a second one in a corner) with a soft
+     bright rim of 1–2 % of the frame; 10→90 % of the area in 0.85 s (21 frames @25 fps), the radius grows fast at first
+     and slows toward the edges; from the first spot to the full frame — ≈1.4 s.
+  2c. Melt: the whole frame starts to flow — a non-rigid deformation of 1–2 % of the width per frame (2–4 % in peak areas),
+     the picture becomes "glass under water" with drops and bright rims; under the ripples the new shot's share
+     grows almost linearly 15 → 75 % in 0.9–1 s, then the ripples die down over 0.3–0.8 s. The whole move takes 0.35–1.9 s.
+     With a flash: in the middle the frame floods with light (mean brightness 31 → 236), and the new shot comes out of the burn.
+  3. Landing: the boundary disappears, the new shot is clean and immediately lives its own motion (a push-in, a walk, lights).
+variants:
+  - patches through the shadows (luma key) — the new shot shows through first in the dark areas of the old one, 0.5–0.6 s
+  - burn — ragged black patches with a grainy edge, a dip to almost black, 0.3–0.5 s
+  - blot from the shadow — a single soft drop with a bright rim grows from a dark area to fill the whole frame, 0.85–1.25 s
+  - ripple melt — the whole frame flows like liquid glass, the next shot assembles out of the ripples, 1–1.75 s
+  - bubbles — the frame breaks into oval cells with bright rims, the next shot is already inside the cells, 0.4–0.5 s
+  - melt with a flash — ripples and a burn almost to white, exit into a dark scene, ≈1 s
+status: code
+fallback: a "live" blot of real ink or paint in water — shot on a white or black background and used as a mask — looks richer than a procedural one; look for such a stock element in the user's source footage or generate one (with consent); without it the code builds the mask from frame brightness and noise
+params:
+  mode: luma (dark_first | light_first) | burn | blob | melt | bubbles
+  dur: "luma 0.5–0.6 s (12–15 frames @25 fps); burn 0.3–0.5 s (8–12 frames); blot 0.85–1.25 s (21–31 frames); melt 1–1.75 s (25–44 frames); bubbles 0.4–0.5 s (10–12 frames)"
+  curve: luma and melt — almost linear in the new shot's share; blot — radius outCubic; burn — a dip to black in the middle (brightness down to ≈18/255)
+  matte: "luma: the threshold on A's brightness runs 0→1 (dark first is typical), + fbm noise at a scale of 3–8 % of the frame with strength 0.1–0.2 for an organic look"
+  edge: "luma and burn — a ragged boundary (perimeter²/4π·area = 4–11), 10–30 separate patches, a soft edge of 1–3 % of the frame; burn — specks of 0.3–1 % of the frame; blot — roundness 1.1–1.6, a bright rim of 1–2 % of the frame at 60–80 % of white"
+  blob_seed: the center of A's darkest connected area (at least 15 % of the frame darker than 40/255)
+  displace: "melt: a non-rigid shift of 1–2 % of the width per frame (p90 2–4 %), a noise field at a scale of 5–15 % of the frame, the amplitude rises toward the middle and falls off; A and B mix linearly under the ripples"
+  light_peak: the flash variant — a burn up to 230–240/255 for 2–4 frames in the middle
+  contrast: A needs distinct dark areas covering 30–70 % of the frame; on a flat bright frame a luma transition does not read
+when: night, neon and "dreamlike" music videos, a memory, a trip, the subject's shift into another state; between two dark high-contrast scenes; luma — when the outgoing shot has an expressive silhouette or shadows; melt — on a sustained synth, a break, the transition into a verse; no more than once every 10–15 s, in a stylized episode — a series of 2–4 in a row of the same kind
+avoid: bright flat frames without contrast (the luma transition turns into a muddy dissolve); close-up faces in a melt — the ripples disfigure the features; text and titles in frame during the transition; a downbeat that needs a hit — the organic look blurs the accent; a business, news or explainer tone
+sfx: a "liquid" whoosh, gurgling or a reverse swell over the whole transition; for the burn — hissing and crackling; on the flash — a soft hit or a reverse cymbal; the sound peaks at 50 % of the reveal
+genres: {fanedit: allowed, fashion: allowed, teaser: allowed, drama: allowed, calm: allowed, product: allowed, viral: allowed, explainer: forbidden}
+detect: |
+  ed_motion: no cut, or false "cuts" every other frame on the ripples (ECC method instead of LK), global motion does not
+  explain the change of picture, high nonrigid; the flash variant has flash/white frames in the middle, the burn has
+  a dip in brightness.
+  Custom check — a per-frame mask of "closer to B than to A": B's share grows 0→1 over 0.3–1.75 s, not across the whole frame at once
+  but in patches. Luma: the reveal order is linked to A's brightness (rank correlation |ρ| ≥ 0.25), the boundary is ragged
+  (compactness 4–11), 10–30 patches. Blot: a single component with roundness 1.1–1.6, the equivalent radius grows while
+  slowing down. Melt: residual optical flow after an affine fit of 1–2 % of the width per frame for 0.5–1.5 s in a row
+  (0.1–0.4 % in calm frames).
+  Difference from trans.dissolve: there B's share is the same across the whole frame. From trans.iris: there it is a regular shape with a hard
+  edge. From trans.morph: a morph moves A's features to B's positions, here the shape of the boundary is unrelated to the features.
+  From glitch.datamosh: there square blocks of 8–16 px flow along B's motion. From the "tear" in trans.portal: there the window is
+  part of the scene and the subject walks through it.
+engine: |
+  Luma: transition(kind='luma', dur=0.55, params={source:'A', order:'dark_first', softness:0.08,
+  noise:{scale:0.05, amount:0.15}, curve:'linear'})
+  Burn: transition(kind='luma', dur=0.4, params={source:'noise', scale:0.04, edge:'grain', grain:0.006, dip:'black', curve:'inOutCubic'})
+  Blot: liquid_blob(a=A, b=B, seed=darkest_region(A), dur=0.9, ease='outCubic', wobble=0.04, rim={width:0.015, glow:0.7})
+  Melt: displace_melt(a=A, b=B, dur=1.2, amp=[0, 0.015, 0], scale=0.1, mix='linear', cells=None|'voronoi', light_peak=None|240)
+  + sfx('whoosh', at=start, align='attack') or sfx('swell', at=middle); the transition starts half a beat before the downbeat,
+  50 % of the reveal lands on the beat of the track.
+gen_hint: "ink transition: <scene A> at night with deep shadows, organic liquid ink blots bloom out of the darkest areas and spread with soft glowing rims, revealing <scene B>; alternatively the whole frame melts into rippling liquid glass and reforms into <scene B>"
+commands: ["liquid transition between #4 and #5", "transition through the shadows: the new shot shows through in the dark areas of the old one", "blot from the subject's shadow into the next scene", "melt the frame at 0:31 like glass under water"]
+related: [trans.dissolve, trans.iris, trans.morph, trans.portal, glitch.datamosh, fx.refraction, look.psychedelic, trans.lens_distort]
+evidence: {examples: 6, sources: 2, measured: "per-frame 'closer to B' mask and residual optical flow: luma 10→90 % in 0.6 s (dark first, ρ = +0.27), burn 10→90 % in 0.32 s with a brightness dip of 46→18 and a ragged edge (compactness 7–11, 13–27 patches), blot 10→90 % in 0.85 s (roundness 1.1–1.6, radius slowing down), melt — non-rigid flow of 0.9–2.6 % of the width per frame (median over the frame) for 1.05–1.4 s, B's share 15→75 % almost linearly in 0.9 s; bubbles 0.35 s, flash up to 236/255; 5 of 6 examples come from a single music video", confidence: medium}
+---
+id: trans.metamorphosis
+family: trans
+group: transition
+level: C
+aliases: [transformation, transfiguration, werewolf effect, metamorphosis, shapeshift, shape-shifting]
+what: a subject or object turns into something else right in the frame — the new form spreads across the body, emerges under a change of light, flashes in with a strobe or swells up, while the background and the shot stay the same
+frames: |
+  1. Setup: the subject in their normal look, close-up or medium shot, 0.5–2 s; the camera is static
+     or pushes in very slowly (×1.2 over 1.2–1.5 s), emphasizing the moment.
+  2. Transformation, inside a single shot — one of these techniques:
+     - spread: a new texture (scales, decay, glass) flows out from the edge of the face or hand —
+       10→90 % in 0.9–1.5 s, faster at the start (half the area already by 0.4 s);
+     - one face flowing into another face against a still background — 10→90 % in ≈1.4 s;
+     - light change: warm light gives way to cold and "reveals" a different appearance, the face brightness doubles
+       (20 → 44) in 1.1 s;
+     - swelling of a body part (arm, muscles, finger) — 0.3–0.5 s;
+     - strobe: two forms alternate every frame (hand ↔ skeleton) for 0.6 s, with a flash;
+     - burst into particles: the appearance scatters into flakes or energy and reassembles in 1.5–2.5 s.
+  3. Landing: the new form holds for 1 s or more — often with an edit point to an extreme close-up of the eyes
+     or a reaction; sometimes the transformation immediately reverses (a loop).
+variants:
+  - texture spreading across the skin (scales, feathers, decay, crystal)
+  - one person's face flows into another's in the same frame and back
+  - reveal by light: a beam or a lighting change uncovers the "true" appearance
+  - swelling: muscles, arms, body parts grow before your eyes
+  - strobe alternation of two forms, 1 frame each, with flashes
+  - disintegration into particles, splashes or energy and reassembly into a new form
+  - substitution by cuts: other people in the same pose every 0.25–0.5 s with flashes
+status: generation
+fallback: if the user has a "before/after" pair from the same camera position (makeup, costume, two takes from a tripod) — a hybrid in code (subject mask + spread, light or strobe); no pair — generate the new look from a frame of the subject (same angle and pose) or a video of the transformation, with the user's consent
+params:
+  dur: swelling 0.3–0.5 s (8–12 frames); spread and face flow 0.9–1.5 s (22–38 frames), typically 1.1 s; light 1.1 s; disintegration 1.5–2.5 s
+  spread: starts at an edge (temple, hand, hairline), a front with a noisy edge; ease outCubic — 50 % of the area by 35–40 % of the duration
+  light: warm → cold, face brightness ×1.5–2, in sync with the form; the change travels as a band or as an overall build
+  strobe: 1 frame per form, 8–12 frames in a row (0.5–0.7 s), a 1-frame flash in the middle
+  push_in: ×1.1–1.2 over 1.2–1.5 s, linear — across the whole transformation
+  area: 10–70 % of the frame changes (only the subject or part of them), the background is stable
+  hold_after: 1 s or more on the new form; loop — a reverse pass of the same length
+when: the climax or a plot twist; the drop (swelling or strobe on the downbeat); "before/after", a transformation in the finale; a horror moment; teaser — to show the subject's "second nature"; no more than 1–2 times per video
+avoid: a face in motion or in profile when the new look does not match the pose — the transformation "slides around"; no consent from the person to alter their appearance; a new look in different lighting without a light change — the cut shows immediately; a transformation longer than 2.5 s with no development — it drags
+sfx: under the spread — crunching, crackling, rustling; under the light — a rising hum or choir, a hit at the full change; swelling — a stretching sound with a low hit; strobe — rapid clicks or glitch; disintegration — a rising whoosh and a sub_drop on reassembly
+genres: {viral: signature, fanedit: allowed, drama: allowed, epic: allowed, teaser: allowed, ugc: allowed, motivation: allowed, fashion: allowed, sport: allowed}
+detect: |
+  ed_motion: no cuts (a strobe gives "cuts" on every frame + strobe flips + flash; substitution by cuts gives
+  even cuts every 5–10 frames with flashes); global motion ≈0 or a slow ZOOM-IN ×1.1–1.2.
+  Custom check: the change curve of the subject's area rises over 0.3–2.5 s, 10–70 % of the frame changes, the background
+  stays; with light — the brightness and color of the face shift together with the form; with a spread the change
+  travels as a front from an edge.
+  Difference from trans.morph: there two separate pictures are interpolated, here the transformation is staged
+  within one shot and is often local. Difference from trans.set_change: the subject changes, not the set.
+engine: |
+  generate_image(edit=A.frame, prompt='<subject> as <new form>, same pose, framing and light') → B_still
+  or generate_video(image=A.frame, prompt='<subject> slowly transforms into <new form>') → a finished shot
+  Hybrid: mask(method='face'|'mediapipe_person', feather=4)
+  + spread_reveal(from=A, to=B, origin=[x, y]|edge, dur=1.1, ease='outCubic', noise=0.35, edge_glow=0.2)
+  | light_sweep(grade_from='warm', grade_to='cold_blue', luma_gain=1.8, dir='top', dur=1.1)
+  | strobe_alternate(A, B, period=1, dur=0.6, flash_at=0.5)
+  + transform(scale=[1, 1.2], t=[t0, t0+1.5], ease='linear')
+  + sfx('riser', at=t0) + sfx('impact', at=t0+dur)
+gen_hint: medium close-up, locked-off camera, <subject> slowly transforms into <new form>, the change spreads across the skin from the <temple | fingertips>, background stays unchanged, slow push-in, dramatic light shift to cold blue, single continuous shot
+commands: ["on the drop he turns into a skeleton", "scales spread across the face in one second", "strobe between a normal hand and a paw at 0:12", "in the finale she transforms — the light shifts to blue"]
+related: [trans.morph, trans.set_change, fx.glitch, cut.flash, mask.bg_replace]
+evidence: {examples: 12, sources: 8, measured: "10→90 %: scales across a face 1.2 s (50 % by 0.4 s), face into a skull 0.9 s, hand into glass 1.5 s, face into another face ≈1.4 s; light: brightness 20→44 in 1.1 s with a push-in ×1.2 over 1.5 s; arm swelling 0.3–0.5 s; strobe 1 frame per form for 0.6 s with a flash; disintegration into particles ≈2 s; substitution by cuts every 0.25–0.5 s; 1 of 12 examples is just fast cuts with blur", confidence: medium}
+---
+id: trans.morph
+family: trans
+group: transition
+level: B
+aliases: [morph, morphing, morph transition, flowing morph, face morph, morph cut]
+what: one image flows smoothly into another — contours and features shift into the positions of the new object at the same time as the color changes; a transition between faces, objects, shapes, or a chain of such transformations
+frames: |
+  1. Setup: the two objects are aligned — the same shot size, the eyes or silhouette on one line (±2–3 % of the frame),
+     size ±10 %, a background of the same tone. The camera is static; if the sources move, the morph is done
+     on freeze frames or on nearly motionless phases.
+  2. Flow: contours, features and patches of color travel to their new places, the tone changes together with the shape.
+     The middle frame is not an overlay of two pictures but a "hybrid": there are almost no double contours.
+     A single morph — 0.3–1.2 s (8–30 frames @25 fps); a slow artistic one — up to 4–5 s
+     (10→90 % in 4.0 and 5.3 s); a cartoon one — 0.8 s.
+  3. Landing: the new object comes together and holds for 0.3 s or more — or immediately starts the next morph (chain).
+  Chains: 10 faces in 1.8 s (≈0.18 s per face) with no pauses; 2–4 frames per face in a fast neural-network
+  chain; 0.5–0.8 s per transformation in a hand-drawn chain (drawings animated "on twos"); ≈1 s per identity
+  when the face changes right during speech.
+variants:
+  - a direct morph of two faces or objects with aligned features (mesh warp + color change)
+  - portrait chain: faces flow continuously one into another, the eyes stay in place
+  - identity change during speech: a person talks while their face gradually becomes someone else's
+  - through a "bridge": a shared intermediate shape — a wide-open mouth, a blot, a splash of liquid, a silhouette
+  - metamorphosis of a creature or shape (human → butterfly, fish → bird → airplane), often looped
+  - glitch morph: a flow with pixel blocks, color shifts and smear
+  - neural-network morph of a whole scene: the street or the figures are continuously "rewritten"
+status: code
+fallback: if the shapes are too different (human → animal, object → logo) and the mesh warp produces mush — generate an in-between video from the first and last frames, with the user's consent; changing the identity of a real person — only with that person's consent
+params:
+  dur: single 0.3–1.2 s (8–30 frames), typically 0.6 s (15 frames); slow artistic 2–5 s
+  chain_link: fast chain 0.15–0.3 s per link (4–8 frames); readable — 0.5–1 s + a 0.2–0.5 s pause
+  align: similarity transform (shift + scale + rotation) by the eyes and mouth (face mesh) or by the silhouette; eyes ±2–3 % of the frame
+  points: face_mesh for faces, pose for figures, optical flow for objects without landmarks
+  warp_ease: inOutCubic — the geometry moves over the full length of the morph
+  blend_window: the color change happens in the middle 30–70 % of the duration (smoothstep), to avoid double contours
+  bg: same background — morph the whole frame; different — an object mask + a separate dissolve of the background
+  bridge: optional — an intermediate shape at 40–60 % (a dark spot, an open mouth, a blot)
+  glitch: optional — rgb_split 4–10 px and 8–16 px blocks over 30–70 % of the duration
+when: portraits of one type flowing into each other (people, products, logos); "before/after", growing up and aging, the evolution of an object; a chain of faces about a community ("all of us"); silhouette → logo in the finale; a long note or a sustained sound; a single morph — no more than once every 20–30 s, a chain — a separate 2–5 s segment
+avoid: objects not aligned in scale, angle and position — the result is mush; different backgrounds without a mask; fast motion in the sources (the points jitter) — morph freeze frames instead; changing the identity of real people without consent; frequent use looks like a 90s effect unless it is a deliberate style
+sfx: a sustained swell or a "liquid" whoosh over the whole morph; in a chain — a rhythmic pulse on every link; a reverse_whoosh leading into the moment the new object comes together; a shimmering synth pad under a slow morph
+genres: {fanedit: signature, viral: allowed, teaser: allowed, fashion: allowed, product: allowed, explainer: allowed, motivation: allowed, epic: allowed, drama: allowed, calm: allowed, ugc: allowed}
+detect: |
+  ed_motion: no cuts (in a fast neural-network chain histogram jumps produce false "cuts"
+  every 2–8 frames); no global motion, only the shapes inside the frame change; no holds.
+  Custom check — the middle frame as a mix of its neighbors: M ≈ (1−a)·A + a·B; for a morph the fit residual is
+  0.34–1.1 of the A–B difference (typically 0.55–0.75): the features have moved, this is not an overlay.
+  Landmarks (eyes, mouth, silhouette) stay in place from link to link, the "identity" changes.
+  Difference from trans.dissolve: in a dissolve the contours do not move, both images are visible at once.
+  Difference from cut.match: the shapes match, but the change is instantaneous, with no in-between frames.
+  Difference from trans.metamorphosis: there the transformation is staged within one shot (light, particles,
+  an occluder, makeup), rather than a geometric interpolation of two pictures.
+engine: |
+  transition(kind='morph', dur=0.6, params={points:'face_mesh'|'pose'|'flow', align:'similarity',
+    warp_ease:'inOutCubic', blend:[0.3, 0.7], bg:'warp'|'mask'})
+  Chain: morph_chain(images[], per_link=0.3, hold=0–0.3, align='eyes', points='face_mesh')
+  Bridge: morph(A → bridge_shape → B) as two halves of 0.3 s each; glitch: + rgb_split(px=6) + datamosh in the middle.
+  Complex shapes: gen_transition(first=A.last_frame, last=B.first_frame, prompt='<A> morphs into <B>', dur=1–2)
+  + sfx('swell', at=t0) + sfx('reverse_whoosh', at=t0+dur, align='peak')
+gen_hint: smooth seamless morph, <subject A> gradually morphs into <subject B>, features stay aligned, same framing and plain background, continuous liquid transformation, no cut
+commands: ["morph face #2 into face #3", "a chain of morphs through all the portraits, 0.3 s each", "the product silhouette flows into the logo in the finale", "morph transition between #4 and #5 on the long note"]
+related: [trans.metamorphosis, trans.dissolve, cut.match, glitch.datamosh, fx.glitch]
+evidence: {examples: 14, sources: 14, measured: "10→90 %: human → butterfly 4.0 s, portrait 5.3 s, cartoon through an open mouth 0.8 s; chains — 10 faces in 1.8 s, 2–4 frames per face, 0.5–0.8 s per hand-drawn transformation (on twos), ≈1 s per identity during speech; the middle frame is not a mix of its neighbors — residual 0.34–1.1; no cuts and no global motion", confidence: high}
+---
+id: trans.page
+family: trans
+group: transition
+level: B
+aliases: [page turn, page peel, page curl, paper tear, paper transition, fold transition, crumple transition, page flip, torn paper, torn frame, crumpled frame, paper-sheet frame]
+what: the outgoing frame behaves like a sheet of paper or a photo print — it folds back and falls, tears down the middle or crumples up and flies away, while the next shot is already playing underneath
+frames: |
+  1. Setup: the outgoing shot runs as usual and keeps playing "on the sheet" until the very end of the transition;
+     the incoming shot already sits whole underneath it and starts to show from the edge.
+  2a. Fold-down: the sheet is hinged along its bottom edge and falls toward the viewer — the top edge drops
+     and in perspective becomes wider than the frame; a slow start (over the first 0.6–0.9 s the edge moves by ≤7 % of the
+     height), then ≈0.25–0.3 frame heights per second. The new shot's share goes 10→90 % in ≈3.5 s; midway
+     the lower part of the sheet "lingers" (a plateau at 55–60 % for ≈0.6 s), and the sheet leaves past the bottom edge by 4.6 s.
+  2b. Tear: a rip appears in the middle of the top edge, a V-shaped gap grows downward with the new shot inside it;
+     10→90 % of the area in 0.55 s (14 frames @25 fps) with acceleration (50 % at 0.35 s from the start); at the end, at the bottom
+     corners, curled light flaps are visible for 3–4 frames — the back of the paper (brightness 200+ of 255). The whole move ≈1 s.
+  2c. Crumple: the sheet gets crushed — bends in a wave, crumples into folds with shadows and, shrinking, flies off into a corner;
+     10→90 % reveal in 1.1 s, almost evenly. In the example the sheet is "grabbed" by the hand of the subject in the outgoing shot —
+     they press a palm to the frame as if to glass and pull.
+  3. Landing: the sheet is gone, the new shot is clean; often the next trick follows right away — a dissolve, the subject appearing.
+variants:
+  - fold-down toward the viewer — slow, 3.5–4 s, the sheet falls on its bottom hinge with perspective
+  - tear down the middle — a gap from the top edge downward, flaps with a white back side, 0.55–1 s
+  - crumple and toss — the sheet crumples into folds and flies off into a corner, 1.1–1.3 s; with a hand gesture — see gfx.touch_gesture
+status: code
+fallback: fold-down, corner curl and a straight tear — code (the sheet as a 3D plane or a mesh); realistic crumpling and a ragged edge with fibers — generate a paper mask element or take footage of a real sheet on a green background from the source footage; the hand that "grabs" the frame — a separate shot of the hand via a mask (mediapipe hands) or generation with consent
+params:
+  mode: fold | tear | crumple | curl
+  dur: "fold-down 3–4 s (75–100 frames @25 fps), 10→90 % in ≈3.5 s; tear 0.55–1 s (14–25 frames); crumple 1.1–1.3 s (28–33 frames); corner curl 0.75 s"
+  hinge: fold-down — along the bottom edge, the top edge comes toward the camera (in perspective 5–15 % wider than the frame)
+  curve: "fold-down inCubic (slow start, ≤7 % of the height over the first 0.6–0.9 s), tear inQuad, crumple almost linear"
+  backside: the back of the sheet is light, 200–240 of 255, with no image (or a mirrored copy of the frame, dimmed by 40–60 %)
+  shadow: the sheet's shadow on the new shot at 15–30 % opacity, offset 1–3 % of the frame in the direction of motion
+  tear_edge: a V-shaped gap from the center of the top edge, a ragged edge (noise 0.5–1.5 % of the frame), a white strip of fibers 0.5–1 % of the frame
+  a_plays: the outgoing shot keeps playing on the sheet; the incoming one may stand still or have its own motion
+when: a "turn the page" moment — a new chapter, day or location; a travel diary, an album, a magazine-style fashion presentation, a UGC joke "throwing out a bad take", a product reveal "from under the sheet"; fold-down — on calm music, in the intro or between chapters; tear — on a downbeat or a hit (a jerk); crumple — on a comedic pause; no more than once every 20–30 s, except in a stylized album-style video
+avoid: drama and epic (the paper play kills the seriousness); fast beat-synced cutting — the fold-down is too long; titles and important details near an edge that tears or curls; a dark incoming shot under a light back side — the seam is too harsh; several paper transitions of different types in a row
+sfx: paper rustling over the whole motion; for the tear — a short paper rip at the moment of tearing; for the crumple — a crunch and a slap at the end; for the fold-down — a soft slap when the sheet lands
+genres: {ugc: allowed, travel: allowed, fashion: allowed, product: allowed, viral: allowed, explainer: allowed, calm: allowed, drama: forbidden, epic: forbidden, fanedit: forbidden, teaser: forbidden, motivation: forbidden}
+detect: |
+  ed_motion: no cut; in the sheet area — ZOOM-OUT or SHIFT with a shifted center, a small ROTATE and high nonrigid
+  (the sheet deforms, unlike a rigid frame).
+  Custom check — a per-frame mask of "closer to B than to A": the new shot opens from an edge or from a gap and grows
+  monotonically; the old shot's area is a trapezoid with a widening far edge (fold-down), a V-shaped
+  gap with white flaps along its edges (tear) or a shrinking crumpled blob with internal fold shadows
+  (crumple); the image of A on the sheet keeps moving.
+  Difference from trans.wipe: there the boundary is the edge of a real object or a straight line, and A is not deformed.
+  From trans.set_change: there the set falls inside the scene while the subject stays in place; here the whole frame becomes the "sheet".
+  From trans.screen: there the picture shrinks into a device screen. From gfx.touch_gesture: the same sheet, but it is
+  triggered by a hand gesture in the frame.
+engine: |
+  Fold-down: page_fold(a=A, b=B, hinge='bottom', toward='camera', dur=3.5, ease='inCubic', backside='light', shadow=0.25)
+  Corner curl: page_curl(corner='top_right', dur=0.75) — a primitive from gfx.touch_gesture
+  Tear: paper_tear(a=A, b=B, start=[0.5, 0.0], dir='down', dur=0.6, ease='inQuad', edge_noise=0.01, fiber=0.007, flaps=true)
+  Crumple: sheet_crumple(a=A, b=B, to='bottom_left', dur=1.2, folds=8) or a generated sheet mask
+  + sfx('paper', at=start) + sfx('impact', at=end, gain=-6) for the fold-down; tear — starts on the beat of the track.
+gen_hint: "the whole frame of <scene A> is a printed photograph that peels off and falls toward the camera like a sheet of paper, its light paper back side visible, revealing <scene B> underneath with a soft shadow; tactile handmade paper transition"
+commands: ["turn the page between chapters", "tear the frame down the middle on the hit and reveal #6", "shot #3 folds down like a photograph and reveals #4", "crumple up the bad take and toss it"]
+related: [gfx.touch_gesture, trans.wipe, trans.set_change, trans.screen, gfx.collage, look.photo_prints, trans.shatter]
+evidence: {examples: 3, sources: 2, measured: "per-frame 'closer to B' mask: fold-down 10→90 % in 3.5 s (8 % by 0.6 s, a plateau at 55–60 % for 0.6 s, the sheet leaves by 4.6 s, the top edge drops ≈0.25 heights per second, the far edge wider than the frame); tear 10→90 % in 0.55 s with acceleration, white flaps for 3–4 frames; crumple 10→90 % in 1.1 s, the sheet is grabbed by the subject's hand; one example of each kind", confidence: low}
+---
+id: trans.portal
+family: trans
+group: transition
+level: C
+aliases: [portal, transition through an object, entering an object, through the screen, through the eye, through the mouth, through a hole, window to another world, rift in the frame, portal transition, through-object transition, hole transition, rift]
+what: a transition into another scene through an opening — the camera flies into a screen, a mouth, a pupil, a mirror, a hole or a door and comes out in a new place; or a pull-out shows that the scene was inside an object; or a rift window into another world opens right in the frame
+frames: |
+  1. Setup: an object with an opening is in frame — a phone or laptop screen, a pocket mirror, a glasses lens, a mouth,
+     an eye, a shoe, a bucket, a pit, a door, a hoop; the opening is 5–30 % of the frame, push-in center 0.46–0.54.
+  2. Entry: an accelerating push-in (ease-in) into the opening ×2–3.5 over 0.5–0.9 s, peaking at ×1.08–1.2 per frame right
+     before it fills the frame; a sharp entry — a crash push-in with radial motion blur or a ≈160° twist in 0.36 s.
+  3. Seam — at the moment the opening covers the whole frame, by one of these methods:
+     a) a cut on fill — the new scene immediately continues the push-in at the same pace (×3 over 1.4 s);
+     b) darkness or a uniform surface (a bottom, an insole, the inside of a pit) for 0.1–0.6 s, 3–15 frames;
+     c) a 2-frame flash (0.1 s) or a vortex with motion blur;
+     d) nesting — the new scene is already visible inside the opening and simply grows; a chain of such
+        nestings gives ×100+ in 1.2 s.
+  4. Exit: the motion continues in the new scene, or a pull-out ×0.1–0.65 over 0.8–2.5 s reveals
+     a new frame — the scene turns out to be inside a pupil, a mouth, a screen, a map, a hoop.
+  Rift in the frame (no object): a rectangular window or opening with a soft glowing edge of 2–4 % of the frame
+  hangs in the air with another scene inside; the opening opens or collapses in 0.4–1 s
+  (90 % of the area changes within 0.4 s), the subject rides or walks through it. A door — via a burn-out:
+  brightness 51 → 150 in 0.45 s, the new world emerges from the light.
+variants:
+  - entering a screen, mirror or window → exiting into the scene shown in it (the most common)
+  - entering a mouth, eye, shoe, bucket or pit → darkness or a uniform mass → a new scene; the shape of the opening matches an arch or a tunnel
+  - reveal pull-out — we start inside (stars, a face, a room), the pull-out shows a pupil, a mouth, a screen
+  - tunnel — going into a pit or a vortex, 0.2–0.6 s of darkness, exiting from a similar opening in another world
+  - magic lens — glasses or a hoop pass in front of the camera, inside the lens is another version of the scene (a different look, time, a rotated world)
+  - rift in the air — a window with a glowing edge opens or collapses, the subject rides through it
+  - window in a wall — a rectangle with another place inside an interior, a slow push-in ×1.7–3.4 over 3.2–3.7 s until it fills the frame
+  - a chain of nested openings (a mouth within a mouth, a frame within a frame) — borderline with the infinite zoom
+status: hybrid
+fallback: no shot with a suitable opening — generate a short shot of "the camera flies into <object>" or insert the new scene into a track of a screen, window or mirror (a quad or a mask); without a mask — pure code — a rift or a fixed-shape window in the middle of the frame (a rectangle, an oval with a glowing edge); a seam through darkness hides any two shots with a dark edge
+params:
+  dir: in (fly into the opening) | out (reveal pull-out) | lens (the other scene only inside the object) | rift (a window with no object)
+  push: "×2–3.5 over 0.5–0.9 s (13–23 frames), ease inCubic, peak ×1.08–1.2/frame; slow, through a window in a wall, ×1.7–3.4 over 3.2–3.7 s; scale to fill S = 1.1 / the opening's share of the width"
+  pull: ×0.1–0.65 over 0.8–2.5 s (20–62 frames), outCubic; a long reveal ×0.03 over 1.4 s
+  seam: "cut_at_fill (cut when the opening is ≥ 100 % of the frame) | dark 0.1–0.6 s (3–15 frames) | flash 2 frames | nest (nesting)"
+  speed_match: the scale speed matches across the seam (±15 %), the direction of motion is kept
+  center: on the opening — track(object) or the screen quad; the center deviates ≤ 0.05 from the center of the opening
+  rim: for a rift — a glowing edge of 2–4 % of the frame, a soft feather of 1–2 %; for an object — no edge, a hard mask along the contour
+  rift_time: opening or collapsing in 0.4–1 s, 90 % of the area within 0.4 s
+  lens_pass: the lens passes through the frame in 0.5–1.1 s
+  door_flash: a burn-out up to ×2–3 brightness over 0.3–0.5 s, 0.5–1 s of white before the new scene
+when: a change of location or world ("opened the phone and we're in the city"); diving into a thought, a memory, a screen; a product as the entrance to a story (shoe → tunnel, bottle → sea); the hook of the first seconds and transitions between parts; magic lens — "before/after", a second look, an alternative version; no more than 1–2 portals per 30 s, otherwise the trick wears thin
+avoid: an opening too small for a 1080p source (it needs ×6+ — it will be mush without 4K or upscaling); a shaky object without tracking — the insert "floats"; different push-in speeds across the seam; a new scene of a different color without a seam through darkness or a flash; several portals in a row without a pause; a rimmed rift in a realistic calm video
+sfx: on the fly-in — a rising whoosh or a "suction" sound, at the seam — a dull thud, a sub_drop or a pop; in a tunnel — a hum and wind; the new scene's ambience swells with the exit; rift — an electric hum and a whoosh on opening; lens — a light shimmer
+genres: {fanedit: signature, viral: signature, travel: signature, fashion: allowed, product: allowed, teaser: allowed, epic: allowed, motivation: allowed, ugc: allowed, explainer: allowed, sport: allowed, drama: allowed}
+detect: |
+  ed_motion: ZOOM-IN ×2–8 with ease-in and a center at 0.45–0.55 → a cut (or 3–15 dark frames with
+  luma < 25 and low texture, or 1–2 flash frames) → ZOOM-IN again at the same pace; the reverse variant —
+  ZOOM-OUT ×0.03–0.65 from a frame filled with a uniform texture (stars, an iris, skin), which
+  turns out to be inside an object. Visually: an area of the frame with a different color and scale, rigidly attached
+  to an object (a screen, a lens, a mouth) or with its own edge.
+  Difference from zoom.infinite: the links do not have to be uniform, what matters is the object-opening and the seam inside it.
+  Difference from trans.zoom: there it is a push-in and motion blur on an arbitrary cut, with no opening.
+  Difference from cut.match: a shape match without passing through the shape.
+  Difference from trans.set_change: what changes is not the set around the subject but the world behind the opening.
+engine: |
+  portal(window=track(object:<screen|mirror|mouth|eye|hole>)|quad(screen)|ellipse|rect, inner=B, dir='in',
+         push=[1, S], dur=0.7, ease='inCubic', seam='cut_at_fill'|'dark(0.3)'|'flash(0.08)'|'nest', rim=0, feather=0.01)
+  dir='in' = transform(scale=[1, S], center=window, t=[t0, t0+0.7], ease='inCubic') + blur(kind='zoom') on the last 4 frames
+    → cut on fill → transform(scale=[1, 2–3], t=[t0+0.7, t0+2.1]) in B at the same speed.
+  dir='out' = composite(B → inside the mask of A's opening) + transform(scale=[1/S, 1], ease='outCubic', dur=0.8–2.5).
+  dir='lens' = mask(track(object:lens)) + composite(B inside, A outside) for the duration of the pass.
+  dir='rift' = mask(shape='blob'|'rect', grow|shrink, dur=0.4–1) + glow(rim, radius=0.03) — B inside or outside.
+  Screen and window — transition(kind='nest(quad)'); a chain of openings — chain_zoom(..., seam='nest(quad)').
+  + sfx('whoosh', at=t0, align='attack') + sfx('sub_drop'|'impact', at=seam)
+gen_hint: single continuous shot, the camera pushes into <the phone screen | the open mouth | the pupil of an eye | a hole in the ground>, the opening fills the frame and the camera emerges into <new scene>, seamless portal transition, matched motion
+commands: ["through the phone screen into the city, between #3 and #4", "fly into the mouth, come out of the pupil", "a portal opens in the middle of the frame and the motorcyclist rides into the night city", "show the second look through the glasses", "pull out — turns out it was all inside an eye"]
+related: [zoom.infinite, zoom.crash, trans.zoom, trans.set_change, cut.match, mask.window_replace, pov.screen]
+evidence: {examples: 21, sources: 20, measured: "fly-in ×2.1–3.5 over 0.56–0.9 s ease-in, peak ×1.08–1.21/frame; nested openings ×104–124 in 1.2 s; seam — cut on fill (continuation ×3.1 over 1.36 s), darkness 0.1–0.6 s, a 2-frame flash; reveal pull-out ×0.03–0.65 over 0.77–3.9 s; rift with a glowing edge — 90 % of the area in 0.4 s; window in a wall ×1.7–3.4 over 3.2–3.7 s, the frame border leaves the shot in 1.8 s; door — burn-out 51→150 in 0.45 s", confidence: high}
+---
+id: trans.screen
+family: trans
+group: transition
+level: B
+aliases: [screen pull-out, screen push-in, through the screen, screen transition, it was on a screen, screen in hand, transition into the phone]
+what: a full-screen picture turns out to be the image on a device screen in the next shot (a phone, a TV, a monitor, a scoreboard) — or the other way round, a screen in the frame grows and its content becomes the new frame
+frames: |
+  1. Out (5 of 8): the source shot fills the whole frame; then it shrinks into a rectangle with a device bezel —
+     the linear scale drops to ×0.06–0.8 over 0.1–1.3 s; a new scene appears around the edges (a hand holding a phone, a room with
+     a TV, a stadium with a scoreboard). Smooth variant — ease-in-out, ≈×0.9 per frame in the middle; sharp — ×0.74 over 2 frames.
+     On the way the screen rotates by 25–30° to match the device's tilt.
+  2. In (3 of 8): the screen in the frame grows with acceleration — area 0.2 → 1.0 over 0.3–0.6 s (a push-in ×1.7 over 0.4 s,
+     or the screen is brought up to the lens, or the device flies in spinning); on fill the screen content becomes the frame.
+  3. Switch (optional): a 1-frame interference band and white noise or a 2–3 frame flash — "the channel changed"; then
+     a pull-out into the room ×0.77–0.36 over 0.9–1.2 s with a smooth stop.
+  4. The picture on the screen is the same one that filled the frame all along: the motion inside is not interrupted.
+variants:
+  - it was on the phone: a full-screen video shrinks into a phone in someone's hand (×0.09 over 1 s or ×0.74 over 0.1 s), with the app interface around it
+  - a game or animation filling the frame → a pull-out with a 25° roll to the subject's phone on the street
+  - bridge through a screen: a push-in into a phone, the content fills the frame, a pull-out from another phone in another place
+  - screen brought up to the camera: the frame in the subject's hands grows and becomes the new frame (area 0.05 → 0.87 over 1.5 s with acceleration)
+  - flying-in device: a phone flies in from the side with a turn, its screen shows the next scene and fills the frame
+  - old TV: the picture goes into a CRT (rounded corners, scan lines, vignette), interference and a channel change
+  - nested screens with a twist: ×0.12 over 0.56 s with a −83° rotation, then ×0.06 over 0.72 s with a −205° rotation
+status: hybrid
+fallback: a screen quad is needed in the next shot (corner tracking or a mask); if there is no such shot — a device mockup in code (a phone or TV bezel, a hand from the source footage or generated) and the same animation; for a "screen in hand" pair you can generate a shot of the subject looking at a phone with a chroma key screen
+params:
+  dir: out (the picture goes into the screen) | in (the screen grows into the frame) | bridge (in + out via two devices)
+  scale_out: linear ×0.06–0.8 (phone in hand 0.09–0.35, TV 0.3–0.8, scoreboard 0.06–0.12)
+  dur_out: 0.1–1.3 s; smooth typically 1.0 s (ease inOutCubic), sharp 2–3 frames with motion blur
+  dur_in: 0.3–0.6 s of final growth, ease inCubic; area 0.2 → 1.0
+  rotate: rotation to match the device tilt 25–30°; twist for nested screens 80–205°
+  switch: 1 frame of interference + noise or a 2–3 frame flash (TV)
+  after: a pull-out into the surroundings ×0.36–0.77 over 0.9–1.2 s, ease outCubic
+  style: a phone bezel and interface or a CRT (6–10 % corner rounding, scan lines, a warm tint, vignette)
+  continuity: the same video keeps playing inside the screen without a pause; the screen corners are pinned to the track
+when: a "we're watching a video → it turns out the subject is watching it" moment; UGC and ads for apps, gadgets, social networks; sports promos (match → scoreboard); a retro presentation via a TV; the hook and a change of context; once per 20–30 s
+avoid: a shaky screen without a track — the insert "floats"; different aspect ratios (16:9 into 9:16) without reframing; a glare or reflection on the real screen that the insert lacks; a screen too small at 1080p without upscaling
+sfx: on the shrink — a short whoosh; on the "device" — a click or a tap; on the channel change — CRT noise for 0.1–0.2 s; the video's sound gets quieter and goes "through a speaker" (a 300–3000 Hz band), while the room sound swells
+genres: {ugc: signature, product: signature, viral: allowed, explainer: allowed, sport: allowed, teaser: allowed, fanedit: allowed, clips: allowed, fashion: allowed, travel: allowed, drama: allowed, calm: allowed}
+detect: |
+  ed_motion: ZOOM-OUT ×0.06–0.8, often with ROTATE 25–30° or a twist of 80–205°, while the shrinking picture
+  gains a rectangular frame (a device body, an interface, a CRT) with a new scene around it; or an accelerating ZOOM-IN
+  that ends in a cut exactly when the screen fills the frame. 1–3 white or noise frames in a row — a channel change.
+  Difference from trans.portal: there the opening can be anything (a mouth, an eye, a door) and the camera passes through; here it is always a device and
+  the picture's corners are pinned to the screen. Difference from pov.screen: there the camera takes the place of the screen, with no transition.
+engine: |
+  screen_track(B, kind='phone'|'tv'|'monitor') → quad(t); corner_pin(A, quad(t)) interpolating the corners
+  from the frame border to the quad over dur=1.0, ease='inOutCubic' + blur(kind='zoom') on the fast part;
+  style: device_overlay(kind='phone_ui'|'crt', round=0.08, scanlines=true) ; switch: channel_switch(noise_frames=2) +
+  flash(color='white', dur=0.08); after: transform(scale=[1, 0.5], ease='outCubic', dur=1.0).
+  In: the reverse interpolation quad → frame, cut on fill. No B: device_mockup(kind='phone', hand=true, tilt=25).
+  + sfx('whoosh', at=start of the shrink) + sfx('click', at=landing).
+gen_hint: "medium shot of <person> holding a smartphone toward the camera at a slight tilt, the phone screen is a solid green chroma key, natural daylight, static camera"
+commands: ["make the video turn out to be on the subject's phone", "send the picture into an old TV and switch the channel", "through the phone screen into the next scene", "3-frame transition into the phone at 0:05"]
+related: [trans.portal, pov.screen, zoom.out, trans.spin, mask.window_replace]
+evidence: {examples: 8, sources: 8, measured: "ed_motion on the full contact sheets: out ×0.09 over 1.04 s (ease-in-out, ≈×0.9/frame in the middle), ×0.58 over 0.2 s + a pull-out ×0.36 over 1.2 s, ×0.74 over 2 frames, ×0.82 over 0.9 s into a TV, nested ×0.12/0.56 s and ×0.06/0.72 s with −83° and −205° rotation; tilt match 25–31°; in ×1.7 over 0.4 s with acceleration, frame area 0.05 → 0.87 over 1.5 s; channel change — 3 bright frames", confidence: medium}
+---
+id: trans.set_change
+family: trans
+group: transition
+level: C
+aliases: [set change, change of scenery, walls fall away, backdrop slides away, scene change, in-camera transition, practical transition, theatrical scene change]
+what: a change of place without a cut — the subject stays put while the set around them physically goes away (sinks, rises, falls, slides apart, turns) and reveals a new environment
+frames: |
+  1. Setup: 0.5–2 s of the subject in the first set; the background (a wall, a backdrop, a screen, the walls of a container) takes up
+     30–80 % of the frame, the subject is centered. The camera is static (7 of 14 examples) or slowly pulls out /
+     pans along with the subject.
+  2. Mechanics: the set moves like a heavy object with a straight edge and a shadow. Sinking and falling
+     accelerate: the wall's edge goes down from 15 to 90 % of the frame height in 1.0 s, the speed grows
+     from 1.2 to 7 % of the height per frame; a wall falling flat backward disappears in 0.9 s
+     (its area goes 53 % → 2.5 % of the frame). Lifting up — ≈0.8 s, slowing down near the top edge.
+     Panels sliding apart from the center — slow: the gap grows from 0.5 to 1.2 % of the width per frame and in 2.8 s
+     opens half of the frame.
+  3. Reveal: the new environment fills the freed part of the frame — fast variants in 0.2–0.3 s
+     (5–7 frames @25 fps), "heavy" ones in 0.5–1 s (12–25 frames), ceremonial ones in 2.5–3.5 s
+     (60–85 frames). The subject does not change position, the action is not interrupted.
+  4. Landing: the set lies down or leaves past the frame edge; an impact, splashes, dust; the subject reacts
+     to the new place (looks around, stands up, walks) — 1 s or more in the new environment.
+variants:
+  - the wall sinks below the floor line or the horizon — an empty sky or space opens up
+  - the wall lifts up out of the frame on cables, often as the camera pulls out following a walking subject
+  - the wall falls flat backward — the room turns out to be a set in the middle of a street or a field
+  - panels or backdrops slide apart from the center, like a curtain — slow, 2.5 s and longer
+  - the walls of a container or a box collapse outward with water or dust — a 0.5 s impact + a 1 s splash
+  - turntable: a table or floor with people rotates, after the turn there is a different group or a different time (10→90 % in 3.4 s)
+  - prop wipe: a foreground object (a column, a plant) crosses the frame in 0.2 s, and the backdrop behind it is already different
+  - adjacent stage: the camera glides sideways and skips across the border between two sets (a 0.3–0.4 s jerk)
+  - pass through darkness: the subject walks into a black doorway, a wardrobe or a dark scene and comes out in a new set (0.5–3 s of black)
+status: hybrid
+fallback: a real set change is shot on set — look in the source footage for a continuous shot where the background changes while the subject stays still; without such a shot — a simulation (subject mask + two background plates, the old plate moves away like a wall); no plate of the new environment — generate the background or the whole shot with the user's consent
+params:
+  kind: sink | lift | fall_back | part | collapse | spin | prop_wipe | pan_adjacent | dark_pass
+  reveal_dur: "10→90 % of the reveal: fast 0.2–0.3 s (5–7 frames); heavy 0.5–1.0 s (12–25 frames); slow 2.5–3.5 s (60–85 frames); typically 0.9 s (22 frames)"
+  ease: sinking and falling — inQuad/inCubic (accelerating under weight); lifting — outQuad; sliding apart — linear or inOutQuad; turning — inOutCubic
+  edge_speed: sinking 1–7 % of the frame height per frame, accelerating (average ≈3 %); sliding apart 0.4–1 % of the width per frame per panel
+  area: 30–80 % of the frame changes; the subject takes 20–40 % of the frame, subject shift ≤ 2 %
+  edge: a straight panel edge + a dark shadow of 1–2 % of the frame; motion blur along the movement for the fast kinds
+  land: for falling and sinking — a 0.5–1 % shake for 2–4 frames at the moment of impact, dust or splashes
+  camera: static or a slow pull-out ×0.5 over 1–2 s; with pan_adjacent — a 0.3–0.4 s jerk across the border
+  hold_before: 0.5–2 s
+  hold_after: 1 s or more in the new environment
+  audio: room tone of A → ambience of B following the reveal curve; the muffled sound "opens up"
+when: the hook in the first 1–2 s (the walls fall — the real location is revealed); a change of topic or place with a continuous host; a jump in time (turntable — the same table in another era); the impact of a falling wall on a downbeat or the drop; a final reveal "it was a set"; no more than once every 30–60 s, a series of 2–4 changes — only in a single-shot video format
+avoid: an unreliable subject mask (hair in the wind, fast movements, transparent objects); backgrounds with different perspective, camera height or light direction; a handheld camera without stabilization — the plates "drift"; the subject's shadow or reflection stays on the old wall; a slow slide-apart in a fast genre; when a plain change of place is needed, an honest cut is better
+sfx: sinking and falling — a low rumble or whoosh on the movement and a heavy hit (impact / sub_drop) at the moment of contact; sliding apart — a mechanical rolling sound or a long whoosh; prop wipe — a short whoosh; the ambience of the new environment (wind, sea, crowd) swells with the reveal, the muffled room sound "opens up"
+genres: {product: signature, explainer: allowed, viral: allowed, epic: allowed, drama: allowed, travel: allowed, fashion: allowed, teaser: allowed, ugc: allowed, motivation: allowed, sport: allowed, calm: allowed}
+detect: |
+  ed_motion: no cuts (or the cut does not coincide with the moment of change); global motion is small or
+  follows the subject; meanwhile the histograms of the start and the end differ strongly (a different location).
+  Custom check — the reveal curve: the share of "changing" pixels (|A−B| is large) that are closer to the
+  final frame grows monotonically over 5–85 frames, while the subject's central area stays stable.
+  The boundary of the change is a straight edge moving across the frame (a profile by rows or columns),
+  with a shadow and perspective; for a fall — a trapezoid shrinking toward the floor.
+  Difference from trans.wipe: a graphic wipe's boundary cuts through the subject too, and its edge is perfectly straight with no shadow.
+  Difference from a dissolve: there is no semi-transparent overlay of two frames.
+  Difference from a mask-based background replacement: the background does not appear at once but physically "opens up".
+  Difference from a whip transition: there is no overall motion blur of the frame, only the set moves.
+engine: |
+  mask(method='mediapipe_person', feather=3) — the subject from shot A (and from B, if the continuation was shot separately)
+  + set_reveal(plate_old=A.bg, plate_new=B.bg|generated, subject=A.person, kind='sink'|'lift'|'fall_back'|'part'|'spin'|'prop_wipe',
+    dur=0.9, ease='inQuad', edge_shadow=0.015, motion_blur=0.5, land_shake=0.008)
+  + sfx('whoosh', at=t0, align='attack') + sfx('impact', at=t0+dur) + ambience_xfade(A, B, t=[t0, t0+dur])
+  Swap the subject of A for the subject from B — at the moment the poses match or after the landing; dark_pass — transition(kind='dip(black)', dur=0.5–1)
+  + match(on='motion'); pan_adjacent — transform(shift) with a 0.3 s jerk + a seam along a vertical edge.
+gen_hint: one continuous locked-off shot, <subject> stands in <room set>, the walls of the set <sink into the floor | fall backward flat | lift up out of frame | slide apart from the center like theater flats>, revealing <new location> behind, the subject stays in place and keeps acting, practical stage effect, no cut
+commands: ["the walls fall and we're on the beach, at 0:03", "set change behind the host between #3 and #4", "the wall slides down on the drop", "the backdrop parts like a curtain in the finale"]
+related: [trans.wipe, trans.portal, trans.whip, mask.bg_replace, trans.dissolve]
+evidence: {examples: 14, sources: 14, measured: "the edge of a sinking wall 15→90 % of the height in 1.0 s, accelerating 1.2→7 %/frame; a wall falling backward — 0.9 s; panels sliding apart — a gap of 52 % of the width in 2.8 s; collapse — 10→80 % in 0.5 s + a 1 s splash; prop wipe and sliding panel — 0.2–0.28 s; turntable — 10→90 % in 3.4 s; a jerk across the border of the adjacent stage 0.3–0.4 s; 32–78 % of the frame changes; 2 of 14 are a camera move through a stage with no clear change", confidence: medium}
+---
+id: trans.shatter
+family: trans
+group: transition
+level: B
+aliases: [shatter transition, glass shatter, broken glass, disintegration, dust transition, particle dissolve, shards, frame shatters, crumble to dust, particle disintegration, cracks]
+what: the outgoing frame breaks like a material — it cracks into glass shards in which the next shot is already visible, or crumbles into fine dust that the wind blows away, revealing the new scene
+frames: |
+  Shards:
+  1. Impact: a flash almost to white for 3–4 frames (mean brightness 143 → 236 → 241 → 148 of 255, ≈0.15–0.2 s) —
+     the moment of the "hit"; sometimes preceded by 4–5 frames of ragged pieces with a paper edge.
+  2. Cracks: 6–10 thin bright jagged lines divide the frame from edge to edge (1.3–2.6 % of the frame's pixels),
+     making 8–12 shards. The shards hold pieces of two different images (another face, another shot);
+     the shards change their content not all at once but out of sync over 0.75–1 s.
+  3. Landing: the new shot assembles in the shards, the cracks lie over it as a trace for another 1–2 s, then
+     go away or stay as the texture of the episode.
+  Dust:
+  1. Setup: a push-in on the subject ×2.8 over 0.5 s against a plain background.
+  2. Disintegration: the figure and the background crumble into fine grains of 0.5–1 % of the frame, the grains are carried to one side
+     by 10–30 % of the width; the disintegration boundary is grainy and runs across the frame, with the new shot behind it;
+     10→90 % reveal in 0.45 s (11 frames @25 fps), the frame's sharpness jumps 2–5 times during this because of the grit.
+  3. Landing: the remainder of the old shot disappears with a cut; 0.5 s later, in the example, the whole disintegration runs in reverse
+     — the dust gathers back into the subject (a "boomerang").
+variants:
+  - glass shards with a flash — cracks across the face, other people's faces and the next shot in the shards, 1–1.2 s
+  - crumbling to dust — the grains blow away to the side, the new scene behind them, 0.45–0.6 s
+  - boomerang — disintegration and reassembly 0.5 s later (A → B → A), on a repeated musical phrase
+status: code
+fallback: shards with volume, refraction and rotation in 3D — generate a short stock element of shards flying apart (with consent) and use it as a mask; without it the code cuts the frame into Voronoi cells that fly apart flat; dust — code using a figure mask (mediapipe_person or hf_remove_background), so that the subject crumbles rather than the whole frame
+params:
+  mode: shards | dust
+  dur: "shards 0.75–1 s of content change + a 0.15–0.2 s flash (3–5 frames @25 fps); dust 10→90 % in 0.45–0.6 s (11–15 frames)"
+  cells: 8–12 shards, Voronoi cells or radial cracks from the impact point (the center of the face or a point at 0.4–0.6 of the frame)
+  crack: lines 0.1–0.2 % of the frame width, bright (85–95 % of white), jagged; together 1–3 % of the frame area
+  flash: a white flash of 3–4 frames (inQuad up over 1 frame, holds 1–2 frames, falls off over 1 frame) at the moment of impact
+  swap: the shard contents change out of sync in steps of 1–3 frames; or the shards fall with an acceleration of 2–3 frame heights/s² and a rotation of up to 30°
+  grain: grains of 0.5–1 % of the frame, the disintegration front crosses the frame at ≈1 width/s, drift of 10–30 % of the width downwind
+  boomerang: the reverse pass 0.4–0.6 s later (mirrored time)
+  color: in the shards example — black and white (saturation 0), the cracks show better on a dark frame (brightness 30–35)
+when: a "break" — an impact, a bass hit, the entry into the drop, collapse and loss, a villain, the mystical; dust — the subject vanishing, magic, a character's death, a fantasy teaser; boomerang — a dance music video on a repeated phrase; no more than once every 20–30 s; shards — once per scene, the other hits get something simpler (cut.flash, shake)
+avoid: a calm, explanatory or business tone; a small subject in frame — the shards and dust do not read; a bright flat frame — the thin bright cracks get lost; frequent repetition — the effect cheapens; a low-resolution source (the shards turn "mushy")
+sfx: shards — a hit and the crash of breaking glass exactly on the flash, then small shards trickling down for 0.5–1 s; dust — a rustling, hissing whoosh over the whole disintegration, a sub hit at the start; boomerang — the same sound reversed
+genres: {fanedit: allowed, phonk: allowed, teaser: allowed, viral: allowed, drama: allowed, epic: allowed, calm: forbidden, explainer: forbidden}
+detect: |
+  ed_motion: shards — white/flash frames for 2–4 frames at the moment of impact and false "cuts" on every frame while the pieces
+  change; dust — often a ZOOM-IN ×2–3 over 0.5 s before the disintegration, then a "cut" on the last frame of the disintegration.
+  Custom check: shards — thin bright jagged lines (brightness 45+ above the local median) take up
+  1–3 % of the frame and run from edge to edge, between them pieces of different images change on different frames
+  (difference between neighboring frames 6–9 versus 1.5–3 in calm ones); dust — the "closer to B" mask grows from one side
+  with a grainy front (many small spots along the boundary), the frame's sharpness is 2–5 times higher than normal for 0.3–0.5 s.
+  Difference from trans.iris (the shards variant): there regular pieces of the new shot grow over the intact old one,
+  the old one does not crack or fly apart. From trans.metamorphosis (disintegration into particles): there the subject disintegrates and
+  reassembles within one shot, the background stays the same. From trans.liquid (burn): there it is ragged soft patches,
+  with no cracks or flying grains. From fx.glitch: there bands slide sideways, with no cracks.
+engine: |
+  Shards: shatter(a=A, b=B, impact=track(face)|[0.5, 0.5], cells=10, crack={width:0.0015, brightness:0.9},
+  mode='swap'|'fall', stagger=0.08, fall={gravity:2.5, spin:30}, dur=0.9) + flash(color='white', t=impact, dur=0.15, curve='outQuad')
+  Dust: disintegrate(a=A, b=B, mask=mask('mediapipe_person')|None, dir='right', grain=0.007, front_dur=0.5, drift=0.2, noise_scale=0.05)
+  Boomerang: the same disintegrate in reverse time 0.5 s later.
+  + sfx('impact', at=impact) + breaking glass; dust — sfx('whoosh', at=start, align='attack'). The impact lands on the downbeat.
+gen_hint: "<scene A> shatters like a pane of glass from an impact point, thin bright jagged cracks, sharp shards fly apart revealing <scene B> behind; alternative: <subject> disintegrates into fine dust carried away by the wind, revealing <scene B>"
+commands: ["shatter the frame like glass on the drop", "crumble her to dust and reveal the next scene", "cracks across the face, other faces in the shards", "crumble and reassemble on #7"]
+related: [trans.iris, trans.metamorphosis, trans.liquid, trans.page, fx.glitch, cut.flash, look.video_game]
+evidence: {examples: 2, sources: 2, measured: "shards: a 4-frame flash at 20 fps (brightness 143→236→241→148), cracks 1.3–2.6 % of pixels, piece swap over 0.9 s (difference between neighboring frames 6–9 versus 1.5–3), black and white; dust: push-in ×2.8 over 0.5 s, then 10→90 % reveal in 0.45 s with a grainy front, sharpness ×2–5, reassembly 0.5 s later — an exact mirror; one example per kind", confidence: low}
+---
+id: trans.side_scroll
+family: trans
+group: transition
+level: C
+aliases: [side-scrolling shot, side scroll, side-scroller, tracking through a cutaway set, cutaway set tracking, dollhouse, dollhouse shot, lateral oner, transition behind a column, outfit change behind pillar]
+what: the camera tracks steadily sideways along a row of adjacent "cells" — train compartments, rooms, shops, lockers — and behind each wall or column a new scene, a new time or the same subject in a new state is revealed; several scenes are tied together by one continuous move
+frames: |
+  1. The camera looks frontally and strictly perpendicular to the set, at eye level; the frame is symmetrical,
+     the light is even. A sideways move begins at a constant speed of ≈0.6–1.5 % of the frame width per frame.
+  2. Cell: 1–3 s of screen time for each — a room, a train compartment, a shop window, a booth, a gap between lockers
+     or bookshelves, a row of spectators. Inside — a short scene: the subject does one action,
+     turns around, changes clothes, meets someone else.
+  3. Boundary: a wall, a column, the end of a shelf, a tree trunk, a door jamb or a dark gap takes up
+     5–25 % of the width and crosses the frame in 4–12 frames; behind it is already another cell (another place, time
+     of day, year, group of people) or the same subject walking beside the camera, but in new clothes.
+  4. 2–6 cells per pass; the camera does not stop, the music is continuous. The ending — a stop on the last
+     cell or an exit past the edge of the set.
+variants:
+  - cutaway of a train car or a house: the walls of compartments and rooms are seen in cross-section, the camera glides from room to room
+  - subject walks with the camera: passes behind a column or a locker and comes out in different clothes, at a different age, in a different place
+  - row of shop windows or stalls: facades with a subject in each opening, a flat theatrical set
+  - along a row of faces: spectators, visitors, guests at a table — one reaction per cell
+  - shelves and aisles: the ends of the shelves act as wipes, a new scene in each aisle
+  - the set moves by itself: the camera stands still, the backdrop and objects glide past the subject as if on a conveyor belt
+  - graphic strip: clips sit in cell frames along a single strip, the strip slides sideways (code version)
+status: code
+fallback: the real version is footage (a lateral tracking shot along a cutaway set or columns; look in the source footage for a long steady tracking shot with foreground pass-bys and put hidden cuts on the frame of full occlusion); the code version — a strip of the user's clips in "cells" separated by walls; a subject passing from cell to cell — hybrid (a subject mask over the strip); no suitable cells — generate room plates with the same camera height, with the user's consent
+params:
+  speed: 0.6–1.5 % of the frame width per frame @25 fps (≈0.15–0.4 widths per second), typically 1 %; constant, no slowing down at cells
+  cell: 1–3 s of screen time (25–75 frames), typically 1.8 s; cell width 0.8–1.2 frame widths
+  cells: 2–6 per pass, typically 4
+  divider: 5–25 % of the frame width (a wall, a column, a dark gap); the same texture and color for all walls; crosses the frame in 4–12 frames
+  hidden_cut: if the cells are different clips, cut on the frame where the wall covers ≥85 % of the frame, or along its edge with a mask
+  direction: one for the whole pass (usually left to right); do not change it within a series of passes
+  match: one camera height, floor line and horizon ±2 % of the frame height, the same focus and light in all cells
+  framing: frontal, symmetrical, the subject in the center of their cell at the moment the cell is centered in the frame
+  ease: linear; acceleration and deceleration only at the start and end of the pass, 0.3–0.5 s
+when: introducing a team or characters (each in their own cell), parallel lives and simultaneous actions, the passage of time (the same subject years or days later), outfit changes in fashion and UGC (a pass behind a column — a new look), a tour of an apartment, an office, a shop, the steps of a process in an explainer video; a cell = a beat or a bar, a pass — over a verse or a build; 1–2 passes per video
+avoid: cells with different camera heights, floor lines or perspective — the "strip" falls apart; jerky speed; cells shorter than 0.8 s (they do not read); a lateral tracking shot where nothing changes behind the wall (that is just truck.lateral); cells with their own camera movement
+sfx: on each wall — a short whoosh or rustle; the sound of the cells (room tone, voices, street) changes with a 0.2–0.3 s crossfade at the wall; the music is continuous, the cell change lands on the beat
+genres: {fashion: signature, product: allowed, explainer: allowed, ugc: allowed, viral: allowed, travel: allowed, teaser: allowed, calm: allowed, drama: allowed, fanedit: allowed, clips: allowed, motivation: allowed}
+detect: |
+  ed_motion: a long SHIFT along X for 3–10 s with an almost constant speed of 0.6–1.5 %/frame and little rotation;
+  nonrigid is low for a flat cutaway set (≈0.1–0.3), higher for columns in front of a deep background.
+  Custom check: vertical dark or uniform bands 5–25 % of the frame wide cross the frame
+  at the same speed every 1–3 s; after each band the content histogram changes noticeably
+  (a new scene), while the shift speed and the floor line do not. A hard cut, if any, falls on the frame of full
+  occlusion by the wall.
+  Difference from truck.lateral: there the scene behind the obstacle does not change. From trans.wipe: there it is a single wipe between
+  two frames, while here it is a series of cells in one move. From trans.set_change: there the subject stands still and the set
+  physically goes away; here the camera (or the set strip) moves sideways past a row of cells.
+engine: |
+  Code strip: side_scroll(clips=[c1..cN], cell_w=1.0, divider=wall(width=0.12, texture='plaster'|'black', blur=0.02),
+                 speed=0.01 widths/frame, dir='ltr', ease='linear', play='while_visible')
+  — the clips are placed in the cells of one horizontal strip, the viewfinder travels along the strip; the floor line is aligned
+  for each cell (reframe by the horizon).
+  Real tracking shot: find_cover_frame(clip, min_cover=0.85) on each column → cut on the occlusion frame.
+  The subject moves from cell to cell: mask(method='mediapipe_person') + composite over the strip.
+  + sfx('whoosh', at=each wall, align='peak') + ambience_xfade(cell_i, cell_i+1, dur=0.25).
+gen_hint: smooth lateral tracking shot along a cutaway set of adjacent rooms, the camera slides sideways at a constant speed past thin walls, each room shows a different short scene with <characters>, symmetrical frontal framing, flat even lighting, dollhouse cross-section look
+commands: ["move the camera sideways through scenes #2–#5, with walls between them", "team intro: everyone in their own room, sideways tracking shot", "pass behind a column into a new look, on every beat of the chorus", "make an apartment tour in one sideways tracking shot"]
+related: [trans.wipe, trans.set_change, truck.lateral, frame.tableau, frame.central, layout.split_screen]
+evidence: {examples: 40, sources: "≈25 (different works, judging by their look)", measured: "visual review only: about 40 examples of the section at 3–4 moments of the animation (scripted frame capture was blocked by browser permissions); speed, cell length and wall width are '≈' estimates, not measured", confidence: medium}
+---
+id: trans.spin
+family: trans
+group: transition
+level: B
+aliases: [spin transition, barrel roll, rotation transition, barrel roll transition, twist]
+what: a cut inside a rotation of the frame around the lens axis — the outgoing shot spins up, the incoming one continues the rotation in the same direction and settles level
+frames: |
+  1. Spin-up: the outgoing shot starts to roll clockwise or counterclockwise, accelerating over 2–10 frames @25 fps; in the full variant it makes
+     a whole 360° turn in 0.7 s, the speed rising from 9–12 to 55–60° per frame (14 fps).
+  2. Seam: a cut at the peak of angular velocity, usually 600–900°/s (24–36° per frame @25 fps); rotational motion blur,
+     sharpness ×0.3–0.5; the center of the frame holds one anchor before and after (an object, a vanishing point, a graphic), so the eye does not lose focus.
+  3. Landing: the incoming shot starts rotated by 75–280° from its level position and keeps turning in the same
+     direction down to 0° over 5–14 frames @25 fps (0.2–0.55 s), decelerating (35 → 20 → 10 → 0° per frame); often combined with
+     a pull-out or push-in of 5–15 % per frame.
+  4. Slow variant without landing: both shots rotate at the same constant speed (110–170°/s), the cut sits
+     inside the motion; the angular velocity matches within ±10 % (−5.7 → −5.1° per frame; 24.9 → 25.8° per frame).
+variants:
+  - turn and landing: the outgoing shot makes 360°, the incoming one turns the remaining 80–100° and settles
+  - continuous rotation: the cut is inside a continuous spin, the speed does not change (wide-angle flight, dance)
+  - rotation + push-in: a constant roll of 5–6° per frame with a push-in of 5–8 % per frame, the next shot continues the same
+  - landing with a pull-out: the incoming shot unwinds by 185° while pulling out
+  - rotating insert: the whole shot is rolling (≈270° in 1.6 s), the entry and exit are dark 3-frame wipes
+  - turn around an object: the background turns like a cube face around a stationary product in the center, 4–5 frames
+status: code
+fallback: best of all — real rolls in the source footage (gimbal, flight, a handheld camera being spun); the engine looks for ROTATE events with the same direction of rotation in the tails and heads of clips and cuts where the speeds match; otherwise — a digital rotation with rotational motion blur; a product turn around the vertical axis — generate a pair of frames or use a product mask over two backgrounds
+params:
+  seam: at the peak of angular velocity; the same direction on both sides; speeds match ±15 %
+  angular_speed: fast 600–900°/s (24–36° per frame @25 fps); slow continuous 110–170°/s (4–7° per frame @25 fps)
+  ramp_out: 2–10 frames @25 fps, ease inCubic; a full 360° turn — up to 0.7 s
+  land_in: 5–14 frames @25 fps (0.2–0.55 s), ease outCubic; the incoming shot's starting angle 75–280° away from level
+  total_roll: 90–360° per transition (usually 180–270°)
+  center: the frame center; on it — a shared anchor for both shots (a face, a product, a vanishing point, a circle or a crosshair)
+  scale: an accompanying push-in of +5–8 % per frame or a pull-out of up to −15 % per frame; with a digital rotation — a ×1.3–1.5 scale-up against empty corners
+  blur: rotational motion blur, arc angle ≈0.5–1× the per-frame rotation; at the peak sharpness ×0.3–0.5
+  edges: mirrored edge extension if the scale-up is less than needed
+when: a scene change in a music video, dance, skate or flight footage; the entry into the drop or chorus; a showy cut between two different locations that share a common center; product variant changes (flavor, color) around a stationary object; no more than 1–2 times per 15 s, continuous rotation — once per story
+avoid: calm, documentary and talking-head material; shots with important content near the frame edges (it goes into the corners when rolling); text and titles in frame during the rotation; rotation in opposite directions at the join; repeating it back to back — it causes motion sickness
+sfx: a rotating whoosh or a "swirl" over the whole turn, the sound peaks on the cut; on the landing — a hit or bass on the beat
+genres: {fanedit: signature, phonk: allowed, viral: allowed, sport: allowed, travel: allowed, ugc: allowed, teaser: allowed, product: allowed, fashion: allowed, clips: allowed, epic: allowed, calm: forbidden, explainer: forbidden}
+detect: |
+  ed_motion: ROTATE events peaking at 5–50° per frame on both sides of the cut, with the same sign; on fast frames
+  ed_motion often adds extra "cuts" and underestimates the angle (LK cannot hold more than ~30° per frame) — then measure the per-frame angle
+  by matching rotation-invariant keypoints (SIFT + RANSAC). Signs: rotational motion blur,
+  a stationary center, the histogram changes inside the rotation; the incoming shot ends its rotation exactly at 0°.
+  Difference from roll.camera (a roll within one shot): no scene change. From trans.whip: there shift and
+  directional motion blur dominate. From the spiral zoom.infinite: there the constant push-in is the point, the roll is secondary.
+engine: |
+  Real rolls: find_motion_peak(A, side='tail', kind='rotate') + find_motion_peak(B, side='head', kind='rotate'),
+  check the sign and |ω_A − ω_B| ≤ 15 % → cut at the peak.
+  Digital: transition(kind='spin', dur=0.5, params={dir:'cw', out_angle:120, in_angle:-120, center:[0.5,0.5],
+  ease:['inCubic','outCubic'], scale:1.4, blur:'spin', edge:'mirror'}) =
+  A: transform(rotate=[0, 120], scale=[1, 1.4], center=[0.5,0.5], t=[seam-0.2, seam], ease='inCubic') + blur(kind='spin', amount∝ω)
+  B: transform(rotate=[-120, 0], scale=[1.4, 1], t=[seam, seam+0.3], ease='outCubic') + blur(kind='spin', amount∝ω)
+  + sfx('whoosh', at=seam, align='peak') + sfx('impact', at=seam+0.3). Center anchor: center=track(face|object) on both shots.
+gen_hint: "two clips for a spin transition — clip A: <scene A>, the camera rolls clockwise around the lens axis faster and faster, frame spins with rotational motion blur; clip B: starts mid-roll in the same clockwise direction with rotational blur, decelerates and settles perfectly level on <subject B> centered"
+commands: ["clockwise spin transition between #2 and #3", "spin the camera into the next shot on the drop", "full turn and a cut at 0:14", "0.4 s spin transition, centered on the face"]
+related: [trans.whip, roll.camera, zoom.infinite, trans.arc, trans.wipe]
+evidence: {examples: 8, sources: 8, measured: "6 rotation seams + 2 variants; angular velocity at the seam 600–900°/s (fast) and 110–170°/s (continuous); landing 0.2–0.55 s with a starting angle of 75–280°; the direction of rotation matches in all seams, the speed in continuous ones matches within ±10 %; per-frame angles via SIFT + RANSAC and log-polar correlation (verified on synthetic data to ±0.3°)", confidence: high}
+---
+id: trans.whip
+family: trans
+group: transition
+level: B
+aliases: [whip pan transition, swish pan, whip transition, motion blur transition, swish, smear transition]
+what: a cut hidden inside a sharp sideways jerk of the camera — the outgoing shot breaks into solid motion blur, the incoming one comes out of the same blur in the same direction and brakes on a new subject
+frames: |
+  1. Acceleration: over the last 2–9 frames of the outgoing shot the camera (or a digital shift) swings sideways, the speed roughly
+     doubles every frame (2 → 5 → 12 → 20 % of the frame width per frame); sharpness drops to ×0.03–0.25 of normal.
+  2. Seam: a cut at peak speed, inside 1–3 frames of almost solid directional motion blur (≈15–40 % of the frame width).
+     In 8 of 13 seams the peak frames fall on a uniform area — sky, a burn-out, the dark edge of a wall or the subject's body
+     (frame brightness <60 or >140 of 255), so the moment of the swap does not read.
+  3. Landing: the incoming shot starts in the same direction and brakes within 0–5 frames (speed 29 → 18 → 4 → 0 % of the
+     width per frame), with no bounce; the new subject settles in the center of the frame (±0.15).
+  4. The whole blur window is 3–17 frames @25 fps (0.12–0.7 s), typically 4–6 (0.16–0.24 s); then a normal shot.
+variants:
+  - symmetrical: 2–3 frames of blur before the cut and 2–3 after — the most common (6 of 13 seams)
+  - whip-out: blur only on the outgoing shot, the incoming one lands sharp right away, sometimes with a fading 3–4 frame drift to a stop
+  - whip-in: the outgoing shot breaks off without blur, the incoming one flies in with 3 frames of blur
+  - long, lyrical: 13–17 frames @25 fps with a smooth acceleration through the sky or a burn-out
+  - through a dark plane: a diagonal or vertical pass past the dark edge of a building or the subject's body — borderline with a wipe
+  - within a scene: the same subject, but tighter — a whip pan as a change of shot size without a change of place
+status: code
+fallback: the best result comes from real camera whips in the source footage (the engine looks for frames with directional motion blur in the tail and head of clips and cuts at the peak); if there are none — a digital shift of the frame with directional blur in code; for the long variant — generate a pair of shots with a whip in the same direction
+params:
+  window: 3–17 frames @25 fps (0.12–0.7 s) of total blur; typically 5 (0.2 s)
+  split: the share of the window before the cut 0–1, typically 0.5; 1.0 = whip-out, 0 = whip-in
+  ramp_out: 2–9 frames of acceleration, ease inExpo (speed ×2 per frame)
+  ramp_in: 0–5 frames of deceleration, ease outExpo, no bounce
+  peak_speed: 5–9 frame widths per second (20–36 % of the width per frame @25 fps)
+  blur: directional, length ≈0.5–1× the per-frame displacement; at the peak ≈15–40 % of the width; angle = direction of motion
+  direction: horizontal (9 of 13 seams), diagonal or vertical (4 of 13); on both sides of the seam — the same direction and the same axis
+  seam_zone: a uniform area (sky, light, a dark wall) at the peak; if there is none — 1 frame of dissolve inside the blur
+  landing: the incoming shot's subject in the center ±0.15 by the end of the deceleration
+  edge: mirrored edge extension for a digital shift
+when: a change of location or look without losing pace — music video, travel cut, vlog; the seam on the downbeat or the snare; a series of 1 transition every 1–1.75 s is acceptable in travel and UGC; a change of shot size on the same subject on an accent; no more than 4–6 in a row, after that switch the transition type
+avoid: calm and slow editing; shots moving in different directions or on different axes at the seam; an incoming shot where the subject leaves the frame; a strong brightness difference between the sides without a uniform area; a digital whip on frames with tight close-up faces and small text (smeared text looks like a defect); rolling-shutter "jello" on phone whips
+sfx: a whoosh or swish as long as the whole blur window, the sound peaks exactly on the cut; in the long variant — a short riser before the whip; on a landing on the beat — a light hit
+genres: {travel: signature, ugc: signature, viral: signature, fanedit: allowed, phonk: allowed, sport: allowed, fashion: allowed, clips: allowed, teaser: allowed, motivation: allowed, explainer: allowed, product: allowed, epic: allowed, calm: forbidden}
+detect: |
+  ed_motion: at the seam — one or several "cuts" in a row (cuts on 2–4 neighboring frames of the blurred stretch), around them —
+  SHIFT peaking at ≥8–25 %/frame in one direction on both sides; min sharpness ×0.03–0.25 near the cut; bright blur
+  frames are sometimes flagged as flash. Custom check: gradient anisotropy (coherence ≥0.5, the same blur angle before
+  and after), the histogram switches from the outgoing shot to the incoming one within 1–3 frames.
+  Difference from pan.whip (a whip within one shot): no cut, the histogram does not change, the place is the same.
+  Difference from trans.spin: there ROTATE dominates (tens of degrees per frame), the blur is arc-shaped. From trans.wipe: there two images
+  share the frame at once along a sharp edge, while in a whip transition the whole frame is blurred. From zoom.crash: radial blur, ZOOM events.
+engine: |
+  Real whips: find_motion_peak(A, side='tail', axis) + find_motion_peak(B, side='head', axis) →
+  cut on A's peak frame, B starts from its own peak frame; match(on='motion') checks for a single direction.
+  Digital: transition(kind='whip', dur=0.2, params={dir:'right', angle:0, split:0.5, ease:['inExpo','outExpo'],
+  travel:1.2, blur:'directional', shutter:0.7, edge:'mirror', seam_mix:1}) =
+  A: transform(shift=[[0,0],[-1.2,0]], t=[seam-0.1, seam], ease='inExpo') + blur(kind='directional', angle=0, amount∝speed)
+  B: transform(shift=[[1.2,0],[0,0]], t=[seam, seam+0.1], ease='outExpo') + blur(kind='directional', angle=0, amount∝speed)
+  + sfx('whoosh', at=seam, align='peak'); place the seam on the beat of the track.
+gen_hint: "two clips for a whip transition — clip A: <scene A>, at the end the camera suddenly whip-pans to the right and the whole frame smears into heavy horizontal motion blur; clip B: starts in the middle of the same rightward whip pan with identical horizontal motion blur, quickly decelerates and settles on <subject B> centered in frame"
+commands: ["whip to the right between #3 and #4", "every location change in the travel cut as a whip pan on the beat", "whip transition on the drop, 5 frames of blur", "join #2 and #5 with a camera whip through the sky"]
+related: [pan.whip, tilt.whip, trans.spin, trans.wipe, trans.hidden_cut, zoom.crash]
+evidence: {examples: 8, sources: 8, measured: "13 seams: blur window 3–17 frames @25 fps (median 5 = 0.2 s); 0–9 frames before the cut, 0–5 after; sharpness at the peak ×0.03–0.25; displacement near the peak 20–45 % of the width per frame at 20 fps; blur ≈15–40 % of the width (from gradient anisotropy with calibration); 9 of 13 horizontal; direction before and after matches in all measurable seams; 8 of 13 seams in a uniform area", confidence: high}
+---
+id: trans.wipe
+family: trans
+group: transition
+level: B
+aliases: [wipe, object wipe, body wipe, foreground wipe, lens occlusion, walk-by at the lens]
+what: a wipe — the boundary between shots travels across the frame, most often hidden by an object right at the lens (a passer-by, a column, palms, a back), behind which the new scene opens up
+frames: |
+  1. Entry: a heavily blurred close object appears at the edge of the frame (dark in 5 of 9 examples, light in 2, palms
+     or a back in 2) and moves across the frame, more often right to left (6 of 9); the edge moves by 4–10 % of the frame width
+     per frame @25 fps, up to 27 % in a fast pass.
+  2a. Full occlusion (4 of 9): the object covers 85–100 % of the frame for 4–8 frames @25 fps (0.18–0.32 s), frame brightness
+     drops to 1–30 or rises to 195–220; the cut is inside this window. In the incoming shot an object of similar tone
+     continues moving in the same direction and reveals the new scene.
+  2b. Moving matte (5 of 9): the object covers only 20–45 % of the width, the new scene appears behind its trailing
+     edge, the old one remains ahead of its leading edge — both shots are visible at once for 0.25–0.9 s.
+  3. Exit: the object leaves past the edge, the new scene is fully revealed. The whole move takes 0.25–1.3 s (6–32 frames @25 fps), typically 0.4–0.9 s.
+variants:
+  - passer-by at the lens: a person walks a meter from the camera, dark clothes or a back, full occlusion
+  - columns during a lateral tracking shot: the camera moves sideways, columns 30–35 % of the frame wide pass in 0.3 s, a new scene behind each one
+  - palms over the lens: the subject covers the camera with their hands, the new scene opens between the palms
+  - static shot and the passage of time: several passes through the same frame, after each one a detail of the scene changes
+  - continuation of the object: a dark jacket in the outgoing shot → a similar jacket in the incoming one, moving in the same direction
+  - silhouette as the edge: a person walks across the frame (≈1 width per second), the new scene is right behind their back
+  - toss at the lens: fabric, banknotes, splashes of water or a napkin fly straight into the camera and cover it for 4–6 frames @25 fps (brightness 16–26 for dark fabric or 120–190 for water and white fabric); the incoming shot often starts with the same "material" (water, a cloud) and clears up over 0.3–0.6 s
+  - a graphic soft wipe with no object (a straight feathered edge) — the fallback code variant
+status: hybrid
+fallback: if the source footage has no pass by the camera — code simulates it with a dark or light blurred blob that crosses the frame with full occlusion for 4–6 frames; a moving matte requires an object mask (mediapipe or remove_background); a shot with a passer-by right up against the camera can be generated
+params:
+  dur: 0.25–1.3 s (6–32 frames @25 fps), typically 0.5 s (12 frames)
+  cover_peak: full occlusion of 85–100 % for 4–8 frames (0.18–0.32 s); the cut in the middle of the window
+  edge_speed: 4–10 % of the width per frame @25 fps (1–2.5 widths per second), a fast pass up to 27 %
+  direction: right to left (6 of 9) or left to right; the object has the same direction before and after the cut
+  occluder: with a matte — 20–45 % of the frame width; dark tone (brightness 1–30) or light (195–220); out of focus (texture <0.2 of the background)
+  feather: the edge is blurred over 3–10 % of the frame width
+  match: in the incoming shot an object of the same tone in the same place continues the motion; the camera moves in the same direction at the same speed
+when: a change of location or time without losing continuity — music video, fashion, travel, UGC; "a passer-by carries the subject to a new place"; on a static shot — the passage of time; put the full occlusion on the downbeat; a series of column wipes — as a rhythmic device for 2–4 changes in a row
+avoid: a sharp (in-focus) object — it reads as part of the scene rather than a wipe; different directions of motion before and after; a dark occlusion before a very bright incoming shot with no intermediate brightness; a digital blob on a static frame with no camera motion of its own — it looks pasted on
+sfx: a fabric rustle or an airy whoosh peaking at the moment of full occlusion; with a series of columns — short rhythmic swishes on each column; with a person passing — footsteps
+genres: {fashion: signature, ugc: signature, travel: allowed, viral: allowed, fanedit: allowed, clips: allowed, drama: allowed, calm: allowed, product: allowed, explainer: allowed, teaser: allowed, motivation: allowed, epic: allowed, sport: allowed, phonk: allowed}
+detect: |
+  Custom check by strips: in part of the frame the texture drops below 0.2 of the same zone in clean frames and brightness goes to
+  1–30 or 195–220; this zone widens and shifts in one direction. Type 2a: coverage reaches 85–100 %,
+  the histogram switches inside the window, ed_motion often flags black frames or a cut in the middle.
+  Type 2b: coverage ≤45 %, the histogram changes smoothly over 0.25–0.9 s, two different backgrounds meet at the edge.
+  Difference from trans.whip: there the whole frame is blurred, with no edge. From trans.iris: there the edge is a geometric shape with no
+  physical object. From a fade to black: brightness drops evenly across the whole frame. From a dissolve: the images
+  are mixed across the whole frame, with no edge.
+engine: |
+  Real pass: find_cover_frame(A, side='tail', min_cover=0.85) + find_cover_frame(B, side='head') → cut in the occlusion
+  window; sfx('whoosh', at=cover_mid, align='peak').
+  Moving matte: mask(method='mediapipe_person'|'hf_remove_background', target=occluder, feather=0.04) →
+  matte_wipe(fg=A_mask, reveal='trailing', incoming=B) — B is placed behind the object's trailing edge.
+  Simulation in code: occluder_pass(tone='dark', dir='rtl', dur=0.5, width=1.3, blur=0.1, ease='inOutQuad')
+  + cut(at=middle of the occlusion); or transition(kind='wipe(linear)', dur=0.4, params={angle:0, dir:'rtl', feather:0.08}).
+gen_hint: "<scene A>, a person in dark clothes walks right-to-left very close to the camera lens, completely out of focus, briefly filling the whole frame; next clip starts with the same kind of dark out-of-focus figure filling the frame and moving right-to-left, revealing <scene B>"
+commands: ["passer-by wipe right to left between #3 and #4", "cover the frame with a dark blob and reveal the new location", "palms-over-the-lens transition at 0:08", "a series of column wipes to the beat in the chorus"]
+related: [trans.iris, trans.whip, trans.hidden_cut, trans.set_change, mask.bg_replace]
+evidence: {examples: 9, sources: 9, measured: "frame coverage by strips, from texture and brightness: full occlusion of 85–100 % in 4 of 9 for 0.18–0.32 s, moving matte of 20–45 % of the width in 5 of 9; the whole move 0.25–1.3 s; edge 4–10 % of the width per frame @25 fps (up to 27 %); right to left in 6 of 9; object tone dark 1–30 or light 195–220", confidence: high}
+---
+id: trans.zoom
+family: trans
+group: transition
+level: B
+aliases: [zoom transition, crash zoom transition, zoom-through, zoom punch transition, push-in transition, flying through the frame]
+what: a cut at the peak of a sharp push-in — the outgoing shot accelerates into a detail, the frame blurs radially, and the next shot comes out of the same motion, braking on the new scene
+frames: |
+  1. Acceleration: the outgoing shot pushes in ×1.7–5 over 0.25–0.65 s (6–16 frames @25 fps), speeding up; peak ×1.12–1.38 per frame
+     @25 fps on the last frame; the center is on a detail (a logo, teeth, a shadow on a wall, a point in the sky), 0.49–0.63 of the frame.
+  2. Seam at peak speed: sharpness drops to ×0.12–0.36 (radial motion blur); 0–5 frames of "filler" — solid
+     blur, a bright surface the camera has driven into, or the coarse texture of a screen (colored pixel stripes) when
+     pushing into a display; a jump in brightness is acceptable (driving into a white wall → coming out of a dark scene).
+  3. Exit, "through" variant (3 of 4): the incoming shot continues the push-in while braking — ×1.2–1.75 over 0.25–0.3 s,
+     the first frame ×1.3–1.43 per frame @25 fps, or a long smooth glide ×45 over 1.6 s; the frame quickly regains sharpness.
+  4. Exit, "rebound" variant (1 of 4): the incoming shot starts scaled up ×1.3–1.4 and pulls back to ×1 over 4–8 frames,
+     the blur fades — this is how the typical zoom transition template works.
+variants:
+  - through into a new scene: a push-in on a detail → the new scene continues the push-in and brakes
+  - two-step: a punch-in to a tighter shot of the same object (+×1.3–2.5 over 3 frames), then a cut into the new scene
+  - through screen texture: a push-in into a logo or display down to the colored pixel grid (5 frames), exit into a live-action scene
+  - through light: a push-in into a bright wall or a blown-out area → a new dark scene (the contrast acts as a hit)
+  - rebound: the new scene "pulls back" from a ×1.3–1.4 scale-up to normal in 0.2–0.3 s with blur
+status: code
+fallback: with a small source (1080p and a push-in of ×3+) — upscale the clip's tail or replace the peak of the push-in with blur frames; for the "through texture" variant — generate a macro texture (pixel grid, fabric, skin) for 3–5 frames
+params:
+  out_scale: ×1.7–5 over 0.25–0.65 s (6–16 frames @25 fps), ease inExpo/inCubic, peak ×1.12–1.38 per frame @25 fps
+  in_scale: through — ×1.2–1.75 over 0.25–0.3 s (6–8 frames @25 fps), ease outExpo, first frame ×1.3–1.43; long — up to ×45 over 1.6 s; rebound — ×1.35 → ×1 over 0.2–0.3 s
+  seam: at peak speed; filler 0–5 frames (blur, texture, burn-out)
+  blur: zoom_blur, strength ∝ scale speed; at the seam sharpness ×0.12–0.36
+  center: on A's detail and on B's center of interest (track(face|object)), spread 0.49–0.63
+  total: 0.4–1 s from the start of the acceleration to the landing
+  match: ideally A and B have a similar shape or tone in the center (bright into bright, circle into circle); otherwise the blur hides the seam
+when: a change of location in a travel cut and promos; the entry into the drop and a change of track section; "here's where we're headed" — a push-in into a map, a logo, a screen; an accent cut once every 10–20 s; pairs well with trans.whip as a change in the direction of motion
+avoid: calm, slow stories; frame A without a clear detail in the center (a push-in "into nowhere"); different centers of interest in A and B (the eye jumps); repeating it too often — causes motion sickness; low resolution without upscaling (mush at ×3+)
+sfx: a rising whoosh or riser on the acceleration, peaking on the cut; on the landing — a hit or bass on the beat; when pushing into a screen — a short digital crackle
+genres: {travel: signature, viral: signature, fanedit: signature, phonk: allowed, sport: allowed, product: allowed, teaser: allowed, ugc: allowed, clips: allowed, motivation: allowed, epic: allowed, fashion: allowed, calm: forbidden}
+detect: |
+  ed_motion: ZOOM-IN with ease-in (50 % of the travel after 0.7 of the duration) ×1.7–5 → a cut (often 2–3 "cuts" in a row on the blur
+  frames) → ZOOM-IN again with ease-out and its peak on the first frame (or ZOOM-OUT ×0.75–0.88 in the "rebound" variant);
+  min sharpness ×0.12–0.36 at the seam; scale center 0.49–0.63 before and after.
+  Difference from zoom.crash: there is no cut there, the jerk ends on a detail of the same scene. From trans.portal: there the camera
+  passes through a real opening (a screen, a mouth, a door) and the seam is at the moment it fills the frame. From zoom.infinite: there the speed is constant
+  with nested links, no acceleration and braking. From trans.whip: shift dominates there, not scale.
+engine: |
+  transition(kind='zoom', dur=0.5, params={out_scale:3, in_scale:1.5, mode:'through'|'punch', center:track(target),
+  ease:['inExpo','outExpo'], blur:'zoom', filler:0|'texture'|'white', filler_frames:0–5})
+  = A: transform(scale=[1, 3], center=target_A, t=[seam-0.35, seam], ease='inExpo') + blur(kind='zoom', amount∝speed)
+  + B (through): transform(scale=[1, 1.5], center=target_B, t=[seam, seam+0.28], ease='outExpo') + blur(kind='zoom')
+  + B (punch): transform(scale=[1.35, 1], t=[seam, seam+0.25], ease='outCubic') + blur(kind='zoom')
+  + sfx('riser'|'whoosh', at=seam-0.35, align='attack') + sfx('impact', at=seam). The seam lands on the beat of the track.
+gen_hint: "two clips for a zoom transition — clip A: <scene A>, the camera rapidly accelerates forward straight into <detail at frame center> with heavy radial motion blur; clip B: starts with heavy radial zoom blur, the camera keeps moving forward and quickly decelerates, settling on <scene B>"
+commands: ["zoom transition between #1 and #2 on the drop", "fly into the logo on the map and come out on the street", "crash transition through the light into the dark scene at 0:09", "two-step push-in on a detail and a cut into the next scene"]
+related: [zoom.crash, trans.portal, zoom.infinite, trans.whip, trans.hidden_cut]
+evidence: {examples: 4, sources: 3, measured: "ed_motion: acceleration ×1.75–5.1 over 0.3–0.65 s, peak ×1.15–1.5 per frame at 20 fps (≈×1.12–1.38 @25 fps); sharpness at the seam ×0.12–0.36; through exit — ×1.2–1.75 over 0.25–0.3 s with a peak of ×1.4–1.57 per frame on the first frame, or ×45 over 1.6 s ease-out; rebound ×0.75 over 0.2 s; filler 0–5 frames (blur, pixel grid, burn-out); center 0.49–0.63", confidence: medium}

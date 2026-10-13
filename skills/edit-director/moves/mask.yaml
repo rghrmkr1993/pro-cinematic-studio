@@ -1,0 +1,225 @@
+id: mask.bg_replace
+family: mask
+group: effect
+level: B
+aliases: [background replacement, chroma key, green screen, keying, background removal]
+what: the subject is cut out of their shot and placed on a different background — a landscape, an interior, outer space, a rushing road; the background can be swapped to the rhythm, and a "cheap" chroma key can be played as a deliberate device
+frames: |
+  1. The subject — the same take and the same pose, no camera movement; takes up 60–90 % of the frame height
+     (full-length or waist-up), stands in one spot for the whole episode.
+  2. The background is replaced: a still picture (the sky, an interior, a plane by the airstairs) or a moving plate —
+     for "driving", sideways blur streaks or a road rushing toward the camera; the subject stays still meanwhile.
+  3. Background swaps to the rhythm: every 8–10 frames @20 fps (0.4–0.5 s ≈ a beat at 120–150 BPM), the subject's pose
+     continues through the cut; the last background holds longer — up to 1.5 s.
+  4. A deliberately "low-budget" variant: first a green screen with a polygonal cutout is visible, an eyedropper cursor
+     clicks the green — and the background turns into a gray-and-white transparency checkerboard; then backgrounds
+     with visible watermarks and a hand cursor are slipped under the subject, with no shadows and no light matching.
+variants:
+  - honest replacement: a clean mask, light and perspective matched — the subject "ends up" somewhere else
+  - a background on every beat: the same dance on 4–5 different backgrounds in a row (interiors, streets), 0.4–0.5 s each
+  - driving on a plate: the subject in a car, behind them sideways blur streaks or a rushing road
+  - sky and space: the subject on clouds, then against a planet, with graphic stickers on top
+  - meta chroma key: a green screen, an eyedropper cursor, a transparency checkerboard, a photo plate smaller than the frame floating on the checkerboard
+status: hybrid
+fallback: mask — mediapipe selfie or hf_remove_background (hair and motion blur — only the latter); a green screen — chroma key; backgrounds — the user's clips, a search in the source footage or generation of empty backgrounds with consent
+params:
+  mask: hf_remove_background or chroma(#00b140 ± 15 % hue), feather 1–2 px, green spill suppression
+  subject: 60–90 % of the frame height, the position unchanged as backgrounds swap
+  bg_swap: every 0.4–0.5 s (10–12 frames @25 fps) on the beat; the last background 1.5–2 s
+  plate_drive: the plate shifts by 3–8 % of the frame width per frame + directional blur of 2–5 % of the width; a slight shake of the subject of 0.3–1 %
+  match: for an honest replacement — matching horizon height (±5 % of the frame), light direction and grain; a shadow under the feet at 20–40 % opacity
+  lofi_extras: a checkerboard with cells of 1–1.5 % of the width (#cccccc/#ffffff), a cursor of 3–4 % of the height, a polygonal cutout, an unbranded watermark at 30–50 % opacity
+when: memes and humor (a deliberately cheap chroma key), "me everywhere" — a dance through different places on every beat, travel daydreams, an explainer presenter against a screenshot or a chart; background swaps — on the beat, speed up to 1/8 on the drop
+avoid: hair and fast hands with a rough mask — the edges "boil"; mismatched light when realism is needed; background swaps off the rhythm; more than 8–10 backgrounds in a row without a pause
+sfx: on every background swap — a click or a short swish on the beat; in the meta variant — a mouse-click sound on the eyedropper
+genres: {viral: signature, ugc: signature, fanedit: allowed, explainer: allowed, travel: allowed, fashion: allowed, motivation: allowed, teaser: allowed, epic: allowed, product: allowed}
+detect: |
+  The subject's pose and position are continuous, although every 8–12 frames the surroundings behind them are swapped by a cut.
+  Compositing cues: a 1–3 px halo (light or green) along the outline, no shadow at the feet, the light on the subject does not match the background.
+  ed_motion: cuts at equal intervals with an unchanged medium shot; when "driving" the background shifts but the subject does not (overlay-mask ≥0.15, high nonrigid).
+  Meta cues: a checkerboard of two gray tones, an arrow or eyedropper cursor, watermarks on the background.
+  Unlike mask.silhouette_window: there the figure is a window into another picture; here the figure is real and the surroundings change.
+  Unlike changing locations with real footage: there the angle and the light on the subject change.
+engine: |
+  mask(method='hf_remove_background'|'mediapipe_selfie'|'chroma(key=#00b140, tol=0.15)', feather=0.002)
+  + composite(layers=[bg_i, shadow(opacity=0.3), subject], blend='normal'), bg_i changes via beat_sync(event='bg_swap', grid='1/4')
+  + transform(shift=[[0,0],[-0.05*D,0]], t=[t0,t0+D], layer='bg') + blur(kind='directional', amount=0.03, layer='bg')  # driving
+  Meta chroma key: shape(kind='checkerboard', cell=0.012) instead of the background + shape(kind='cursor_eyedropper', path=[...], t=[t0,t0+0.5]) + sfx('click', at=t0+0.5)
+gen_hint: <subject> performing in front of an evenly lit green screen, full body, static locked-off camera, no shadows on the backdrop; separate clean background plate of <location>, eye-level, static, no people
+commands: ["cut me out and put me on background #7", "swap the background behind the subject on every beat in the chorus", "a cheap chroma-key meme with a checkerboard and a cursor", "put the subject in a car over a rushing road"]
+related: [mask.silhouette_window, mask.double_exposure, mask.window_replace, trans.set_change, cut.quick]
+evidence: {examples: 9, sources: 1, measured: "background swap every 8–10 frames @20 fps (0.4–0.5 s), the last background up to 1.5 s; the subject 60–90 % of the frame height, the camera static; \"driving\" plates — 3 of 9; watermarks on the background — 4 of 9; transparency checkerboard — 2 of 9; cursors — 2 of 9", confidence: medium}
+---
+id: mask.double_exposure
+family: mask
+group: effect
+level: B
+aliases: [double exposure, double exposure in a silhouette, multiple exposure, silhouette double exposure, portrait with a landscape inside]
+what: the silhouette of a person or an animal on a light background with a second shot showing through inside it — a forest, a city, a road, foliage; the facial features remain semi-transparent — an image of the "inner world"
+frames: |
+  1. The background is light and empty: white or cream, L 190–247 (≈RGB 247/247/247 or 240/228/201) — 70–90 % of the frame.
+     The silhouette — a head in profile, a figure or an animal — takes up 9–28 % of the frame, the edge is soft, with strands of hair and fur.
+  2. Inside the silhouette — a second shot blended with "lighten": where the portrait is dark, the landscape shows; an eye, the line
+     of the nose, a beard, hair, the texture of fur remain 20–40 % visible. The horizon line of the inner scene
+     often runs along the neck or shoulders.
+  3. Little motion: the inner layer drifts slowly or a tiny figure walks across it; 1–17 % of the pixels
+     change; the shot holds for 2.7–10.6 s.
+  4. Intro and outro: a full-screen scene shrinks into a profile (×0.79 over 1.75 s) and a white background floods in around it;
+     or the other way round — the silhouette dissolves in and the frame evenly darkens over ≈4 s (mean brightness 230 → 14), leaving only
+     the inner scene (a night city) — a transition onward.
+variants:
+  - animal landscape: a bear, a whale on white, inside — mountains with a wanderer or a forest with light rays
+  - dream profile: a woman's or man's profile, inside — a road, a desert or a forest with a small person
+  - foliage in a figure: the whole figure in warm sepia filled with branches and leaves, the face reads by its edge
+  - body as a window: the face stays normal, while the shoulders and chest are filled with a sunset
+  - shrink-in intro: the scene shrinks into a profile, a white background emerges around it
+  - outro into the scene: the background darkens to black, the inner city remains — a smooth transition to the next shot
+status: hybrid
+fallback: a portrait on a white background is blended without a mask (screen); for ordinary shots — mediapipe selfie or hf_remove_background to make the background white; suitable portraits and landscapes — a search in the source footage or generation with consent
+params:
+  background: "#f7f7f7 (neutral) or #f0e4c9 (warm sepia), L 190–247"
+  silhouette: 10–30 % of the frame (full-length, an animal) or 40–70 % (a large profile); feather 1–3 px, keep the strands
+  portrait: B&W or sepia, contrast +20–30 %, deep shadows — the landscape will show up in them
+  blend: screen or lighten (the landscape over the portrait), facial features 20–40 % visible; limit with the silhouette mask
+  inner: a landscape with a clear horizon line, the horizon at the level of the neck/shoulders; a drift of 0.5–2 % of the frame per second or a small walking figure
+  grade: monochrome or warm sepia, saturation 15–35 %
+  intro: scene scale ×1.25 → ×1 (shrinking into the silhouette) over 1.5–2 s, ease linear
+  outro: the frame goes white → black over 3–4 s linearly, the inner scene remains
+  duration: 3–10 s (75–250 frames @25 fps)
+when: intro and titles, "the subject's thoughts and dreams", the bond between a person and a place (travel, a hometown), memory and nostalgia, a calm opening before things build up; hold it long, under slow, drawn-out music or a pause before the drop. Once per video
+avoid: a dark or busy portrait background without a mask — the effect turns to mush; a landscape without a clear horizon and shape; quick cutting; two bright layers of equal density (it is unclear what matters most)
+sfx: soft ambience, wind or nature from inside the picture, a swell on the intro; on the outro to black — a fading hum
+genres: {travel: allowed, motivation: allowed, drama: allowed, calm: allowed, epic: allowed, teaser: allowed, fashion: allowed, fanedit: allowed}
+detect: |
+  A light empty background L>190 takes up 70–90 % of the frame; a compact dark silhouette inside which
+  a second scene is visible (a horizon line, trees, city lights), while the features of the portrait show through;
+  the edge of the silhouette is soft, not cut out. Little motion (1–17 % of the pixels), duration 3–10 s.
+  ed_motion: "no significant global motion" or a slow ZOOM-OUT ×0.8 on the intro; on the outro — a series of black frames with the inner scene unchanged.
+  Unlike mask.silhouette_window: there the window is opaque with a hard edge, the features of the portrait are not visible.
+  Unlike trans.double_exposure: there two full shots are overlaid entirely, without a silhouette or a light background.
+engine: |
+  mask(method='mediapipe_selfie'|'hf_remove_background', feather=0.003) → portrait background = solid('#f7f7f7')
+  + color(params={desaturate: 1.0, contrast: 1.25}, layer='portrait')
+  + composite(layers=[portrait, inner(clip, drift=0.01/s)], blend='screen', mask=silhouette, inner_opacity=0.8)
+  + color(lut='sepia_warm' | 'mono')
+  Intro: transform(scale=[1.25, 1], t=[t0, t0+1.75], ease='linear', layer='inner') + fade of the background from transparent to white
+  Outro: color(params={bg: '#f7f7f7' → '#000000'}, t=[t1, t1+3.5]) — the inner layer remains
+gen_hint: silhouette double exposure, side profile of <person> on a clean white background blended with <landscape>, the landscape visible inside the head, facial features softly visible, minimal, monochrome or warm sepia
+commands: ["double exposure: the subject's profile with a forest inside", "intro — a silhouette with a city inside, then go into the city", "fill the figure with foliage in sepia", "make a bear with mountains inside for the title sequence"]
+related: [mask.silhouette_window, trans.double_exposure, mask.bg_replace, fx.xray]
+evidence: {examples: 7, sources: 5, measured: "background L 192–255 in all 7 (in two — only at the start or the end), warm cream in 3; silhouette 9–28 % of the frame; motion 1–17 % of the pixels in static shots; shots of 1.4–10.6 s; shrink-in intro ×0.79 over 1.75 s (brightness 115→160); outro — mean brightness 230→14 linearly over 4 s", confidence: medium}
+---
+id: mask.silhouette_window
+family: mask
+group: effect
+level: B
+aliases: [masking, mask, silhouette window, window in a silhouette, cutout mask, track matte, matte, silhouette fill, silhouette cutout]
+what: the silhouette of a person, face or object becomes a window — inside it another video, a texture or a color, outside it the original shot or a frozen photo; a surreal collage-style accent
+frames: |
+  1. The base is a still or almost still frame (45–94 % of the pixels do not change at all): an old B&W photo,
+     a frozen shot, a white sheet. The mask is the outline of a head, a face, a whole figure or an animal with a hard edge,
+     "as if cut with scissors" (feather 0–2 px).
+  2. The window takes up 8–21 % of the frame (a face, a head) or the whole figure; inside, a life of its own goes on — a sunset with drifting
+     clouds, a small glowing scene inside the head, paper cutouts. Motion only inside the window.
+  3. Fill rhythm: a "boiling" collage texture changes every frame at 16–17 fps; flat color
+     fills of silhouettes switch every 6–13 frames @50 fps (0.12–0.26 s = 3–6 frames @25 fps),
+     neighboring figures offset by 2 frames, out of sync.
+  4. Accent: at the cut the mask inverts (a black silhouette against a light sky ↔ white on black) or there is
+     a push-in ×3 over 1.5 s into the next nested silhouette.
+variants:
+  - face window in an old photo: a B&W portrait, instead of the face — a color landscape or someone else's face, 8–21 % of the frame moves
+  - scene inside the head: a dark profile on black, inside — a small glowing world
+  - collage fill: the silhouette of an animal or a rider on white, inside — a new cutout of packaging or newspaper every frame
+  - color silhouettes: people filled with flat acid colors with a pattern, the colors change to the rhythm every 0.12–0.26 s
+  - silhouette matte: a person as a pure black silhouette against a light sky (30–39 % of the frame black), inverting at the cut to white on black
+  - nested profiles: inside a profile, the next profile, a push-in ×3 over 1.52 s — an endless plunge
+  - dark mask over the scene: a black foreground figure creeps in and hides part of the frame
+  - foreground wipe: a person or a door jamb passes by the lens and "wipes" the frame into the next one
+status: hybrid
+fallback: mask — mediapipe (person/selfie/face) or hf_remove_background; old portraits for the collage — a search in the source footage or generation with consent; without segmentation — a window of a simple shape (a circle, an oval, a rectangle) in pure code
+params:
+  mask_source: person / face / object; frame-by-frame tracking; for a photo — one mask for the whole shot
+  edge: hard 0–2 px (cutout) or a feather of 1–3 % of the frame (the dreamy variant)
+  window_area: 8–25 % of the frame (a head, a face) or the whole figure
+  inside: video with slow motion (clouds, lights, water, a city), a texture or a flat color
+  outside: the original shot, a freeze or a B&W photo; outside, saturation and contrast are lower than in the window
+  fill_cycle: 0.12–0.26 s per color (3–6 frames @25 fps); the "boiling" collage variant — a new texture every 1–2 frames at 12–17 fps
+  palette_flat: "#00f0ff, #ff2bd6, #e01010, #1020ff + a pattern on top"
+  invert: 1 frame on the cut or a downbeat
+  nested_zoom: ×3 over 1.5 s (≈×1.05/frame), center — in the next silhouette
+  duration: 1.5–10 s; hold the window ≥2 s so the eye reads both layers
+when: intro and outro, "the subject's thoughts", a dream or a memory, a surreal music video, a fashion collage; color silhouettes — on the chorus or drop, switching on 1/8; inversion — on a downbeat. Once or twice per video
+avoid: a ragged or jittery mask — gives the fake away; a small figure (<10 % of the frame height); two saturated layers of equal brightness — a mess; flickering fills for longer than 4 s in a row are tiring
+sfx: the window appearing — a soft swell or reverse_whoosh; fill changes — a click in time; inversion — impact; collage — paper rustle
+genres: {fashion: allowed, fanedit: allowed, viral: allowed, teaser: allowed, drama: allowed, travel: allowed, calm: allowed, product: allowed, motivation: allowed, explainer: allowed}
+detect: |
+  Temporal variance map: ≥45 % of the frame is static, a compact area with a sharp boundary moves,
+  shaped like a head, a face or a figure. Fill variant: person-shaped areas of a uniform saturated color
+  (saturation >70 %), the color changes every 3–13 frames. Matte variant: ≥60 % of the pixels almost black
+  or white, saturation ≈0.
+  ed_motion: most often "no significant global motion"; the nested variant — ZOOM-IN ×3 almost linear, center near the frame edge.
+  Unlike mask.double_exposure: there the layers are semi-transparent and blended, here the window is opaque.
+  Unlike mask.bg_replace: there the person stays real and the background changes.
+  Unlike a split screen: the boundaries are silhouettes, not straight lines.
+engine: |
+  mask(method='mediapipe_person'|'face'|'hf_remove_background', feather=0.005)
+  + composite(layers=[outside(freeze|bw), inside(clip|texture|solid), mask], blend='normal')
+  + fill_cycle(colors=['#00f0ff','#ff2bd6','#e01010','#1020ff'], every='1/8', phase_offset=2)  # color silhouettes
+  + mask(invert=True, t=[beat, beat+0.04])  # inversion on the beat
+  + transform(scale=[1, 3], center=track(next_silhouette), t=[t0, t0+1.5], ease='linear')  # nested profiles
+gen_hint: surreal paper collage, silhouette of <subject> cut out with clean hard edges, inside the silhouette a moving <scene>, outside a still black-and-white photograph, minimal background
+commands: ["fill the subject's silhouette with a sunset", "turn the head in #3 into a window to another world", "color silhouettes on the chorus, switching on every eighth", "cut the face out of the photo and show video #5 inside it"]
+related: [mask.double_exposure, mask.bg_replace, mask.window_replace, trans.double_exposure, zoom.infinite]
+evidence: {examples: 10, sources: 10, measured: "window 8–21 % of the frame, static part 45–94 %; color fills change every 6–13 frames @50 fps (0.12–0.26 s), neighboring figures offset by 2 frames; collage texture — every frame at 16.7 fps; matte: 30–39 % black, inversion at the cut; nested push-in ×3.02 over 1.52 s, center (0.94, 0.42)", confidence: medium}
+---
+id: mask.window_replace
+family: mask
+group: effect
+level: C
+aliases: [window replacement, window comp, view out the window, window into another time, window mask, screen replacement, window cells, window strips]
+what: ready-made "windows" inside the frame — glass, grid cells, horizontal strips — become masks for another video — time flies by outside the window, the cells of a fence fill up with pictures, strips join different shots by one shape
+frames: |
+  1. The base is a static camera and an almost static scene: a room with a window, a chain-link fence,
+     a round object in the center. Outside the windows ≈1 % of the pixels change per frame.
+  2. The mask is the geometry of the scene itself: the window glass (≈17 % of the frame, upper half), the diamonds of a mesh
+     (0.7–1.2 % of the frame per cell), 3–5 horizontal strips ≈10–25 % of the frame high.
+  3. The window has its own timeline: a sped-up street (in the window area 52 % of the pixels change every frame),
+     light and passers-by race past, while the people in the room sit almost motionless; toward the end the sun flares in the window.
+  4. The cells fill up one by one: a new sticker picture every 3–6 frames @14 fps (0.2–0.4 s),
+     the stickers rotated 45° to match the grid, after 4 s 10+ cells are filled.
+  5. Strips: each holds its own shot with a similar round object (a speaker, a bowl, a wheel, a steering wheel),
+     the center of the object matches across all strips; the layout and content of the strips change every ≈1–3 frames — a stop-motion collage.
+variants:
+  - time outside the window: the interior is frozen, behind the glass a sped-up day, people and light rush past
+  - grid cells: a fence or a grille as the layout, pictures are "pasted" into the diamonds one by one
+  - strips of one shape: the frame is cut into horizontal strips, each with a different object of the same shape at the same point
+status: hybrid
+fallback: window — a four-corner (planar) track or a luma key on the glass; without a track — only with a static camera; a street time-lapse — a search in the source footage or generation with consent; strips and cells are drawn in code
+params:
+  window_mask: a quadrilateral on the corners of the glass or a luma key (the glass brighter than the interior), feather 1–2 px; takes up 10–25 % of the frame
+  inside: a time-lapse ×20–100 or a different place; the window exposure 1–2 stops brighter than the interior
+  room: a freeze or an almost static take; motion outside the window ≤1–2 % of the pixels
+  grid: cell pitch 6–10 % of the width, 45° rotation, a sticker covering 85–100 % of a cell, a new one every 0.2–0.4 s (5–10 frames @25 fps) or on every beat
+  strips: 3–5 strips 10–25 % of the frame high, content changes every 1–3 frames, the object center matches to within ±3 % of the frame
+  duration: 1.5–5 s
+when: the passage of time and waiting (outside the window day turns into night while the subject sits), a dream of escape, a "window into another city" in travel; cells on every beat — for lists and collages; strips of one shape — a product or a selection of objects in a music video
+avoid: a moving camera without a track — the window will "float"; glass with reflections and people by the window overlapping the mask; the light outside the window contradicting the light in the room when the look is meant to be realistic
+sfx: time outside the window — a swelling city hum or wind, a swoosh on the sun flare; cells — a pop or click for every sticker; strips — rapid shutter clicks
+genres: {travel: allowed, drama: allowed, calm: allowed, fashion: allowed, product: allowed, fanedit: allowed, viral: allowed, teaser: allowed, explainer: allowed}
+detect: |
+  Temporal variance map: a compact zone with straight boundaries (a window, a cell, a strip) changes every frame,
+  the rest of the frame is static (≤1–2 % of the pixels). Grid — small local changes of 0.7–1.2 % of the frame
+  at a step of 3–6 frames, each time in a new cell. Strips — horizontal breaks across the full width,
+  the object in the center keeps its outline as the texture changes.
+  ed_motion: "no significant global motion", while the frame diff is high in one zone.
+  Unlike mask.silhouette_window: the window is defined by the architecture or a grid, not by the subject's silhouette.
+  Unlike a split screen: the windows are part of the filmed scene, not graphic panels on top.
+engine: |
+  mask(method='quad', target=track(quad:window), feather=0.002) | mask(method='luma_key', thr=0.8, region=[0.2,0.05,0.6,0.5])
+  + composite(layers=[room(freeze), inside(clip, speed=40)], blend='normal') + color(params={exposure: +1}, layer='inside')
+  Cells: grid_cells(step=0.08, angle=45) + composite(cell_i ← image_i, t=beat_i, anim='pop 3 frames') + sfx('click', at=beat_i)
+  Strips: split_screen(layout='hstrips', n=4, heights=[0.1,0.25]) + match(on='shape') on the object center + source changes every 0.04–0.12 s
+gen_hint: static shot of a quiet room with a large window, people sitting still inside, outside the window a fast time-lapse of a busy street with shifting sunlight, locked-off camera
+commands: ["let time fly by outside the window while we sit", "fill the fence cells with pictures on every beat", "cut the frame into strips with the round objects from #2–#6", "put the view from #9 into the window"]
+related: [mask.silhouette_window, mask.bg_replace, time.timelapse, layout.split_screen, gfx.collage]
+evidence: {examples: 3, sources: 3, measured: "window ≈17 % of the frame: in its area 52 % of the pixels change per frame, in the room 1 %, frame difference 6–12 vs 0.2–1.5 levels; cells 0.7–1.2 % of the frame, a new one every 3–6 frames @14.3 fps; strips 3–5 of them, changing every 1–3 frames @33 fps (≈)", confidence: low}

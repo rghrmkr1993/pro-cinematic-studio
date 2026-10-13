@@ -1,0 +1,387 @@
+id: zoom.crash
+family: zoom
+group: camera
+level: B
+aliases: [crash zoom, snap zoom, crash, abrupt zoom-in, zoom hit]
+what: a lightning-fast zoom-in from a wide or medium shot onto a face or a detail — in half a second, with motion blur and a hard landing
+frames: |
+  1. Setup: 0.3–0.7 s of a static wide or medium shot, the target is visible but small.
+  2. Snap: over 8–16 frames (25 fps) the scale grows by 2.5–9 times. The fastest frames are in the middle of the move
+     (up to ×1.3–1.5 per frame), and that is also where the strong radial motion blur is: sharpness drops by 2–10 times.
+  3. Landing: the frame snaps onto a close-up of a face, eyes or an object; the target is often off-center —
+     the zoom heads straight for it, and the frame "slides" on the way.
+  4. After: a hold on the close-up from 0.4 s — or a cut right at the moment of landing.
+variants:
+  - crash with a snap-back: immediately the same snap back, the whole cycle 0.8–1 s
+  - crash through the target: at peak speed — a cut or a flash into the next scene
+  - two-step: two snaps in a row with a pause of 2–4 frames
+status: code
+fallback: if the target is small, the source is 1080p and ×4+ is needed — upscale the segment, move the landing to a closer shot from the source footage, or generate a close-up and swap it in at the blur peak
+params:
+  scale: ×2.5–9 (typically ×3–5)
+  duration: 8–16 frames @25 fps (0.3–0.65 s), rarely up to 1 s
+  peak_rate: ×1.2–1.5 per frame
+  ease: inOutCubic or linear, no slow tail
+  center: on the target (track(face) / object), offset from the frame center up to 0.3
+  motion_blur: zoom_blur, strength follows the speed; maximum in the middle of the move
+  hold_before: 0.3–0.7 s of static
+  hold_after: from 0.4 s, or a cut on the landing
+  resolution: a final ×3 or more — needs 4K or an upscale
+when: a punchline, a reaction, a "realization", the entry into the drop or a downbeat hit, an accent on a detail; no more than once every 4 bars
+avoid: a calm or luxury tone; the target is blurry or leaves the frame; several crashes in a row (the impact gets lost); a low-resolution source with no headroom
+sfx: a short whoosh or riser over the whole snap, an impact at the moment of landing; in comedy — a scratch or a "bonk"
+genres: {viral: signature, phonk: signature, fanedit: signature, clips: signature, drama: allowed, sport: allowed, teaser: allowed, ugc: allowed, motivation: allowed, product: allowed, calm: forbidden}
+detect: |
+  ed_motion: ZOOM-IN ×2.5+ in ≤0.7 s; peak ≥×1.2/frame; min sharpness ≤×0.55 in the middle of the move;
+  before the move — static (no events for 0.3+ s), after — a hold or a cut; nonrigid < 0.3.
+  Unlike zoom.punch: a punch takes 1–3 frames, an instant change of shot size without motion blur.
+  Unlike zoom.in: zoom.in peaks at ≤×1.1/frame and sharpness does not drop.
+engine: |
+  transform(scale=[1, S], center=track(target), t=[t0, t0+D], ease='inOutCubic')
+  + blur(kind='zoom', amount∝speed, center=target, t=[t0, t0+D])
+  + sfx('whoosh', at=t0, align='attack') + sfx('impact', at=t0+D)
+  S=3–5, D=0.4 s; put the landing (D) on a beat of the track. The snap-back variant — a mirrored transform after 0.3–0.6 s.
+gen_hint: aggressive crash zoom from a static wide shot straight into <subject's face>, very fast snap zoom with heavy motion blur, lands in a tight close-up and holds
+commands: ["crash zoom at 0:07", "crash zoom on #5 at the moment of impact", "sharp zoom-in on the face on the drop", "crash with a snap-back on the line"]
+related: [zoom.punch, zoom.in_out, zoom.in, zoom.extreme]
+evidence: {examples: 6, sources: 6, measured: "×2.7–9.2 in 0.42–1.1 s (4 of 6 — 0.42–0.7 s); peak ×1.2–1.5/frame; sharpness in the middle drops to ×0.08–0.53; in 5 of 6 there is 0.3–0.7 s of static before the snap; S-curve or linear", confidence: high}
+---
+id: zoom.extreme
+family: zoom
+group: camera
+level: C
+aliases: [super zoom, extreme zoom, zoom across scales, from wide shot to detail in one move]
+what: a zoom-in or zoom-out with a huge scale range (×10–×100 and more) — from a detail to a whole location or the reverse, cut together from several shots into one move
+frames: |
+  The move goes in stages: each segment is a smooth zoom of ×3–13, with a hidden shot swap between them (motion blur,
+  a flash of 1–2 frames, a pass through a dark opening — a mouth, a barrel, a window). The zoom-in accelerates toward the target:
+  half of the distance falls in the last third of the time; it ends with a pass through the target into a new
+  scene. The zoom-out reveals ever larger surroundings: person → site → building → district.
+  No single lens covers such a range — it is an editing illusion.
+variants:
+  - zoom "inside": into a mouth, an eye, a barrel, a keyhole — coming out in another scene
+  - pull-out to the scale of the place: from feet or a face to a stadium, a factory, a city
+  - with a crash at the end: an accelerating ×2 zoom-in and a snap through motion blur onto the subject
+status: footage
+fallback: one shot in code gives at most ×2–3; the other stages — shots of the same place at different shot sizes from the source footage, outpaint for the zoom-out, or generation with the same center
+params:
+  range: ×10–×100 in total, 2–4 stages of ×3–13
+  duration: 1.2–3 s for the whole move
+  ease: zoom-in — inExpo toward the target; zoom-out — linear or outQuad
+  seams: at maximum speed, motion blur over 2–4 frames, across a dark or flat-colored area
+  center: one point through all stages
+when: intros and outros showing the scale of the place, a transition into an "inner world", a comic pass into a detail, a final reveal
+avoid: there are no shots of the needed sizes and generation has not been agreed; calm and UGC videos
+sfx: a long riser or whoosh with rising pitch; on the pass-through — a hit or a "pop"; on the pull-out — the ambience of the place building up
+genres: {epic: signature, teaser: signature, fanedit: allowed, travel: allowed, sport: allowed, motivation: allowed, viral: allowed}
+detect: "ed_motion: cumulative scale ≥×10 in one direction in ≤3 s; several ZOOM segments with a common center; at the joins — motion blur, a flash or an abrupt histogram change (cuts inside the move)"
+engine: |
+  multi_scale_zoom(stages=[wide, mid, close], center=track(target), per_stage=0.6–1, ease='inExpo',
+  seam=blur(kind='zoom')+flash(dur=2 frames)); missing stages — outpaint (zoom-out) or edit-gen (generation with the same center).
+gen_hint: extreme continuous zoom from <a vast wide view> down to <a tiny detail> (or the reverse), orders-of-magnitude scale change in one seamless accelerating move, centered on the same point
+commands: ["extreme zoom from the city down to the subject in the intro", "super zoom into the mouth and out into the next scene", "pull out to the scale of the place at the ending"]
+related: [zoom.infinite, zoom.crash, zoom.out]
+evidence: {examples: 5, sources: 5, measured: "×13–×31 and more in total; stages ×2–4.8; zoom-ins accelerate (50 % of the distance at 0.70–0.76 of the time); 2 of 5 — a pass through a dark opening into a new scene; 2 — pull-outs to the scale of the place", confidence: medium}
+---
+id: zoom.in
+family: zoom
+group: camera
+level: A
+aliases: [zoom in, zoom, zoom push-in, optical zoom-in, zooming]
+what: smooth zoom-in toward the subject without changing the camera position — only the scale grows, perspective and parallax stay the same
+frames: |
+  The shot starts as a wide or medium shot. The image enlarges evenly: background and subject grow
+  equally, with no parallax — this is what separates a zoom from a camera push-in. The speed is constant, like a
+  zoom rocker: no acceleration or deceleration. The zoom center sits on the subject (a face, a figure in a large
+  space), so by the end the frame "lands" on it. Motion blur only on the fast variants.
+  Ending — a medium shot or close-up with a hold.
+variants:
+  - toward emotion: zoom-in on the face at the peak moment (a shout, a line), ×3–5 in 1–1.5 s
+  - toward a figure in its surroundings: from a facade or landscape to a small person, ×3 in 1.5 s
+  - with a rack focus: the foreground goes soft, the zoom heads to the distant subject
+status: code
+fallback: with a 1080p source and ×2+ — upscale; if honest parallax is needed (a camera push-in) — the cam.dolly_in move from the source footage, or generation
+params:
+  scale: ×1.5–5 per move (typically ×2.5–3.5)
+  duration: 0.8–3.5 s (typically 1–1.5 s)
+  rate: 2–10 % of scale per frame @25 fps, constant
+  ease: linear; a light inQuad on the first frames is allowed
+  center: on the subject, not at the frame center (offset 0.1–0.4)
+  motion_blur: off; on only at speeds above 8 % per frame
+  resolution: ×2+ on 1080p — ceiling ×1.5–1.8 without visible loss, beyond that upscale or 4K
+when: lead into an emotion or a detail, connect a wide shot with the subject, accent a line; build and the lead-in to the drop; after the move hold at least 0.5 s
+avoid: choppy editing with shots shorter than 1 s (the move does not read); the subject leaves the frame; two zooms in a row in the same direction; low resolution at ×2+
+sfx: usually no SFX; support — the music building up or a soft swell; on the fast version — a quiet whoosh
+genres: {drama: signature, epic: allowed, motivation: allowed, teaser: allowed, clips: allowed, explainer: allowed, calm: allowed, fanedit: allowed, travel: allowed}
+detect: |
+  ed_motion: a single ZOOM-IN ×1.5+ with near-linear ease, peak ≤×1.1/frame; nonrigid < 0.15 (no parallax —
+  so it is optics or a digital crop, not camera movement); center stable; no rotation; sharpness barely drops.
+engine: |
+  transform(scale=[1, S], center=track(subject), t=[t0, t0+D], ease='linear') — S=1.5–3.5, D=0.8–2 s;
+  for S>1.8 — upscale the segment first; motion_blur=False.
+gen_hint: smooth lens zoom in towards <subject>, constant speed, locked-off camera position, no parallax, starts wide and ends in a close-up
+commands: ["zoom on the face from 0:05 to 0:07", "smooth zoom-in on #3", "get closer to the subject by the end of the shot"]
+related: [zoom.slow, zoom.crash, zoom.out, dolly.in]
+evidence: {examples: 6, sources: 6, measured: "×1.4–5.0 in 0.8–3.4 s; 4 of 6 — constant speed, 1 — accelerating; zoom center at the subject (offset 0.1–0.4); 2 examples have nonrigid 0.2–0.27 — that is already camera movement, moved to cam.*", confidence: high}
+---
+id: zoom.in_out
+family: zoom
+group: camera
+level: B
+aliases: [back-and-forth zoom, zoom seesaw, pulsing zoom, zoom bounce]
+what: a zoom-in and an immediate return to the original shot size, once or several times in rhythm — the frame "breathes" or "beats"
+frames: |
+  Start and end at the same shot size. Zoom-in ×1.3–2.5: a fast start and deceleration into the peak (ease-out),
+  0.25–0.65 s → a stop of 0–2 frames → a return of the same amplitude, accelerating toward the end (ease-in).
+  The in-and-out pairs mirror each other in timing and center. Fast strokes have radial motion blur;
+  slow ones are smooth "breaths" of 0.75–2 s each.
+variants:
+  - single: in-hold-out in 1–1.2 s
+  - double in rhythm: two cycles of 0.25–0.3 s per stroke, on the beats of the bar
+  - staccato: 3–5 short strokes of ×1.1–1.8, 160 ms each, between cuts
+  - breath: a slow in of ×1.5 over 0.75 s and a long return over 2 s
+status: code
+params:
+  scale: peak ×1.3–2.5, return to 1.0
+  stroke: fast 0.25–0.5 s per stroke (½–1 beat at 120 BPM); slow 0.75–2 s
+  ease: zoom-in outCubic, return inCubic (mirrored)
+  hold: 0–80 ms at the peak
+  cycles: 1–3 in a row
+  center: on the subject, the same for the zoom-in and the return
+  motion_blur: zoom_blur for strokes shorter than 0.35 s
+when: in on the beat and back on the off-beat; a "heartbeat"; a comedic reaction; emphasizing a repeated phrase; bass accents in phonk and viral
+avoid: more than 3–4 cycles in a row (causes motion sickness); calm genres; shots with strong camera movement of their own
+sfx: on every zoom-in — a short whoosh or a bass hit, in sync with the kick
+genres: {viral: signature, phonk: signature, fanedit: allowed, sport: allowed, fashion: allowed, clips: allowed, ugc: allowed, calm: forbidden, epic: forbidden, drama: forbidden}
+detect: "ed_motion: alternating ZOOM-IN and ZOOM-OUT of similar amplitude (product of the factors ≈1), centers coincide, strokes 0.16–2 s; in — ease-out, out — ease-in; peaks often coincide with the beats of the track"
+engine: |
+  transform(scale=[1, S, 1], center=track(target), t=[beat_i, beat_i+½beat, beat_i+1], ease=['outCubic', 'inCubic'])
+  + blur(kind='zoom') on short strokes; pattern generator: beat_pulse(S=1.3–2, every='1/2'|'1/4', cycles)
+gen_hint: rhythmic zoom in and back out on <subject>, pulsing music-video zoom, returns to the original framing each time
+commands: ["zoom seesaw on every beat in the chorus", "yo-yo on #4", "double back-and-forth zoom at 0:12"]
+related: [zoom.crash, zoom.punch, shake.beat]
+evidence: {examples: 5, sources: 5, measured: "amplitude ×1.1–2.5; stroke 160–750 ms; in 3 of 4 clean examples in — ease-out, out — ease-in; up to 2 full cycles in a row; return exactly to the original shot size", confidence: high}
+---
+id: zoom.infinite
+family: zoom
+group: camera
+level: C
+aliases: [infinite zoom, endless zoom, zoom tunnel, recursive zoom]
+what: a continuous zoom-in that never ends — when the frame "runs out", it is replaced by the next one, nested in the center of the previous one
+frames: |
+  Each link is a smooth zoom-in of ×5–25 over 2.5–3.5 s, centered exactly in the middle of the frame or on the vanishing point.
+  The seam is hidden in one of three ways: (a) the zoom goes into a dark or blurred surface and comes out
+  of it already in a new shot; (b) the new scene is nested inside the old one — a picture, a window, a screen, a collage layer —
+  and grows to fill the frame; (c) the vanishing point of a street or corridor matches from cut to cut.
+  The speed does not change at the seam, so the join is invisible. The spiral variant — a constant rotation
+  of up to 90° per link.
+variants:
+  - through darkness or motion blur: zoom into a dark part of an object → come out in a new scene
+  - nested (picture in picture): the new scene is an image inside the old one
+  - along the vanishing point: moving forward, cuts on matching perspective
+  - graphic collage: layers of cut-out photos, each emerging from the center of the previous one
+  - spiral: zoom + constant roll
+status: code
+fallback: the nested variant — hybrid (tracking the quad of a screen or window + compositing); if there are no suitable shots — generate the links with a common center
+params:
+  rate: constant on a log scale, ×1.06–1.13 per frame @25 fps (×4–20 over 3 s)
+  link: 2.5–3.5 s per link, 3–8 links
+  seam: 12–20 % of the link length; zoom_blur + a dissolve through a dark or flat-colored area; scale and speed match at the seam
+  center: fixed — the frame center or the vanishing point
+  rotation: optionally a constant 10–30°/s
+when: intros, transitions between topics or locations, "immersion", the climax of a music video, visualizing scale
+avoid: links with different brightness at the seam without preparation; a choppy rhythm in the track; shots without a clear center — regular cuts work better then
+sfx: a continuous riser or "wind" over the whole move; on each seam — a soft whoosh or a hit on the downbeat
+genres: {fanedit: signature, teaser: signature, epic: allowed, travel: allowed, viral: allowed, motivation: allowed, fashion: allowed}
+detect: "ed_motion: a long series of ZOOM-INs at constant speed; the scale 'resets' without changing direction (a cut inside the move), the center is stable around 0.5; cumulative scale ×50+"
+engine: |
+  chain_zoom(clips[], per_link=3, rate=ln(10)/3, seam=0.5, seam_kind='zoom_blur_dissolve'|'nest(quad=track(screen))',
+  center=[0.5, 0.5]|vanishing_point) — the links are aligned on the center or the vanishing point; the seam — on the downbeat.
+gen_hint: seamless infinite zoom, camera continuously zooms into <object> which reveals a new scene inside it, nested worlds, constant speed, perfectly centered
+commands: ["infinite zoom through all the intro shots", "a chain of zoom-ins from #1–#5", "infinite zoom transition between scenes"]
+related: [zoom.extreme, zoom.crash, trans.zoom]
+evidence: {examples: 5, sources: 5, measured: "link ×5–25 in ~3 s; constant speed in 4 of 5; center 0.49–0.54; spiral variant — 86° per link; seams through darkness, a nested picture and the vanishing point", confidence: medium}
+---
+id: zoom.out
+family: zoom
+group: camera
+level: A
+aliases: [zoom out, pull back, zoom pull-out, reveal]
+what: moving away from a detail or the subject to a wide shot that reveals the context — often with an unexpected element that was out of frame
+frames: |
+  Start — a tight framing on the subject or a detail. The scale shrinks evenly by 2–30 times; the surroundings
+  and a "surprise" enter the frame: another person in the foreground, the aftermath of an event, the scale of the place.
+  Sometimes it turns out the first frame was a picture inside the frame (a window, stained glass, a screen).
+  The slow variant — 4–6 s at constant speed; the fast one — 0.7–1.6 s, accelerating toward the end, with motion blur.
+  The final composition puts the new element on a third of the frame.
+variants:
+  - ironic reveal: the subject is calm while around them is chaos or the aftermath
+  - scale reveal: person → place → the whole landscape
+  - out of the picture: the detail turns out to be an image on a wall or a screen
+  - fast: from a fragment (legs, hands) to the full figure in 0.7 s
+status: code
+fallback: code can only pull out to the full source frame — a starting crop of ×2–3 needs 4K; wider than the source — Higgsfield outpaint/reframe or generation
+params:
+  scale: starting crop ×2–4, pull-out to 1.0 (for "picture in the frame" — up to ×30 via compositing)
+  duration: slow 3–6 s; fast 0.6–1.6 s
+  ease: linear for the slow one; inQuad (accelerating toward the end) for the fast reveal
+  center: start on the original detail, end — a composition with the new element on a third
+  motion_blur: only on the fast variant
+when: reveal of the place or the scale, the ending of a story, the irony of "and here is what is really going on", outro; intro of travel and epic videos
+avoid: the source is already wide and there is no framing headroom; the drop and the energy peak (a pull-out lowers the tension)
+sfx: a soft reverse whoosh or an opening pad; on an ironic reveal — a pause, silence and one accent sound
+genres: {epic: signature, travel: signature, teaser: signature, drama: allowed, calm: allowed, motivation: allowed, explainer: allowed, product: allowed, fanedit: allowed, viral: allowed}
+detect: "ed_motion: ZOOM-OUT ×0.5 or less, near-linear or ease-in; nonrigid < 0.15 (if higher — a physical camera pull-out, cam.pull_back); new objects appear at the end"
+engine: |
+  transform(scale=[S0, 1], center=[detail]→[composition], t=[t0, t0+D], ease='linear'|'inQuad') — S0=2–3;
+  out of the picture: composite(clip_detail → into the picture's quad) + transform; wider than the source — outpaint.
+gen_hint: slow zoom out from a close-up of <detail> revealing <wider context or surprise>, single continuous shot
+commands: ["pull out at the end of the video", "reveal the wide shot with a zoom from #8", "zoom out at the ending"]
+related: [zoom.in, zoom.extreme]
+evidence: {examples: 5, sources: 5, measured: "slow ones ×0.09–0.28 in 4.6–5.4 s, constant speed; fast ones ×0.51 in 0.7 s and ×0.03 in 1.6 s with acceleration; 1 example — a physical camera pull-out (moved to cam.*)", confidence: high}
+---
+id: zoom.punch
+family: zoom
+group: camera
+level: B
+aliases: [punch zoom, punch-in, zoom punch, beat zoom, zoom on beat, punch-out, punch, digital punch-in, framing snap]
+what: an instant digital zoom-in of ×1.1–1.35 over 1–3 frames exactly on the beat — the shot size "snaps" on the hit and holds or springs back; an accent inside the shot without a cut
+frames: |
+  1. Before the hit: the shot at its own size (×1.0) — static or with smooth camera movement, 0.3+ s with no other accents.
+  2. Hit: the frame on which the beat transient lands (kick, 808, snare, a stressed word) is already enlarged ×1.1–1.35.
+     Hard variant — a step over 0 frames (the previous frame is still ×1.0); soft — 1–2 frames of accelerating approach,
+     so the biggest jump still falls on the beat frame. Center — the face (the point between the eyes) or the frame center.
+     No motion blur, or it is concentrated on the hit frame (radial, 180° shutter) and fades over 3–4 frames of the bounce.
+  3. After the hit — one of three: a hold until the next accent, phrase or cut (hold); a return to ×1.0 over 6–10 frames
+     @25 (8–12 @30), "fast, then soft" (bounce); a spring — a recoil below the target, a 2–3-frame wobble and settling at ×1.15.
+  4. Series: in the drop — a bounce on every beat; in the last bar of the build — a ladder of ×1.10–1.12 steps on every 1/4
+     (or 1/8) and a one-frame reset to ×1.0 on the first beat of the drop; in speech — ×1.0 ↔ ×1.2 every other phrase on stressed words.
+variants:
+  - "hard step with a hold (hold) — a ×1.15–1.3 step on the beat, held until the next event; exit with a cut or a punch-out"
+  - "rebound (bounce) — peak on the beat and return over 0.24–0.4 s; a 'heartbeat' on every kick of the drop"
+  - "with motion blur — strong radial blur on the hit frame (shutter 180–360°), it fades quickly on the bounce; the heavy hit of velocity edits"
+  - "spring (overshoot) — ×1.25 on the beat, recoil to ×1.11, wobble and settle at ×1.15 over 6–8 frames"
+  - "ladder (stairs) — 3–4 steps of ×1.10–1.12 on 1/4 or 1/8, total ≤ ×1.5, reset to ×1.0 on the downbeat or the drop"
+  - "reverse punch (punch-out) — from ×1.2–1.3 a snap to ×1.0 on the beat: an 'exhale', the exit from a ladder or from a speech punch"
+  - "speech — ×1.15–1.25 on the face on a stressed word, a number or a punchline; held until the end of the phrase, no motion blur"
+status: code
+fallback: |
+  Not enough pixels (9:16 from 16:9 1080p — the reframe is already ×1.78): a punch of no more than ×1.15–1.2 with sharpening, or upscale
+  the clip (upscale_video, with the user's consent). The face or object is at the edge and the ×S window cannot land on it — punch to the center
+  of the frame or use a punch-out (hold the whole segment at ×1.2, reset to ×1.0 on the beat). The source itself shakes — stabilize first,
+  otherwise the step drowns in the jitter. Neither a face nor an object — the frame center.
+params:
+  scale: "×1.1–1.35; typically ×1.15–1.2 on every beat and ×1.25–1.3 on the downbeat, the entry into the drop or a punchline; below ×1.08 it does not read (looks like frame jitter), above ×1.35 it is already cut.insert or zoom.crash"
+  peak_frame: "peak (the first frame at full scale) — frame k0 = floor(t_beat·fps + 0.4): the frame start closest to the transient, biased toward the early side — no more than 0.6 frame before the sound (24 ms @25, 20 ms @30), no more than 0.4 frame after it (16 / 13 ms); t_beat — beats from ed_audio (attack onset ±10 ms). Manual adjustment tolerance −2…+1 frame @25, −3…+1 @30: picture ahead of sound goes unnoticed up to about 125 ms, while sound ahead of picture is noticeable from 45 ms — later than +1 frame is not allowed"
+  attack: "default 0 frames (a step: frame k0−1 is still ×1.0); a soft approach of 1–2 frames BEFORE the beat with acceleration — fractions of ln S on frames k0−1, k0 = 0.25, 1 or on k0−2, k0−1, k0 = 0.11, 0.44, 1 (at S = 1.25: 1.057 → 1.250 or 1.025 → 1.103 → 1.250); the biggest jump is always on k0"
+  release: "bounce — ln s(k) = ln S·(1 − k/D)³ for k = 0…D (outCubic on a log scale, the way ed_render interpolates); D = 8 frames @25 (0.32 s) and 10 frames @30 (0.33 s), range 0.24–0.4 s, but no longer than 0.7 of a beat — by the next hit the frame is already at rest (at 140 BPM D ≤ 7 frames @25); exponential equivalent τ ≈ 0.28·D ≈ 90 ms"
+  curve_25: "frames k0−1 | k0 … k0+8: S 1.20, D 8 → 1.000 | 1.200 1.130 1.080 1.046 1.023 1.010 1.003 1.000 1.000; S 1.30, D 8 → 1.000 | 1.300 1.192 1.117 1.066 1.033 1.014 1.004 1.001 1.000; S 1.15, D 6 → 1.000 | 1.150 1.084 1.042 1.018 1.005 1.001 1.000"
+  curve_30: "frames k0−1 | k0 … k0+10: S 1.20, D 10 → 1.000 | 1.200 1.142 1.098 1.065 1.040 1.023 1.012 1.005 1.001 1.000 1.000; S 1.30, D 10 → 1.000 | 1.300 1.211 1.144 1.094 1.058 1.033 1.017 1.007 1.002 1.000 1.000"
+  hold: "the step holds until the next event: in music 1–4 beats or until the cut, in speech until the end of the phrase (1–4 s); exit — with a cut (default) or a punch-out on the beat (also a step over 0 frames)"
+  spring: "s(k) = Sh + (S − Sh)·e^(−k/τ)·cos(π·k/P), S 1.25, Sh 1.15; @25 τ = P = 2.5 frames (0.1 s) → 1.250 1.171 1.114 1.126 1.156 1.164 1.153 1.145 1.147 1.150; @30 τ = P = 3 frames → 1.250 1.186 1.124 1.113 1.137 1.159 1.164 1.155 1.147 1.145 1.150"
+  ladder: "3 steps of ×1.12 (1.120 → 1.254 → 1.405) or 4 steps of ×1.10 (1.100 → 1.210 → 1.331 → 1.464); each is a hard step on its own 1/4 (on 1/8 — only the last 2 beats of the bar); total ≤ ×1.5; a one-frame reset to ×1.0 on the first beat of the next bar or of the drop"
+  blur: "radial blur only on frames with |Δln s| ≥ 0.02 per frame: an average of 6–8 scales over the last fraction of the interval equal to the shutter; shutter 0 — clean (speech, ugc, product), 0.5 = 180° — default in music, 1.0 — heavy velocity; at ×1.2 and 180° the trail on the hit frame is ≈ 9 % of the distance to the center — 49 px at the side edge of a frame 1080 wide and ≈ 100 px in a 9:16 corner; sharpness of the hit frame drops to ×0.1–0.3, the bounce is blurred less and less and is sharp again from k0+5 (@25 and @30)"
+  center: "track(face) — the point between the eyes, after the punch the face sits at 0.33–0.40 of the height from the top; without a face — the frame center or track(object); the ×S window moves from the center no further than (1 − 1/S)/2 (±8 % of the frame at ×1.2); a series and a punch / punch-out pair share one center; on a pan the center is taken in the current window"
+  resolution: "total magnification (reframe × punch) ≤ ×2.0–2.2 of the source pixels: 9:16 from 16:9 1080p — punch ≤ ×1.15–1.2 + unsharp 0.3–0.5; from 4K — up to ×1.35 without loss"
+  qa: "after render: the peak frame of every punch matches k0 (−1…0 frames), intervals between peaks in a series are multiples of the beat period ±1 frame, total crop ≤ ×2.2"
+when: |
+  Music (phonk, viral, fan edit, sport, teaser):
+  hook — one punch of ×1.25–1.3 on the first downbeat (the first 0.5–1 s) to "switch on" the video;
+  build — on the snare (beats 2 and 4) once per bar, or a ladder in the last bar before the drop (at 140+ BPM — on 1/8 only the last two beats);
+  drop — a bounce of ×1.12–1.2 on every kick or beat for no longer than 2–4 bars in a row, the downbeat of the bar — ×1.25–1.3;
+  then a bar without punches or a change of accent (shake.beat, flash);
+  outro — no punches, or one punch-out "exhale" on the last beat.
+  Speech (clips, UGC, explainer, motivation): a stressed word, a number, a product name, a punchline, a change of thought — hold ×1.15–1.25
+  until the end of the phrase, exit on the next cut; in the hook — a punch on the first stressed word.
+  Limits: ≤ 1 punch per beat; outside the drop ≤ 1 per bar; in speech ≤ 1 per 3–6 s and never two in one phrase; in a row on every beat — no more than
+  16 punches; within one beat no more than two accents from {punch, shake, flash, RGB split} — except the first beat of the drop.
+avoid: |
+  A calm or luxury tone, slow music without a pronounced hit. A punch off the beat or later than the transient by more than a frame —
+  reads as a mistake. A punch on every beat for the whole video — cheap and nauseating. A punch on the first frame after a cut — the cut
+  is already an accent, together they read as a glitch (except a deliberate punch across a cut). A punch on top of a running zoom-in (zoom.in,
+  zoom.slow, zoom.crash) — the scale jerks; on top of a whip pan — invisible. A face or object at the edge that the ×S window cannot
+  land on — the punch cuts off the main thing. A jump below ×1.08 (looks like jitter) or a crop above ×2.2 of the source (mushy image).
+  Subtitles and graphics do not scale with the frame — they are overlaid after the punch. In speech — a punch in the middle of a word and
+  alternating ×1.0/×1.2 on every cut over jump cuts (that is already cut.jump, do not double it).
+sfx: |
+  In music a separate sound is usually not needed: the punch sits on the hit of the track and "shows" it. On a strong punch into the drop —
+  sfx.impact (align='attack', 0 ms to frame k0, −6…−9 dB relative to the music) or sfx.sub_drop; on a ladder — a short tick on each
+  step, louder toward the last one, over an sfx.riser across the whole bar. In speech — a low short hit of 80–150 ms or a "whoosh" of 0.12–0.2 s
+  peaking on k0, 12–18 dB below the voice; in comedy — a scratch or a "bonk".
+genres: {viral: signature, phonk: signature, fanedit: signature, clips: signature, ugc: signature, explainer: signature, epic: allowed, product: allowed, sport: allowed, travel: allowed, fashion: allowed, teaser: allowed, motivation: allowed, calm: forbidden, drama: forbidden}
+detect: |
+  ed_motion (shot without a cut): hard punch — ZOOM-IN over 1 frame ("1 fr", near-linear, 50 % at 0.5), factor = peak_rate =
+  ×1.1–1.35, center 0.35–0.65 (face or frame center), nonrigid ≤ 0.05, conf ok; no false cut even at ×1.35.
+  Soft approach — ZOOM-IN over 2–3 frames with ease-in (50 % at 0.67–0.7) and a peak of ×1.13–1.18/frame on the last frame (= the beat frame).
+  Hold — holds after the event, no ZOOM-OUT. Bounce — an immediate ZOOM-OUT over D − 2 frames (the last steps are below the threshold: 4–8
+  frames @25, 5–10 @30; with D 8 / 10 — 6 / 7), ease-out (50 % at 0.28–0.35), peak ×0.94–0.97/frame in the first frame after the beat,
+  product of the factors in·out = 1.00 ± 0.03. Spring — after a 1-frame ZOOM-IN
+  short ZOOM-OUTs of ×0.88–0.89 and ZOOM-INs of ×1.04–1.06, 2–3 frames each, ending at ≈ ×1.15. Ladder — 2–4 one-frame ZOOM-INs of
+  ×1.10–1.15 at an even beat spacing (12 frames @25 at 125 BPM, 15 @30 at 120 BPM) with holds between them and a one-frame ZOOM-OUT
+  with factor = 1/(product of the steps). Series — intervals between ZOOM-INs are multiples of the beat period ±1 frame.
+  Sharpness of the hit frame: without blur ×0.6–1 (and a step lower for the whole hold — the frame is larger), with 180° blur ×0.1–0.3
+  (ed_motion then underestimates the factor: ×1.15 instead of ×1.2). All the signs above were reproduced on a synthetic render of these
+  curves at 25 and 30 fps (ed_motion at 320 px). In ed_analyze, a punch that the cut detector took for a cut is labeled
+  cut_in = punch_in / punch_out with scale 1.07–1.35.
+  Unlike cut.jump (a jump cut with a punch): ed_motion does not tell them apart (the same 1-frame ZOOM-IN, nonrigid ≈ 0.02). Own check:
+  align the frames by the found scale and count the share of pixels with a residual > 25/255 — for a punch it is at the level of neighboring pairs
+  (synthetic: 0.4 %), for a jump cut it is 3+ times higher and forms a blob on the subject (5–7 %): the pose or position jumps.
+  Unlike cut.insert: an insert is a new shot ×1.3–15 on the target: the window moves to a detail (center offset ≥ 0.1 of the frame from the face or center)
+  or ×1.4+, holds 0.3–2.8 s and is placed by meaning, not on the beat grid; a ladder of inserts reaches ×2.6+. At the boundary of ×1.3–1.35
+  the deciding factors are the center (the same face or frame center) and a repeat on the beat grid or a return A → A′ → A with the same framing — that is a punch.
+  Unlike zoom.in_out: the zoom-in is visible for 4+ frames (ZOOM-IN ≥ 4 frames, ease-out, ≤ 40 % of scale per frame), a pause of 0–2 frames and
+  a mirrored ZOOM-OUT of the same length with ease-in (synthetic ×1.3: 5 frames in, 5 back); a punch enters in 1–3 frames, and the exit is
+  3–6 times longer and ease-out — or there is none. Unlike zoom.crash: ×2.5+ over 8–16 frames with motion blur. Unlike trans.zoom: next to
+  the zoom-back there is a cut into a new scene.
+engine: |
+  beat_punch(times=beats|'downbeats'|'1/4'|'snare'|[t…], scale=1.2, mode='hold'|'bounce'|'spring'|'ladder'|'out',
+             attack=0 (frames before the beat, 0–2), release=0.32 (s, outCubic on a log scale), hold_until='next_beat'|'phrase'|'cut'|t,
+             spring={settle: 1.15, tau: 0.1, period: 0.2}, ladder={step: 1.12, per: '1/4'|'1/8', reset: 'downbeat'|'drop'},
+             center=track(face)|[0.5, 0.5], blur_shutter=0|0.5|1.0, snap='floor(t·fps+0.4)')
+    — a new generator primitive; expands frame by frame into transform(scale=[…], center, t, ease)
+    + blur(kind='zoom', amount=shutter·|Δln s|, center) on frames with |Δln s| ≥ 0.02.
+  In the current ed_render (zoom_at multiplies all zoom.* moves of the clip and outside [t0, t1] holds s0 / s1; tb = k0/fps from the clip start):
+    hold   → {id: 'zoom.punch', t0: tb − 1/fps, t1: tb, scale: [1, S], ease: 'hold', blur: false}
+    bounce → hold step + {id: 'zoom.punch', t0: tb, t1: tb + D/fps, scale: [1, 1/S], ease: 'outCubic', blur: false}
+    blur: true in ed_render averages 6 scales over the whole step (= 360° shutter); 180° needs a shutter parameter.
+  Punch across a cut (ed_plan): a continuation clip of the same source with reframe.zoom ×S and cut_in = {id: 'zoom.punch', scale: S}.
+  Text and graphics — after the punch, they are not scaled. + sfx('impact', at=tb, align='attack') only on strong accents.
+gen_hint: "locked-off static medium shot of <subject> centered in frame, <action with clear rhythmic accents: head nods, stomps, a sharp gesture on every beat>, crisp focus, high resolution with generous headroom around the subject for digital punch-in zooms, no camera movement"
+commands: ["punch on every kick in the drop", "zoom punch ×1.25 at 0:07 and hold until the cut", "a ladder of punches in the last bar before the drop", "punch-in on the face on the word 'free'", "zoom bounce on every beat in the chorus, no motion blur", "remove the punches from the verse"]
+related: [zoom.in_out, zoom.crash, cut.insert, cut.jump, shake.beat, time.velocity, trans.zoom, time.freeze, trans.flash, fx.rgb_split, shot.close_up]
+evidence: {examples: 0, sources: 0, measured: "edit culture: parameters based on editing practice; verify with a demo render", confidence: medium}
+---
+id: zoom.slow
+family: zoom
+group: camera
+level: A
+aliases: [slow zoom, slow push, slow push-in, creeping zoom, bringing a static shot to life]
+what: an almost imperceptible constant zoom-in (less often a zoom-out) over the whole shot — builds tension or intimacy without giving the camera away
+frames: |
+  The frame holds on a face or a figure. The scale grows evenly, 0.2–1 % per frame: over 2–5 s it adds up to ×1.4–2.2.
+  No acceleration, no deceleration, no motion blur; the zoom center is on the face. The viewer notices the change in shot size
+  only toward the end — it feels like "pressure" or immersion. A rare variant — an equally slow zoom-out.
+variants:
+  - portrait: one person looks into the camera or past it, ×1.4–1.5 in 3–4 s
+  - with action: the subject itself moves in the frame, the zoom runs on top
+  - slow pull-out: ×0.6–0.7 in 2 s, a soft reveal of the surroundings
+status: code
+params:
+  scale: ×1.1–1.5 over a typical 3–5 s shot (maximum ×2.2 in 5 s)
+  rate: 0.15–0.6 % per frame @25 fps (×1.04–1.16 per second)
+  ease: linear; a very soft inOutQuad at the edges is allowed
+  center: track(face), a slow drift of the center is allowed
+  motion_blur: disabled
+  direction: in (main) or out
+when: tension, a monologue, a pause before a twist, long notes; bring any static shot longer than 2 s to life in calm and dramatic videos
+avoid: fast editing (a shot shorter than 1.5 s — does not read); a shot with its own camera movement; a face at the frame edge without resolution headroom
+sfx: no SFX; support — a rising pad or drone, silence
+genres: {calm: signature, drama: signature, motivation: signature, epic: allowed, teaser: allowed, explainer: allowed, travel: allowed, product: allowed, ugc: allowed, clips: allowed, fashion: allowed}
+detect: "ed_motion: a single ZOOM-IN (or OUT) lasting ≥2 s, peak ≤×1.02/frame, near-linear, nonrigid < 0.1; no other events"
+engine: |
+  transform(scale=[1, 1.08–1.25], center=track(face), t=whole shot, ease='linear') — by default
+  on static shots longer than 2 s in the calm, dramatic and motivation genres; zoom-out — scale=[1.15, 1].
+gen_hint: very slow, almost imperceptible zoom in on <subject>, static camera, tense quiet atmosphere
+commands: ["slow push-in on all long shots", "slow zoom on the face in #2", "add a creeping zoom to the interview"]
+related: [zoom.in, zoom.out, dolly.in]
+evidence: {examples: 5, sources: 5, measured: "×1.46–2.17 in 1.6–5 s; 4 of 5 — strictly constant speed (×1.007–1.04/frame); 1 example — a slow zoom-out ×0.63 in 2 s", confidence: high}

@@ -1,0 +1,273 @@
+<!doctype html>
+<meta charset="utf-8">
+<style>html,body{margin:0;background:#141413}canvas{display:block}</style>
+<canvas id="c" width="1080" height="1920"></canvas>
+<script src="lib/motion.js"></script>
+<script>
+const { clamp, ramp, eio, eo, lerp, spring, rng, track, swapAlpha } = Motion;
+const W = 1080, H = 1920, DUR = 15;
+const g = document.getElementById('c').getContext('2d', { willReadFrequently: true });
+
+// ---------- tokens: one accent, two faces ----------
+const BG = '#141413', INK = '#FAF9F5', DIM = '#8F8D85', CARD = '#201F1D', LINE = '#33312E', ACC = '#D97757';
+const DF = '"Bahnschrift Condensed","Arial Narrow",sans-serif';   // display
+const UF = '"Segoe UI Variable Text","Segoe UI",sans-serif';       // UI
+const M = 96;                                                       // single left edge
+
+const hex = (c) => [1, 3, 5].map((i) => parseInt(c.slice(i, i + 2), 16));
+const mixc = (a, b, x) => { const A = hex(a), B = hex(b); return `rgb(${A.map((v, i) => Math.round(v + (B[i] - v) * x)).join(',')})`; };
+const crit = (t, t0, k = 140) => spring(t - t0, k, 2 * Math.sqrt(k));  // critically damped: no overshoot (type)
+
+function tx(s, x, y, size, font, color, o = {}) {
+  g.font = `${o.weight || 700} ${size}px ${font}`;
+  g.letterSpacing = (o.ls || 0) + 'px';
+  g.textAlign = o.align || 'left'; g.textBaseline = 'alphabetic';
+  g.fillStyle = color; g.fillText(s, x, y);
+  g.letterSpacing = '0px';
+}
+function measure(s, size, font, weight = 700, ls = 0) {
+  g.font = `${weight} ${size}px ${font}`; g.letterSpacing = ls + 'px';
+  const w = g.measureText(s).width; g.letterSpacing = '0px'; return w;
+}
+function rr(x, y, w, h, r) { g.beginPath(); g.roundRect(x, y, Math.max(0, w), Math.max(0, h), Math.min(r, Math.max(0, w) / 2, Math.max(0, h) / 2)); }
+function maskRise(clipX, clipY, clipW, clipH, fn) { g.save(); g.beginPath(); g.rect(clipX, clipY, clipW, clipH); g.clip(); fn(); g.restore(); }
+
+// ---------- scene 1: kinetic title ----------
+const FS = 888 / measure('MOTION', 100, DF) * 100;                  // MOTION fills the column
+const LINES = [['MOTION', 720, INK, 0], ['FROM', 970, INK, 0.25], ['CODE', 1220, ACC, 0.5]];
+const DOT_R = 26, DOT0 = [M + DOT_R, 1700];
+const DOTE = [M + measure('CODE', FS, DF) + 8 + DOT_R, 1220 - DOT_R];
+
+function scene1(t) {
+  if (t >= 4.0) return;
+  LINES.forEach(([s, base, col, tin], i) => {
+    const tout = 3.0 + 0.08 * i;
+    const y = base + (1 - crit(t, tin)) * FS * 0.95 - FS * 0.95 * eio(ramp(t, tout, tout + 0.45));
+    maskRise(0, base - FS * 0.76, W, FS * 0.8, () => tx(s, M, y, FS, DF, col, { ls: -FS * 0.01 }));
+  });
+  // sub line
+  [['Every frame is a function', 1.0], ['of time. Nothing else.', 1.1]].forEach(([s, tin], i) => {
+    if (t < tin) return;
+    const base = 1350 + i * 88, tout = 3.1 + 0.06 * i;
+    const y = base + (1 - crit(t, tin, 170)) * 70 - 130 * eio(ramp(t, tout, tout + 0.4));
+    maskRise(0, base - 66, W, 96, () => tx(s, M, y, 68, UF, DIM, { weight: 600 }));
+  });
+  // stat pills (new event at 1.75, 2.0, 2.25)
+  let px = M;
+  [['60 fps', 1.75], ['4x blur', 2.0], ['0 video files', 2.25]].forEach(([s, tin]) => {
+    if (t < tin) return;
+    const pw = measure(s, 48, UF, 600) + 64, tout = 3.1;
+    const y = 1570 + (1 - crit(t, tin, 200)) * 110 - 170 * eio(ramp(t, tout, tout + 0.4));
+    maskRise(0, 1510, W, 130, () => { g.fillStyle = CARD; rr(px, y - 66, pw, 92, 46); g.fill(); g.strokeStyle = LINE; g.lineWidth = 3; g.stroke(); tx(s, px + 32, y, 48, UF, INK, { weight: 600 }); });
+    px += pw + 20;
+  });
+  // the period: a dot that exists at t=0 and travels to the end of CODE
+  const p = crit(t, 0.75, 120);
+  let dx = lerp(DOT0[0], DOTE[0], p), dy = lerp(DOT0[1], DOTE[1], p);
+  const ex = eio(ramp(t, 3.16, 3.61));
+  if (t < 3.0) dot(dx, dy);
+  else maskRise(0, 1220 - FS * 0.76, W, FS * 0.8, () => dot(dx, dy - FS * 0.95 * ex));
+}
+function dot(x, y) { g.fillStyle = ACC; g.beginPath(); g.arc(x, y, DOT_R, 0, 7); g.fill(); }
+
+// ---------- scene 2: staggered grid ----------
+const T = 280, GAP = 24, GX = M, GY = 330;
+const NAMES = ['ring', 'bars', 'orbit', 'wave', 'count', 'grid', 'toggle', 'play', 'spring', 'rotate', 'load', 'pulse', 'steps', 'cursor', 'sine'];
+const PATH = [[0, 0], [2, 1], [0, 3], [2, 4], [0, 1], [1, 4], [2, 2]];   // hot hops, then the centre tile
+const CENTRE = 7;                                                    // index of (1,2)
+const hopStart = (h) => 5.0 + 0.25 * h;
+
+function hot(i, t) {
+  if (i === CENTRE) return spring(t - 6.5, 300, 30);
+  let v = 0;
+  PATH.forEach(([c, r], h) => { if (r * 3 + c === i && t >= hopStart(h)) v = Math.max(v, Math.exp(-(t - hopStart(h)) * 5)); });
+  return v;
+}
+function glyph(i, t, cx, cy, col) {
+  const tt = t + i * 0.37;
+  g.strokeStyle = col; g.fillStyle = col; g.lineWidth = 12; g.lineCap = 'round'; g.lineJoin = 'round';
+  const k = NAMES[i];
+  if (k === 'ring') { const a = tt * 3; g.beginPath(); g.arc(cx, cy - 8, 66, a, a + 1.2 + Math.abs(Math.sin(tt * 1.5)) * 3.6); g.stroke(); }
+  else if (k === 'bars') { for (let b = 0; b < 5; b++) { const h = 30 + 90 * Math.abs(Math.sin(tt * 3 + b * 1.3)); g.fillRect(cx - 80 + b * 34, cy + 50 - h, 20, h); } }
+  else if (k === 'orbit') { g.lineWidth = 4; g.beginPath(); g.arc(cx, cy - 8, 70, 0, 7); g.stroke(); g.beginPath(); g.arc(cx + Math.cos(tt * 3) * 70, cy - 8 + Math.sin(tt * 3) * 70, 17, 0, 7); g.fill(); }
+  else if (k === 'wave' || k === 'sine') { g.beginPath(); for (let x = -90; x <= 90; x += 4) { const y = Math.sin(x * (k === 'sine' ? 0.09 : 0.05) + tt * 5) * 38; x === -90 ? g.moveTo(cx + x, cy - 8 + y) : g.lineTo(cx + x, cy - 8 + y); } g.stroke(); }
+  else if (k === 'count') { tx(String(Math.floor(tq(tt) * 13) % 100).padStart(2, '0'), cx, cy + 42, 150, DF, col, { align: 'center' }); }
+  else if (k === 'grid') { for (let a = 0; a < 5; a++) for (let b = 0; b < 5; b++) { const d = Math.hypot(a - 2, b - 2); g.beginPath(); g.arc(cx - 76 + a * 38, cy - 20 + b * 38 - 8, 5 + 9 * Math.max(0, Math.sin(tt * 4 - d * 1.2)), 0, 7); g.fill(); } }
+  else if (k === 'toggle') { const ph = tt % 2, on = ph < 1 ? spring(ph, 320, 30) : 1 - spring(ph - 1, 320, 30); rr(cx - 70, cy - 40, 140, 70, 35); g.lineWidth = 6; g.stroke(); g.beginPath(); g.arc(cx - 35 + 70 * on, cy - 5, 22, 0, 7); g.fill(); }
+  else if (k === 'play') { g.beginPath(); g.moveTo(cx - 26, cy - 62); g.lineTo(cx + 54, cy - 8); g.lineTo(cx - 26, cy + 46); g.closePath(); g.fill(); }
+  else if (k === 'spring') { g.lineWidth = 8; g.beginPath(); for (let x = 0; x <= 150; x += 3) { const y = spring(x / 150 * 1.2, 170, 14); x ? g.lineTo(cx - 75 + x, cy + 40 - y * 90) : g.moveTo(cx - 75, cy + 40); } g.stroke(); const q = (tt % 1.4) / 1.4 * 1.2; g.beginPath(); g.arc(cx - 75 + q / 1.2 * 150, cy + 40 - spring(q, 170, 14) * 90, 12, 0, 7); g.fill(); }
+  else if (k === 'rotate') { g.lineWidth = 8; for (let s = 0; s < 3; s++) { g.save(); g.translate(cx, cy - 8); g.rotate(tt * (1 + s * 0.6) * (s % 2 ? -1 : 1)); const q = 130 - s * 38; g.strokeRect(-q / 2, -q / 2, q, q); g.restore(); } }
+  else if (k === 'load') { const f = (tt * 0.6) % 1; g.lineWidth = 6; rr(cx - 80, cy - 24, 160, 30, 15); g.stroke(); rr(cx - 80, cy - 24, 160 * eio(f), 30, 15); g.fill(); }
+  else if (k === 'pulse') { for (let s = 0; s < 3; s++) { const f = ((tt * 0.8 + s / 3) % 1); g.lineWidth = 8; g.globalAlpha = 1 - f; g.beginPath(); g.arc(cx, cy - 8, 14 + f * 76, 0, 7); g.stroke(); } g.globalAlpha = 1; }
+  else if (k === 'steps') { for (let b = 0; b < 4; b++) { const f = clamp(((tt * 0.9) % 1.6) * 3 - b * 0.7); g.fillRect(cx - 78 + b * 40, cy + 54 - (b + 1) * 28 * eo(f), 28, (b + 1) * 28 * eo(f)); } }
+  else if (k === 'cursor') { const ox = Math.sin(tt * 2) * 22, oy = Math.cos(tt * 2) * 14; g.beginPath(); g.moveTo(cx - 26 + ox, cy - 62 + oy); g.lineTo(cx - 26 + ox, cy + 38 + oy); g.lineTo(cx - 2 + ox, cy + 14 + oy); g.lineTo(cx + 34 + ox, cy + 12 + oy); g.closePath(); g.fill(); }
+}
+function scene2(t) {
+  if (t < 4.0 || t >= 7.5) return;
+  const hs = 4.55;
+  const hy = 250 + (1 - crit(t, hs, 150)) * 160 - 160 * eio(ramp(t, 6.5, 6.9));
+  maskRise(0, 250 - 170 * 0.76, W, 170 * 0.8, () => tx('THE KIT.', M, hy, 170, DF, INK, { ls: -2 }));
+  for (let r = 0; r < 5; r++) for (let c = 0; c < 3; c++) {
+    const i = r * 3 + c;
+    if (i === CENTRE && t >= 6.5) continue;
+    const td = 4.15 + 0.06 * ((4 - r) * 0.8 + c * 0.5);
+    const sp = spring(t - td, 220, 24);
+    const dist = Math.hypot(c - 1, r - 2);
+    const drop = eio(ramp(t, 6.75 + 0.04 * dist, 7.15 + 0.04 * dist));
+    const sc = (0.5 + 0.5 * sp) * (1 - drop);
+    if (sc <= 0.01) continue;
+    const cx = GX + c * (T + GAP) + T / 2, cy = GY + r * (T + GAP) + T / 2 + (1 - sp) * 50 + drop * 80;
+    const h = hot(i, t);
+    g.save(); g.translate(cx, cy); g.scale(sc, sc);
+    g.fillStyle = mixc(CARD, ACC, h); rr(-T / 2, -T / 2, T, T, 44); g.fill();
+    g.translate(-cx, -cy);
+    glyph(i, t, cx, cy - 12, h > 0.5 ? BG : INK);
+    tx(NAMES[i], cx - T / 2 + 28, cy + T / 2 - 26, 44, UF, h > 0.5 ? BG : DIM, { weight: 700 });
+    g.restore();
+  }
+}
+
+// ---------- scene 3: one container, never cuts ----------
+const CK = (a) => a;                                    // key lists: [time, value] after the first
+const K = {
+  cx: [[0, 540], [11.5, 206], [14.05, M + 26]],
+  cy: [[0, 1078], [10.0, 1000], [11.5, 600], [14.05, 1700]],
+  w: [[0, T], [7.0, 680], [7.5, 840], [9.0, 170], [9.5, 220], [10.0, 888], [11.5, 220], [14.05, 52]],
+  h: [[0, T], [7.0, 160], [7.5, 170], [9.0, 170], [9.5, 220], [10.0, 800], [11.5, 220], [14.05, 52]],
+  r: [[0, 44], [7.0, 80], [7.5, 36], [9.0, 85], [9.5, 110], [10.0, 56], [11.5, 110], [14.05, 26]],
+  m: [[0, 0], [7.5, 1], [9.5, 0], [10.0, 1], [11.5, 0]],
+};
+const CUR = {
+  x: [[0, 1180], [6.5, 700], [7.7, 790], [8.5, 875], [9.2, 820], [10.8, 888], [11.5, 1180]],
+  y: [[0, 1700], [6.5, 1140], [7.7, 1330], [8.5, 1100], [9.2, 1420], [10.8, 1250], [11.5, 2050]],
+};
+const PRESS = [7.42, 8.92];
+const pulse = (t, a) => ramp(t, a, a + 0.06) - ramp(t, a + 0.06, a + 0.2);
+const BARS = [0.45, 0.62, 0.5, 0.78, 0.66, 0.9, 1.0];
+const DAYS = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
+const EMAIL = 'you@studio.dev';
+const tq = (x) => Math.floor(x * 60 + 1e-6) / 60;   // quantise to the 60 fps frame so subframe blending does not ghost fast digits
+const fmt = (n) => String(Math.round(n)).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+
+function card(t) {
+  if (t < 6.5) return;
+  const sp = [170, 28];
+  let dip = 0; PRESS.forEach((p) => { dip = Math.max(dip, pulse(t, p)); });
+  const cx = track(t, K.cx, ...sp), cy = track(t, K.cy, ...sp);
+  const w = track(t, K.w, ...sp) * (1 - 0.04 * dip), h = track(t, K.h, ...sp) * (1 - 0.04 * dip);
+  const r = track(t, K.r, ...sp), m = clamp(track(t, K.m, ...sp));
+  g.fillStyle = mixc(ACC, CARD, m); rr(cx - w / 2, cy - h / 2, w, h, r); g.fill();
+  if (m > 0.7) { g.strokeStyle = LINE; g.lineWidth = 3; rr(cx - w / 2, cy - h / 2, w, h, r); g.stroke(); }
+  g.save(); rr(cx - w / 2, cy - h / 2, w, h, r); g.clip();
+  const alpha = (a, b) => swapAlpha(t, a, b);
+  let a;
+  // tile -> button
+  if (t < 7.1) { a = swapAlpha(t, 6.0, 7.05); if (a > 0) { g.globalAlpha = a; glyph(CENTRE, t, cx, cy - 12, BG); g.globalAlpha = 1; } }
+  if ((a = alpha(7.0, 7.5)) > 0) { g.globalAlpha = a; tx('Start rendering', cx, cy + 26 + (1 - a) * 12, 72, UF, BG, { align: 'center', weight: 700 }); g.globalAlpha = 1; }
+  // input
+  if ((a = alpha(7.5, 9.0)) > 0) {
+    g.globalAlpha = a; const left = cx - 420 + 48, ty = cy + 20 + (1 - a) * 12;
+    const n = Math.floor(clamp((t - 7.8) / 0.05, 0, EMAIL.length));
+    if (n === 0) tx('Email address', left, ty + 6, 64, UF, DIM, { weight: 400 });
+    else tx(EMAIL.slice(0, n), left, ty + 6, 68, UF, INK, { weight: 500 });
+    const caretX = left + (n ? measure(EMAIL.slice(0, n), 68, UF, 500) : 0) + 4;
+    if (t < 8.5 || Math.floor(t * 2) % 2 === 0) { g.fillStyle = ACC; g.fillRect(caretX, cy - 40, 5, 78); }
+    g.fillStyle = ACC; g.beginPath(); g.arc(cx + 335, cy, 55, 0, 7); g.fill();
+    g.strokeStyle = BG; g.lineWidth = 10; g.lineCap = 'round'; g.lineJoin = 'round';
+    g.beginPath(); g.moveTo(cx + 315, cy); g.lineTo(cx + 355, cy); g.moveTo(cx + 337, cy - 20); g.lineTo(cx + 357, cy); g.lineTo(cx + 337, cy + 20); g.stroke();
+    g.globalAlpha = 1;
+  }
+  // loader
+  if ((a = alpha(9.0, 9.55)) > 0) {
+    g.globalAlpha = a; g.lineWidth = 14; g.lineCap = 'round';
+    g.strokeStyle = LINE; g.beginPath(); g.arc(cx, cy, 48, 0, 7); g.stroke();
+    const ang = (t - 9.0) * 8; g.strokeStyle = ACC; g.beginPath(); g.arc(cx, cy, 48, ang, ang + 1.8); g.stroke(); g.globalAlpha = 1;
+  }
+  // success check
+  if ((a = alpha(9.5, 10.05)) > 0) {
+    g.globalAlpha = a; g.strokeStyle = BG; g.lineWidth = 20; g.lineCap = 'round'; g.lineJoin = 'round';
+    const P = [[-48, 4], [-14, 38], [50, -32]], p = eo(ramp(t, 9.6, 9.9)) * 2;
+    g.beginPath(); g.moveTo(cx + P[0][0], cy + P[0][1]);
+    const s1 = clamp(p), s2 = clamp(p - 1);
+    g.lineTo(cx + lerp(P[0][0], P[1][0], s1), cy + lerp(P[0][1], P[1][1], s1));
+    if (s2 > 0) g.lineTo(cx + lerp(P[1][0], P[2][0], s2), cy + lerp(P[1][1], P[2][1], s2));
+    g.stroke(); g.globalAlpha = 1;
+  }
+  // dashboard
+  if ((a = alpha(10.0, 11.8)) > 0) {
+    g.globalAlpha = a; const L = cx - 388;
+    const ds = clamp(Math.min(w / 888, h / 800), 0.05, 1); g.save(); g.translate(cx, cy); g.scale(ds, ds); g.translate(-cx, -cy);
+    tx('Renders this week', L, cy - 300, 52, UF, DIM, { weight: 600 });
+    tx(fmt(12480 * eo(ramp(tq(t), 10.05, 10.9))), L, cy - 70, 230, DF, INK, { ls: -2 });
+    const cp = spring(t - 10.3, 300, 24);
+    if (cp > 0.02) { g.save(); g.translate(cx + 340, cy - 170); g.scale(cp, cp); g.fillStyle = ACC; rr(-90, -40, 180, 80, 40); g.fill(); tx('+38%', 0, 17, 50, UF, BG, { align: 'center' }); g.restore(); }
+    BARS.forEach((v, i) => {
+      const gr = spring(t - (10.08 + 0.06 * i), 170, 22), bh = 300 * v * gr;
+      g.fillStyle = i === 6 ? ACC : '#4A4843'; rr(L + i * 116, cy + 320 - bh, 80, bh, 14); g.fill();
+      tx(DAYS[i], L + i * 116 + 40, cy + 378, 44, UF, DIM, { align: 'center', weight: 600 });
+    });
+    const tp = spring(t - 11.0, 320, 26) * (1 - ramp(t, 11.4, 11.5));
+    if (tp > 0.02) {
+      const bx = L + 6 * 116 + 40, by = cy + 320 - 300 - 16;
+      g.save(); g.translate(bx, by); g.scale(tp, tp);
+      g.fillStyle = INK; rr(-190, -92, 260, 84, 22); g.fill();
+      g.beginPath(); g.moveTo(-14, -8); g.lineTo(0, 8); g.lineTo(14, -8); g.fill();
+      tx('Fri  2,410', -60, -32, 44, UF, BG, { align: 'center', weight: 700 });
+      g.restore();
+    }
+    g.restore(); g.globalAlpha = 1;
+  }
+  // logo arch (the kiln door), after the container has become the mark
+  const arch = spring(t - 11.9, 300, 26) * (1 - eio(ramp(t, 14.0, 14.3)));
+  if (arch > 0.01 && w > 100) {
+    g.save(); g.translate(cx, cy + 40); g.scale(arch, arch); g.fillStyle = BG;
+    g.beginPath(); g.moveTo(-42, 70); g.lineTo(-42, -10); g.arc(0, -10, 42, Math.PI, 0); g.lineTo(42, 70); g.closePath(); g.fill(); g.restore();
+  }
+  g.restore();
+  // cursor + click ring (outside clip)
+  if (t >= 6.4 && t < 11.9) {
+    const x = track(t, CUR.x, 170, 26), y = track(t, CUR.y, 170, 26);
+    PRESS.forEach((p) => { const f = ramp(t, p + 0.04, p + 0.5); if (f > 0 && f < 1) { g.strokeStyle = INK; g.globalAlpha = 1 - f; g.lineWidth = 5; g.beginPath(); g.arc(x, y, 14 + f * 60, 0, 7); g.stroke(); g.globalAlpha = 1; } });
+    const s = 1 - 0.1 * Math.max(...PRESS.map((p) => pulse(t, p)));
+    g.save(); g.translate(x, y); g.scale(s, s); g.fillStyle = INK; g.strokeStyle = BG; g.lineWidth = 5; g.lineJoin = 'round';
+    g.beginPath(); g.moveTo(0, 0); g.lineTo(0, 74); g.lineTo(20, 56); g.lineTo(42, 94); g.lineTo(58, 86); g.lineTo(36, 50); g.lineTo(62, 48); g.closePath(); g.stroke(); g.fill(); g.restore();
+  }
+}
+
+// ---------- scene 4: logo lockup ----------
+const WFS = 700 / measure('kiln', 100, DF) * 100;
+const TS = Math.min(70, 880 / measure('Motion, rendered from code.', 100, UF, 600) * 100);
+function scene4(t) {
+  if (t < 11.9) return;
+  const out = (a) => eio(ramp(t, a, a + 0.45));
+  const wy = 1080 + (1 - crit(t, 12.0)) * WFS * 0.95 - WFS * 0.95 * out(14.0);
+  maskRise(0, 1080 - WFS * 0.78, W, WFS * 0.86, () => tx('kiln', M, wy, WFS, DF, INK, { ls: -WFS * 0.01 }));
+  const ty = 1200 + (1 - crit(t, 12.5, 170)) * 80 - 80 * out(14.08);
+  maskRise(0, 1200 - 70, W, 100, () => tx('Motion, rendered from code.', M, ty, TS, UF, DIM, { weight: 600 }));
+  const cw = lerp(140, 820, spring(t - 13.0, 200, 26)) * (1 - out(14.16));
+  if (t >= 13.0 && cw > 2) {
+    g.fillStyle = ACC; rr(M, 1320, cw, 140, 70); g.fill();
+    g.save(); g.beginPath(); g.rect(M, 1320, cw, 140); g.clip();
+    tx('Start at kiln.studio', M + 60, 1320 + 92, 60, UF, BG, { weight: 700 }); g.restore();
+  }
+}
+
+// ---------- scene 1 -> 2 transition: one slab, one direction ----------
+function slab(t) {
+  if (t < 3.5 || t > 4.5) return;
+  const top = H - 2 * H * eio(ramp(t, 3.5, 4.5));
+  g.fillStyle = ACC; g.fillRect(0, top, W, H);
+}
+
+function draw(t) {
+  g.reset();                                  // drop ALL leaked 2D state (save stack, clip, alpha, line styles) so frame N never depends on frame N-1
+  g.fillStyle = BG; g.fillRect(0, 0, W, H);
+  scene1(t); scene2(t); slab(t); card(t); scene4(t);
+}
+window.DUR = DUR;
+window.seek = (t) => { draw(t); return true; };
+if (!navigator.webdriver) {                       // live preview only outside headless
+  const t0 = performance.now();
+  (function loop() { draw(((performance.now() - t0) / 1000) % DUR); requestAnimationFrame(loop); })();
+}
+</script>

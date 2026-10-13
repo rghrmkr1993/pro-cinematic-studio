@@ -1,0 +1,21 @@
+{
+  "name": "motion-studio",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Code-rendered motion studio: seek(t) canvas + Playwright + ffmpeg",
+  "scripts": {
+    "render": "node render.mjs --fps 60 --dur 15 --sub 4",
+    "render:test": "node render.mjs --fps 60 --dur 5 --sub 1 --out out/test.mp4",
+    "cues": "node gen-cues.mjs && node sfx.mjs cues.json out/sfx.wav",
+    "beats": "python beats.py out/music.wav > beats.json",
+    "mix": "node mix.mjs",
+    "critique": "node critique.mjs",
+    "hash": "certutil -hashfile out\\silent.mp4 MD5",
+    "all": "npm run clean && npm run render && npm run cues && npm run beats && npm run mix && npm run critique && npm run verify",
+    "clean": "node -e \"require('fs').rmSync('out',{recursive:true,force:true})\"",
+    "verify": "node verify.mjs"
+  },
+  "devDependencies": {
+    "playwright": "^1.63.0"
+  }
+}

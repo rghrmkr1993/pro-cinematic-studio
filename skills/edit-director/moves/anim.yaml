@@ -1,0 +1,1450 @@
+id: anim.ai_video
+family: anim
+group: graphics
+level: C
+aliases: [AI video, neural network video, AI-generated footage, neural morph, AI morph, generative insert, text-to-video, image-to-video]
+what: an insert made entirely by a video generator — an impossible scene, a painterly style or a continuous flow of shapes with no cuts (a figure becomes a beast, a cave drawing becomes a fresco); the main tell is a world that "swims"
+frames: |
+  1. A shot of 1.5–8 s (38–200 frames @25 fps) without a single cut, even when the content changes completely over that time.
+  2. The camera is synthetically smooth: an even push-in ×1.7–1.9 over 1.3–1.6 s, a slow sideways drift of 30 % of the frame over 3.4 s,
+     a pull-out ×0.6 over 4.5 s — the curves are almost linear, jitter ≤0.6 % in 6 of 8 (a live handheld camera has more, and unevenly).
+  3. Morphing: a shape changes its "identity" right in the frame — a human figure folds into a hulking predator in 1–1.5 s,
+     then into a skull and skeleton; drawings on a cave wall become a carved relief in ≈2.5 s, and ≈2.5 s later a painted
+     bas-relief of another era; buildings rebuild themselves while a beam of light sweeps across them.
+  4. "Boiling" texture: fine details are redrawn every frame — fine-detail correlation between adjacent frames after
+     camera alignment is 0.04–0.47 in 5 of 8 (live footage 0.66–0.97), non-rigid deformation covers 51–93 % of the frame.
+  5. End of a link — the new form gets 0.5–1 s to "settle", followed by a cut or the next morph.
+variants:
+  - creature metamorphosis — a figure continuously rebuilds itself into another body, B&W or painterly, static camera (2 of 8)
+  - morph through styles and eras — an image on a wall changes technique and period, the camera slowly pulls out (1 of 8)
+  - impossible action scene — bursts of colored smoke, toy cars, objects appearing out of nowhere (1 of 8)
+  - abstract macro flow — petals and a bubble flow and spin, push-in ×1.9 with a 33° rotation over 1.6 s (1 of 8)
+  - cinematic fly-through — a realistic desert or a city at night, steady camera drift, no morphs (2 of 8)
+  - near-static portrait — the face holds while the texture of the skin and background barely perceptibly "shimmers" (1 of 8)
+status: generation
+fallback: 'image-to-video from the user''s own frames (bring a photo or a freeze frame to life for 3–5 s) — with consent; a chain of morphs between the user''s key frames by generating the first and last frame of each link; without generation, code gives only a weak imitation — an optical morph between two frames (trans.morph) plus texture "boil" via noise displacement'
+params:
+  clip: 1.5–8 s per generated shot, usable trim 2–5 s (50–125 frames @25 fps); artifacts accumulate toward the end — take the first 3–5 s
+  camera: one even move per link — push-in ×1.3–2 over 1.5–3 s, drift ≤1.2 % of the frame per frame, or pull-out ×0.6–0.8 over 3–5 s, linear; jitter ≤0.6 %
+  morph_rate: one shape change per 1–2.5 s, 0.5–1 s for the new form to "settle"; 2–4 stages per shot
+  boil: fine-detail correlation between adjacent frames 0.04–0.5 (live footage ≥0.65), deformation over 50–90 % of the frame
+  resolution: often lower than the final render — upscale ×2 and add 2–4 % grain to cut it with live shots
+  grade: match color and grain to the adjacent live shots; keep the style (painterly, B&W, neon) consistent across the whole series
+  disclosure: an "AI-generated" label per the platform's rules
+when: dream, memory, imagination, hallucination; "evolution" and history told through morphing eras; an impossible hook in the first 1–2 s (a surreal image stops the scroll); transitions between topics as a chain of morphs on downbeats; music-video visuals for electronic music; a product in an impossible world; explainers — visualizing abstractions that can't be filmed; B-roll when there is no shot (labeled)
+avoid: documentary, news and travel contexts where generated material is passed off as real; faces of real people without their consent; close-up hands, text and logos in frame (artifacts); a single generated shot longer than 5–6 s; mixing with live shots without matching color, grain and sharpness; a style that changes from shot to shot without intent
+sfx: synthetic pads and granular "shimmering" textures under the boiling texture, a riser on every morph with a whoosh at the peak of the shape change; place morph stages on bars (1 stage = 1–2 bars)
+genres: {teaser: signature, fanedit: allowed, viral: allowed, epic: allowed, fashion: allowed, product: allowed, motivation: allowed, explainer: allowed, drama: allowed, calm: allowed}
+detect: |
+  ed_motion: no cuts, even though the shot's content is completely different by the end (histogram and shapes drift away smoothly); the camera is
+  one even, almost linear move (near-linear zoom or drift), jitter ≤0.6 %. Custom "boil" check: align adjacent
+  frames with a global similarity transform, compare fine-detail maps (LoG) — correlation ≤0.5 and residual deformation
+  (Farneback >0.3 % of width) over ≥50 % of the frame is a strong hint (5 of 8; live footage 0.66–0.97 and 1–52 %). But a realistic
+  generated fly-through or a near-static portrait looks like live footage by the numbers (0.68–0.93) — a VLM is needed: fingers
+  merging, "mush" instead of text, objects changing shape, physics without a cause, overly smooth painterly light,
+  a generator badge in the corner; provenance metadata (C2PA), if present.
+  Differences: trans.morph — a morph between two separate images at a cut; trans.metamorphosis — a staged
+  transformation of the subject while the background stays still; anim.cgi_3d — stable textures and true perspective; anim.rotoscope — drawn
+  lines over live motion with held frames.
+engine: |
+  generate_shot(prompt, ref_image=None, duration=4, camera='push_in'|'drift'|'orbit'|'static', style) — new primitive
+  (a video generator call, only with the user's consent) → upscale(×2) → color(match=adjacent shot) + grain(amount=0.03).
+  Morph chain: morph_chain(keyframes=[img1, img2, img3], per_link=2.5, camera='slow_pull') — links generated from frame
+  to frame, joins on downbeats + sfx('riser') per link and sfx('whoosh', at=shape-change peak).
+  Weak code imitation: transition(kind='morph', dur=1.0) between two frames + boil(amount=2px, scale=12px, t) — new
+  primitive: noise displacement of pixels, refreshed every 1–2 frames.
+gen_hint: surreal AI-generated sequence, <subject> continuously morphing into <next form> and then into <final form> without any cuts, fluid shape-shifting, painterly cinematic lighting, slow steady camera push-in, dreamlike atmosphere, consistent style throughout
+commands: ["generate a dream insert between #3 and #4", "morph through eras on the intro: cave drawings → relief → fresco", "bring this photo to life for 4 seconds", "find the generated shots in the video"]
+related: [trans.morph, trans.metamorphosis, anim.cgi_3d, anim.rotoscope, look.dreamcore, look.psychedelic, zoom.infinite]
+evidence: {examples: 8, sources: 8, measured: "no cuts in any of the 8, with the content changing completely in 4; camera — even push-in ×1.67–1.93 over 1.3–1.6 s, drift of 33 % of the frame over 3.4 s, pull-out ×0.6 over 4.5 s, jitter ≤0.6 % in 6 of 8; fine-detail correlation between adjacent frames 0.04–0.47 in 5 of 8 vs 0.66–0.97 in three live control clips, deformation 51–93 % of the frame vs 1–52 %; shape change in ≈1–2.5 s; shots 1.5–8 s", confidence: medium}
+---
+id: anim.cel
+family: anim
+group: graphics
+level: C
+aliases: [cel animation, 2D animation, hand-drawn animation, traditional animation, cartoon style, classic 2D animation, cartoon look]
+what: a stretch of the video in the manner of a hand-drawn cartoon — flat characters with clean outlines over a painted background, drawings change on twos or threes; an insert, a stylization or a meaningful "escape into a cartoon"
+frames: |
+  1. Layers. The background is painterly and static: gouache or watercolor brushstrokes, 30–300 colors, visible texture
+     (flat pixels 0.1–0.3). Characters and objects are flat fills of "base + one shadow tone", no gradients,
+     7–40 colors per frame, flat pixels 0.55–0.72.
+  2. Outline. A clean thin line of 0.3–0.7 % of frame height (3–7 px at 1080p). Either near-black (brightness 10–30)
+     or "colored" — the same hue as the fill, 2–3 times darker (brightness 60–130). There is also a style without outlines:
+     silhouettes and patches of color.
+  3. Timing. With a static camera a drawing holds for 2–3 frames (80–120 ms @25 fps, ≈11 drawings/s); frames within
+     a hold are pixel-identical (< 0.4 % of pixels change). Before motion starts — a static hold of
+     4+ frames (≈0.2 s). The camera (slide, push-in, tilt), smoke, light and digital effects change every frame.
+  4. Camera. A slide or push-in across the flat drawing is rigid, with no parallax within a layer; or a multiplane
+     move: the foreground (poles, a window frame) moves faster than the background.
+  5. Scene changes often happen without a cut: metamorphosis — a figure flows into a spiral, particles or another shape in 1–2 s;
+     a variant — the figure changes color on every drawing.
+  In the edit: enter with a cut on the beat or a 0.3–0.5 s dissolve from a live shot; insert 1.5–6 s; exit with a cut
+  or a reverse metamorphosis.
+variants:
+  - classic — painted background + a character with a colored outline and two-tone shading
+  - graphic — 3–6 saturated flat colors, black outline, texture of dots and strokes, no shadows
+  - painterly scene — the frame is almost static, clouds, water and light move (≈5 % of pixels per frame)
+  - metamorphosis — a shape flows into a spiral or breaks up into particles, palette of 2–3 colors
+  - ornamental cycle — one short cycle multiplied around a circle or across a grid, overall rotation
+  - digital 2D — thin line, soft blush, glow and colored edges, on ones
+  - monochrome with an accent — B&W drawing, only the lights or a single detail in color
+status: generation
+fallback: |
+  footage — find animated fragments in the user's source footage (the tells are in detect);
+  code — a "cartoon filter": smoothing + 8–12 color palette + outline + stepping on twos; honestly label it as a filter,
+  keep it no longer than 3–4 s in a row;
+  hybrid — the masked character gets a flat fill and an outline, the background is frozen into a single "drawing" and goes through
+  a painterly filter — splitting into layers makes the imitation noticeably closer to real hand-drawn animation.
+params:
+  holds: on twos — baseline (2 frames @25 fps = 80 ms, 12.5 drawings/s); on threes (3 frames, 120 ms) — economical style; on ones — camera, fast actions, effects
+  line: "0.3–0.7 % of frame height (typically 0.4 % ≈ 4 px at 1080p), constant thickness; color #141414 or the fill hue ×0.35–0.5 in brightness"
+  fill: base + 1 shadow (shadow 25–40 % cooler and darker), no gradients or noise; 7–40 colors per frame (90 % of the area)
+  background: static painted plate, 30–300 colors, soft brush texture; moves only as a whole layer
+  palette: graphic style — saturation 150–190 of 255; painterly — 55–85; monochrome — < 15 with 1–2 color accents
+  camera: slide/push-in across the layer on ones, linear or inOutCubic, no shake; 2–3 parallax planes
+  static_hold: 4–8 frames of hold before a move or after a key pose
+  duration: insert 1.5–6 s (37–150 frames @25 fps); code imitation — up to 3–4 s in a row
+  temporal_stability: palette fixed for the whole shot; smooth the outline with a 3-frame median, otherwise it flickers
+when: a meaningful escape into "another world" — memory, fantasy, dream, parody; intro or outro bumper; a change of worlds on the drop; a schematic character in an explanation; animated inserts in fan edits; if the style isn't the main one — 1–2 inserts per 30–60 s video
+avoid: mixing a code filter and real hand-drawn animation in one scene; the filter on close-up faces (blotches on the skin, ragged outline); scenes with fine texture — foliage, crowds, water — the filter turns them into mush; stepping on twos with a fast camera — it stutters; a noisy source without denoising — the outline flickers every frame
+sfx: entering the cartoon section — a short swell or reverse_whoosh; on key poses — a light click or a soft impact; metamorphosis — a swell over its full length; painterly scene — ambient with no hits
+genres: {fanedit: signature, viral: allowed, teaser: allowed, explainer: allowed, calm: allowed, phonk: allowed, ugc: allowed, motivation: allowed, drama: allowed, clips: allowed, product: allowed}
+detect: |
+  frame: flat pixels (local std dev < 3) ≥ 0.5 on character frames (live video is usually < 0.2); 90 % of the area
+  is covered by ≤ 40 colors (4-bit bins); a thin clean outline (black-hat > 40 covers 1–10 % of the area).
+  time: at 24–25 fps, identical frame pairs (< 0.4 % of pixels change) come in runs of 2–3 frames; ed_motion
+  flags holds only from 3 frames in a row, catch twos with a pairwise test. Previews below 20 fps
+  don't show the holds.
+  camera: ed_motion events with nonrigid ≤ 0.06 on a slide or push-in (flat drawing, measured 0.008–0.05) or
+  stepped layer parallax (nonrigid 0.3–0.45 without perspective distortion).
+  differences: 3D animation — every frame is unique, soft gradients, specular highlights and motion blur; rotoscope — realistic motion
+  and perspective under the tracing; a cartoon filter on live video — the outline flickers every frame, no holds, noise and skin
+  gradients remain in the fills.
+engine: |
+  generation (main path): style_ref = generate_image(<key frame>, prompt=gen_hint)
+    → stylize_gen(clip, style_ref, strength=0.6–0.8, keep_motion=True) → step_print(hold=2)
+  code: cartoonize(smooth='bilateral', passes=2, palette=8–12 (fixed per shot), edge_px=0.004*H, edge_color='darker_fill',
+    shadow_tones=1, edge_temporal=3) + step_print(hold=2)
+  hybrid: mask('mediapipe_person', feather=2) → character: cartoonize(...); background: freeze_plate(at=t0) + painterly(kind='gouache', radius=6)
+  editing: transition('dissolve', dur=0.4) or cut on the beat; sfx('swell', at=t0)
+gen_hint: hand-drawn 2D cel animation of <subject and action>, clean uniform ink outlines, flat colour fills with a single shadow tone, painted gouache background, animated on twos, static camera with a slow pan across the painted background
+commands: ["make #3 look like a hand-drawn cartoon", "insert a cartoon cutaway on the drop", "turn the intro into flat 2D animation on twos", "metamorphosis of the subject into a spiral before the scene change"]
+related: [anim.line_art, anim.comic, anim.cgi_3d, anim.live_mix, anim.rotoscope, anim.rubber_hose, trans.metamorphosis, time.step_print]
+evidence: {examples: 21, sources: 20, measured: "drawing holds 60–120 ms (2–3 frames @24 fps) in a clean example with a static camera at a 33 fps preview; camera, smoke and effects change every frame in 4 of 4 clips with previews ≥ 25 fps; line 0.3–0.7 % of height; flat pixels 0.55–0.72 on character frames vs 0.1–0.3 on painterly ones; 7–40 colors vs 30–300; nonrigid of camera moves across the drawing 0.008–0.05; previews 6–50 fps, holds are readable only at ≥ 25 fps", confidence: medium}
+---
+id: anim.cgi_3d
+family: anim
+group: graphics
+level: B
+aliases: [3D animation, CGI, CG animation, 3D graphics, 3D loop, motion design 3D, render]
+what: an insert of 3D computer animation — an object or character with soft volumetric light, smooth materials and true perspective; a motion-design loop, a simulation or "impossible physics"
+frames: |
+  1. Scene: an object in the center on a single-color studio cyclorama (background 30–60 % of the frame, 1–2 colors, soft vignette shadow)
+     with a contact shadow under the object — or a fully built environment (a city from above, a club, a landscape).
+  2. Surfaces: smooth light gradients instead of flat fills (smooth gradient — 0.15–0.5 of the area vs < 0.1 for flat
+     drawing), soft shadows and shading in crevices; specular highlights — up to 11 % of pixels on chrome; no sensor noise
+     (or an even overlaid grain on stylized ones).
+  3. Motion: motion design, simulations (cloth, soft bodies, liquid) and the camera — on every frame, no holds;
+     stylized "toy" characters — on twos (a pose holds 60–120 ms, ≈12 poses/s).
+  4. Camera: static while the object rotates (turntable), or a slow orbit/push-in ×1.04–1.3 over 0.5–2 s,
+     close to linear; the perspective is real — moves have nonrigid 0.25–1.2 (parallax within the object).
+  5. Structure: a seamless loop of 1–4 s (the last frame passes into the first like an ordinary step); or an event
+     "rest → hit/fall → material reaction → settling" in 2–4 s.
+  In the edit: enter with a cut on the beat, insert 2–4 s; a loop can stretch up to 8 s under text or voice.
+variants:
+  - abstract loop — repeating shapes, extrusion, morphing, static camera
+  - simulation — cloth settling onto an invisible shape, a soft body, liquid relief with a ball
+  - product — gloss and glass, a macro move with shallow depth of field
+  - chrome — mirror surface, bright highlights, reflections of the surroundings
+  - stylized characters — vinyl or plasticine, shallow DoF, neon backlight, on twos
+  - grainy — soft pastel volumes with a noise texture and a dark vignette
+  - low-poly / top-down view — simple shapes, even light, an endlessly repeating grid
+  - 2.5D card — live video on a plane that flips in space (90° snaps in 1–3 frames)
+status: generation
+fallback: |
+  footage — find 3D renders in the source footage (the tells are in detect);
+  code — 2.5D: video or a frame on a plane with a perspective rotation and a shadow; simple 3D text;
+  Blender via the Higgsfield bridge (bl_*), if connected: turntable, primitives, cloth simulation from a template;
+  generate_3d — a model from an image → turntable render.
+params:
+  frame_rate: on ones (25 fps, every frame new) — baseline; stylized characters — on twos (12.5 poses/s)
+  loop: 1–4 s, seamless; repeat with loop(mode='cycle') up to 8 s
+  camera: static + object rotation 45–90°/s; or orbit/push-in ×1.04–1.3 over 0.5–2 s, linear or inOutCubic
+  background: single-color cyclorama (30–60 % of the frame) + contact shadow; or a full environment
+  palette: two complementary colors with saturation 140–210 (pink/mint, yellow/purple, magenta/violet); or "white clay" monochrome (saturation < 10)
+  materials: clay and matte plastic, chrome, glass, fabric, fur; matte reads as "soft", gloss as "premium"
+  dof: shallow DoF (background bokeh) for characters and objects; deep for abstractions
+  duration: insert 2–4 s (50–100 frames @25 fps); loop under text — up to 8 s
+when: a product "wow" shot and an object out of nothing; an intro and a loop under a logo or headline; visualizing an abstract idea in an explainer; a transitional showpiece between parts; on the drop — an impact or a simulation; in a live-action video — 1–3 inserts per minute
+avoid: stylized 3D next to live video without shared light and color; a render without a contact shadow — the object "floats"; an uneventful loop longer than 8 s; realistic human faces in 3D (uncanny valley); third-party brands and logos on objects
+sfx: soft "plastic" clicks and pops on contacts; a swell or whoosh on an orbit; a simulation hit — impact or sub_drop; for loops — an even ambient bed
+genres: {product: signature, teaser: allowed, explainer: allowed, viral: allowed, epic: allowed, fashion: allowed, motivation: allowed, calm: allowed, fanedit: allowed, clips: allowed}
+detect: |
+  ed_motion: when the camera or object moves — zoom/rotate events with nonrigid 0.25–1.2 (real perspective) and no
+  shake (jitter ≤ 0.2 %, a live camera usually has more); with a static camera — no events, but the object rotates;
+  no holds (on ones) or regular pairs of identical frames for stylized characters.
+  frame: smooth gradient over 0.15–0.5 of the area, flat pixels almost only on the cyclorama background, perfect edges, highlights,
+  soft contact shadows; no sensor noise.
+  differences: live video — sensor noise, organic fine texture, micro-shake; 2D drawing — flat fills
+  with outlines and rigid layer shifts (nonrigid ≤ 0.06); stop motion — uneven holds, light flicker, finger
+  marks on the material; 2.5D card — live video inside the plane with perspective distortion.
+engine: |
+  generation: generate_image(prompt=gen_hint) → generate_video(image, motion='slow orbit'|'turntable', dur=3–5)
+    or generate_3d(image) → bl_import_model + bl_render(camera='turntable', deg=360, dur=4–6) when Blender is connected
+  code (2.5D): plane3d(clip, rotate=[0, 180], axis='y', persp=0.6, t=[t0, t0+0.5], ease='inOutCubic', shadow=True, bg='black')
+  editing: cut on the beat → insert 2–4 s → loop(mode='cycle') for a loop; sfx('click', at=contact), sfx('impact', at=hit)
+gen_hint: stylized 3D animation of <object or character> on a seamless pastel <colour> studio backdrop, soft global illumination, gentle contact shadow, smooth clay or glossy plastic materials, slow orbiting camera, seamless 4-second loop
+commands: ["insert a 3D product loop before the final shot", "flip shot #2 like a card in 3D", "a 3D object on a solid background under the headline", "cloth simulation on the drop"]
+related: [anim.cel, anim.live_mix, anim.stop_motion, anim.claymation, orbit.turntable, product.hero, look.video_game]
+evidence: {examples: 16, sources: 16, measured: "on ones in 3 of 3 clips with previews ≥ 25 fps (not a single hold); stylized character — alternating holds of 60/120 ms at a 16.7 fps preview (≈12 poses/s); nonrigid 0.25–1.2 for camera and object moves; smooth gradient over 0.15–0.49 of the area; cyclorama background 30–60 %; highlights up to 11 % on chrome; loop seams in 2 of 2 checked equal an ordinary frame step", confidence: medium}
+---
+id: anim.charcoal
+family: anim
+group: graphics
+level: B
+aliases: [charcoal animation, charcoal drawing, chalk animation, charcoal-drawn look, charcoal sketch]
+what: monochrome charcoal or chalk animation — every frame is redrawn, the strokes "boil", tone is smudged, traces of erased phases stay visible; a heavy, intimate, anxious mood
+frames: |
+  1. Material: charcoal on light paper (dark smudged patches, white eraser highlights, paper grain) or
+     white chalk/pastel on black or a dark board. Saturation ≈ 0; sometimes a paper or board tint
+     (olive, warm: R ≈ G > B).
+  2. Stroke: broad ragged strokes and hatching of 0.5–2 % of frame height, uneven edges; form is built from tonal patches
+     and strokes, with no outline as such; a dark background is often packed with diagonal hatching at 30–60°.
+  3. Timing: every frame is a new drawing, no repeats; 4–12.5 drawings/s (80–240 ms per drawing, 2–6 frames
+     @25 fps). Even in a still pose each change alters 56–78 % of the drawn pixels, contours match
+     by 71–87 %, the whole drawing "drifts" by 0.15–1.5 % of the width — this is the "boil".
+  4. Motion: metamorphosis instead of a cut (branch → person → back, face → ball) in 1.5–4 s; drawn
+     push-ins and turns in jerks ×1.05–2.5; half-erased traces of previous phases remain; adjacent drawings
+     are sometimes overlaid as a double exposure.
+  In the edit: a metamorphosis shot of 2–8 s; entry and exit — a 0.4–1 s dissolve or an "erase" into the paper.
+variants:
+  - charcoal on paper — smudged tone + eraser highlights, close-up portrait, facial expressions
+  - chalk on black — ragged white gestural strokes on black or a dark board
+  - hatched background — a dark rectangle of diagonal hatching with a light figure inside; the background boils
+  - metamorphosis cycle — shape → figure → back, ping-pong 3–4 s
+  - drawn fly-through — push-in and rotation across the drawing in jerks, polarity switches white ↔ black
+status: code
+fallback: generation (with consent) — when real hand drawing with metamorphoses and drawn camera moves is needed; code convincingly handles portraits and simple figures, less so complex scenes with fine details
+params:
+  polarity: dark on light (paper brightness 180–240) | light on dark (background 0–50, stroke 200–245)
+  palette: saturation 0–10; optional paper tint — R ≈ G, B lower by 8–12 %
+  stroke: 0.5–2 % of height (typically 1 %), ragged edge, direction follows the image gradient
+  smudge: tone smudging with a radius of 1–3 % of height
+  holds: on threes (3 frames @25 fps = 120 ms, ≈8 drawings/s) — baseline; 2 frames for facial expressions; 5–6 frames for a "diary-like" slowness
+  boil: each new drawing has a new stroke texture; whole-drawing shift 0.2–1 % of width; contours match by 70–90 %
+  palimpsest: trace of the previous drawing at 10–25 % opacity, fades over 2–4 drawings
+  grain: paper grain 6–10 %, occasional vertical scan scratches
+  duration: 2–8 s (50–200 frames @25 fps)
+when: memory, dream, anxiety, a confession under voice-over, loss, the subject's "inner world"; the intro of a dramatic or documentary video; a live shot passing into a drawing on a change of topic; a music video for slow or ambient music; one insert per video or a whole episode
+avoid: cheerful, product and sports videos — charcoal drags the mood down; cuts on every beat (a stroke can't be read faster than 0.5 s); complex wide shots without a mask — a mush of strokes; boiling on ones — flickers and tires the eye; random color accents
+sfx: rustle of charcoal or chalk on paper on drawing changes (scratch, quiet), rustle of a sheet; ambient or drone; swell or reverse_whoosh on transitions; no hard hits
+genres: {drama: signature, teaser: allowed, calm: allowed, fanedit: allowed, motivation: allowed, epic: allowed, fashion: allowed}
+detect: |
+  frame: saturation < 10 or an even paper tint; a two-humped histogram (paper + stroke); high fine texture,
+  grain; few flat pixels within the drawing itself.
+  time: every frame is unique even at rest — a change alters 16–72 % of pixels; in a still pose contours match
+  at 0.7–0.9 while 56–78 % of the drawn pixels change; previews 4–12.5 drawings/s.
+  ed_motion: noisy zoom/rotate events with nonrigid 0.6–1.4 and conf low, jitter 0.8–2.4 % without real
+  camera motion; no holds.
+  differences: pencil sketch — thin lines, almost no tonal patches; scribbles — colored chaotic loops;
+  a charcoal filter on live video — photographic perspective and smooth motion on ones, no boil.
+engine: |
+  code: color(saturation=0) → sketch(kind='charcoal', polarity='dark_on_light'|'light_on_dark', stroke=0.01*H, smudge=0.02*H,
+       hatch_angle=45, paper='rough') + step_print(hold=3) + line_boil(amp_px=0.005*W, every=3, reseed_texture=True)
+       + palimpsest(opacity=0.2, decay=3) + grain(amount=0.08)
+  hybrid: mask('mediapipe_person', feather=4) → replace the background with paper or a field of hatching, draw only the figure
+  generation: stylize_gen(clip, style_ref=generate_image(<key frame>, prompt=gen_hint), strength=0.7) + step_print(hold=3)
+  entry/exit: transition('dissolve', dur=0.6); sfx('scratch', gain=-12 dB) on drawing changes
+gen_hint: hand-drawn charcoal animation of <subject>, smudged black charcoal on rough off-white paper, eraser highlights, faint traces of erased previous frames, boiling strokes, animated on threes, monochrome
+commands: ["make the memory in #4 charcoal", "turn the ending into a chalk drawing on black", "charcoal metamorphosis of the face into a ball at 0:12", "shots 2–3 as a charcoal sketch on threes"]
+related: [anim.pencil_sketch, anim.scribble, anim.line_art, anim.cel, time.step_print]
+evidence: {examples: 9, sources: 6, measured: "saturation 0 in 6 of 8 (in 2 — a paper or board tint); previews 4.2–12.5 drawings/s, no repeated frames in any of them; a frame change alters 16–72 % of pixels; in a still pose — 56–78 % of the drawn pixels, contour match 0.71–0.87, drift 0.15–1.5 % of width; ed_motion — jitter 0.8–2.4 % (up to 10 % in drawn fly-throughs), events with nonrigid 0.6–1.4", confidence: medium}
+---
+id: anim.claymation
+family: anim
+group: graphics
+level: B
+aliases: [claymation, plasticine animation, plasticine, clay animation, plasticine cartoon, clay painting]
+what: characters and a world made of plasticine, animated frame by frame — soft rounded shapes, fingerprints, a "breathing" surface and jerky motion on twos; warm handmade naivety or absurdity
+frames: |
+  1. Material: matte rounded shapes with fingerprints and seams, bead eyes, replacement mouths; the world is a miniature
+     set (a bench, a tree, a room) or a flat plasticine "canvas" sculpted on a board.
+  2. Timing: a phase holds for 2 frames (80 ms @25 fps, ≈12.5 phases/s) — the main rhythm; pauses and stop poses — 4–5 frames (≈200 ms);
+     fast actions on ones. Slow transformations — 3–6 frames per phase (≈4–8 phases/s).
+  3. Material "breathing": between phases the surface changes slightly even at rest (0.6–1 brightness levels in still areas),
+     frame brightness flickers by 0.6–1.2 %, the camera is locked dead still (jitter ≤0.6 % of the frame).
+  4. Speech via replacement mouths: the mouth shape changes every phase, the face is almost still, brows and eyes "act" separately.
+  5. Transformations without cuts: a figure grows vines and becomes a flower, a face melts into a symbol, fish into waves,
+     a stream into a new face (6–18 s in one shot).
+variants:
+  - close-up dialogue: a face on twos with replacement mouths, blinks lasting 4–5 frames
+  - miniature set: a figurine in a built world, props appear and disappear from phase to phase
+  - plasticine canvas: flat relief on a board, scenes flow into one another (≈10 phases/s)
+  - metamorphosis: a character turns into a plant, an object or an element in 6–8 s
+  - animator's hands in frame: real hands sculpt and reposition the figurine right in the scene — comic and "honest"
+status: generation
+fallback: "code gives only the timing and texture — step_print(hold=2) + 0.3 % frame jitter + ±1 % brightness flicker + soft posterization; the plasticine look itself is generation (image/video-to-video from a 'plasticine claymation' style frame) with consent; footage: find frame-by-frame sculpting or toys shot in the source footage"
+params:
+  timing: on twos (2 frames @25 fps = 80 ms, ≈12.5 phases/s); pauses 4–5 frames; transformations 3–6 frames per phase
+  boil: change in still areas between phases 0.5–1 brightness levels; exposure flicker 0.6–1.2 %
+  camera: static (jitter ≤0.6 %), occasional push-ins also on twos
+  palette: saturated "plasticine" colors (saturation 95–170), soft directional light, shallow depth of field on close-ups
+  shot: 1.5–4 s per line or action; metamorphosis 6–18 s
+  lip_sync: mouth change on every phase by phoneme, 4–6 mouth shapes
+when: kids' and family videos, absurd humor and memes, a music video or fan edit with a handmade aesthetic, explaining through an object that "comes to life", intros and bumpers, a brand with a warm craft tone; metamorphosis as a transition between topics
+avoid: serious news and strict product specs; long close-up dialogues without good mouth sync; generation without locking the character — faces and colors "drift" from shot to shot; smooth motion on ones — the handmade feel disappears
+sfx: cartoon foley — a "pop", creaks, plasticine squelches; on a transformation — a stretchy "creak" and a swell; voice-over close and dry; music — ukulele, pizzicato or a naive synth
+genres: {fanedit: allowed, viral: allowed, explainer: allowed, teaser: allowed, ugc: allowed, product: allowed, calm: allowed, clips: allowed}
+detect: |
+  Frame: matte rounded shapes without fine details, fingerprints and seams on the surface, bead eyes; soft miniature-shoot
+  light, shallow depth of field. Saturation 95–170.
+  Time: holds of 2 frames (≈12.5 unique phases/s) with occasional 4–5-frame pauses; the surface at rest changes slightly
+  between phases (0.5–1 levels), exposure flickers ≈1 %; the camera stays still (ed_motion: no events, jitter ≤0.6 %).
+  Difference from stop-motion with puppets: there the materials are rigid or fabric, with no sculpting marks. From anim.cgi_3d: perfect
+  surfaces, motion on ones without flicker. From anim.cel: flat fills and outlines.
+engine: |
+  clay_stylize(ref_style='plasticine', subject_lock=True) — video-to-video generation from a style frame (new primitive);
+  then step_print(hold=2, shutter=0) + destabilize(profile='tripod_nudge', amp=0.003) + flicker(amount=0.01, per='phase')
+  + grain(0.02); pauses — freeze(dur=0.16–0.2) on accents; mouths — lip_sync(phonemes, shapes=5, hold=2).
+gen_hint: claymation stop-motion scene, plasticine characters with visible fingerprints and soft rounded shapes, bead eyes, handmade miniature set, warm soft studio light, shallow depth of field, animated on twos with slight frame-to-frame jitter
+commands: ["redo #3 as plasticine animation", "a claymation bumper where the character turns into a flower", "add handmade timing on twos with a slight flicker", "a scene where the animator's hands sculpt the character right in frame"]
+related: [anim.stop_motion, anim.pixilation, anim.cel, anim.cgi_3d, time.step_print, trans.metamorphosis]
+evidence: {examples: 8, sources: 8, measured: "phases of 2 frames (80 ms) in 1 example, a mix of ones and twos with 200 ms pauses in 1 (≈11 phases/s), almost on ones in 1 (19 phases/s); slow transformations — 130–260 ms per phase; change in still areas 0.6–1.0, exposure flicker 0.6–1.2 %; frame jitter 0.05–0.57 %; metamorphoses — 2, animator's hands in frame — 1, flat plasticine canvas — 1", confidence: medium}
+---
+id: anim.color_pencil
+family: anim
+group: graphics
+level: B
+aliases: [colored pencil animation, crayon animation, wax crayons, marker drawing, child's drawing, sketchbook]
+what: animation in colored pencil, wax crayon or marker — strokes and paper grain are visible, outlines "boil", drawings change on twos or threes; warm, handmade, "straight from a sketchbook"
+frames: |
+  1. Base: white or cream paper (background brightness 220–252, saturation < 30), white specks of grain show through
+     the fills — the crayon doesn't clog the paper (up to 20 % light pixels inside colored areas).
+  2. Stroke: visible hatching following the form or at 30–60°, a colored outline of 0.5–0.7 % of frame height, darker
+     than the fill of the same hue; textured pixels 0.4–0.7 of the area; uneven color with gaps.
+  3. Timing: a new drawing every 80–100 ms (on twos or threes @25 fps, 10–12.5 drawings/s); at a 20 fps
+     preview — pairs of identical frames of 100 ms each. A still picture never stands still: it is redrawn
+     2–3 times in a cycle ("boil"): ≈ 42 % of the strokes change, the paper stays still (< 0.3 %), contours
+     match by 76–93 %, the drawing shifts ≤ 0.13 % of the width.
+  4. Color as an event: the fill changes hue on every drawing while the outline stays the same (warm ↔ cool),
+     or the whole palette "cycles" around; the line stays.
+  5. The scene builds up "before your eyes": strokes get drawn in, a figure emerges from scribbles and goes back into them.
+  In the edit: shot 1.5–5 s; entry — a reveal by strokes or a cut on the beat; exit — a dissolve into the paper.
+variants:
+  - wax crayon "child's drawing" — rough hatching, bright primary colors, boil cycling through 3 drawings
+  - colored pencil + watercolor fill — thin graphite line, the fill color changes every drawing
+  - marker doodle collage — a new composition of small characters every 100 ms, 3–4 colors
+  - limited palette — 3–4 flat colors (red, yellow, blue + white), blue line, a "printed" style
+  - psychedelic color cycling — outline drawing, the palette and background change every frame
+  - animated illustration — a detailed drawing stays still, one small figure moves, 3–5 drawings/s
+status: code
+fallback: generation (with consent) — when drawn characters with action and metamorphoses are needed; code does a good "pencil/crayon" filter on simple shots, boil and color cycling
+params:
+  paper: white or cream (RGB ≈ 255/251/232), grain 6–10 %, no vignette
+  line: colored outline 0.5–0.7 % of height, the fill hue ×0.5–0.6 in brightness, uneven edge
+  fill: hatching at 30–60° or following the form, coverage 60–85 % (paper shows through the crayon), 5–12 colors
+  holds: on twos or threes (2–3 frames @25 fps, 80–120 ms); animated illustration — 5–8 frames
+  boil: a cycle of 2–3 redraws, stroke offset 1–2 px at 1080p, contours match by 75–90 %
+  color_cycle: fill hue change every 1–2 drawings (optional)
+  build_up: drawing-in over 0.5–1.5 s on entering the shot
+  duration: 1.5–5 s (37–125 frames @25 fps)
+when: childhood, memories, dreams, family; a "personal diary" and a travel sketchbook; intros, section bumpers and outros; a background under a headline (the boil brings a static frame to life); music and lyric videos; a kids' or DIY product; 1–3 inserts or a full stylization of a short video
+avoid: a premium or formal tone; editing shorter than 0.3 s per shot — the stroke has no time to read; boil under small text — it trembles and gets in the way of reading; the filter on complex wide shots (crowds, foliage) — mush; mixing with smooth 3D graphics in the same frame
+sfx: rustle of pencil or crayon during drawing-in (quiet, scratch), a marker click on appearance; light clicks on drawing changes during pauses; ambient, ukulele, a glockenspiel bed
+genres: {ugc: allowed, viral: allowed, fanedit: allowed, calm: allowed, travel: allowed, explainer: allowed, motivation: allowed, teaser: allowed, product: allowed, fashion: allowed}
+detect: |
+  frame: paper background (brightness p95 ≥ 220, background saturation < 30); textured pixels 0.4–0.7; colored lines
+  (stroke saturation > 60); paper gaps inside the fills.
+  time: at 10–12.5 fps every preview frame is a new drawing; at 20+ fps — pairs of identical frames of 80–100 ms;
+  boil in still areas — ≈ 40 % of the strokes change while the paper stays still, contour match 0.76–0.93.
+  ed_motion: holds are caught only at previews ≥ 20 fps; usually no global camera motion.
+  differences: watercolor — soft washes and halos without hatching; pencil sketch — grey graphite (saturation
+  < 10); scribbles — chaotic loops, the line itself boils; cel — even flat fills without grain.
+engine: |
+  code: sketch(kind='color_pencil'|'crayon'|'marker', paper='cream', tooth=0.15, hatch_angle=45, palette=8,
+       line_px=0.006*H, line_color='darker_fill') + step_print(hold=2) + line_boil(amp_px=0.0015*W, every=2, cycle=3, reseed_texture=True)
+       [+ color_cycle(palette='warm_cool', every=1) for color cycling]
+  entry: reveal_strokes(dur=0.8, order='outline_then_fill'); exit: transition('dissolve', to='paper', dur=0.5)
+  hybrid: mask('mediapipe_person') → the figure in pencil, background — clean paper
+  generation: stylize_gen(clip, style_ref=generate_image(<key frame>, prompt=gen_hint), strength=0.7) + step_print(hold=2)
+gen_hint: hand-drawn colored pencil and wax crayon animation of <subject>, visible hatching strokes, paper grain showing through the colour, slightly wobbly coloured outlines, cream paper background, boiling lines, animated on twos
+commands: ["make the intro look like a colored pencil drawing", "turn #2 into a child's crayon drawing", "make the headline on paper boil as if hand-drawn", "draw the scene in with strokes on entry"]
+related: [anim.pencil_sketch, anim.watercolor, anim.scribble, anim.doodle_overlay, anim.line_art, anim.charcoal]
+evidence: {examples: 9, sources: 9, measured: "previews 3.3–33 fps; a new drawing every 80–100 ms in 6 of 9; at 20 fps — holds of 100 ms; boil of a static picture: 42–43 % of the strokes change, paper < 0.3 %, contour match 0.76–0.93, drift ≤ 0.13 % of width; paper background brightness 241 / saturation 29; line 0.56–0.69 % of height; texture 0.4–0.71 of the area", confidence: medium}
+---
+id: anim.comic
+family: anim
+group: graphics
+level: B
+aliases: [comic book animation, manga-style animation, comic-style animation, manga style, graphic novel, manga look, motion comic]
+what: animation in the language of comics and manga — stark black-and-white drawing with screentone shading, speed lines, a strobing background and panel inserts; turns the action into a drawn scene from a comic
+frames: |
+  1. Tone: B&W with no color — three levels (black 44–74 % of the area, one grey tone, white 6–22 %) plus a grainy
+     stippled halftone screen in the midtones; or a color version — flat saturated fills (saturation 90–125)
+     and a thick black outline.
+  2. Timing: the character drawing holds for 2–3 frames (80–120 ms), but the grain screen is regenerated every frame
+     (3–9 % of pixels change) — a still drawing "hisses". A 16-frame cycle (0.64 s) repeats for breathing
+     or rain; camera moves and speed lines — on ones.
+  3. Speed lines: a radial burst of white strokes around an empty center (the center is a face or a weapon), or
+     horizontal streaks behind the character; the strokes are redrawn every 1–2 frames.
+  4. Background strobe: the background alternates black ↔ white every 2 frames (80 ms) for 0.5–1 s, the figure
+     stays grey and unchanged — tension before a hit.
+  5. Panel insert in live video: 1–2 frames of a colored flash → a drawn panel with the character,
+     an onomatopoeia and diagonal streaks (≈ 0.9 s, drawing on twos) → a sharp return to the live shot
+     with motion blur.
+  In the edit: episodes of 1–3 s, cuts on the beat, 1–2 black or white frames between panels.
+variants:
+  - B&W manga action — screentone, speed lines, background strobe, close-ups of eyes and hands
+  - quiet manga — rain or breathing in a 0.64 s cycle, the drawing is still, only the screen hisses
+  - color insert in live video — the subject "turns" into a drawing for ≈ 1 s with onomatopoeic on-screen text
+  - color action — thick outline, two-tone shadows, lightning effects, dynamic camera
+  - pop close-up — an eye or lips, flat background, thick brushstroke lashes, small sparkles
+status: hybrid
+fallback: generation (with consent) — for complex drawn poses and action scenes; code + mask cover the "manga" and "pop comic" filters, speed lines, strobe, on-screen text
+params:
+  levels: 3 brightness levels (0 / 90–110 / 255) + a stochastic halftone screen in the midtones, refreshed every frame
+  line: XDoG outline 0.4–0.8 % of height, black; 0.8–1.2 % in the color version
+  color_mode: B&W (saturation 0) | pop — 4–8 flat colors with saturation 90–125
+  holds: character on twos or threes (80–120 ms), screen and speed lines — every frame
+  speed_lines: radial, 60–120 strokes, empty center 30–45 % of frame height, refreshed every 1–2 frames; or parallel streaks 20–60 % of width
+  strobe: background black/white every 2 frames, 0.5–1 s (12–25 frames @25 fps)
+  insert: panel insert 0.8–1.5 s; entry — a 1–2 frame flash; exit — a cut + whip blur
+  lettering: large onomatopoeia, 15–30 % of frame height, bold handwritten font
+when: a hit, a gunshot, a decisive moment, an "epiphany"; the live subject turning into a drawing on the drop; hooks and teasers; anime and fan edits; sport — the key moment as a comic panel; explaining with a story in panels; 1 insert per 15–20 s, a B&W episode — up to 10 s
+avoid: strobe for sensitive viewers (add a warning, or go softer — 160 ms instead of 80); calm and luxury videos; halftone screen over small text; the filter on complex wide shots without a mask — mush; drawn on-screen text with third-party brands
+sfx: a hit or impact on the entry flash; a whoosh on the return; on the strobe — a pulsing bass; radial lines — a riser 0.5 s before the hit; double the onomatopoeia with a sound (scratch, impact)
+genres: {fanedit: signature, phonk: allowed, viral: allowed, teaser: allowed, sport: allowed, clips: allowed, ugc: allowed, motivation: allowed, drama: allowed, product: allowed, explainer: allowed}
+detect: |
+  B&W: saturation 0; 3 brightness plateaus (black 0.44–0.74, white 0.06–0.22); stippled halftone screen in the midtones.
+  time: alternating changes across frames — a large one every 2–3 frames (drawing) and a small one of 3–9 % every frame (screen);
+  strobe: background brightness flips every 80 ms in a row — ed_motion: strobe flips and white frames every other frame.
+  speed lines: thin high-contrast strokes along radii toward one point, or parallel streaks, changing every frame.
+  insert: a sharp histogram jump, flat colors (saturation 105–125), a thick outline, a large onomatopoeia.
+  differences: cel — a painted background and soft color fills without a halftone screen; rotoscope — live motion under the tracing;
+  glitch — digital blocks, not a drawn halftone screen.
+engine: |
+  code: comic_filter(mode='manga'|'pop', levels=3, dither='stochastic', dither_refresh=1, line='xdog', line_px=0.006*H,
+       palette=6) + step_print(hold=2) (only on the character layer; the screen — every frame)
+  hybrid: mask('mediapipe_person', feather=1) → background: speed_lines(kind='radial', count=90, inner_r=0.4, color='white', refresh=1, center=track(face))
+       | bg_strobe(colors=['black','white'], every=2, t=[t0, t0+0.8])
+  insert: flash(color='#ff2d8a', dur=0.08) → comic_filter(mode='pop') 1.0 s + text('onomatopoeia', style='comic_bold', anim='pop')
+       → cut + blur(kind='directional', amount=0.6, t=[t1, t1+0.2])
+  sfx('impact', at=entry), sfx('whoosh', at=exit)
+gen_hint: black and white manga-style animation of <subject and action>, stark ink lines, screentone and stippled grain shading, radial speed lines bursting around the subject, background strobing black and white, animated on twos
+commands: ["make the hit at 0:14 a manga panel", "speed lines around the face on the drop", "turn the subject into a comic for a second with an onomatopoeia", "black-and-white background strobe before the hit"]
+related: [anim.cel, anim.line_art, anim.rotoscope, anim.live_mix, cut.flash, light.flash]
+evidence: {examples: 8, sources: 4, measured: "B&W: 3 plateaus, black 0.44–0.74, white 0.06–0.22, saturation 0; drawing changes with a period of 2 and 3 frames while the screen refreshes every frame (3–9 % of pixels); 16-frame cycle; background strobe 80 ms (0.95 of the area changes); color insert ≈ 0.9 s, drawing on twos, entry via a 2–3 frame flash; pop color saturation 87–123", confidence: medium}
+---
+id: anim.doodle_overlay
+family: anim
+group: graphics
+level: B
+aliases: [doodle animation, doodle overlay, doodle over video, bringing objects to life, eyes on objects, googly eyes, drawn faces, object personification]
+what: simple drawn faces, eyes, eyebrows and little arms tracked onto an object in live video — the thing "comes alive" and reacts; a comedy device for short videos
+frames: |
+  1. Source: an ordinary everyday phone video — a plate, a rug, food, a vehicle, a bird; handheld camera
+     (shake 0.06–3.5 %), the object takes up 30–80 % of the frame.
+  2. Drawing: a thin black line of 0.4–0.9 % of frame height; eyes — white ovals with a black outline and a dot pupil,
+     each 5–12 % of frame height; stroke eyebrows, a bracket mouth, thin little arms with hands; sometimes one flat
+     color fill (beard, muscles, bangs) — 1–2 colors, no shadows.
+  3. Tracking: the drawing is "stuck" to the surface — it follows the object's shift, scale and rotation on every frame
+     (an object moving away shrinks the eyes ×0.57 over 2.7 s along with itself); the foreground (a foot, a fork, chopsticks)
+     occludes the drawing — a matte is needed.
+  4. Acting: starting pose — a calm face for 0.5–1 s; on an event (stepped on, poked, dropped) — an instant change of
+     expression ("> <" eyes, round eyes, open mouth) and waving arms, drawing on twos or threes;
+     blinks of 2–3 frames; sometimes a small text remark or a large pixel font.
+  5. Climax — a reaction that coincides with the action in frame; ending — the face returns to rest or
+     "falls asleep".
+  In the edit: a 1.5–7 s clip in one shot, no cuts; a series of such clips becomes a recurring segment format.
+variants:
+  - face on a flat surface — a plate, a rug, a screen: planar track, the drawing in the surface's perspective
+  - face on a 3D object — food, vegetables, vehicles: point track + scale, the drawing faces front
+  - added body — little arms, muscles, a hairdo over a live animal or person
+  - ensemble — 4–6 "characters" in frame at once, exchanging glances with each other
+  - speech line — a short sound label in a pixel font is added to the face
+status: hybrid
+fallback: if the object spins fast or leaves the frame — manual keyframe tracking (every 3–5 frames) with interpolation; if the track breaks — punch in with a crop; no generation needed, the drawing is assembled from vector parts
+params:
+  line: black, 0.4–0.9 % of frame height, even, round ends
+  eyes: white ovals 5–12 % of frame height, spacing 0.6–1.2 eye widths; pupil 20–30 % of the eye
+  colors: white + black + 0–2 flat accents (yellow, pink, lilac)
+  track: every frame; planar (homography) for flat surfaces, point + scale + rotation for 3D objects
+  occlusion: foreground over the drawing (matte of a hand, foot, fork), 1–2 px feather
+  expression_holds: an expression holds 0.3–1.5 s; the change is a jump in 1 frame; blinks 2–3 frames (80–120 ms)
+  limbs: arms on twos or threes (2–3 frames @25 fps), 3–6 poses per gesture
+  clip: 1.5–7 s (37–175 frames @25 fps), one shot
+when: humor, UGC and viral short videos; bringing a product or food "to life" in explainer and product content; a reaction to an event in frame (stepped on, bitten, poked); a hook in the first 1–2 s — the face is already visible; a recurring segment made of a series of such clips
+avoid: a serious, dramatic or luxury tone; objects without a clear surface (smoke, water with glints) — the track drifts; fast shake without stabilization — the drawing "comes unstuck"; thick colored outlines and shadows — they break the doodle's simplicity; more than 6 characters in frame
+sfx: short cartoon sounds on expression changes — pop, boing, squeak; on a blink — click; when the object gets hit — impact and a comic yelp; a light ukulele bed
+genres: {ugc: signature, viral: signature, fanedit: allowed, explainer: allowed, product: allowed, clips: allowed, calm: allowed, fashion: forbidden, motivation: forbidden}
+detect: |
+  frame: live video (noise, perspective, handheld camera) + foreign flat elements: white ovals with a thin black
+  outline and a dot, stroke eyebrows, thin little arms — no texture or shadows.
+  time: the drawing keeps its position relative to the object as the camera moves; the expression changes in a jump;
+  ed_motion — an ordinary handheld camera (jitter 0.06–3.5 %), global motion events as in live video.
+  differences: mixed animation (live_mix) — full drawn characters with bodies and actions; stickers and
+  emoji — raster images with gradients, no tracking and no expression changes; scribbles — the drawing boils
+  across the whole frame.
+engine: |
+  hybrid: track(object:<object>, kind='planar'|'point_scale_rot', every=1) → doodle_face(parts=['eyes','brows','mouth','arms'],
+       line_px=0.006*H, eye_h=0.08*H, fill='#ffffff', accent=None, anchor=track)
+       + expression_track([[t_event, 'squint'], [t_event+0.6, 'shock'], [t_end, 'calm']], blink_every=2.5)
+       + step_print(hold=2, layer='doodle_limbs') + occlude(mask('hf_remove_background'|'mediapipe_hands', feather=1.5))
+  sfx('click', at=blink), sfx('scratch'|'impact', at=t_event)
+gen_hint: phone video of <object> on <surface>, with a simple hand-drawn cartoon face doodled onto it — white oval eyes with thin black outlines, eyebrows, tiny stick arms — tracked to the object and reacting expressively, flat 2D doodle over live action
+commands: ["draw eyes and a mouth on the mug in #2 and make it blink", "bring the product to life with a face at 0:05", "when someone steps on the rug, the face on it squints", "give the vegetables little eyes and arms"]
+related: [fx.living_object, anim.live_mix, anim.scribble, anim.color_pencil, fx.talking_animal, gfx.floating_ui]
+evidence: {examples: 8, sources: 1, measured: "line 0.37–0.93 % of height; eye 5–12 % of frame height; handheld camera jitter 0.06–3.5 %; the drawing keeps its scale as the object moves away ×0.57 over 2.7 s; the foreground occludes the drawing in 2 of 8; all 8 are by one author, so the range of styles is narrow", confidence: medium}
+---
+id: anim.line_art
+family: anim
+group: graphics
+level: B
+aliases: [line art animation, line animation, outline animation, line graphics, one-line drawing, outline only]
+what: animation in a single line without fills — a one-color outline on a solid background; from minimalist loops and portraits to line-drawn panoramas; a clean graphic "pen drawing"
+frames: |
+  1. Palette: a solid background (black, white or one saturated color), a line of one color (white, black or
+     the brand color), no fills or 1–2 accents (red lips, black hair); line saturation 0–110.
+  2. Line: constant thickness of 0.7–1.5 % of frame height (thickness variation along a stroke 16–35 %), round ends;
+     lines cover 2–22 % of the area.
+  3. Timing — three modes:
+     a) vector — every frame is unique, shape morphing on ones, lines don't jitter;
+     b) hand-drawn — a pose holds for 2–3 frames (60–90 ms), still parts stay pixel-identical;
+     c) "boiling" — every drawing is redrawn by hand, ≈ 70 % of line pixels change, the outline drifts by ≈ 1 %
+        of the width, 8–10 drawings/s.
+  4. Camera: a long sideways pan across a line illustration (0.7–1.2 % of the frame per frame, no shake, on ones),
+     an S-curve push-in ×1.8 over 1.3 s; the object often stays in the center while the background moves.
+  5. Scene changes without a cut: one line flows into another figure, breaks up into drops and dots,
+     "floods" the frame with white or is erased down to a couple of details (only the eyes remain).
+  In the edit: a 1–4 s shot or a whole episode; a 1 s loop (12 drawings) on bumpers.
+variants:
+  - light line on black — portraits, face metamorphosis, the face is "erased" down to the eyes
+  - brand color on white — a line panorama of a city or a route, an object moves in place, the background scrolls
+  - line on a colored background — a minimalist loop of 12 drawings, motion reduced to 3–4 lines
+  - boiling handwritten line — a thick uneven white outline redrawn every frame
+  - line + accents — black hair and red lips, the rest is outline; the face grows, then breaks up into drops
+  - outline filter over live video — lines follow the details of the footage, the angle and camera are live
+status: code
+fallback: generation (with consent) — for drawn characters, metamorphoses and line panoramas made to a brief; with code — an outline filter over footage, a line bumper from vector paths, erasing details via a face mask
+params:
+  palette: "background #000/#fff or one saturated color; a single line color (white, black or brand); accents ≤ 2"
+  line: 0.7–1.5 % of height (typically 0.8 %), constant thickness, round ends
+  coverage: lines cover 2–22 % of the area; cut detail down to 5–10 % for minimalism
+  timing: vector — on ones; hand-drawn — on twos (2 frames @25 fps); boiling — 8–10 drawings/s with redrawing
+  boil: for boiling — offset 0.5–1 % of width, new line irregularities on every drawing
+  camera: pan 0.7–1.2 % of the frame per frame, linear; push-in ×1.5–1.8 over 1–1.5 s, inOutCubic
+  loop: 0.96–2 s (12–24 drawings)
+  duration: shot 1–4 s (25–100 frames @25 fps)
+when: minimalist intros, bumpers and title backgrounds; explainers and a route on a map; a shot "reduced to its essence" — a transition from live video to outline on a change of topic; fashion and music — a line portrait; an outro with a logo; a music video done entirely in line
+avoid: complex scenes with fine details — the filter produces a mush of lines; low source contrast — lines break up; a boiling line under small text; more than 2 colors — the purity is lost; a dark line on a dark background
+sfx: a fine pen scratch as the line appears; light clicks on key poses; on a metamorphosis — a swell; minimalist ambient or piano
+genres: {fashion: signature, explainer: allowed, calm: allowed, teaser: allowed, product: allowed, motivation: allowed, fanedit: allowed, travel: allowed, drama: allowed}
+detect: |
+  frame: two tones — background (single-peak histogram, 78–98 % of the area) + a line of one color; flat areas are almost
+  100 % outside the lines; line thickness is constant (variation ≤ 35 %).
+  time: vector — even changes every frame; hand-drawn — pairs of identical frames; boiling — ≈ 70 % of line pixels
+  change in a still pose, contour match ≈ 0.64.
+  ed_motion: a pan across an illustration — SHIFT 0.7–1.2 %/frame with jitter ≤ 0.03 %; an outline filter over live
+  footage — noisy events with nonrigid 0.8–1 and jitter ≈ 2 %.
+  differences: cel — has flat fills and shadows; pencil sketch — grey strokes of varying thickness and hatching;
+  scribbles — chaotic loops and zigzags; comic — tone, halftone screen and large black masses.
+engine: |
+  code: line_art(method='xdog', sigma=1.2, line_px=0.008*H, line_color='#ffffff', bg='#000000', keep_accents=['lips'] optional,
+       min_contour=0.002*H*W) + step_print(hold=2) [+ line_boil(amp_px=0.008*W, every=1, reseed_texture=True) for boiling]
+  erasing down to details: mask('face') → erase_lines(keep=['eyes'], t=[t0, t0+1.2], order='outside_in')
+  pan: transform(shift=[[0,0],[-0.38,0]], t=[t0, t0+1.4], ease='linear') across a wide line illustration
+  generation: generate_image(prompt=gen_hint) → generate_video(image, motion='slow lateral pan'|'morph')
+gen_hint: minimalist line art animation of <subject>, single continuous white line on a solid black background, constant line weight, no fills, smooth morphing between shapes, clean vector look
+commands: ["turn #3 into a white outline on black", "intro — a line panorama of the city in the brand color", "the face erases down to just the eyes at 0:08", "make a boiling handwritten line on the bumper"]
+related: [anim.cel, anim.pencil_sketch, anim.scribble, anim.rotoscope, anim.comic, anim.doodle_overlay, trans.metamorphosis]
+evidence: {examples: 12, sources: 11, measured: "line 0.68–1.53 % of height (on 512-px tiles), thickness variation 0.16–0.35; line coverage 2–22 %; vector clips on ones (3 of 3 at 25 fps), hand-drawn — holds of 60–90 ms at 33 fps, boiling — 69 % of line pixels change, drift 1.1 % of width; pan 0.7–1.2 %/frame, jitter ≤ 0.03 %; push-in ×1.78 over 1.26 s, S-curve", confidence: medium}
+---
+id: anim.live_mix
+family: anim
+group: graphics
+level: C
+aliases: [2D over footage, cartoon + real life, mixed media, hybrid animation, drawn characters in the real world]
+what: "mixed media: hand-made characters and lines join the real scene and react to the person in it"
+frames: |
+  1. Live layer: ordinary footage on ones — a handheld or tracking camera (jitter 0.07–1.1 %, fly-throughs up to 2.3 %
+     of the frame per frame), real light and noise.
+  2. Drawn layer: flat fills in 2–3 tones, a thin outline or none, saturated colors
+     (average frame saturation 80–160); 1–2 key colors repeat the colors of the live scene (yellow clothing — a yellow
+     character, blue light — a blue brushstroke).
+  3. The layers have different timing: the live video changes every frame, the drawing holds a pose for 2–3 frames (80–120 ms) —
+     these "two tempos" in one frame are the signature of the device. If the camera moves, the drawing still shifts
+     with it every frame (tracked), while the pose holds.
+  4. Depth: a drawn element passes now behind the actor, now in front (a brushstroke wraps around the head, a ribbon goes behind a leg),
+     characters have a contact shadow or touch the ground; the foreground of the live shot occludes the drawing.
+  5. Interaction is the key moment: the actor and the drawn character look at each other, touch, dance
+     in sync; a live person turning into a drawn one is a cut on a matching silhouette (same pose and position
+     in frame), after which the drawn double moves on twos or threes.
+  In the edit: a single-shot episode of 1.5–5 s; the entry is often via a transformation on a downbeat; drawn "accents"
+  (lightning bolts, exclamations, bubbles) pop in within 1–2 frames on events.
+variants:
+  - brushstroke around a person — a drawn ribbon or brushstroke wraps around the actor, passing now in front, now behind
+  - transformation — on a cut, a live person becomes a drawn double in the same pose
+  - dance with characters — drawn figures dance together with live people on the street, the camera follows
+  - drawn details on a person — a costume, a hairdo, emotion icons over the live subject, tracked
+  - world as a set — a live actor in drawn or painted scenery (the reverse variant)
+  - drawn creatures in a real place — characters "live" in the location and react to people
+  - graphic bubbles and icons — message bubbles and exclamations pop up around the subject
+status: hybrid
+fallback: |
+  generation (with consent) — a drawn character with action: generate_video from a key frame of the live scene
+  with a description of the interaction, then composite via a mask; without generation — simple drawn elements in code
+  (a ribbon stroke along a spline, bubbles, icons, lightning bolts) with tracking and masks; if the source footage has no shot
+  for the transformation — a cut on a matching silhouette between two different shots and stylization of the second (anim.cel).
+params:
+  layer_timing: live — on ones; drawing — on twos or threes (2–3 frames @25 fps), the shift with the camera — every frame
+  palette: drawing — 3–8 flat colors, 1–2 of them taken from the live scene (median color of clothing or background); drawing saturation 140–220
+  line: no outline or 0.3–0.6 % of height, a dark shade of the fill color
+  track: camera — homography or background points every frame; anchor character — track(person|face)
+  depth: a person mask (mediapipe_person) splits the drawing into "behind" and "in front"; contact shadow at 20–35 % opacity
+  transform_cut: transformation — a cut within 1 frame when the silhouettes overlap ≥ 70 % (mask IoU), no transition
+  accents: icons 4–10 % of frame height, appear within 1–2 frames (pop), hold 0.3–0.8 s
+  duration: episode 1.5–5 s; no more than 2–3 episodes per 60 s video
+when: hook and teaser — "real world + cartoon" holds attention; a product video — a mascot character next to the product or the subject; music video and fan edit — dancing with characters; explanation — drawn arrows, icons, the subject's thoughts; a transformation on the drop
+avoid: an untracked drawing on a moving camera — it "floats" and gives away the fake; a drawing always on top of the person — no depth; drawing colors not taken from the scene's palette; a flat-filled drawing on ones with the same step as the live video — looks like a sticker; long episodes without interaction
+sfx: on appearance — a pop or a soft whoosh; on a touch and a transformation — an impact or a bright swell; icons — click; dance episodes — exactly on the track's beat
+genres: {fanedit: signature, product: signature, viral: allowed, teaser: allowed, ugc: allowed, explainer: allowed, motivation: allowed, fashion: allowed, clips: allowed, calm: allowed}
+detect: |
+  frame: within one frame, textured areas of live footage (texture 1–2, noise) and areas of flat saturated fills
+  (5–40 % of the area) with clean edges.
+  time: flat areas change every 2–3 frames (≈ 0 in between), live areas every frame; when the camera moves
+  the flat areas move with the background (the same shift per ed_motion), but their shape changes in steps.
+  ed_motion: live-camera events (jitter 0.07–1.1 %, SHIFT up to 2.3 %/frame, nonrigid 0.15–0.5); a transformation is
+  a cut after which the share of flat pixels jumps sharply.
+  differences: doodle overlay — simple faces and lines, no bodies or actions; cel — the background is drawn too; 3D insert —
+  volumetric light and gradients on objects; rotoscope — the whole frame is redrawn over live video.
+engine: |
+  hybrid: track(camera='homography', every=1) + mask('mediapipe_person', feather=2)
+    → layer(drawn, timing=step_print(hold=2), anchor=track, depth=['behind_person' | 'front'], shadow=0.25)
+    → composite(layers=[live, drawn_behind, person_matte, drawn_front], blend='normal')
+  ribbon stroke: ribbon_stroke(path=spline(points=track(person, joints)), width=0.04*H, texture='brush', color=palette_pick(scene, 1),
+    reveal=[t0, t0+0.6], wrap='around_head', depth_switch=track(face))
+  transformation: match(on='shape', iou>=0.7) → cut(at=t_beat) → stylize_gen(clip_after, style='flat 2D', keep_pose=True) + step_print(hold=2)
+  generation: generate_video(image=keyframe(live), prompt=gen_hint, dur=3–5) → mask + composite
+  icons: callout(kind='spark'|'exclaim'|'bubble', size=0.07*H, anim='pop', dur=0.5) on events
+gen_hint: live-action footage of <person> in <location> interacting with flat 2D hand-drawn cartoon characters, cartoon elements composited into the real scene with matching colour palette, characters animated on twos, real camera movement, cartoon passes behind and in front of the person
+commands: ["have a drawn ribbon wrap around the subject in #3", "turn the subject into a cartoon on the drop", "add drawn characters dancing alongside on the street", "pop-up exclamations above the head at 0:06"]
+related: [anim.doodle_overlay, anim.cel, anim.rotoscope, anim.cgi_3d, gfx.mixed_media, trans.metamorphosis, mask.bg_replace]
+evidence: {examples: 10, sources: 6, measured: "drawing on twos or threes with the live layer on ones (at a 25 fps preview, intervals of 2, 3, 3, 2, 2, 2, 2, 2 frames; at 20 fps — runs of near-zero drawing changes while the live background changes by 13–32 %); with a tracking camera the drawing shifts every frame; transformation — a cut on a matching silhouette; live camera jitter 0.07–1.1 %, fly-through up to 2.3 %/frame; frame saturation 80–160", confidence: medium}
+---
+id: anim.living_architecture
+family: anim
+group: aesthetics
+level: C
+aliases: [living architecture, living facade, animated building, breathing building, building animation, facade animation, animated architecture, architectural animation]
+what: a still building, facade or street object starts moving like an animation — window modules travel in a loop, floors sway, a column shuffles its segments, a kiosk bends like rubber, a house grows and folds back; meanwhile the camera and sky stay still
+frames: |
+  1. The base is a still shot or a photo: the camera is static in 12 of 13 examples (jitter 0.00–0.04 % of the frame), the sky, street
+     and background don't change; only the structure moves — 1–50 % of the frame area (median ≈14 %).
+  2. The motion is "animated", at a reduced frame rate: median 14 fps (10–17 fps in 7 of 13, i.e. each image holds
+     for 2–3 frames @25 fps); slow transformations — 2 fps (each image holds 0.5 s), every step is seen separately.
+  3. The cycle is seamless: 1.2–4 s for fast devices, 10–12 s for slow ones; the first and last frames match
+     (discrepancy 0.1–0.4 of the maximum deviation within the cycle).
+  4. The character of the motion follows the building's structure: repeating modules (windows, arches, floors, segments) shift,
+     swap places, grow or rotate; rigid objects bend like rubber.
+variants:
+  - module conveyor: a facade of identical windows or tower sections moves as an endless conveyor — ≈40 % of the frame per second, a full period in 12 frames; or facade strips move in different directions at 6–8 % per second
+  - segment shuffle: a column or pillar is cut into horizontal rings that shift, swap places and return, 1.4 s
+  - rubber bend: a street kiosk or vending machine bends and squashes, 1.9 s, 10 fps
+  - floor sway: building blocks shift relative to each other as if dancing, 1.9 s
+  - grow and fold: cantilevered floors are added one at a time, 2 → 8 floors and back, 2 fps, 10.5 s
+  - faceted facade: the triangular facets of an angular building change shape and height, 2 fps, 12 s
+  - ornament mechanism: the rings of a round stained-glass window rotate in different directions, colored bands appear, 3.4 s
+  - texture growth: bark, moss or foliage spreads over a pillar and recedes, 1.3 s; a small local variant — the stones of an arch crawl along the curve
+  - drawn line over a building: a colored stroke wriggles across the facade, handheld shot (borders on graphics)
+status: hybrid
+fallback: |
+  requires a still shot of the building (or a frame stabilized to ≤0.1 %) and a mask of the structure against the sky;
+  fast devices (conveyor, shuffle, sway, bend, ring rotation) are done in code via the mask; floor growth and
+  texture growth require painting in the background and texture — generation (image-to-video from a frame) with the user's consent.
+params:
+  source: a static shot or photo, jitter ≤0.05 % of the frame; the building large, 30–90 % of the frame
+  mask: building against the sky (sky segmentation or hf_remove_background), 1–2 px feather; background and sky stay still
+  anim_fps: 12.5 (hold each image for 2 frames @25 fps) or 8.3 (hold 3); slow transformations — 2 fps (hold 12)
+  loop: 1.2–4 s (30–100 frames) for fast devices, 8–12 s for slow ones; first frame = last frame
+  scroll: period = module step by autocorrelation (window, floor, section); speed 6–40 % of the frame per second; exactly N periods per cycle
+  shuffle: 4–8 horizontal rings; each shifts by up to ±1 ring height, neighbors lag by 2–3 frames
+  sway: floor offset in x ±1–3 % of width, a wave from bottom to top, period 1–2 s
+  bend: 5–15° bend around the base or vertical squash ×0.85–1.1, ease inOutSine
+  rings: adjacent rings rotate in opposite directions, 30–90 °/s
+  stack: +1 floor module per step at 2 fps, growing to ×3–4 the height and back
+when: intros and establishing shots of a city ("the city is alive"), transitions between locations, travel and architecture videos, music videos — place the steps of slow transformations on beats (2 fps = a step on every beat at 120 BPM), background loops under text; 1–3 shots per video
+avoid: a shot with camera movement without tracking; people and cars crossing the mask; the building small in frame; smooth 25 fps — the "animated" feel is lost; a loop with a jump at the seam; several different devices in one shot
+sfx: stone grinding, mechanism clicks, a creak on the bend; for the conveyor — an even mechanical hum; floor-growth steps — dull thuds on the beat
+genres: {travel: allowed, fanedit: allowed, teaser: allowed, viral: allowed, fashion: allowed, calm: allowed, explainer: allowed, product: allowed}
+detect: |
+  ed_motion: no global events, jitter ≤0.05 %, overlay-mask 0.45–0.53 (half the frame is still); animation frame
+  rate 2–17 fps with a 25 fps source (identical durs of 60–500 ms); a noticeable frame difference only inside
+  the building's outline; first and last frames nearly equal (loop). Module conveyor — phase correlation over the facade strips gives
+  a constant shift while the sky gives zero; different strips have different or opposite shifts.
+  Differences: time.cinemagraph — a natural element moves (water, hair) while the building stays still; datamosh/glitch — breaking up
+  the frame with no geometric logic; dolly/zoom — the whole frame moves, sky included; scene.diorama — a scale model, not a real
+  building.
+engine: |
+  mask(method='hf_remove_background', feather=1) on the building; new primitive
+  facade_animate(mode='scroll'|'shuffle'|'sway'|'bend'|'rings'|'stack', mask, axis='x'|'y', period=auto,
+  speed=0.4, bands=6, amp=0.02, pivot='base', loop=2.4) — cuts the mask into modules or strips and moves them by the mode's
+  law, wrapping around by the period; then step_print(hold=2) and loop(mode='cycle').
+  'stack' and texture growth — Higgsfield image-to-video from a frame with a prompt from gen_hint (with consent).
+  Slow transformations: step_print(hold=12), steps on beats — beat_sync(event='step', grid='1/4').
+gen_hint: locked-off static shot of a modern apartment building whose facade comes alive like an animation, rows of identical windows slide sideways as an endless conveyor and the floors sway in a gentle wave, sky and street stay perfectly still, seamless loop, choppy 12 fps stop-motion feel
+commands: ["bring the building in #3 to life: windows travel around like a conveyor", "make the floors sway to the beat on the intro", "loop: the building grows by one floor on every beat and folds back", "the column from #5 shuffles its segments"]
+related: [anim.living_mural, time.cinemagraph, time.step_print, fx.kaleidoscope, loop.end, scene.diorama]
+evidence: {examples: 13, sources: 13, measured: "camera static in 12 of 13 (jitter 0.00–0.04 %), 1 handheld at 4.5 %; animation rate 2 (2 clips), 10 (3), 14.3 (3), 16.7 (2), 20 (1), 25 (2) fps; cycles 1.15–4 s and 10.5–12 s; moving area 1–50 %; loop: last frame ≈ first (0.1–0.4 of the range); tower-section conveyor at 41.5 % of the frame/s with a 12-frame period; floor growth 2→8 — counted frame by frame", confidence: medium}
+---
+id: anim.living_mural
+family: anim
+group: aesthetics
+level: C
+aliases: [living mural, animated mural, animated graffiti, street art animation, living wall painting]
+what: a mural or graffiti painted on a wall comes alive in its own painted style — colors run along stripes, a character moves, a portrait changes faces, the painted world interacts with the real one; the wall, building and street stay real
+frames: |
+  1. The shot is static in 6 of 8 examples (jitter 0.00–0.02 % of the frame); the animation lives only inside the mural's outline —
+     0–14 % of the frame for characters, ≈32 % for a color cycle; the wall texture (brick, joints, plaster) shows through the paint.
+  2. Color cycle: the mural's 3–6 colors shift along the stripes — ≈60–68 % of the painted pixels change hue per frame
+     (median shift 34–50°), 10 fps, a loop of 4–8 frames (0.4–0.8 s).
+  3. Character: a ball head opens into three parts and closes, an upside-down figure slides along the facade — 25–33 fps,
+     loops of 1.5–5 s, the first and last frames almost match (0.05–0.3 of the range).
+  4. In 2 of 8 the camera moves: a fly-in to the mural (push-in ×7 over 1.74 s, ease-out), then the portrait on the facade changes faces
+     every ≈0.1 s; or a pan following a ball — a painted footballer kicks, and the ball flies into a real goal.
+variants:
+  - color cycle of stripes and patterns: 3D letters or a background of skulls, colors run around in a cycle, a short loop of 0.4–0.8 s
+  - soft shimmer: gradient waves on the corner of a building slowly ripple
+  - character comes alive: opens, turns, slides along the wall, keeping its hatching and palette
+  - face swap: a portrait mural quickly changes expressions and features, like flipping pages
+  - graphic invasion: an interface window pops up on a brick wall, bends and gets sucked into a hole
+  - mural and reality: the painted action is continued by a real object (a ball, water, light)
+status: hybrid
+fallback: |
+  color cycle, shimmer and compositing onto the wall — in code (needs a mural mask and planar tracking if the camera moves);
+  movement of the painted character — generation: image-to-video from a crop of the mural with the user's consent, then
+  back onto the wall via tracking; if there is no mural in the source footage — generation of the whole shot.
+params:
+  region: the mural's quadrilateral (4 corners) + a mask of the painted areas; when the camera moves — a homography on the wall every frame
+  palette_cycle: k-means of 3–6 mural colors; shift by one stripe per frame; 8–12 fps; loop = number of colors × step (0.4–0.8 s)
+  flow: smooth shimmer — gradient phase shift of 0.2–0.5 period per second, 25 fps
+  character: 12–25 fps (hold 1–2 frames @25 fps), loop 1.5–5 s, first frame = last frame
+  face_swap: face change every 2–4 frames (≈0.1 s)
+  texture_keep: wall texture over the animation — multiply or overlay by wall brightness, 30–60 %
+  style_lock: animation palette = mural palette (posterize to k colors), outlines of the same thickness
+  camera_move: fly-in ×3–7 over 1.5–2 s with ease-out, then a hold on the mural
+when: travel and city videos, stories about street art, music videos, intros and background loops under text, event recaps and ads on murals; color cycle — on the kick or every beat; 1–2 shots per video
+avoid: people and cars covering the mural; a small mural in frame; camera movement without texture to track; animation that breaks the painted style (a smooth 3D look); a bright color cycle faster than 3 flashes per second with strong brightness swings — a risk for photosensitive viewers
+sfx: a spray-can hiss on appearance; clicks or claps on every color-cycle step, on the beat; for a character — cartoon foley; the ball kick and the net — real sounds
+genres: {travel: allowed, fanedit: allowed, viral: allowed, teaser: allowed, product: allowed, fashion: allowed}
+detect: |
+  ed_motion: static (jitter ≤0.02 %), overlay-mask 0.4–0.53; frame difference only inside a flat quadrilateral on the
+  wall; with a color cycle 60–68 % of the painted pixels change hue by 34–50° per frame while the brightness of the
+  brick and joints stays the same; durs of 100 ms and a loop of 4–8 frames; for a character — line motion without blur and with the same hatching.
+  Differences: projection mapping — a glowing projection on a building, light spill and halation, usually at night; anim.living_architecture —
+  the geometry of the building itself changes; time.cinemagraph — a natural element of a live shot moves.
+engine: |
+  mask(method='hf_remove_background' or a manual quad) on the mural; new primitives:
+  plane_track(region=quad) → a homography for every frame (ORB/KLT on the wall);
+  palette_cycle(colors=kmeans(mural, k=5), step=1, fps=10, loop=0.5) — cyclic color substitution along the stripes;
+  wall_composite(layer, homography, texture_keep=0.45, blend='multiply') — puts the animation back on the wall with its texture.
+  Character: Higgsfield image-to-video from a crop of the mural (prompt from gen_hint) → wall_composite; step_print(hold=2)
+  for a hand-drawn frame rate; loop(mode='cycle'). Cycle on the beat: beat_sync(event='palette_step', grid='1/4').
+gen_hint: a painted street mural on a brick wall comes alive in its own hand-painted style, the painted character slowly turns and blinks while the color stripes around it cycle, the real wall texture and the street stay completely still, locked-off camera, seamless loop
+commands: ["bring the graffiti in #2 to life: make the stripes cycle on the beat", "make the character painted on the wall blink and wave", "the portrait on the facade changes faces on every beat", "make a loop from the mural under the headline"]
+related: [anim.living_architecture, time.cinemagraph, fx.projection, trans.morph, time.step_print]
+evidence: {examples: 8, sources: 5, measured: "camera static in 6 of 8 (jitter 0.00–0.02 %); moving area 0–14 % for characters, 32–33 % for a color cycle; color cycle 10 fps, loops of 4 and 8 frames (0.4/0.8 s), 58–68 % of pixels change hue per frame, median 34–50°; characters 25–33 fps, loops 1.5–5 s, loop closure 0.05–0.29; fly-in ×7.1 over 1.74 s; face change ≈0.1 s — counted frame by frame", confidence: medium}
+---
+id: anim.oil_paint
+family: anim
+group: graphics
+level: B
+aliases: [oil-painted animation, paint-on-glass, oil paint animation, living painting, painting come to life, painterly animation, oil-paint look, living canvas]
+what: every frame is made of oil-paint brushstrokes — a living painting where the brush texture "boils" from frame to frame, or a filter turns video into a moving canvas; sensual, warm, arthouse
+frames: |
+  1. Material: thick brushstrokes of 2–5 % of frame height (H) with a visible brush direction, paint relief and highlights (impasto),
+     colors mixed right in the stroke; background — dark (a portrait on black), a light canvas or a solid green of grass.
+  2. Frame-by-frame painting: every frame is a new painting, no repeats; 10–14 paintings/s (70–100 ms, 2–3 frames @25 fps);
+     even in a calm pose 27–49 % of pixels change per frame — strokes, hair and background are constantly "repainted".
+  3. Motion: smooth live movement (a person turns their head, a bird flaps its wings, children roll on the grass)
+     rendered in strokes; shapes deform, hands and faces sometimes turn into several smeared copies.
+  4. Filter over video: live video looks painted in oil, the image is stable — only 3–4 % of pixels change
+     between frames, a new "painting" on every second frame (≈ 10/s), finer strokes (0.5–1 % H).
+  5. "Overpainting": the canvas is repainted before your eyes — new figures appear over old ones, layers of paint
+     cover 15–48 % of the area per frame.
+variants:
+  - oil portrait on black — close-up, warm skin, bright strokes of hair, strong "boil"
+  - impasto on a light canvas — nearly monochrome (saturation ≈ 10), a black bird or figure, paint relief
+  - gestural scene — fast broad strokes, bodies moving across grass, every frame new at 30+ fps
+  - abstract color swirl — motley thick strokes assemble into a shape and pulse
+  - painterly filter over video — a stable painting on twos, fine strokes, the actors' real movement
+  - repainted picture — a digital painting changes its subject in layers painted on top
+status: code
+fallback: a painterly filter over video (Kuwahara or an oil-paint filter + canvas texture + stepping on twos) — in code on any shot; real frame-by-frame painting with metamorphoses and impasto — generation with consent (stylizing key frames and transferring the style across the video)
+params:
+  brush: 2–5 % H for "painting" (typically 3 %), 0.5–1 % H for the video filter; stroke direction follows the gradient
+  impasto: relief 0.3–0.6 (normal map from stroke brightness) and paint highlights
+  palette: saturated (HSV-S 120–220) or muted monochrome (S ≈ 10–60); dark or light canvas
+  holds: 2–3 frames @25 fps per painting (10–14/s); filter — twos (every 2nd frame new)
+  boil: frame-by-frame texture change — reseeding the strokes changes 27–49 % of pixels per frame (painting) or 3–5 % (filter)
+  smear: 2–3 copies of fast-moving parts at 0.3–0.6 opacity
+  canvas: canvas texture 4–8 %, vignette 0–0.2
+  duration: 2–8 s per shot (50–200 frames @25 fps); entry — a 0.5–1 s dissolve from a live shot
+when: portrait and emotion, memory, a love story, an art music video and a fashion teaser, a "painting come to life" on the intro or outro; a live shot turning into a painting on a change of topic; one episode or insert, not the whole video in a row
+avoid: fast cuts on every beat (a stroke can't be read faster than 0.5–1 s); fine details and text in frame (a mush of strokes); a product whose exact color and shape matter; boil on every frame for longer than 8–10 s — it tires the eye
+sfx: brush rustle on canvas, soft ambient, strings or piano; on the "overpainting" — a swell
+genres: {fashion: allowed, drama: allowed, calm: allowed, teaser: allowed, fanedit: allowed, motivation: allowed, epic: allowed, sport: forbidden, explainer: forbidden}
+detect: |
+  Frame: large directional strokes (structure tensor coherence 0.4–0.9), color mixing within a stroke,
+  paint relief; few fine details, ragged shape edges.
+  Time: no repeated frames; with painting every frame changes 27–49 % of pixels even at rest, previews 10–14 paintings/s
+  (30+ for fast gestural animation); with a filter the frame difference alternates large/small (13/3 or 4/1) —
+  that's twos, 3–4 % of pixels change.
+  ed_motion: noisy events with high nonrigid without real camera motion.
+  Differences: charcoal and pencil — monochrome strokes without thick colored brushstrokes; watercolor — transparent washes
+  and bleeds without relief; rotoscope — outline and flat fill over video.
+engine: |
+  filter: paint_filter(kind='oil', brush=0.008*H, detail=0.5, impasto=0.4, canvas_texture=0.06) + step_print(hold=2)
+  painting: paint_filter(kind='oil', brush=0.03*H, reseed_every=1, jitter=0.004*W) + step_print(hold=2|3)
+           + echo(trails=2, decay=0.5) on fast moves
+  generation: stylize_gen(clip, style_ref=generate_image(<key frame>, prompt=gen_hint), strength=0.6–0.8) + step_print(hold=2)
+  entry: transition('dissolve', dur=0.8) from the live shot into the painting
+gen_hint: frame-by-frame oil paint animation of <subject>, thick visible brushstrokes, impasto texture, warm painterly colors on a dark background, the brushstrokes subtly shifting every frame, hand-painted on glass look, animated on twos
+commands: ["turn the portrait in #5 into an oil painting", "a painting come to life on the intro", "oil-paint filter on the memory, on twos", "make the brushstrokes boil like in hand-made animation"]
+related: [anim.charcoal, anim.color_pencil, anim.cel, time.step_print, anim.rotoscope, anim.watercolor]
+evidence: {examples: 7, sources: 7, measured: "frame-by-frame painting in 5 of 7 — no repeats, 10–14 paintings/s (one at 33/s), 27–49 % of pixels change per frame; painterly filter in 2 of 7 — frame difference alternates 13/3 and 4/1 (twos), 3–4 % of pixels change; saturation 10–219 (two palettes); stroke coherence 0.39–0.89", confidence: medium}
+---
+id: anim.pencil_sketch
+family: anim
+group: graphics
+level: B
+aliases: [pencil sketch, pencil animation, graphite sketch, sketch animation, notebook drawing, ink sketch animation, flipbook portraits]
+what: animation in fine graphite or pen on paper — thin lines, hatching and construction lines are visible, every drawing is redrawn and slightly "boils"; a light, handmade, "from a notebook" look
+frames: |
+  1. Material: paper — white (brightness 254–255) or grey and cream with texture (190–235); saturation ≈0, occasionally
+     a sepia paper tint (≈27) or a single color accent (iris, lips).
+  2. Line: thin — 0.8–1.2 % of frame height (pen, graphite), variable thickness and pressure; hair and shadows — parallel
+     hatching at 30–60° and cross-hatching; construction lines are visible in the drawing. Lines cover 4–15 % of the area
+     (dense illustration — up to 23 %); tone is either almost absent (5–8 % midtones) or graphite smudging covers up to 47 %
+     of the area.
+  3. Timing: every drawing is new — 6–25 drawings per second (on ones, twos, fours); 10–22 % of pixels change
+     between drawings. A still illustration "breathes" on twos: the composition matches by 97 %, the strokes are redrawn.
+  4. Motion: rotoscoped live action (juggling, blinking, a head turn), a flipbook of different faces at 1–2 frames per
+     face, a "living" illustration with a standing composition; the camera is only a drawn one.
+  The clip in the edit is 1–3 s; entry and exit — a dissolve into the paper or strokes being drawn in.
+variants:
+  - graphite rotoscope: a figure with tonal smudging on grey paper, 6.25 drawings/s (on fours)
+  - portrait flipbook: different faces in the same position and shot size, 1–2 frames per face (12–25 faces/s), hatched hair
+  - breathing illustration: dense cross-hatching on cream paper, the composition stands still, the strokes boil on twos
+  - single line: a face outline drawn without lifting a thick pen (≈2 % of height), the head turns, 14 drawings/s
+  - detail close-up: an eye blinks and looks around, pencil lines + a soft one-color fill of the iris, 10 drawings/s
+  - borderline with scribbles: a thick zigzag stick figure (≈5 % of height) walks across changing sheets of paper, on ones
+status: code
+fallback: generation (with consent) — for real hand-drawn animation with construction lines and metamorphoses; code convincingly handles portraits, figures on a simple background and a face flipbook, less so wide shots with fine details (a mush of hatching)
+params:
+  paper: white (254–255) | grey or cream with grain (190–235), grain 5–8 %; saturation 0–5, sepia ≤30
+  line: 0.8–1.2 % of height (typically 1 %), variable pressure; a single pen line — 2–3 %
+  hatch: parallel hatching at 30–60°, spacing 0.4–0.8 % of height; cross-hatching in shadows
+  coverage: lines cover 4–15 % of the area (dense illustration up to 23 %)
+  shading: none — midtones 5–8 % | tonal — graphite smudging over up to 45–50 % of the area
+  holds: on twos (2 frames @25 fps, 12.5 drawings/s) — baseline; on fours (6.25/s) — an unhurried rotoscope; on ones — a face flipbook and fast figures
+  boil: a new drawing changes 10–22 % of pixels; contours match at 0.4–0.8 in motion and ≈0.97 in a standing illustration; jitter 0.7–1.7 % of width
+  accent: (optional) one color as a soft fill — iris, lips, an object
+  duration: 1–3 s (25–75 frames @25 fps); flipbook — 1–2 frames per face, a 2–3 s series
+when: |
+  Memory, diary, an "idea on a napkin", explaining a concept (sketch → live video or → finished product), a fashion sketch
+  before the look, an intro or outro in gentle genres. Portrait flipbook — introducing people or a community over a steady beat.
+  A transition from live video into a sketch on a change of topic. One 1–3 s insert or a whole episode.
+avoid: |
+  Noisy, dark, high-contrast footage — the filter produces dirty hatching. Wide shots with fine details. Cuts faster than
+  0.5 s (except a face flipbook — there the same shot size and centering are mandatory). Boil on ones for the whole video —
+  flickers and tires the eye. Random color patches in a monochrome sketch.
+sfx: |
+  Pencil rustle on paper on drawing changes (quiet, −12…−18 dB), page riffling for the flipbook, a click or "tick" on every
+  new face, on the beat; underneath — acoustic music or ambient without hard hits.
+genres: {explainer: allowed, calm: allowed, drama: allowed, fashion: allowed, product: allowed, teaser: allowed, fanedit: allowed, ugc: allowed, motivation: allowed}
+detect: |
+  frame: saturation <10 (or an even paper tint); light paper (p90 ≥190) with grain; thin dark lines
+  0.8–1.2 % of height, parallel hatching; lines cover 4–15 % of the area; few midtones (≤8 %), except with graphite
+  smudging (up to 47 %).
+  time: every drawing is unique — a change alters 10–22 % of pixels; with a source ≥20 fps pairs of identical frames are visible
+  (twos); in a standing illustration contours match at ≈0.97 while the strokes are redrawn.
+  ed_motion: noisy ZOOM and ROTATE with nonrigid 0.5–0.9 and conf low, jitter 0.7–7 % with no real camera; a standing
+  illustration — jitter ≈0.08 %; white frames on light paper.
+  differences: anim.charcoal — broad ragged strokes, smudged patches, eraser highlights; anim.line_art — a clean outline
+  of constant thickness without hatching; anim.scribble — chaotic loops; anim.color_pencil — colored strokes (saturation >60).
+engine: |
+  code: color(saturation=0) → sketch(kind='pencil'|'ink', paper='white'|'cream'|'grey', line_px=0.01*H, hatch_angle=45,
+       hatch_step=0.006*H, shading='none'|'tonal') + step_print(hold=2) + line_boil(amp_px=0.003*W, every=2, reseed_texture=True)
+       + grain(amount=0.06) [+ color_accent(mask='iris'|'lips', color=<color>, opacity=0.6)]
+  hybrid: mask('mediapipe_person', feather=3) → draw only the figure, background — clean paper
+  face flipbook: portrait_series(faces[], per=1–2 fr, align=track(face), scale_match=True) → sketch(kind='ink') on each
+  generation: stylize_gen(clip, style_ref=generate_image(<key frame>, prompt=gen_hint), strength=0.7) + step_print(hold=2)
+  entry and exit: reveal_strokes(dur=0.8, order='outline_then_hatch') | transition('dissolve', to='paper', dur=0.5)
+gen_hint: hand-drawn graphite pencil animation of <subject> on textured off-white paper, fine pencil lines with cross-hatching in the shadows, visible construction lines, slight line boil, animated on twos, monochrome sketchbook look
+commands: ["turn #3 into a pencil sketch on twos", "a pencil flipbook of the team's portraits — two frames per face", "from sketch to live video at 0:05", "bring the illustration to life: the composition stays still, the hatching boils"]
+related: [anim.charcoal, anim.line_art, anim.color_pencil, anim.scribble, anim.rotoscope, time.step_print, shot.video_portrait]
+evidence: {examples: 6, sources: 6, measured: "saturation 0 in 5 of 6 (sepia paper 27 in 1); paper 192–255; lines 0.76–1.19 % of height for pen and graphite, 2.1 % for the single line, 5.2 % for the zigzag; line coverage 4.5–15 % (dense illustration 23 %); midtones 5–8 %, 47 % for the graphite rotoscope; 6.25–25 drawings/s, a drawing change alters 10–22 % of pixels; illustration on twos with a 0.97 match; flipbook — a new face every 1–2 frames; ed_motion — jitter 0.7–7 % without a camera", confidence: medium}
+---
+id: anim.pixilation
+family: anim
+group: graphics
+level: C
+aliases: [pixilation, frame-by-frame shooting of people, live-action stop motion, people as puppets, human puppet, stop motion with people, gliding without steps]
+what: real people shot frame by frame like stop-motion puppets — the body jumps from pose to pose, the subject glides down the street without taking steps, things around crawl and fly on their own, the face changes grimaces in jerks
+frames: |
+  1. The shoot is a series of photos: the camera is fixed (often straight overhead or head-on, sometimes fisheye), the person
+     changes pose or moves a step between frames. On screen — 8–12 different images per second
+     (each held for 2–3 frames @25 fps), jerky motion, no motion blur on the subject.
+  2. Signs of the "impossible": a person glides across the floor or street while standing, without moving their feet; someone lying on a bed
+     rolls through dozens of poses, the blanket creeps over by itself, clothes "breathe" and lie down alongside as an empty suit;
+     banknotes, papers, a scarf, a thread, plastic scraps crawl by themselves and arrange into pictures; the bedsheet changes color.
+  3. Background and light "breathe" slightly between frames: brightness jumps by 2–6 %, shadows jump — these are separate photos.
+     Passers-by around the subject are often smeared into streaks or appear and disappear (a long exposure for each frame),
+     while the subject stays sharp.
+  4. Face close-up: the head stays in place while the expression, makeup, hairstyle or the background behind the head (sky, marbled
+     paper, chalk on a board, fruit arranged into a face) change every 2–3 frames.
+  5. Episode length 2–10 s; a whole video can be made in this technique.
+variants:
+  - puppet body from above: a person on a bed or floor, the poses and objects around change, the light is constant
+  - gliding through the city: a group stands still yet "rides" along a street, a lobby, a staircase; passers-by smeared, fisheye
+  - face as a mask: close-up, grimaces and facial details change in jerks, the background behind the head is swapped
+  - living things: objects, fabric, money, thread, trash move by themselves around a motionless subject or a hand
+  - animator's hand: a hand in frame lays out material (thread, scraps) that "comes alive" between frames
+  - background change behind the subject: the person stays in place while chalk drawings, wallpaper, places change behind them
+status: footage
+fallback: real pixilation — a dedicated shoot as a photo series; a code imitation from ordinary video (label it honestly) — step_print at 3 frames + position and exposure jitter between "snapshots"; "gliding without steps" — hybrid (mask(person) frozen in one pose travels along a path over the background, the background sped up with motion blur); jerky grimaces — pick the extreme poses from a face video and hold each for 2–3 frames; generation with the user's consent — for complex scenes with living things
+params:
+  holds: 2–3 frames per snapshot @25 fps (8–12.5 snapshots/s), typically 3; frames within a hold are pixel-identical
+  pose_step: subject offset between snapshots 1–5 % of the frame (gliding) or a noticeable pose change; no in-between phases
+  jitter: frame jitter 0.2–0.6 % between snapshots (the camera mount isn't perfect), rotation ≤0.3°
+  flicker: brightness between snapshots ±2–6 %, independent of motion
+  crowd_blur: passers-by — smeared into streaks of 3–15 % of frame width (long exposure) or disappearing
+  camera: static; 90° overhead for the "puppet", head-on for a face, 8–12 mm fisheye for the street
+  duration: episode 2–10 s (50–250 frames @25 fps); code imitation — no longer than 3–4 s in a row
+  sync: snapshots and pose changes on the track's beats (rhythmic jerks), a pose hold of 4–6 frames on the downbeat
+when: music videos and fan edits with a handmade, "DIY" aesthetic; a hook episode at the start; a transition between scenes (the background changes behind a motionless subject); the comedic "body living on its own" effect; fashion and beauty videos (grimaces and look changes); a product that "assembles itself" around a person; 1 episode per video if the style isn't the main one
+avoid: imitation on fast camera moves (the jerks read as broken video); sync speech; a long episode without new "impossible" events (gets boring fast); mixing with smooth video in one frame without a mask
+sfx: shutter clicks or film-camera mechanics in rhythm with the snapshots; fabric and paper rustles on the "living things"; comic sounds on grimaces; music with a clear pulse — place the jerks on beats
+genres: {fanedit: signature, viral: allowed, ugc: allowed, fashion: allowed, teaser: allowed, clips: allowed, product: allowed, phonk: allowed}
+detect: |
+  time: holds of 2–3 identical frames (< 0.5 % of pixels change) come in runs, as in drawn
+  animation on twos or threes, but the image is live footage; ed_motion catches holds only from 3 frames,
+  twos — with a pairwise test.
+  luma: brightness steps of ±2–6 % at every snapshot change without global motion (flicker of separate photos).
+  motion: the person shifts in jumps of 1–5 % of the frame per snapshot without in-between step phases, their outline is sharp,
+  while passers-by are smeared into streaks; ed_motion — small shake jitter 0.2–0.6 % only at snapshot changes.
+  Difference from time.step_print: there frames of ordinary footage are held (motion blur remains, in-between phases
+  of steps are visible). From time.fast_motion: there the motion is continuous. From anim.stop_motion and claymation: there it is puppets
+  and objects, here real people. From time.timelapse: there are no controlled poses there.
+engine: |
+  Imitation: step_print(hold=3) + shake(amp=0.004, freq=8.3, axes='xy', t=all snapshots) + flicker(amount=0.04, per='hold')
+  Gliding: mask(method='mediapipe_person', feather=2) over freeze(at=t_pose) → path(subject, from, to, steps=snapshots, step=0.03)
+             on top of speed(rate=8, interp='blend', shutter=1.0) of the background (smeared passers-by);
+  Grimaces: pick_extremes(face_track, n=12/s) → hold 2–3 frames of each pose, beat_sync(event='pose', grid='1/8').
+  + sfx('click', at=every snapshot, gain=-12 dB).
+gen_hint: pixilation stop-motion of a real person, <subject> lying on a bed seen from directly above, the person jumps between poses frame by frame while clothes and objects move around by themselves, shot as a series of still photos at 8 frames per second, slight exposure flicker, locked-off camera
+commands: ["pixilation on the intro: I glide down the street without taking steps", "make jerky grimaces on the close-up in #3", "things assemble themselves around me — like stop motion", "imitate frame-by-frame shooting for 3 seconds on the drop"]
+related: [anim.stop_motion, anim.claymation, time.step_print, time.fast_motion, time.timelapse]
+evidence: {examples: 33, sources: "≈7 (by appearance; several clips yield many examples)", measured: "only a visual review of all the section's examples at 5–8 points in the animation (scripted frame capture was blocked by browser permissions); snapshot rate, jitter and flicker are estimates (marked ≈) and genre practice, not measured", confidence: medium}
+---
+id: anim.radial_loop
+family: anim
+group: graphics
+level: B
+aliases: [phenakistiscope, spinning disc animation, radial loop, spinning disc loop, circular animation, optical toy]
+what: a short motion loop laid out around a disc — 10–16 phases of one pose cycle across the sectors; the disc turns by exactly one sector per frame and the figures "come alive" in place; a hypnotic retro loop
+frames: |
+  1. A disc in the center of the frame (center 0.5/0.5), taking up 80–100 % of the height; background black, grey or a solid color.
+  2. Around the circle — N identical figures in successive phases of motion: 10–16 per ring (typically 12–14), often
+     2–3 concentric rings with different loops (outer — large figures, inner — small ones), and in the center
+     a spiral, a target or a black hole.
+  3. Mechanics: per frame the disc turns by exactly 360/N (30° with 12 phases), so each figure in its own place
+     changes pose — all N figures "walk", "wave", "dance" in sync, while the drawing itself barely rotates.
+     A small offset from a whole sector (±0.5–1° per frame) — and the whole procession slowly moves around the circle.
+  4. Loop: 10–16 frames (0.6–1.9 s at 6–20 frames/s), repeated 2–4 times without a seam.
+  5. Presentation: a static disc; a pulsing disc — push-in ×1.2 and back every 4 frames in rhythm; a slow push-in
+     to the center ×1.7 over 1.9 s; strobe — the disc is visible for 2 frames, then 2 frames of black (as if through slits).
+variants:
+  - graphic disc — drawn figures around a circle on black, a loop in place
+  - photo collage on a real disc — cut-out photos on several rings, the disc slowly spins (≈ 1°/frame)
+  - procession around the circle — the disc shifts slightly faster or slower than a sector, the figures walk around the circumference
+  - abstract disc — dots and drops change size along a spiral, no figures
+  - pulsing disc — push-ins and pull-backs ×1.2 to the rhythm of the track
+  - strobe — the disc flashes through black frames, as if seen through slits
+status: code
+fallback: from any short movement of the subject (2–4 steps, a wave, a jump) in code — cut out the figure with a mask (hybrid), take 10–16 equal phases and lay them out around the circle; drawn and collage discs with fine graphics — generation of the disc's key frame with consent
+params:
+  phases: 10–16 per ring (typically 12); rings 1–3, inner ones at 0.5–0.7 of the outer one's scale
+  radius: outer ring 0.35–0.45 H from the center; figure 12–20 % H, oriented along the radius "feet toward the center" or along the tangent
+  rotation: 360/N per frame (12 phases — 30°/frame); a procession drift of ±0.5–1° per frame on top
+  loop: N frames, 0.6–1.9 s (at 25 frames/s hold each phase for 1–2 frames, i.e. 12–25 phases/s)
+  repeats: 2–4 loop repeats
+  pulse: push-in ×1.15–1.25 and back over 4 frames, outCubic, on beats
+  strobe: 2 frames disc / 2 frames black (≈ 80–100 ms) — optional
+  background: '#000000 or a solid color, the disc lighter than the background or with a thin shadow'
+when: intros and logo loops, music visualizers, retro and vintage, a hypnotic pause or bridge, a "real video → toy" transition; loop = 1 or 2 bars
+avoid: long stretches (longer than 4–6 s gets tiring); a figure with complex non-periodic motion (the loop "breaks"); fine details indistinguishable on a phone (figure < 10 % H); an inexact rotation match — the disc starts to "drift" chaotically
+sfx: projector clatter or a disc ratchet in time with the frames, a music box, vintage noise; on the pulse — a kick
+genres: {fanedit: allowed, teaser: allowed, fashion: allowed, calm: allowed, viral: allowed, clips: allowed, explainer: allowed}
+detect: |
+  A round disc in the center; angular periodicity of the image of 10–16 (up to 32) around a ring (FFT of the ring's brightness profile);
+  ring rotation between frames ≈ 360/N (by cross-correlation in polar coordinates) or ≈ 0 when poses change;
+  frame N+1 almost matches frame 1 — a short loop. ed_motion: ROTATE with a constant step, or nothing while the content
+  changes; with a presentation move — ZOOM centered at 0.5/0.5, black and flash frames with a strobe.
+  Differences: kaleidoscope — mirrored sectors of one image, no successive phases;
+  camera rotation — the whole frame turns, the figures don't change pose; cylindrical strip (zoetrope) — phases around
+  a drum, seen through slits from the side.
+engine: |
+  mask('mediapipe_person'|'hf_remove_background') → frames = sample_phases(clip, n=12)
+  radial_loop(frames, rings=[{n:12, radius:0.4, scale:1.0}, {n:12, radius:0.22, scale:0.55}], orient='radial',
+              rotate_per_frame=360/12, drift=0.7, center=[0.5, 0.5], bg='#000', loop_repeats=3)
+  + transform(scale=[1, 1.2, 1], every='1/4') (pulse) | fade(to='black') every other frame (strobe) + sfx('click', every=frame)
+gen_hint: an animated phenakistiscope disc, twelve identical figures arranged in a circle around a spiral center, each in the next phase of a walking cycle, the disc spins so the figures appear to move in a seamless loop, black background, vintage optical toy, hand-drawn
+commands: ["make a disc loop from the subject's dance on the intro", "a phenakistiscope from 12 phases of the jump in #5", "make the disc with figures pulse on the beat", "loop the movement around a circle, like an antique toy"]
+related: [fx.kaleidoscope, time.boomerang, anim.cel, time.step_print, fx.duplicate]
+evidence: {examples: 7, sources: 7, measured: "angular periodicity of 10–14 figures per ring (one abstract disc at 32); rotation of exactly 30°/frame with 12 phases in 2 examples, ≈ 32–43° with 10 in one, ≈ 0° when poses change; loop of 12–13 frames (0.9–1.9 s at 6–14 fps); pulse ×1.2 and back every 4 frames; push-in ×1.68 over 1.9 s centered at 0.5/0.5; strobe — black frames every 2", confidence: medium}
+---
+id: anim.rotoscope
+family: anim
+group: graphics
+level: B
+aliases: [rotoscope, rotoscoping, tracing over live video, live video to cartoon, painted footage, toon tracing]
+what: live footage redrawn frame by frame — people move and act for real but look like a drawing (flat tones with outlines or thick paint); facial expressions and body movement are real, the texture is drawn
+frames: |
+  1. The base is ordinary narrative footage: close-ups and medium shots, natural facial expressions, a real camera (pan, push-in).
+  2. Two main drawing styles:
+     a) flat — the figure is filled with 2–4 tones per color (base + shadow + highlight), a thin dark outline (3–7 % of pixels are lines),
+        30–55 % of pixels are flat; background — a painted backdrop, a gradient sky or the live footage simply left as is;
+     b) painterly — the whole frame is repainted in oil or gouache strokes, 1100–1950 shades (on a 5-bit scale),
+        flat pixels 3–4 %, a dark soft outline, faces keep a portrait likeness.
+  3. Timing: painterly and full flat — every frame new (on ones, motion as smooth as in the footage);
+     economical flat — a drawing holds for 4 frames (≈5 drawings/s), with a stop pose of ≈0.6 s before an action.
+  4. Live effects are often layered over the drawing: particles, highlights, glow, smoke — they change every frame and aren't traced.
+  5. The "neon" variant: only a glowing outline of the figure remains, over a flowing psychedelic background.
+variants:
+  - flat tone on a painted background: a figure in 2–4 tones with an outline, background — a drawn gradient or landscape
+  - flat figure in a live world: only the subject is traced, the background and effects (particles, highlights) are footage
+  - economical: drawings on fours, long stop poses, minimal motion — night, a quiet scene
+  - painterly: the whole frame is oil painting over the footage, strokes "boil" frame to frame, close-up portraits
+  - neon outline: only a glowing line of the figure on an animated background
+status: hybrid
+fallback: "code: flat variant — subject segmentation (mediapipe or hf_remove_background), smoothing and posterization into 3–4 tones per segment + XDoG outline; painterly — a brushstroke filter (kuwahara / oil) + edge darkening; full frame-by-frame redrawing that preserves likeness — video-to-video generation from a style frame, with consent"
+params:
+  style: flat (2–4 tones per color, outline) | painterly (strokes, no flat areas) | neon_line (outline only, with glow)
+  flat_share: 0.3–0.55 flat pixels for flat, 0.03–0.2 for painterly
+  line: 3–7 % of frame pixels are lines; thickness 0.3–0.6 % of height; color — a dark shade of the fill or black
+  timing: on ones (painting, smooth action) or on fours (economical, ≈5 drawings/s)
+  boil: painterly — strokes change every frame, without silhouette jitter
+  keep_live: keep the background and effects (particles, highlights, smoke) live — via a mask
+  duration: insert 2–6 s or a whole scene; transition from live video — a 0.3–0.5 s dissolve or a cut on the beat
+when: an escape "into a memory or dream", a change of reality within the video, a music video and fan edit, stylizing an interview or a confession, anonymizing faces while keeping the emotions, historical and fairy-tale scenes (painterly), night-time quiet (economical flat); a musical accent — the entry into a verse or bridge
+avoid: small fast movements with economical timing — it stutters; crowds and small faces — posterization "eats" the features; a filter without a mask on noisy night footage — a mush of blotches; flickering tones (segmentation changes frame to frame) — temporal palette stabilization is needed; a product or text that must be readable
+sfx: a dedicated sound isn't required; on entering the drawn world — a swell or a reverse flash; keep the scene's live sound — the contrast with the drawing strengthens the effect
+genres: {fanedit: signature, drama: allowed, teaser: allowed, fashion: allowed, motivation: allowed, calm: allowed, viral: allowed, clips: allowed, explainer: allowed, ugc: allowed}
+detect: |
+  Body movement and facial expressions are those of a live actor (real proportions, natural camera movement), but the image is drawn:
+  either flat areas of 30–55 % with a dark outline on 3–7 % of pixels, or a thick brushstroke texture without grain or motion blur.
+  Time: painting — every frame is unique, the texture "boils"; economical flat — holds of 4 frames.
+  Live elements on top (particles, highlights) change every frame more than the drawing (difference 20 vs 36 at the center of the figure).
+  ed_motion: events as in ordinary footage (pans, push-ins), no holds or holds of 4 frames.
+  Difference from anim.cel: there, invented characters with cartoon motion and timing on twos or threes.
+  From anim.line_art: there, only a line without fills. From painterly oil animation made from scratch: there is no trace of live footage there.
+engine: |
+  rotoscope(style='flat'|'painterly'|'neon_line', subject_mask='mediapipe_person'|'hf_remove_background'|None,
+            tones=3, line='xdog', line_px=0.004*H, hold=1|4, keep_live_bg=True, palette_lock=True, t=[t0, t1])
+  — flat: bilateral → mean-shift segments → k-means 3 tones per segment → XDoG outline; palette_lock — palette fixed for the whole shot;
+  — painterly: kuwahara(radius=0.01W) + brush_texture + edge_darken; video-to-video generation from a style frame for likeness;
+  — neon_line: XDoG on the subject mask → glow(threshold=0.5, radius=0.01W) over a different background;
+  hold=4 → step_print(hold=4). Entry and exit — transition('dissolve', 0.4) from the live frame of the same shot.
+gen_hint: rotoscoped animation of <live-action scene>, realistic human motion and facial expressions traced into <flat cel-shaded colors with thin dark outlines / thick oil-paint brush strokes>, painted background, cinematic framing, consistent style frame to frame
+commands: ["turn #4 into a rotoscope with flat tones and outlines", "make the memory in #6 a painterly rotoscope", "trace only the subject, keep the background live", "a neon outline of the subject on a psychedelic background in the bridge"]
+related: [anim.cel, anim.line_art, anim.comic, anim.oil_paint, time.step_print, mask.bg_replace]
+evidence: {examples: 8, sources: 2, measured: "painterly (4 examples): 20 of 20 frames/s unique, 1100–1950 shades, flat pixels 0.03–0.04 (0.21 in one), outline 3.9–9.7 % of pixels; flat (4): flat pixels 0.22–0.55, 16 main colors cover 34–59 % of the frame, outline 4.3–6.8 %; economical — holds of 4 frames (≈5 drawings/s) and a 12-frame stop pose (0.6 s); live particles over the drawing; one example — a neon outline (13.6 % of pixels are lines)", confidence: medium}
+---
+id: anim.rubber_hose
+family: anim
+group: graphics
+level: B
+aliases: [rubber hose, rubber hose animation, rubber hoses, old cartoon, 1930s cartoon, retro cartoon, vintage animation, hose arms]
+what: a stylization of early black-and-white cartoons — characters and objects brought to life, with jointless hose arms, white gloves and "pie-cut" eyes, bounce to the music all the time over aged film
+frames: |
+  1. Image: monochrome (median saturation 0–18 of 255, sometimes a slight sepia tint), 5–14 tones cover
+     90 % of the frame. Characters are solid black silhouettes with a white face mask or white figures with a black outline; background —
+     a flat grey (brightness 75–170) or painterly: grey clouds, stone, a staircase in exaggerated perspective.
+  2. Drawing: a clean black outline; arms and legs are flexible tubes without elbows or knees, bending in an arc; white
+     gloves, big shoes, "pie-cut" eyes with a wedge cut out, round cheeks and a wide smile; household
+     objects (a cup, a teapot, a coffee pot) with faces and limbs.
+  3. Motion: nothing stands still — the character bounces in place with squash and stretch, the center of mass moves by 1–11 % of frame
+     height; the bounce cycle is 0.5 s (≈2 Hz, ≈120 BPM), a full pose loop 0.7–1 s; a walk in place — 0.6 s per two steps;
+     secondary cycles — steam, darting eyes, "snoring".
+  4. Film: grain, vignette (corners darker than the center: 0.54–0.84), scratches and brightness flicker, sometimes a round
+     iris vignette in frame.
+  5. The camera is static, the character centered, everything on one floor line; a scene of 1–4 s, looped.
+variants:
+  - classic: a black-and-white animal character in close-up, darting eyes, grey background
+  - spooky scene: a painted background (a stone staircase, skeletons on the steps) — the living scenery pulses along with the character
+  - modern stylization: object mascots (a cup, a coffee pot, a teapot) with faces bounce in sync as a pair, flat grey background
+  - walk cycle: a character with hose legs walks in place inside a vignette, grain and flicker
+  - gag: a character gets angry and jumps in place, tape over its mouth, a comedic pause
+  - sleepy scene: an object snores, puffs of steam, a darker frame (brightness ≈75), scratches on the film
+status: generation
+fallback: |
+  generation (main path, with consent) — only original characters and mascots, no recognizable classic characters;
+  code for the user's ready-made graphics (a logo, a product, a flat mascot on a transparent background): a bounce in time with
+  squash and stretch + retro treatment (monochrome, grain, vignette, flicker, scratches, stepping on twos);
+  footage — find retro animation in the source footage (detect)
+params:
+  palette: saturation < 20/255, 5–14 tones over 90 % of the frame; black masses + white faces and gloves; background grey 75–170 or painterly grey
+  line: a clean black outline ≈0.5–0.8 % of frame height, no thickening
+  bounce: center of mass ±1–11 % of frame height; squash and stretch ×0.9–1.1 in height with volume preserved; period 0.48–0.5 s (≈2 Hz) or one beat of the track
+  loop: 0.7–1 s per full pose cycle (18–25 frames @25 fps); walk in place 0.6 s per two steps
+  timing: classic — on twos (≈12 drawings/s); modern stylization — on ones
+  film: fine grain; vignette corners/center 0.55–0.85; brightness flicker ±3–5 %; 0–2 scratches per frame; sepia optional (sat 10–20)
+  framing: character centered, 40–95 % of frame height, static camera, a shared "floor"
+  duration: insert 1–4 s (25–100 frames @25 fps), loops a multiple of a bar
+when: retro intros and outros; a brand or product mascot (especially food and drinks — cups, teapots, coffee) in a product video or an explainer; a bumper or a background for titles with a bounce on the beat; a comedic gag cutaway in a fan edit or a viral video; a music video in the style of swing, ragtime, old jazz; 1–3 inserts or a whole short video
+avoid: copying recognizable classic characters and their features one to one (rights); caricatured depictions of people and ethnic groups typical of old cartoons; serious drama and tragedy; bright saturated colors (they break the era); fast choppy editing — the style rests on loops; mixing with photoreal 3D in one frame
+sfx: swing, ragtime or Dixieland; xylophone on steps, a "boing" on jumps and squashes, a slide whistle on falls, a cymbal on the gag, film and projector crackle in the background; bounce hits — exactly on the beat
+genres: {fanedit: allowed, viral: allowed, product: allowed, explainer: allowed, teaser: allowed, clips: allowed, ugc: allowed, motivation: forbidden}
+detect: |
+  frame: median saturation < 20, 5–14 tones cover 90 % of the area; flat pixels 0.4–0.83 (painterly background 0.15–0.5);
+  vignette corners/center 0.54–0.84; grain and flicker while the drawing is still.
+  time: frame self-similarity — a minimum at a lag of 0.5–1 s (loop); the center of mass of the dark silhouette oscillates by 1–11 % of height
+  with a period of ≈0.5 s; ed_motion sees no camera events (the camera is static).
+  shape: black silhouettes with a white face mask, eyes with a wedge, white gloves, arc limbs without joints.
+  Difference from anim.cel: there — color, two-tone shadows and no film; from anim.line_art: no large black fills;
+  from a vintage filter on live video: live texture, perspective and facial expressions.
+engine: |
+  generation: style_ref = generate_image(prompt=gen_hint) → generate_video(style_ref, motion='rhythmic bouncing loop, squash and stretch, in place')
+    → loop(mode='cycle') over 2–4 bars → step_print(hold=2) → film_damage(gate=True, flicker=0.04, dust=0.01, scratches=1, tint=[1.04, 1.0, 0.94])
+  code for the user's graphics (logo, product, mascot PNG):
+    squash_stretch(target=layer, amp=0.1, period=beat, anchor='bottom', preserve_volume=True)
+    + transform(shift=[[0,0],[0,-0.04],[0,0]], t=[beat_i, beat_i+½, beat_i+1], ease=['outQuad','inQuad']) — hop
+    + face_overlay(eyes='cartoon', mouth='viseme') optional + color(saturation=0, contrast=1.15) + grain(amount=0.03, size=1)
+    + vignette(0.35) + step_print(hold=2)
+  editing: entry and exit — transition(kind='wipe', params={shape:'circle'}) (circular iris) + sfx('boing', at=bounce hit)
+gen_hint: 1930s rubber hose cartoon style animation of <original mascot or object with a face>, black and white, noodle arms and legs without elbows, white gloves, pie-cut eyes, bouncing rhythmically in place with squash and stretch, flat grey background, film grain, vignette and scratches, animated on twos
+commands: ["make a bumper in the style of an old 1930s cartoon", "make our logo bounce on the beat like a retro cartoon", "insert a gag cutaway in the style of a black-and-white cartoon at 0:15", "a cup mascot walking in place inside a vignette for the outro"]
+related: [anim.cel, anim.line_art, fx.living_object, glitch.film_damage, trans.iris, time.step_print]
+evidence: {examples: 7, sources: 5, measured: "saturation 0–18, 5–14 tones over 90 % of the frame in 7 of 7; vignette corners/center 0.54–0.84 in 6 of 7; loops 0.72–0.96 s, bounce 0.48 s (≈2 Hz), walk in place ≈0.6 s; the silhouette's center of mass wanders by 1.2–11 % of height; 3 classic and 4 modern stylizations (object mascots); previews 5–25 fps with grain — holds on twos can't be measured, given per the canon ≈", confidence: medium}
+---
+id: anim.scribble
+family: anim
+group: graphics
+level: B
+aliases: [scribbles, scribble, drawn lines over video, hand-drawn, scribble animation, scribble overlay, draw-on, scrawls]
+what: quick hand-drawn lines, loops, strokes and text over live video or a photo — every frame is redrawn from scratch, so the drawing "boils" and trembles; energy, chaos, a handmade punk delivery
+frames: |
+  1. Base: an ordinary shot — usually static (6 of 7 examples have no camera movement), the subject centered;
+     sometimes a B&W photo, a duotone or a dark scene so the lines read.
+  2. Drawing: white or neon (green, turquoise) lines 1.5–2.5 % of frame height thick
+     (neon with halation — up to 5 %); they cover 2–5 % of the frame (text — up to 18–29 %). What gets drawn:
+     loops and "comets" around heads (≈10 strokes 12–19 % of height long), a trace of the subject's outline
+     with offset repeats, hatching over the body, crosses and arrows, eyes and smiles over a face,
+     a handwritten word or name (letter height 8–11 % of the frame, in the upper left third).
+  3. Timing: the drawing is redrawn every frame ("on ones") — line overlap between adjacent frames is
+     only 0.12–0.25 — or holds for 2–3 frames; in the neon variant the lines manage to shift by half
+     within 0.1 s. The text alternates styles: a typeset font holds for 0.15–0.3 s, a handwritten version
+     flashes for 2–4 frames.
+  4. Appearance and exit: the lines get "drawn on" over 0.2–0.5 s from a lift in the music or from the first word and
+     disappear on a cut; the whole device lasts 0.6–4 s.
+variants:
+  - comets and loops around faces — fast white strokes circle around heads in an old photo
+  - neon scribbles — glowing green lines fly around a night shot along with flashes
+  - rotoscope tracing — white lines follow the subject's outline, offset copies of the outline spread around it
+  - handwritten title — a handwritten word boils every frame; alternates with a typeset font
+  - markings — crosses, arrows, circles over the frame in the spirit of a rough draft, mixed with interference
+  - drawn character — a colorful cartoon blob with eyes grows next to the subject (borders on anim.doodle_overlay)
+status: hybrid
+fallback: generation (with consent) — when complex drawn characters or metamorphoses are needed; code handles lines along the outline (subject mask), procedural loops and comets around the face (face mesh), a handwritten title redrawn every frame
+params:
+  color: "white (#ffffff) or neon (#3cff9a / #2ef2d0), on a dark or B&W frame; halation 0.5–1 % for neon"
+  stroke: 1.5–2.5 % of frame height, uneven thickness, round "comet" ends
+  coverage: 2–5 % of the frame (text — up to 30 %)
+  boil: redraw every frame @25 fps (on ones) or on twos; line point offset 0.5–1.5 % of the frame, a new random shape for loops
+  anchor: track(face) or the mediapipe_person outline; loops — ellipses 1.2–1.6× the head size, 8–12 strokes
+  outline_offsets: 2–4 offset copies of the outline with a step of 2–4 % of the frame
+  title: letter height 8–11 % of the frame, top left, a "marker" with a trembling outline; alternating with the font 2–4 frames / 4–8 frames
+  draw_on: 0.2–0.5 s (5–12 frames) per appearance
+  duration: 0.6–4 s, repeated on every chorus or keyword
+  base_grade: B&W, duotone or darkening by −20…−40 % under white lines
+when: a drop, a chorus or a shout in the track; an energetic hook; the subject's name or a keyword by hand; music videos, fan edits, videos about art and music; old photos "brought to life"; 1–3 inserts of 1–3 s per video
+avoid: a calm, premium or corporate tone; small text and important details under the lines; lines of the same color and brightness as the background; boil across the whole video for longer than 5–7 s — it tires the eye; commissioned or documentary footage where the drawing looks like damage
+sfx: marker or chalk rustle on the draw-on; rhythmic "scratches" in time with the redraws; when the text appears — a hit or a scratch; under neon — an electric crackle
+genres: {fanedit: signature, viral: allowed, phonk: allowed, clips: allowed, ugc: allowed, teaser: allowed, fashion: allowed, motivation: allowed, calm: forbidden}
+detect: |
+  frame: live video or a photo + thin flat lines of one color with no shadows or perspective (white with
+  saturation < 40 and brightness > 215, or neon H 55–95, S > 100), 2–5 % of the area, uneven ends;
+  often a handwritten word.
+  time: the line mask barely matches between adjacent frames (IoU 0.1–0.25 on ones, ≈0.5 across
+  2–3 frames), while the base frame is stable; ed_motion: "no significant global motion", no holds.
+  differences: anim.doodle_overlay — simple faces tracked onto an object, with no boil across the whole frame;
+  anim.line_art — the whole frame is drawn in line on a solid background; anim.rotoscope — the whole frame is redrawn
+  rather than lines being overlaid; glitch bars — rectangular blocks, not a handwritten stroke.
+engine: |
+  mask(method='mediapipe_person'|'face', feather=1) → the subject's outline
+  + scribble_overlay(kind='orbit'|'outline'|'hatch'|'marks'|'title', color='#ffffff'|'#3cff9a', width=0.02*H,
+                     boil='ones'|'twos', jitter=0.01, count=10, anchor=track(face), glow=0|0.008, t=[t0, t0+2])
+  + text(content='<word>', style='hand_marker', anim='boil(on_ones)', t=[t0, t0+1.2]) alternating with a font every 4–8 frames
+  + color(params={desaturate: 1.0} | lut='duotone') on the base, so the lines read
+  A complex drawn character — generate_video from a frame (with consent).
+  + sfx('scratch', at=t0) on every appearance
+gen_hint: live-action footage of <subject> with hand-drawn white scribbles animated on top, chaotic marker loops orbiting the head, outline strokes tracing the body, boiling lines redrawn every frame, handwritten word in the corner, punk zine energy
+commands: ["throw white scribbles around the head on the chorus", "the subject's handwritten name, boiling, at 0:05", "neon lines around the dancer on the drop", "trace the subject with a trembling outline"]
+related: [anim.doodle_overlay, anim.line_art, anim.rotoscope, type.hand_drawn, anim.color_pencil, fx.glitch]
+evidence: {examples: 7, sources: 7, measured: "lines 1.5–2.5 % of height (neon with halation up to 5 %); coverage 2.6–4.8 % of the frame, handwritten text up to 29 %; redrawing on ones — line IoU between adjacent frames 0.12–0.25 @16.7–25 fps, ≈0.5 across 2–3 frames; ≈10 strokes 12–19 % of height long around heads; handwritten title — letters 8–11 % of the frame; font alternation 2–4 and 4–8 frames; camera static in 6 of 7", confidence: medium}
+---
+id: anim.stop_motion
+family: anim
+group: graphics
+level: C
+aliases: [stop motion, frame-by-frame animation, object animation, puppet animation, frame-by-frame, things brought to life]
+what: frame-by-frame shooting of real objects, puppets or people — everything is moved by hand between shots, and on playback things "move by themselves"; a handmade jerky rhythm on twos without motion blur
+frames: |
+  1. Camera: usually on a tripod — static (jitter 0.01–0.07 %); or a "frame-by-frame move" — the camera shifts
+     in steps along with the objects. Background and light stay the same from frame to frame.
+  2. Timing: snapshots on twos — each held for 2 frames (80–100 ms, 10–12.5 snapshots/s); in calm passages — on threes
+     (120 ms); fast camera moves — on ones. Repeats within a hold are pixel-identical.
+     A key pose holds fully for up to 1 s (24 identical frames).
+  3. Object motion: jerky offsets of 1–5 % of the frame per snapshot, no motion blur (every snapshot is sharp), objects
+     "breathe" slightly — the whole frame shifts 0.03–0.5 % of the width between snapshots; exposure wanders: in digital
+     shooting 0.03–0.5 % of brightness (up to 1.2 %), with paper and film — up to 9 % from frame to frame.
+  4. Honest materials: fabric, paper, plasticine, toys, food; small imperfections (fingerprints, specks of dust,
+     uneven steps) are part of the aesthetic.
+  5. The scene device: an object drives, crawls or assembles itself; clothing or props change on every snapshot while the person's
+     pose stays still; the subject stands at one point in the frame while the world around changes every 0.1–0.35 s.
+  In the edit: a 2–10 s clip; episodes start with a 0.5–1 s pose hold and end on a cut on the beat.
+variants:
+  - puppet scene — a puppet in a miniature set, camera on a tripod, on twos
+  - object scene — a toy, food or things on a table move by themselves, phone camera at table level
+  - still life — elements of the composition rotate, roll, appear one after another
+  - frame-by-frame move — the camera steps along a surface, the props in frame change on every snapshot
+  - clothing and prop change — a person in one pose, the clothing changes on every snapshot
+  - location hopping — the subject or object at the same point in the frame (±5 % of the frame, size ±15 %), the background changes every 0.1–0.35 s, sometimes a letter of text is added each time
+  - paper cutout — a photo or paper is taken apart piece by piece per snapshot, strong film-like brightness flashes
+status: code
+fallback: |
+  footage — real stop motion (a photo series or frame-by-frame video) from the user's source footage;
+  code — assembling a photo series at 8–12 snapshots/s aligned on the subject; a "stop-motion look" for live video via
+  stepping on twos + jitter + flicker (works on a static camera and short shots, without sharp movements —
+  motion blur gives the video away);
+  generation (with consent) — puppet and object scenes "like stop motion".
+params:
+  frame_rate: on twos (12.5 snapshots/s @25 fps) — baseline; on threes (8.3/s) — a "handmade" unhurriedness; on ones — camera moves only
+  pose_hold: a key pose held whole for 0.5–1 s
+  jitter: whole-frame shift of 0.05–0.4 % of width per snapshot, random, non-accumulating; rotation ≤ 0.3°
+  flicker: brightness ±0.2–1 % per snapshot (digital); ±3–9 % for old film and paper
+  motion_blur: none — a short-exposure source or frames without blur; discard blurred frames
+  step_size: object offset of 1–5 % of the frame per snapshot
+  hop: location hopping — 2–4 frames @25 fps per location, the subject aligned by center/face (tolerance 5 % of the frame)
+  duration: 2–10 s (50–250 frames @25 fps)
+when: product videos (an object assembles, unboxes or drives "by itself"); recipes and food; DIY and crafts; intros and bumpers in a "handmade" style; music videos; UGC trends with outfit or location changes; explaining through objects on a table; at section changes — a short 1–2 s stop-motion cutaway
+avoid: imitation on shots with heavy motion blur or a shaky camera — the stepping gives the video away; long uneventful episodes; uneven light between snapshots when assembling from photos (unless intended); an expensive glossy tone where smoothness is needed
+sfx: on steps — small clicks, taps, rustles (foley by snapshot, not on every one but on the accented ones); outfit or location changes — a click or swoosh on every change; final pose — a pop or impact
+genres: {product: signature, ugc: allowed, viral: allowed, fanedit: allowed, teaser: allowed, explainer: allowed, calm: allowed, fashion: allowed, travel: allowed, clips: allowed}
+detect: |
+  time: pairwise identical frames (< 0.4 % of pixels change) in runs of 2 (sometimes 3) at 24–25 fps; long
+  pixel-still pose holds of up to 1 s; ed_motion holds — from 3 frames.
+  motion: objects move in jerks without blur (sharpness doesn't drop during motion); the background is still (jitter ≤ 0.07 %);
+  overall frame shift between snapshots 0.03–0.5 %.
+  light: exposure wanders between snapshots (0.03–1 %, up to 9 % for paper and film).
+  differences: drawn animation — flat fills and outlines; 3D render — smooth materials, smooth motion on ones,
+  motion blur; pixilation — real people move; timelapse — light and crowds change, not an object's pose.
+engine: |
+  photo assembly: photo_sequence(images, fps=12, align=track(face|object:<name>), align_tol=0.05, crop='fit') + flicker(amount=0.006)
+  look on video: step_print(hold=2) + frame_jitter(amp=0.002*W, rot=0.2, per='hold') + flicker(amount=0.005, per='hold')
+    + color(params='saturation +5%, contrast +5%') ; works well on a static camera, skip blurred frames (drop_blurred=True)
+  location hopping: cut every 2–4 frames @25 fps through the photo series, object aligned with transform(center=track(object)), sfx('click') on each change
+  generation: generate_video(prompt=gen_hint, dur=3–5) → step_print(hold=2)
+gen_hint: stop-motion animation of <objects or puppet> moving on their own on <surface or miniature set>, handmade materials, slight frame-to-frame jitter and light flicker, animated on twos, locked-off camera, tactile textures
+commands: ["build a stop motion from my photos at 12 frames per second", "make #2 look like frame-by-frame animation", "have the object drive into frame by itself in stop motion", "a stop-motion outfit change on the drop"]
+related: [anim.claymation, anim.pixilation, time.step_print, anim.cgi_3d, anim.cel, product.hero, fx.living_object]
+evidence: {examples: 14, sources: 14, measured: "on twos in 4 of 4 clips with previews ≥ 20 fps (80–100 ms, in places 120 ms; on ones only for camera moves); a pixel-still pose of 960 ms; camera jitter 0.01–0.07 %; overall shift between snapshots 0.03–0.5 % of width; background flicker in digital clips 0.03–0.5 % (max 1.2 %), 8.9 % per frame for the paper cutout; location hopping — the subject stays within ±4–6 % in frame, size ±14–16 %", confidence: high}
+---
+id: anim.vector
+family: anim
+group: graphics
+level: B
+aliases: [vector animation, flat animation, flat design, flat-style motion graphics, shape animation, shape morphing, flat 2D]
+what: flat vector animation — clean geometric shapes filled with 2–5 colors, hard edges, smooth tweens and shapes flowing into one another; an illustration insert, an explanation or a product stylization
+frames: |
+  1. Background — a solid fill of one color (purple, mustard yellow, light grey, coral,
+     dark lilac, white, black) or a soft gradient; no texture, or a light grain or halftone on top.
+  2. Shapes — flat fill without gradients, perfectly clean edges; the shadow is a flat patch of a second tone
+     with an offset; no outline, or a thick black one (≈1–2 % of frame height). The palette repeats throughout the whole
+     piece: a common scheme is coral + cream + black, or two contrasting colors on a dark background.
+  3. Motion — tweened, every frame new: a shape smoothly flows into another (blob → hand → bird,
+     circle → face), objects travel in a straight line with acceleration and deceleration, "pop out" with an overshoot ×1.05–1.15
+     and settle back; a kaleidoscope rotation of identical elements; a spiral tunnel toward the camera.
+  4. Camera — a 2D push-in or a slide across the plane, sometimes "2.5D": a road in perspective, a car driving toward the camera.
+  5. Combining with live video: vector elements (a sticker outline around a real object, a white flourish
+     line, flat patches) over the filmed shot.
+variants:
+  - limited palette: 3 colors (coral, cream, black), large shapes, hard flat shadows
+  - silhouette morphing: black blobs on a grey or white background flow into a hand, birds, a fish
+  - icon character: a simple figure or object (a car, a bicycle, a sushi roll, a fish) on a solid background
+  - fashion illustration: a black line on white, one color accent (red lips), faces in close-up
+  - gradient vector: shapes with smooth gradients and grain or halftone, juicy color transitions
+  - sticker outline: a real product cut out, with a thick black outline and a colored backing plate around it
+  - over video: vector flourishes, patches, smoke lines, flashes on a real shot
+  - kaleidoscope and tunnel: repeating elements rotate around a circle, a spiral pulls into the center
+status: generation
+fallback: in code — motion graphics from primitives (circles, plates, lines, blobs) with tweens and overshoot over video; a "vector filter" on a live shot (smoothing + 3–6 color palette + simplified contours) is honest only on simple silhouettes and large shapes, no longer than 2–3 s; a sticker outline around an object — hybrid (remove_background mask + outline + plate); complex character vector animation — generation with the user's consent
+params:
+  palette: 2–5 colors per frame (typically 3), high saturation; repeat the palette across the whole piece
+  fill: flat fill over 70–95 % of the area, no noise; gradient variant — 2-color gradients + grain 0.02–0.05
+  outline: none or a thick black one at 1–2 % of frame height; for fashion illustration — a 0.3–0.6 % line + 1 color accent
+  shadow: flat, offset 1–3 % of the frame, the background tone ×0.6–0.75 in brightness
+  timing: on ones (every frame new) for tweens; shape morphing 0.3–1 s (8–25 frames @25 fps)
+  ease: outBack with a 5–15 % overshoot for appearances; inOutCubic for movement; linear for kaleidoscope rotation
+  camera: 2D push-in ×1.1–1.5 or a slide, no shake; 2.5D perspective — generated only
+  sticker: outline 1.5–3 % of the short side, backing plate 4–8 % wider than the object
+  duration: insert 1.5–5 s (38–125 frames @25 fps)
+when: explainers (diagrams, icons, a symbol character), intros and outros, logo animation, an "escape into illustration" insert in a music video or fan edit, a product with a sticker outline in product and UGC videos; appearances and morphs — on beats; 1–3 inserts per video if the style isn't the main one
+avoid: a vector filter on faces, crowds, foliage (blotches and flicker); more than 5–6 colors — the flatness is lost; fine details and thin lines on a vertical screen; an insert palette unrelated to the color of the rest of the video; slow tweens without overshoot — looks like a cheap template
+sfx: a pop and a click when shapes appear, a soft whoosh on a morph, a "bloop" on blobs, synth beeps and ticks on the kaleidoscope; hits coincide with the shape's overshoot
+genres: {explainer: signature, product: allowed, fanedit: allowed, viral: allowed, teaser: allowed, ugc: allowed, fashion: allowed, calm: allowed, motivation: allowed, clips: allowed}
+detect: |
+  frame: flat pixels (local std dev < 3) 0.7–0.95 of the area; 90 % of the area is covered by ≤ 6 colors; edges are sharp
+  and smooth, no brush texture or sensor noise (or an even synthetic grain over the whole frame).
+  time: every frame is unique during motion (no pairs of identical frames, unlike drawing on twos);
+  holds — only as whole pauses between movements.
+  ed_motion: with a 2D camera — ZOOM/SHIFT with nonrigid ≈ 0 (a plane); morphing gives a high frame diff without global
+  motion.
+  Difference from anim.cel: there, a painted background and drawing on twos or threes; here, a solid background and tweens on ones.
+  From anim.line_art: there, an outline without fill. From 3D: no volumetric light or highlights. From a sticker collage: the shapes
+  are drawn rather than cut out of photos (except the product sticker-outline variant).
+engine: |
+  overlay graphics: shape(kind='circle'|'blob'|'bar'|'line', fill=palette[i], t, anim='pop', ease='outBack', overshoot=0.1)
+  + shape_morph(from=<path A>, to=<path B>, dur=0.5, ease='inOutCubic');
+  filter: vector_filter(colors=4, smooth=5, min_area=0.002, outline=0|0.012, palette='coral_cream_black'|auto) — simple shots only, ≤3 s;
+  sticker: mask(method='hf_remove_background') → sticker_outline(width=0.02, color='#111', plate=palette[1], plate_pad=0.06);
+  + grain(0.03) for the gradient variant; complex scenes — generation (gen_hint).
+gen_hint: flat vector 2D animation, limited palette of coral red, cream and black, bold geometric shapes with flat hard shadows, smooth morphing between shapes, clean edges, no texture, solid color background, <subject or scene>
+commands: ["a vector insert in a coral palette on the intro", "give the sneaker a sticker outline on a green plate", "explain the diagram with flat vector icons", "blobs morphing into the logo at the end"]
+related: [anim.cel, anim.line_art, anim.doodle_overlay, gfx.collage, fx.kaleidoscope]
+evidence: {examples: 29, sources: 21, measured: "only a visual review of all the section's examples at 4–7 points in the animation (scripted frame capture was blocked by browser permissions); palettes and outline thicknesses are estimates (marked ≈) from frames; timing on ones — judged by smoothness, not measured", confidence: medium}
+---
+id: anim.watercolor
+family: anim
+group: graphics
+level: B
+aliases: [watercolor animation, watercolor, ink and wash, ink wash, sumi-e, watercolor look, painted wash]
+what: animation in transparent washes of watercolor or ink on white paper — soft patches, bleeds, lots of air; a light, dreamy, poetic mood
+frames: |
+  1. Paper: white or light, with lots of empty space — 55–87 % of the frame is clean paper in silhouette and graphic examples,
+     4–19 % in saturated "full" pictures.
+  2. Washes: transparent layers of paint, paper grain visible, patch edges ragged and "running"; the tone inside a patch is uneven,
+     with bleeds; details are indicated by a few patches, there is no outline as such, or it is thin and hand-drawn.
+  3. Palette: either monochrome (ink: saturation ≈ 0, 9–10 tones), or a single paint (ultramarine, red),
+     or pastel multicolor (powdery pinks, lilacs, mints, saturation 2–60); a bright 190–230 fill —
+     only in "club" scenes.
+  4. Timing: every frame is a new drawing, 10–15 drawings/s (2–3 frames @25 fps); in a still pose
+     7–31 % of pixels change — the patches "breathe", the edges creep; some works are on twos (every second frame is a repeat).
+  5. Motion: dance, flight, running in silhouette; a drawn camera — a smooth push-in "through" a pattern (feathers → figure → face)
+     over 2–3 s; patches metamorphosing into a new scene; sometimes the color "drains away" and the frame goes to white paper.
+variants:
+  - ink silhouette — a black or grey figure on white, tone only, no color
+  - monochrome blue — the whole scene in one paint, the paper shows through
+  - pastel story — delicate pink-lilac washes, a thin outline, push-ins through the drawing
+  - watercolor over video — a live shot "flooded" with transparent paint, only parts of the scene move
+  - print portrait — a dense square of paint with a ragged edge on white, a portrait inside, the frame trembles
+  - saturated gestural — bright juicy strokes, a concert or a dance, on twos
+status: code
+fallback: a watercolor filter over video (color simplification, bleeds at the edges, paper grain, white background via a mask) — in code; ink silhouette — hybrid (person mask); real hand-drawn animation with metamorphoses — generation with consent
+params:
+  paper: white or warm 245–255, grain 5–10 %; empty paper 50–85 % of the frame for silhouette scenes
+  wash: color simplification (mean-shift or k-means with 6–12 colors), layer opacity 0.6–0.85, multiply blending
+  edge_darkening: optional ≈ 0.5–1 % H — a dark rim along the edge of a patch in pastel and color watercolor; with ink the edge is lighter instead (a diluted rim)
+  bleed: bleeds of 1–3 % H, ragged edge with noise
+  palette: ink (S ≈ 0) | one paint | pastel (S 20–60) | saturated (S 190–230)
+  holds: 2–3 frames @25 fps per drawing (10–15/s) or twos
+  boil: 7–31 % of pixels change per drawing; patch edges shift 0.3–1 % H
+  duration: 2–6 s per shot; entry and exit — a 0.5–1 s dissolve into the paper
+when: memories, childhood, lyricism and love, nature and travel (a diary), a fairy-tale intro, a poetic teaser, light fashion; calm passages of the track; as a "live shot → watercolor → live shot" transition
+avoid: energetic drops and fast cutting; dark night scenes (watercolor relies on light paper); small text and important product details; sharp digital edges on top (they break the transparency)
+sfx: paper rustle, a drop of water, a brush clinking in a glass, soft piano or guitar, ambient; on the dissolve — a quiet swell
+genres: {calm: signature, fashion: allowed, travel: allowed, teaser: allowed, drama: allowed, fanedit: allowed, motivation: allowed, product: allowed, phonk: forbidden, sport: forbidden}
+detect: |
+  Frame: lots of clean white paper (≥ 50 % with silhouettes) or a light background, semi-transparent patches with uneven tone,
+  paper grain, ragged flowing edges; no thick relief (as in oil) and no even flat fills (as in classic
+  hand-drawn animation).
+  Time: no repeats, or twos; in a still pose 7–31 % of pixels change (the patches "breathe"), 10–15 drawings/s.
+  ed_motion: noisy events without real camera motion; smooth push-ins "through" the drawing.
+  Differences: oil — thick opaque strokes and relief; charcoal — dry dark strokes and smudging; colored pencil — hatching in lines.
+engine: |
+  watercolor_filter(levels=8, wash_opacity=0.75, edge_darkening=0.007*H, bleed=0.02*H, paper='cold_press', paper_grain=0.07,
+                    palette='keep'|'mono:#1f2f8f'|'ink') + step_print(hold=2)
+  ink silhouette: mask('mediapipe_person') → ink_wash(fill=0.85, dry_brush=0.3) on white paper
+  boil: line_boil(amp_px=0.005*H, every=2, reseed_texture=True)
+  entry/exit: transition('dissolve', dur=0.8) through white paper
+gen_hint: hand-painted watercolor animation of <subject>, transparent washes on white cold-press paper, soft bleeding edges, visible paper grain, pastel palette, lots of white space, each frame repainted so the washes gently shimmer
+commands: ["turn the memory into watercolor", "a silhouette dance in ink on white in #3", "make the intro look like a watercolor diary", "blue monochrome watercolor on #5–#6"]
+related: [anim.oil_paint, anim.charcoal, anim.color_pencil, anim.cel, mask.double_exposure, time.step_print]
+evidence: {examples: 7, sources: 7, measured: "empty paper 55–87 % in silhouette and graphic examples, 4–19 % in saturated ones; saturation 0–2 (ink), 54–61 (one paint, pastel), 192–220 (saturated); 10–15 drawings/s; in a still pose 7–31 % of pixels change; 3 of 7 on twos (frame difference alternates 1/45–65); a patch edge isn't always darker than its middle (ink — lighter, a diluted rim)", confidence: medium}
+---
+id: anim.zoetrope
+family: anim
+group: graphics
+level: C
+aliases: [zoetrope, slotted drum, 3D zoetrope, figurine carousel, chronophotography, motion phases, living carousel, film strip loop]
+what: bringing a sequence of phases to life — figurines on a spinning drum or carousel, frames seen through slits, or copies of the subject in successive poses add up to a short motion loop; a retro "pre-cinema" motif and a transition into that loop
+frames: |
+  The device as a motif (4 of 7 examples):
+  1. A slotted drum or a multi-tier carousel of figurines, lit from inside, in a dark room; the object in the center
+     of the frame, ≈ 25–60 % of the width. Rotation is synced to the frame rate — the figurines inside aren't blurred but "walk" in place.
+  2. The camera slowly pushes in: ×1.1 over 0.8 s (observation), ×1.7 over 2.3 s toward a single panel while drifting sideways by 59 % of the frame
+     (a soft landing), or continuously ×19 over 10 s into the carousel — the figurines become live people on approach,
+     and the frame turns into a full scene without a cut.
+  3. Reverse move: a pull-out ×0.45 over 3.5 s from a rotating stage on which the subject walks in place past sculptures.
+  Phases in one frame (2 of 7): the subject repeated 4–8 times in successive poses along a path; or a strip of
+  6–8 panels of 12–17 % of the width each with dark perforations at the top and bottom, each holding the next phase; the color drifts as a gradient.
+  "Live zoetrope" (1 of 7): a fast pan along a row of nearly identical figures, a repeat step of ≈24 % of frame width,
+  a shift of 3–13 % per frame — the row flickers like an animation.
+variants:
+  - drum in frame: a real or built zoetrope spins, the camera slowly pushes in toward the slits
+  - portal: a push-in into the carousel or into a single panel of the drum, on approach the figurines come alive and become a scene
+  - 3D carousel: tiers of figurines or props on a rotating table, the subject walks in place against the rotation
+  - motion phases: 4–8 copies of the subject in successive poses (surfing, a jump, a run) along a path
+  - film strip: a row of perforated panels, each with the next phase, the strip creeps sideways
+  - live zoetrope: a row of identical people, a pan turns it into a flickering loop
+status: generation
+fallback: |
+  code: a film strip from the user's clip (panels with phases offset by 2–4 frames); motion phases in one frame —
+  a subject mask + opaque copies from past frames (like the procession of doubles in time.echo_trail, only without fading);
+  3D: a loop of 8–16 cut-out phases of the subject on the inner wall of a drum (Blender or 3D generation) rotating in time with the frames;
+  generation (with consent) — drum, carousel and portal per gen_hint; footage — find the motif in the source footage (detect)
+params:
+  phases: 8–16 phases per loop (≈); 4–8 copies of the subject in one frame
+  loop: 0.5–2 s per full phase cycle (≈); one cycle = a beat or a bar
+  strobe_sync: drum revolution = phases / fps (12 phases at 24 fps → 0.5 s per revolution); otherwise the figurines drift
+  strip: 6–8 panels of 12–17 % of the width each, perforations at top and bottom 6–10 % of the height, the strip advances 1 panel per 2–4 frames
+  copy_spacing: copies 3–8 frames apart in time (0.12–0.32 s) and 10–18 % of the width apart in the frame
+  push_in: observation ×1.1 over 0.8–1 s; toward a panel ×1.5–2 over 2–2.5 s, ease-out; portal ×10–20 over 6–10 s, near-linear
+  look: a dark room, warm light from inside (sepia), a soft vignette; copies — with a color gradient
+  duration: 2–10 s (50–250 frames @25 fps)
+when: intros and outros in a retro aesthetic, the theme of film history or "how it all began"; a portal transition from the loop into a live scene; a product or the subject as figurines on a carousel; breaking motion down into phases in sport (a jump, a wave, a strike) and in an explainer; music video and fashion — an art cutaway; 1 per video
+avoid: a strobe at 8–15 Hz for longer than 2–3 s (a risk for photosensitive viewers, tiring); phases with uneven time steps (the loop stumbles); more than 8 copies in frame (mush); a fast strip advance not synced with the phases; unsynchronized drum rotation (the figurines drift)
+sfx: chatter and clicks of a mechanism or projector, the plucked notes of a music box, a rising hum of rotation; on the portal — a swell and a whoosh on entering the scene
+genres: {teaser: allowed, fashion: allowed, product: allowed, sport: allowed, explainer: allowed, fanedit: allowed, calm: allowed, epic: allowed}
+detect: |
+  device: in the center of the frame, a cylinder with vertical slits or tiers of identical figurines, lit from inside;
+  ed_motion — a slow ZOOM-IN ×1.1–19, near-linear or ease-out, with nonrigid 0.2–0.85 (a real camera push-in), no frame
+  rotation events — only the object rotates.
+  phases: 4–8 similar silhouettes of the same subject in successive poses; strip — periodic vertical panel
+  borders with a 12–17 % width step and dark perforation bands; ed_motion produces chaotic events and false cuts.
+  live zoetrope: horizontal frame autocorrelation — a peak at a step of 20–25 % of the width + SHIFT 3–13 %/frame.
+  Difference from time.echo_trail: there the copies fade and trail behind the motion; here the phases are equal and spaced apart.
+  Difference from a phenakistiscope (disc): there the phases sit around a circle on a disc, not on a strip or drum.
+engine: |
+  film strip (new primitive): zoetrope_strip(clip, panels=7, phase_step=3, scroll='1 panel per 3 frames', sprockets=True,
+    gap=0.01, tint='sepia', flicker=0.04, vignette=0.3)
+  phases in frame: echo(trails=5, decay=1.0, lag=5, blend='normal', mask='mediapipe_person', align='camera') + color(gradient across copies)
+  drum (new primitive, 3D or generation): zoetrope_drum(phases=cutout(mask('hf_remove_background'), frames=cycle(N=12)),
+    slits=12, rev_s=N/fps, light='inner_warm', camera_push=[1, 1.1], t=[0, 4]) — rendered in Blender or generate_video per gen_hint
+  portal: transform(scale=[1, 12], center=panel_center, t=[t0, t0+6], ease='linear') → transition(kind='dissolve', dur=0.5) into the live clip
+  + sfx('click', repeated on every revolution) + sfx('swell', at=portal entry)
+gen_hint: a spinning zoetrope drum glowing from inside in a dark room, a sequence of small figures of <subject> on the inner wall animate in a seamless loop as it turns, synchronized strobe so the figures look alive, slow camera push in through the slits into the scene, warm sepia light
+commands: ["make the intro a zoetrope come to life", "break the subject's jump into 6 phases in one frame", "a film strip from #3: the phases creep sideways in rhythm", "a push-in into a carousel with figurines that come alive and become the scene"]
+related: [time.echo_trail, time.step_print, anim.radial_loop, orbit.turntable, zoom.infinite, glitch.film_damage]
+evidence: {examples: 7, sources: 4, measured: "push-ins ×1.1 over 0.84 s, ×1.69 over 2.3 s (ease-out, sideways drift 59 %), ×19.2 over 9.9 s near-linear (portal into a live scene); pull-out ×0.45 over 3.5 s from a rotating stage; strip of ≈7–8 panels of 12–17 % of the width each; 4–6 copies of the subject in phases; live zoetrope — repeat step 23.5 % of the width with a shift of 3–13 %/frame; the number of phases and the loop period can't be measured from the previews — given as ≈", confidence: low}

@@ -1,0 +1,58 @@
+id: truck.lateral
+family: truck
+group: camera
+level: A
+aliases: [trucking, truck shot, lateral move, camera moving sideways, slider, slider shot, crab shot, lateral tracking]
+what: the camera travels sideways parallel to the scene — next to a walking subject or along a row of people, a room, a shop window; the near passes faster than the far, and the space reads in layers
+frames: |
+  1. The camera looks across its path and travels sideways for 2–7 s at an almost constant speed.
+  2. With a subject: they walk or run parallel to the camera and stay in frame in profile, while the background slides in the opposite
+     direction — 0.3–1.5 % of the frame width per frame @25 fps (walking), in a chase — up to 1.4 % median and 8–15 % at peaks.
+  3. Without a subject: a move along a line of people, tables, a shop window or a landscape — slowly, 0.3–0.7 % per frame,
+     the scene "unfolds" from the side.
+  4. Layers: near objects (passers-by, poles, stacks of crates) cross the frame in 3–6 frames and act as a wipe,
+     the far background almost stands still; in a flat scene (a wall, a line of people at one distance) there is almost no speed difference.
+  5. Ending: the subject reaches the goal (a door, a table) and the camera either stops or turns to follow them.
+variants:
+  - next to a walking or running subject (profile), passers-by fly past in the foreground
+  - chase: a fast move with strong shake and motion blur, the foreground covers the whole frame
+  - along a line or a row of objects: a slow reveal of a group, products, an interior
+  - with a close figure against the horizon: the sun or a distant landscape "travels" behind the subject's head
+  - from a car: the subject in the vehicle is still, the background streaks sideways
+  - closing in: the camera moves sideways and at the same time catches up with the subject — they grow from a wide to a medium shot
+status: footage
+fallback: |
+  Code without parallax: a ×1.3–1.6 crop on a wide or 4K shot with a horizontal move — looks honest only
+  on a distant or flat scene. With parallax (hybrid): a mask of the subject or the foreground, layers shift at different
+  speeds (foreground ×1.5–2 relative to the background), holes behind the mask are filled in. No shot — generation with the user's consent.
+params:
+  duration: 2–7 s (50–175 frames @25 fps)
+  speed_bg: 0.3–0.7 % of the frame width per frame (slow reveal), 0.6–1.5 % (walking pace next to a subject), up to 15 % for a foreground pass
+  parallax_spread: p90/p50 of the speeds along the motion — 1.7–2.7 with depth, 1.2–1.3 in a flat scene
+  foreground_wipe: 3–6 frames for a near object to cross the frame
+  subject_pos: the subject's profile in the central third, looking in the direction of travel with 0.1–0.2 of the frame of lead room ahead
+  ease: linear inside, soft acceleration and deceleration of 0.3–0.5 s at the ends
+  jitter: rails or slider 0.26–0.5 %, chase 2–13 %
+when: |
+  Introducing a space and a group (a move along a line, a table, a shop window), the subject on the way in profile, a chase,
+  a product lineup on a slider. Build and verse — a slow move; energy and chases — a fast one with passes.
+  A near object passing by is a ready-made wipe: put the cut on the frame where it covers more than half of the frame.
+avoid: a move without layers (a bare wall — looks like a pan); the subject drops out of frame or gets overtaken; speed jerks on the rails; a lateral move to the right and right after to the left with the same subject (the direction jumps)
+sfx: ambience of the place; on foreground passes — short whooshes; chase — footsteps and rhythm; slow move — a pad
+genres: {product: signature, sport: allowed, travel: allowed, fashion: allowed, epic: allowed, drama: allowed, calm: allowed, teaser: allowed, clips: allowed, motivation: allowed, explainer: allowed, fanedit: allowed, viral: allowed}
+detect: |
+  ed_motion: a long SHIFT along X (15–150 % of the frame in 1.6–6 s) without rotation; nonrigid 0.25–0.5 in scenes with depth;
+  sharp SHIFT peaks (8–15 %/frame) on foreground passes.
+  Own parallax measurement (Farneback flow on textured pixels): spread of the speeds along the motion p90/p50
+  1.7–2.7 — the near moves faster than the far; for a pan from a fixed position and for a digital crop — 1.0–1.3.
+  Unlike pan (rotation in place): all depth planes have the same angular speed, no foreground wipes.
+  Unlike track.subject from the side: there the subject is "glued" to the frame, here there may be none. Unlike a parallax shot: there the movement
+  emphasizes the layers and is usually shorter.
+engine: |
+  footage: search by the detect signature; a foreground pass is the cut point (match on the wipe).
+  code: transform(scale=[1.4, 1.4], shift=[[+0.15, 0], [-0.15, 0]], t=[t0, t0+D], ease='inOutQuad') — a move with a crop;
+  hybrid: mask(method='mediapipe_person') → parallax_layers(fg_shift=[+0.2, -0.2], bg_shift=[+0.1, -0.1], t, ease='linear', fill='outpaint').
+gen_hint: smooth lateral trucking shot, the camera slides sideways on a dolly track alongside <subject> walking in profile through <place>, foreground objects pass close to the lens, layered depth, constant speed
+commands: ["lateral move along the whole group at the start", "slider along the products on #3", "camera moves next to the running subject on the drop", "cut on a passer-by crossing the frame between #5 and #6"]
+related: [track.subject, track.follow, track.lead, tilt.basic]
+evidence: {examples: 7, sources: 7, measured: "X shift 15–150 % of the frame in 1.6–6 s; background 0.3–1.5 %/frame @25 fps, pass peaks 7.8–15 %/frame; speed spread p90/p50 1.7–2.7 in scenes with depth and 1.2–1.3 in flat ones; shake 0.26–0.5 % on a slider, 2–13.5 % in a chase; 4 with a subject, 2 without a subject, 1 — the background flies past behind a subject in a car", confidence: high}

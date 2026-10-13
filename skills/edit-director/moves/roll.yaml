@@ -1,0 +1,126 @@
+id: roll.camera
+family: roll
+group: camera
+level: B
+aliases: [camera roll, barrel roll, frame rotation, camera flip, Dutch roll, roll shot]
+what: the camera rotates around the lens axis — the horizon tips over and the world turns 90–180°, or even makes a full revolution; disorientation, a dream, a passage into an "upside-down" world
+frames: |
+  1. Start: a level frame 0–1.5 s (sometimes the rotation starts right away, already in motion).
+  2. Rotation around the frame center: slow — 30–60° per second (1.2–2.4° per frame @25 fps), fast —
+     100–260°/s (4–10° per frame), with arc-shaped motion blur at the edges. In total 100–180° (half of the examples),
+     continuous ones — 220–450° and more.
+  3. Curve: a flip with a landing — an S-curve (half of the angle by the middle of the time, t50 0.50–0.52); a dance
+     rotation — constant speed; a spiral descent — accelerating right to the end (t50 0.6–0.72).
+  4. The scale almost always changes along with the rotation: a pull-out ×0.62–0.85 (the frame opens up) or a push-in
+     ×1.3–5.9 (spiraling down onto the subject).
+  5. Landing: the frame settles into an upside-down or symmetrical composition (a mirrored hall, hanging plants,
+     a person upside down) and holds; or the rotation doesn't end until the cut.
+variants:
+  - 180° flip with a landing: an S-curve over 1.4–3.2 s, reveals an upside-down or mirrored world
+  - dance rotation: a steady 4° per frame @25 fps (100°/s) together with the dancers, without stopping
+  - spiral descent: the camera spins from above and descends onto the subject — accelerating up to 260°/s, push-in ×5–6
+  - rotation with a push-in in a wide-angle interior: 250° over 4 s, accelerating from 1 to 3.3° per frame, push-in ×2–2.6
+  - slow roll: 0.4–0.5° per frame, almost imperceptible, 35–55° over 7 s — an unsettling "floating" frame
+  - entry after a whip: a cut through the motion blur, and the already upside-down frame keeps rotating further (see trans.spin)
+status: footage
+fallback: |
+  Code: transform(rotate) around the center with simultaneous scaling so there are no empty corners: a 16:9 frame needs
+  a scale of |cos θ| + 1.78·|sin θ| (×1.78 at 90°, a maximum of ×2.04 at ≈60°), so the source needs headroom
+  (4K → 1080p), or the corners are filled stylistically — with a blurred background or black. Without headroom — only a 180° flip
+  with the start and end uncropped (the scale grows toward the middle and comes back). Generation — with the user's consent.
+params:
+  angle: 90–180° (flip), 220–450° (continuous rotation), 35–55° (slow roll)
+  speed_slow: 30–60°/s (1.2–2.4° per frame @25 fps); slow roll 10–12°/s (0.4–0.5° per frame)
+  speed_fast: 100–260°/s (4–10° per frame), above that it is already roll.whip
+  duration: 1.2–5 s (30–125 frames)
+  ease: inOutCubic (flip with a landing) | linear (dance) | inQuad–inCubic (spiral)
+  zoom_with_roll: pull-out ×0.62–0.85 or push-in ×1.3–5.9
+  center: frame center ±0.05
+  blur: arc-shaped motion blur at the edges at speeds > 6° per frame
+  digital_scale: "abs(cos θ) + (W/H) · abs(sin θ); for 16:9 up to ×2.04"
+when: |
+  A dream, intoxication, losing one's footing, "the world turned upside down" after an event; dance and music videos — rotation together with the movement;
+  revealing an upside-down or mirrored space; a spiral descent onto the subject in the intro. A fast flip —
+  on the drop or a downbeat, the landing — on the next beat. No more than one or two per minute — it causes motion sickness.
+avoid: rotation for no reason in a calm or informational video; a digital rotation without resolution headroom — empty corners and a soft, mushy image show; a large face that leaves the frame during the rotation; several rotations in different directions in a row; small text in the frame during the rotation
+sfx: a long swish or "whirlwind" over the whole rotation, on fast ones — a whoosh peaking at the maximum speed; on the landing — a soft hit or a reverse cymbal
+genres: {fanedit: allowed, viral: allowed, phonk: allowed, fashion: allowed, travel: allowed, epic: allowed, drama: allowed, teaser: allowed, clips: allowed, sport: allowed, explainer: forbidden}
+detect: |
+  ed_motion: ROTATE 90–450° over 1–5 s peaking at 3.5–6 °/frame (above that LK breaks down and reports false "cuts" — then measure the angle
+  with SIFT + RANSAC between neighboring frames); together with it a ZOOM-IN or ZOOM-OUT centered around 0.5; nonrigid below 0.2.
+  Own measurement: the total rotation across frames, the curve (S / even / accelerating), the scale during the rotation.
+  Difference from trans.spin: there is a cut inside the rotation, the histogram changes, the rotation ends exactly at 0°.
+  From roll.whip: that one fits into 0.2–0.5 s with solid motion blur. From angle.dutch: the tilt is static, no rotation.
+  From drone.fpv: a drone banks back and forth up to ±50° on turns and flies through; here it is a one-directional rotation.
+engine: |
+  footage: search the source footage for takes with ROTATE ≥ 90°, cut from the start of the rotation to the landing; the landing — on a beat.
+  code: transform(rotate=[0, 180], scale=[1, 2.05, 1], center=[0.5, 0.5], t=[t0, t0+2], ease='inOutCubic')
+  + blur(kind='radial_arc', amount∝angular speed) at > 6° per frame — a flip with digital headroom;
+  spiral: transform(rotate=[0, -360], scale=[1, 3], ease='inCubic'); corner style: fill='blur'|'black'.
+  sfx('swish', at=t0, align='attack') + sfx('impact', at=t0+2).
+gen_hint: smooth camera roll, the camera rotates 180 degrees around its lens axis while slowly pulling back, the horizon turns upside down and the shot settles into a symmetrical upside-down composition of <scene>
+commands: ["flip the frame 180° on the drop", "a slow camera roll in #3 — as if feeling dizzy", "a spiral descent onto the subject in the intro", "rotate the frame along with the dance on #5"]
+related: [trans.spin, roll.whip, angle.dutch, drone.fpv, zoom.crash]
+evidence: {examples: 7, sources: 7, measured: "angles 96–447° (SIFT+RANSAC between neighboring frames): a flip of −180° over 1.36 s with an S-curve (t50 0.52, peak 231°/s) and a pull-out ×0.62; dance +121° over 1.24 s at a steady 4°/frame @25 fps; rotation +251° over 4 s accelerating 1→3.3°/frame with a push-in ×2.6; spiral −447° over 4.9 s, accelerating to 258°/s, push-in ×5.9; slow roll 0.4–0.5°/frame; 1 example — entry after a whip with a cut", confidence: high}
+---
+id: roll.whip
+family: roll
+group: camera
+level: B
+aliases: [sharp roll, camera tumble, frame flip, camera barrel roll, snap roll, camera spin, 180 camera flip]
+what: a rapid roll of the camera around the lens axis by 70–180° over 0.3–0.5 s with motion blur — the frame "flips" and settles in a new position, or twists into a blur and leads out of the scene
+frames: |
+  1. Before: a hold (static or slight movement) of 0.4–1.3 s; the frame is level or already upside down.
+  2. Whip: a roll of 70–185° over 7–11 frames @25 fps (0.3–0.45 s), S profile — 3 → 9 → 14 → 24 → 29 → 29 → 25 → 19 → 13 → 6 → 2°
+     per frame; peak 25–37° per frame (≈600–925°/s), with rotational motion blur at the same point: sharpness drops 2–3 times.
+  3. Landing: the frame freezes exactly in the new position (0° or 180°, upside down) with a soft 2–3 frame deceleration;
+     a hold of 0.5–1.3 s. Often the same whip repeats in reverse — the frame returns to the original position.
+  4. As an entry: right after the cut the incoming shot is already tilted by 60–90° and rotates on to level within 0.35 s
+     (10–16° per frame, decelerating toward the end).
+  5. As an exit: the camera twists faster and faster (8–14° per frame → 40–65° per frame), the image dissolves into
+     rotational motion blur with almost no detail (sharpness drops 5–6 times), then the cut.
+variants:
+  - flip there and back within one shot: 180° over 0.36 s, a 1.3 s hold, 172° back over 0.44 s
+  - landing after a cut: the incoming shot rotates from 70° to level over 0.35 s
+  - exit into a blur: accelerating to 40–65° per frame, the frame is "washed away" by rotational motion blur
+  - cascade: a series of whips at 35–50° per frame through cuts and fades to black in one direction, ending in a stable level shot
+  - whip to the rhythm: each whip on a downbeat, with holds in between
+status: hybrid
+fallback: |
+  code (main path): transform(rotate) with rotational motion blur on any shot — needs crop headroom of ×1.4–1.8 or a margin around the frame
+  (a rotated 16:9 leaves the corners empty), filled by scaling up, outpaint or a blurred copy of the frame;
+  footage — real flips with a gimbal or a handheld camera (detect) look more alive: the parallax and motion blur are real;
+  generation — for a flip with simultaneous movement through space
+params:
+  angle: 70–185° (typically 90° or 180°); one direction for the whole whip
+  duration: 7–11 frames @25 fps (0.28–0.45 s); exit into a blur 6–8 frames
+  profile: S-curve (inOutCubic), peak in the middle 25–37°/frame (600–925°/s); exit — inExpo up to 40–65°/frame
+  blur: rotational, arc length ≈ the angle per frame; sharpness ×0.35–0.5 at the peak, ×0.15–0.2 on the exit into a blur
+  hold: 0.4–1.3 s before and after the whip
+  landing: 2–3 frame deceleration, no bounce; the final angle exactly 0° or 180°
+  crop: ×1.4 for 90° on 9:16 and 1:1 with fill; ×1.8 for 16:9 without empty corners
+  pair: a reverse whip after 0.5–1.5 s with the same length and curve
+when: the drop and a change of part in the track (the whip on a downbeat); the subject's world turning over — "everything flipped", a fall, intoxication, a fight; a transition between scenes (exit into a blur → cut → landing from a tilt); fan edit and phonk — a series of whips to the rhythm; no more than once every 4–8 bars
+avoid: calm, luxury and talking sections; large text in the frame (it flips together with the frame); vertical video without crop headroom (empty corners); a whip that is too slow and has no motion blur — looks like a mistake; more than 3 flips in a row (causes motion sickness)
+sfx: a short whistling whoosh over the whole whip, an impact or a bass hit on the landing; on the exit into a blur — a rising whoosh cut off at the cut
+genres: {fanedit: signature, phonk: allowed, viral: allowed, sport: allowed, teaser: allowed, clips: allowed, ugc: allowed, drama: allowed, epic: allowed, motivation: allowed, calm: forbidden}
+detect: |
+  ed_motion: ROTATE 70–185° over 7–11 frames (0.3–0.45 s) peaking at 25–52°/frame, with periods without rotation on either side; on fast
+  frames the method falls back to ecc/fail and reports false cuts — check the cumulative angle: before and after the whip the frame is exactly at
+  0° or 180°. Sharpness at the peak ×0.35–0.5, on the exit into a blur ×0.15–0.2.
+  Difference from trans.spin: there the cut is in the middle of the rotation and the incoming shot completes the same rotation; here the whip is usually
+  entirely within one shot or attached to one side of a cut.
+  Difference from a slow roll (roll.camera): that one lasts 1–4 s without motion blur.
+  Difference from drone.fpv: there the roll comes with forward flight and parallax.
+engine: |
+  transform(rotate=[0, 180], center=[0.5, 0.5], t=[t0, t0+0.36], ease='inOutCubic', motion_blur=0.5)
+  + blur(kind='radial'|'rotational', amount∝angular speed, t=[t0, t0+0.36])
+  + transform(scale=[1.4, 1.4]) or fill='mirror_blur' for the corners
+  return: the same transform(rotate=[180, 0]) after 0.5–1.5 s
+  exit into a blur: transform(rotate=[0, 300], t=[t1-0.25, t1], ease='inExpo') + blur(kind='rotational', amount=1.0) → cut(at=t1)
+  landing after a cut: cut(at=t) + transform(rotate=[70, 0], t=[t, t+0.35], ease='outCubic') + blur(kind='rotational') on the first 3 frames
+  + sfx('whoosh', at=t0, align='attack') + sfx('impact', at=t0+0.36)
+gen_hint: fast whip roll camera move, the camera spins 180 degrees around its lens axis in under half a second with heavy rotational motion blur and lands upside down on <subject>, holds, then snaps back
+commands: ["flip the frame 180 on the drop and back a bar later", "a sharp roll transition between #3 and #4", "a spin into a blur at the end of #5", "let #2 start tilted and rotate to level"]
+related: [trans.spin, roll.camera, pan.whip, tilt.whip, drone.fpv, zoom.crash]
+evidence: {examples: 4, sources: 4, measured: "flip of 184° over 0.36 s (peak 37°/frame) and back 172° over 0.44 s (peak 29°/frame, S profile 3→29→2°), a 1.3 s hold in between; landing after a cut 72° over 0.35 s (10–16°/frame, decelerating); exit into a blur — 8–14°/frame → 40–65°/frame, sharpness ×0.15–0.2; cascade — 35–52°/frame through cuts and fades to black, ending in a level shot; sharpness at the peak ×0.35–0.5", confidence: medium}
