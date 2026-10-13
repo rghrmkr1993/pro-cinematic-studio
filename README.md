@@ -102,3 +102,18 @@ Plain English words that matched skill names in the scan (image, qa, spec, start
 
 - 1.0.0: first release. 70 skills, 14 agents, wired internally; third-party notices preserved; `${CLAUDE_PLUGIN_ROOT}` paths for bundled-skill references.
 - Planned 1.0.1: story-and-screenplay to be added in 1.0.1 (the skill did not exist yet at build time).
+
+## Install from GitHub
+
+One step (Claude Code 2.1.275 or later):
+
+```
+/plugin install pro-cinematic-studio --marketplace rghrmkr1993/pro-cinematic-studio
+```
+
+Older versions:
+
+```
+/plugin marketplace add rghrmkr1993/pro-cinematic-studio
+/plugin install pro-cinematic-studio
+```
