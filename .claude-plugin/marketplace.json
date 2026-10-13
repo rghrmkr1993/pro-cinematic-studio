@@ -1,6 +1,8 @@
 {
   "name": "pro-cinematic-studio",
-  "owner": { "name": "Raghuram K Ravi" },
+  "owner": {
+    "name": "Raghuram K Ravi"
+  },
   "plugins": [
     {
       "name": "pro-cinematic-studio",
@@ -8,5 +10,8 @@
       "description": "AI film and ad production crew: 70 cinematic skills and 14 crew agents, entry point creative-studio",
       "version": "1.0.0"
     }
-  ]
+  ],
+  "metadata": {
+    "description": "Pro Cinematic Studio: AI film and ad production for Claude Code"
+  }
 }
