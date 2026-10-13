@@ -1,5 +1,7 @@
 # Pro Cinematic Studio 1.0.0
 
+> **Third-party licences:** this repo is public, so the components that came with no licence file (HyperFrames, the edit studio, Adil's skills, the Seedance packs), and Remotion with its company-size rule, are visible to anyone. If any of their owners object, the repo can be made private in GitHub settings. See THIRD_PARTY.md for every component and its source.
+
 A Claude Code plugin that bundles a full AI film and video studio: 70 skills and 14 crew agents, wired together so a brief becomes a finished, graded, scored and delivered film or ad. Generation runs on Higgsfield (Seedance, Kling, Cinema Studio and others); voice runs on ElevenLabs; editing runs locally in Python and ffmpeg.
 
 Licence: proprietary, owner licensed. Third-party components keep their own licences, see THIRD_PARTY.md.
