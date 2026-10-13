@@ -6,6 +6,13 @@ A Claude Code plugin that bundles a full AI film and video studio: 70 skills and
 
 Licence: proprietary, owner licensed. Third-party components keep their own licences, see THIRD_PARTY.md.
 
+![How Pro Cinematic Studio is layered and wired](docs/architecture.svg)
+
+**How it works**
+1. You describe a scene, a brief or upload images; the `creative-studio` skill does intake, routing, the quality bar (85 drafts, 90 finals) and the credit gate.
+2. The creative-director leads 13 crew agents in pipeline order, each pulling from the 70-skill library; only prompt-engineer, voice-director and composer-sound-designer can spend credits, and only after your yes.
+3. Higgsfield MCP makes image and video, ElevenLabs MCP makes voice, music and SFX, and local ffmpeg + Python edits, grades and captions.
+
 ## Entry point
 
 Start with the `creative-studio` skill. It routes a brief to the crew and the right skills. The creative-director agent runs the crew and has the final review.

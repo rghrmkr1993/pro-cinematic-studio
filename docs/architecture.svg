@@ -1,0 +1,173 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1400 1170" width="1400" height="1170" font-family="system-ui, -apple-system, Segoe UI, Roboto, sans-serif" role="img" aria-labelledby="ti de"><title id="ti">Pro Cinematic Studio architecture</title><desc id="de">Five layers: owner, creative-studio entry point, 14-agent crew pipeline, 70-skill library, and engines. Guardrails and example job flow.</desc>
+<defs><marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" fill="#FBBF24"/></marker></defs>
+<rect width="1400" height="1170" fill="#0F172A"/>
+<text x="30" y="38" font-size="24" fill="#F1F5F9" font-weight="700" text-anchor="start">Pro Cinematic Studio 1.0.0: layers, wiring and job flow</text>
+<text x="30" y="60" font-size="13" fill="#CBD5E1" font-weight="400" text-anchor="start">70 skills, 14 crew agents, 3 engines. A brief goes in, a graded, scored and delivered film comes out.</text>
+<rect x="30" y="78" width="1060" height="66" rx="12" fill="#162033" stroke="#475569" stroke-width="1.2"/>
+<text x="48" y="100" font-size="12" fill="#FBBF24" font-weight="700" text-anchor="start">1  YOU (THE OWNER)</text>
+<text x="560" y="123" font-size="16" fill="#F1F5F9" font-weight="600" text-anchor="middle">Describe a scene, a brief, or upload images</text>
+<line x1="560" y1="144" x2="560" y2="170" stroke="#FBBF24" stroke-width="2" marker-end="url(#a)"/>
+<rect x="30" y="170" width="1060" height="100" rx="12" fill="#162033" stroke="#475569" stroke-width="1.2"/>
+<text x="48" y="192" font-size="12" fill="#FBBF24" font-weight="700" text-anchor="start">2  ENTRY POINT: creative-studio skill</text>
+<rect x="50" y="200" width="240" height="56" rx="8" fill="#1E293B" stroke="#FBBF24" stroke-width="1.2"/>
+<text x="64" y="222" font-size="13" fill="#F1F5F9" font-weight="700" text-anchor="start">Intake</text>
+<text x="64" y="242" font-size="12" fill="#CBD5E1" font-weight="400" text-anchor="start">brief filled from the request</text>
+<rect x="310" y="200" width="240" height="56" rx="8" fill="#1E293B" stroke="#FBBF24" stroke-width="1.2"/>
+<text x="324" y="222" font-size="13" fill="#F1F5F9" font-weight="700" text-anchor="start">Router</text>
+<text x="324" y="242" font-size="12" fill="#CBD5E1" font-weight="400" text-anchor="start">picks the lane and skills</text>
+<rect x="570" y="200" width="240" height="56" rx="8" fill="#1E293B" stroke="#FBBF24" stroke-width="1.2"/>
+<text x="584" y="222" font-size="13" fill="#F1F5F9" font-weight="700" text-anchor="start">Quality bar</text>
+<text x="584" y="242" font-size="12" fill="#CBD5E1" font-weight="400" text-anchor="start">85 drafts / 90 finals</text>
+<rect x="830" y="200" width="240" height="56" rx="8" fill="#1E293B" stroke="#FBBF24" stroke-width="1.2"/>
+<text x="844" y="222" font-size="13" fill="#F1F5F9" font-weight="700" text-anchor="start">Credit gate</text>
+<text x="844" y="242" font-size="12" fill="#CBD5E1" font-weight="400" text-anchor="start">proofs first, finals after yes</text>
+<line x1="560" y1="270" x2="560" y2="296" stroke="#FBBF24" stroke-width="2" marker-end="url(#a)"/>
+<rect x="30" y="296" width="1060" height="300" rx="12" fill="#162033" stroke="#475569" stroke-width="1.2"/>
+<text x="48" y="318" font-size="12" fill="#FBBF24" font-weight="700" text-anchor="start">3  CREW PIPELINE: 14 agents, creative-director leads and signs off</text>
+<rect x="50.0" y="340" width="190" height="78" rx="8" fill="#1E293B" stroke="#475569" stroke-width="1.2"/>
+<text x="60.0" y="360" font-size="11" fill="#FBBF24" font-weight="700" text-anchor="start">STEP 1</text>
+<text x="60.0" y="378" font-size="12" fill="#F1F5F9" font-weight="600" text-anchor="start">producer</text>
+<text x="60.0" y="393" font-size="12" fill="#F1F5F9" font-weight="400" text-anchor="start">schedule, credit budget</text>
+<rect x="257.5" y="340" width="190" height="78" rx="8" fill="#1E293B" stroke="#475569" stroke-width="1.2"/>
+<text x="267.5" y="360" font-size="11" fill="#FBBF24" font-weight="700" text-anchor="start">STEP 2</text>
+<text x="267.5" y="378" font-size="12" fill="#F1F5F9" font-weight="600" text-anchor="start">screenwriter</text>
+<text x="267.5" y="393" font-size="12" fill="#F1F5F9" font-weight="400" text-anchor="start">script, scene breakdown</text>
+<rect x="465.0" y="340" width="190" height="78" rx="8" fill="#1E293B" stroke="#475569" stroke-width="1.2"/>
+<text x="475.0" y="360" font-size="11" fill="#FBBF24" font-weight="700" text-anchor="start">STEP 3 (parallel)</text>
+<text x="475.0" y="378" font-size="12" fill="#F1F5F9" font-weight="600" text-anchor="start">production-designer</text>
+<text x="475.0" y="393" font-size="12" fill="#F1F5F9" font-weight="400" text-anchor="start">+ cinematographer</text>
+<text x="475.0" y="408" font-size="12" fill="#F1F5F9" font-weight="400" text-anchor="start">+ performance-director</text>
+<rect x="672.5" y="340" width="190" height="78" rx="8" fill="#1E293B" stroke="#475569" stroke-width="1.2"/>
+<text x="682.5" y="360" font-size="11" fill="#FBBF24" font-weight="700" text-anchor="start">STEP 4</text>
+<text x="682.5" y="378" font-size="12" fill="#F1F5F9" font-weight="600" text-anchor="start">prompt-engineer</text>
+<text x="682.5" y="393" font-size="12" fill="#F1F5F9" font-weight="400" text-anchor="start">model-ready prompts</text>
+<rect x="712.5" y="330" width="144" height="18" rx="9" fill="#FBBF24"/>
+<text x="784.5" y="343" font-size="10.5" fill="#0F172A" font-weight="700" text-anchor="middle">credits after your yes</text>
+<rect x="880.0" y="340" width="190" height="78" rx="8" fill="#1E293B" stroke="#475569" stroke-width="1.2"/>
+<text x="890.0" y="360" font-size="11" fill="#FBBF24" font-weight="700" text-anchor="start">STEP 5 (parallel)</text>
+<text x="890.0" y="378" font-size="12" fill="#F1F5F9" font-weight="600" text-anchor="start">vfx-artist</text>
+<text x="890.0" y="393" font-size="12" fill="#F1F5F9" font-weight="400" text-anchor="start">+ voice-director</text>
+<text x="890.0" y="408" font-size="12" fill="#F1F5F9" font-weight="400" text-anchor="start">+ composer-sound-designer</text>
+<rect x="920.0" y="330" width="144" height="18" rx="9" fill="#FBBF24"/>
+<text x="992.0" y="343" font-size="10.5" fill="#0F172A" font-weight="700" text-anchor="middle">credits after your yes</text>
+<rect x="50.0" y="470" width="190" height="78" rx="8" fill="#1E293B" stroke="#475569" stroke-width="1.2"/>
+<text x="60.0" y="490" font-size="11" fill="#FBBF24" font-weight="700" text-anchor="start">STEP 6</text>
+<text x="60.0" y="508" font-size="12" fill="#F1F5F9" font-weight="600" text-anchor="start">editor</text>
+<text x="60.0" y="523" font-size="12" fill="#F1F5F9" font-weight="400" text-anchor="start">assembly and edit</text>
+<rect x="257.5" y="470" width="190" height="78" rx="8" fill="#1E293B" stroke="#475569" stroke-width="1.2"/>
+<text x="267.5" y="490" font-size="11" fill="#FBBF24" font-weight="700" text-anchor="start">STEP 7 (parallel)</text>
+<text x="267.5" y="508" font-size="12" fill="#F1F5F9" font-weight="600" text-anchor="start">colorist</text>
+<text x="267.5" y="523" font-size="12" fill="#F1F5F9" font-weight="400" text-anchor="start">+ title-designer</text>
+<rect x="465.0" y="470" width="190" height="78" rx="8" fill="#1E293B" stroke="#475569" stroke-width="1.2"/>
+<text x="475.0" y="490" font-size="11" fill="#FBBF24" font-weight="700" text-anchor="start">STEP 8</text>
+<text x="475.0" y="508" font-size="12" fill="#F1F5F9" font-weight="600" text-anchor="start">continuity-supervisor</text>
+<text x="475.0" y="523" font-size="12" fill="#F1F5F9" font-weight="400" text-anchor="start">QA across shots</text>
+<rect x="672.5" y="470" width="190" height="78" rx="8" fill="#1E293B" stroke="#475569" stroke-width="1.2"/>
+<text x="682.5" y="490" font-size="11" fill="#FBBF24" font-weight="700" text-anchor="start">STEP 9</text>
+<text x="682.5" y="508" font-size="12" fill="#F1F5F9" font-weight="600" text-anchor="start">creative-director</text>
+<text x="682.5" y="523" font-size="12" fill="#F1F5F9" font-weight="400" text-anchor="start">final review, sign-off</text>
+<line x1="240.0" y1="379" x2="256.5" y2="379" stroke="#FBBF24" stroke-width="2" marker-end="url(#a)"/>
+<line x1="447.5" y1="379" x2="464.0" y2="379" stroke="#FBBF24" stroke-width="2" marker-end="url(#a)"/>
+<line x1="655.0" y1="379" x2="671.5" y2="379" stroke="#FBBF24" stroke-width="2" marker-end="url(#a)"/>
+<line x1="862.5" y1="379" x2="879.0" y2="379" stroke="#FBBF24" stroke-width="2" marker-end="url(#a)"/>
+<line x1="240.0" y1="509" x2="256.5" y2="509" stroke="#FBBF24" stroke-width="2" marker-end="url(#a)"/>
+<line x1="447.5" y1="509" x2="464.0" y2="509" stroke="#FBBF24" stroke-width="2" marker-end="url(#a)"/>
+<line x1="655.0" y1="509" x2="671.5" y2="509" stroke="#FBBF24" stroke-width="2" marker-end="url(#a)"/>
+<path d="M975.0 418 V438 H145.0 V469" fill="none" stroke="#FBBF24" stroke-width="2" marker-end="url(#a)"/>
+<rect x="880.0" y="480" width="144" height="18" rx="9" fill="#FBBF24"/>
+<text x="952.0" y="493" font-size="10.5" fill="#0F172A" font-weight="700" text-anchor="middle">credits after your yes</text>
+<text x="880.0" y="518" font-size="11.5" fill="#CBD5E1" font-weight="400" text-anchor="start">= the 3 roles that spend</text>
+<text x="880.0" y="534" font-size="11.5" fill="#CBD5E1" font-weight="400" text-anchor="start">credits: prompt-engineer,</text>
+<text x="880.0" y="550" font-size="11.5" fill="#CBD5E1" font-weight="400" text-anchor="start">voice-director, composer</text>
+<line x1="560" y1="596" x2="560" y2="622" stroke="#FBBF24" stroke-width="2" marker-end="url(#a)"/>
+<rect x="30" y="622" width="1060" height="320" rx="12" fill="#162033" stroke="#475569" stroke-width="1.2"/>
+<text x="48" y="644" font-size="12" fill="#FBBF24" font-weight="700" text-anchor="start">4  SKILL LIBRARY: 70 skills, loaded on demand by the router</text>
+<rect x="50" y="652" width="240" height="128" rx="8" fill="#1E293B" stroke="#475569" stroke-width="1.2"/>
+<text x="64" y="676" font-size="13" fill="#FBBF24" font-weight="700" text-anchor="start">Story &amp; film</text>
+<text x="64" y="698" font-size="12" fill="#F1F5F9" font-weight="400" text-anchor="start">film-studio</text>
+<text x="64" y="714" font-size="12" fill="#F1F5F9" font-weight="400" text-anchor="start">faceless-script-writer</text>
+<rect x="310" y="652" width="240" height="128" rx="8" fill="#1E293B" stroke="#475569" stroke-width="1.2"/>
+<text x="324" y="676" font-size="13" fill="#FBBF24" font-weight="700" text-anchor="start">Camera</text>
+<text x="324" y="698" font-size="12" fill="#F1F5F9" font-weight="400" text-anchor="start">cinematography</text>
+<text x="324" y="714" font-size="12" fill="#F1F5F9" font-weight="400" text-anchor="start">(+ signature shots)</text>
+<rect x="570" y="652" width="240" height="128" rx="8" fill="#1E293B" stroke="#475569" stroke-width="1.2"/>
+<text x="584" y="676" font-size="13" fill="#FBBF24" font-weight="700" text-anchor="start">People &amp; culture</text>
+<text x="584" y="698" font-size="12" fill="#F1F5F9" font-weight="400" text-anchor="start">photoreal-humans</text>
+<text x="584" y="714" font-size="12" fill="#F1F5F9" font-weight="400" text-anchor="start">asian-human-reference</text>
+<text x="584" y="730" font-size="12" fill="#F1F5F9" font-weight="400" text-anchor="start">indic-languages</text>
+<rect x="830" y="652" width="240" height="128" rx="8" fill="#1E293B" stroke="#475569" stroke-width="1.2"/>
+<text x="844" y="676" font-size="13" fill="#FBBF24" font-weight="700" text-anchor="start">Generation</text>
+<text x="844" y="698" font-size="12" fill="#F1F5F9" font-weight="400" text-anchor="start">higgsfield-master</text>
+<text x="844" y="714" font-size="12" fill="#F1F5F9" font-weight="400" text-anchor="start">higgsfield-timed-prompts</text>
+<text x="844" y="730" font-size="12" fill="#F1F5F9" font-weight="400" text-anchor="start">seedance-20 + 15 style packs</text>
+<text x="844" y="746" font-size="12" fill="#F1F5F9" font-weight="400" text-anchor="start">minimax-h3-motion-design</text>
+<text x="844" y="762" font-size="12" fill="#F1F5F9" font-weight="400" text-anchor="start">create-ads-with-agents</text>
+<rect x="50" y="792" width="240" height="128" rx="8" fill="#1E293B" stroke="#475569" stroke-width="1.2"/>
+<text x="64" y="816" font-size="13" fill="#FBBF24" font-weight="700" text-anchor="start">Voice &amp; music</text>
+<text x="64" y="838" font-size="12" fill="#F1F5F9" font-weight="400" text-anchor="start">voice-studio</text>
+<text x="64" y="854" font-size="12" fill="#F1F5F9" font-weight="400" text-anchor="start">music-and-sound</text>
+<rect x="310" y="792" width="240" height="128" rx="8" fill="#1E293B" stroke="#475569" stroke-width="1.2"/>
+<text x="324" y="816" font-size="13" fill="#FBBF24" font-weight="700" text-anchor="start">Post</text>
+<text x="324" y="838" font-size="12" fill="#F1F5F9" font-weight="400" text-anchor="start">edit-director, edit-gen,</text>
+<text x="324" y="854" font-size="12" fill="#F1F5F9" font-weight="400" text-anchor="start">edit-voice, color-grading,</text>
+<text x="324" y="870" font-size="12" fill="#F1F5F9" font-weight="400" text-anchor="start">vfx-compositing,</text>
+<text x="324" y="886" font-size="12" fill="#F1F5F9" font-weight="400" text-anchor="start">title-and-key-art</text>
+<rect x="570" y="792" width="240" height="128" rx="8" fill="#1E293B" stroke="#475569" stroke-width="1.2"/>
+<text x="584" y="816" font-size="13" fill="#FBBF24" font-weight="700" text-anchor="start">Motion &amp; 3D</text>
+<text x="584" y="838" font-size="12" fill="#F1F5F9" font-weight="400" text-anchor="start">motion-reel, hyperframes,</text>
+<text x="584" y="854" font-size="12" fill="#F1F5F9" font-weight="400" text-anchor="start">remotion, motion-animation,</text>
+<text x="584" y="870" font-size="12" fill="#F1F5F9" font-weight="400" text-anchor="start">webgpu-wgsl,</text>
+<text x="584" y="886" font-size="12" fill="#F1F5F9" font-weight="400" text-anchor="start">graphics-rendering</text>
+<rect x="830" y="792" width="240" height="128" rx="8" fill="#1E293B" stroke="#475569" stroke-width="1.2"/>
+<text x="844" y="816" font-size="13" fill="#FBBF24" font-weight="700" text-anchor="start">Production &amp; release</text>
+<text x="844" y="838" font-size="12" fill="#F1F5F9" font-weight="400" text-anchor="start">production-tracking</text>
+<text x="844" y="854" font-size="12" fill="#F1F5F9" font-weight="400" text-anchor="start">film-legal-distribution</text>
+<line x1="560" y1="942" x2="560" y2="968" stroke="#FBBF24" stroke-width="2" marker-end="url(#a)"/>
+<rect x="30" y="968" width="1060" height="110" rx="12" fill="#162033" stroke="#475569" stroke-width="1.2"/>
+<text x="48" y="990" font-size="12" fill="#FBBF24" font-weight="700" text-anchor="start">5  ENGINES AND CONNECTORS</text>
+<rect x="50.0" y="1000" width="326" height="62" rx="8" fill="#1E293B" stroke="#FBBF24" stroke-width="1.2"/>
+<text x="64.0" y="1026" font-size="14" fill="#F1F5F9" font-weight="700" text-anchor="start">Higgsfield MCP</text>
+<text x="64.0" y="1046" font-size="12" fill="#CBD5E1" font-weight="400" text-anchor="start">image and video generation</text>
+<rect x="396.7" y="1000" width="326" height="62" rx="8" fill="#1E293B" stroke="#FBBF24" stroke-width="1.2"/>
+<text x="410.7" y="1026" font-size="14" fill="#F1F5F9" font-weight="700" text-anchor="start">ElevenLabs MCP</text>
+<text x="410.7" y="1046" font-size="12" fill="#CBD5E1" font-weight="400" text-anchor="start">voice, music, SFX</text>
+<rect x="743.4" y="1000" width="326" height="62" rx="8" fill="#1E293B" stroke="#FBBF24" stroke-width="1.2"/>
+<text x="757.4" y="1026" font-size="14" fill="#F1F5F9" font-weight="700" text-anchor="start">Local ffmpeg + Python</text>
+<text x="757.4" y="1046" font-size="12" fill="#CBD5E1" font-weight="400" text-anchor="start">edit, grade, captions</text>
+<rect x="1110" y="78" width="260" height="1000" rx="12" fill="#162033" stroke="#FBBF24" stroke-width="1.6"/>
+<text x="1130" y="106" font-size="13" fill="#FBBF24" font-weight="700" text-anchor="start">GUARDRAILS</text>
+<rect x="1126" y="130" width="228" height="124" rx="8" fill="#1E293B" stroke="#475569" stroke-width="1.2"/>
+<circle cx="1146" cy="154" r="10" fill="#FBBF24"/>
+<text x="1146" y="158" font-size="11" fill="#0F172A" font-weight="700" text-anchor="middle">1</text>
+<text x="1166" y="182" font-size="12.5" fill="#F1F5F9" font-weight="700" text-anchor="start">Credits only after</text>
+<text x="1166" y="202" font-size="12" fill="#CBD5E1" font-weight="400" text-anchor="start">your yes</text>
+<text x="1140" y="230" font-size="11.5" fill="#CBD5E1" font-weight="400" text-anchor="start">Proofs about 20 percent</text>
+<rect x="1126" y="280" width="228" height="124" rx="8" fill="#1E293B" stroke="#475569" stroke-width="1.2"/>
+<circle cx="1146" cy="304" r="10" fill="#FBBF24"/>
+<text x="1146" y="308" font-size="11" fill="#0F172A" font-weight="700" text-anchor="middle">2</text>
+<text x="1166" y="332" font-size="12.5" fill="#F1F5F9" font-weight="700" text-anchor="start">Originals only,</text>
+<text x="1166" y="352" font-size="12" fill="#CBD5E1" font-weight="400" text-anchor="start">no copying existing work</text>
+<rect x="1126" y="430" width="228" height="124" rx="8" fill="#1E293B" stroke="#475569" stroke-width="1.2"/>
+<circle cx="1146" cy="454" r="10" fill="#FBBF24"/>
+<text x="1146" y="458" font-size="11" fill="#0F172A" font-weight="700" text-anchor="middle">3</text>
+<text x="1166" y="482" font-size="12.5" fill="#F1F5F9" font-weight="700" text-anchor="start">Consent for real people</text>
+<text x="1166" y="502" font-size="12" fill="#CBD5E1" font-weight="400" text-anchor="start">before any likeness</text>
+<rect x="1126" y="580" width="228" height="124" rx="8" fill="#1E293B" stroke="#475569" stroke-width="1.2"/>
+<circle cx="1146" cy="604" r="10" fill="#FBBF24"/>
+<text x="1146" y="608" font-size="11" fill="#0F172A" font-weight="700" text-anchor="middle">4</text>
+<text x="1166" y="632" font-size="12.5" fill="#F1F5F9" font-weight="700" text-anchor="start">Nothing published</text>
+<text x="1166" y="652" font-size="12" fill="#CBD5E1" font-weight="400" text-anchor="start">without your yes</text>
+<rect x="1126" y="730" width="228" height="124" rx="8" fill="#1E293B" stroke="#475569" stroke-width="1.2"/>
+<circle cx="1146" cy="754" r="10" fill="#FBBF24"/>
+<text x="1146" y="758" font-size="11" fill="#0F172A" font-weight="700" text-anchor="middle">5</text>
+<text x="1166" y="782" font-size="12.5" fill="#F1F5F9" font-weight="700" text-anchor="start">512-char prompt check</text>
+<text x="1166" y="802" font-size="12" fill="#CBD5E1" font-weight="400" text-anchor="start">before every generation</text>
+<rect x="1126" y="880" width="228" height="124" rx="8" fill="#1E293B" stroke="#475569" stroke-width="1.2"/>
+<circle cx="1146" cy="904" r="10" fill="#FBBF24"/>
+<text x="1146" y="908" font-size="11" fill="#0F172A" font-weight="700" text-anchor="middle">6</text>
+<text x="1166" y="932" font-size="12.5" fill="#F1F5F9" font-weight="700" text-anchor="start">fps rule: 24, 25 or 30</text>
+<text x="1166" y="952" font-size="12" fill="#CBD5E1" font-weight="400" text-anchor="start">never mixed in one cut</text>
+<rect x="30" y="1096" width="1340" height="58" rx="10" fill="#1E293B" stroke="#FBBF24" stroke-width="1.6"/>
+<text x="48" y="1120" font-size="12" fill="#FBBF24" font-weight="700" text-anchor="start">EXAMPLE JOB FLOW</text>
+<text x="48" y="1142" font-size="15" fill="#F1F5F9" font-weight="600" text-anchor="start">Scene in your words &gt; script &gt; shots &gt; prompts &gt; draft &gt; QA 85 &gt; final &gt; QA 90 &gt; delivery</text>
+</svg>
