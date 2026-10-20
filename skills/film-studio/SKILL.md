@@ -29,7 +29,7 @@ Roles (Cinema Studio crew): creative-director = director and sign-off; screenwri
 ### Phase 1 Development
 - Owners: screenwriter (story, script), creative-director (approval), producer (scope, budget), tech-writer (documents).
 - Artifacts: logline, one-page synopsis, treatment, beat sheet, sequence plan, screenplay v1, budget model, IP and legal checklist.
-- Method: story-and-script.md (logline to treatment to beat sheet to sequences to screenplay). Pipeline owner: film-studio (indic-languages for Indian-language scripts).
+- Method: story-and-script.md (logline to treatment to beat sheet to sequences to screenplay); for a scene the owner describes casually, use story-and-screenplay (Casual scene to prompt). Pipeline owner: film-studio (indic-languages for Indian-language scripts).
 - Gate G1: screenplay locked (page count matches runtime, about 1 page per minute), runtime and shot budget agreed, IP check clean, cap approved by the user.
 
 ### Phase 2 Pre-production

@@ -14,7 +14,7 @@ This skill holds no craft content. It decides which skills to load, in what orde
 ## 1. What this covers (map)
 | Need | Load | Reference to open (one only) |
 |---|---|---|
-| Long-form film, series, short film (story to delivery, any genre or language) | `film-studio` | the one references/ file for the phase |
+| Story, script, any scene the owner describes (casual words, any language); long-form film, series, short film | `story-and-screenplay`, `film-studio` | its "Casual scene to prompt"; film-studio one references/ file for the phase |
 | Voice, dubbing, music, sound, Indian languages, editing (see One cinematic pipeline) | `voice-studio`, `music-and-sound`, `indic-languages`, `edit-director` | the one references/ file for the task |
 | Camera, shots, lenses, lighting, shot lists (AI video and image) | `cinematography` | references/shot-sizes-and-angles.md |
 | Any AI image or video, tool and model choice, credits | `higgsfield-master` | mcp-operations.md, production-pipeline.md, credits-and-budget.md or signature-shots.md |
@@ -47,7 +47,7 @@ Fill this brief from the request. Ask only what blocks the work; default the res
 Output the brief as a 6-line block; get one confirmation only if credits or publishing are involved.
 
 ## Fast path: scene + images to finished video
-Use when the user gives a scene plus images. Run these steps in order.
+Default for any scene the owner describes in words: story-and-screenplay "Casual scene to prompt" (8 steps, ends in a prompt pack and a wait for yes). Use this fast path when the user gives a scene plus images. Run these steps in order.
 1. Asset lock: read every image given. For each, write a lock: subject identity (face, skin depth and undertone, hair, attire); product (exact shape, colour, label text, material); location and light. Never invent details that contradict the images.
 2. Beats: split the scene into beats. Pick duration (default 5 to 10 s per clip), aspect (9:16 for Reels/Shorts, 16:9 for film, 1:1 or 4:5 for feed) and model with the higgsfield-master decision tree: Seedance for multi-shot or character work, Kling or Veo for realism or audio, Cinema Studio for camera control.
 3. Prompt: write in the chosen model's dialect (higgsfield-master references/model-dialects.md), in this order: subject, action, setting, camera (shot, lens, move; signature-shots.md if it fits), light, mood and colour, realism cues (photoreal-humans), cultural accuracy (asian-human-reference if Indian or Asian people appear), audio or dialogue if needed. Close every open choice. Keep one subject and one action per beat. Image references stay authoritative.
@@ -81,7 +81,7 @@ Mixed jobs: pick the lane that produces the asset and treat the others as inputs
 ## One cinematic pipeline
 One chain; each stage has one owner, so there is never a doubt. Default named first, alternative only where stated.
 1. Brief and intake: creative-studio (section 2); owner creative-director.
-2. Story and script: film-studio (story-and-script.md), plus indic-languages for Indian-language scripts; owner screenwriter.
+2. Story and script: story-and-screenplay (default, casual scene to prompt), then film-studio (story-and-script.md) for long-form, plus indic-languages for Indian-language scripts; owner screenwriter.
 3. Shot design (camera, lens, light, colour): cinematography, following cinematography/references/scene-to-shot-reasoning.md and the fps rules in cinematography/references/frame-rates-deep.md; owner cinematographer.; works with performance-director on blocking and eyelines
 4. People realism and bibles: photoreal-humans + asian-human-reference; owner production-designer.
 5. Performance direction: performance-direction (beats, subtext, eyelines, Kling motion control or Runway Act-Two transfer, performer consent, lipsync acting; asian-human-reference expressions, indic-languages for lipsync); owner performance-director, with the cinematographer, before generation.

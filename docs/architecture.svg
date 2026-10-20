@@ -1,8 +1,8 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1400 1170" width="1400" height="1170" font-family="system-ui, -apple-system, Segoe UI, Roboto, sans-serif" role="img" aria-labelledby="ti de"><title id="ti">Pro Cinematic Studio architecture</title><desc id="de">Five layers: owner, creative-studio entry point, 14-agent crew pipeline, 70-skill library, and engines. Guardrails and example job flow.</desc>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1400 1170" width="1400" height="1170" font-family="system-ui, -apple-system, Segoe UI, Roboto, sans-serif" role="img" aria-labelledby="ti de"><title id="ti">Pro Cinematic Studio architecture</title><desc id="de">Five layers: owner, creative-studio entry point, 14-agent crew pipeline, 71-skill library, and engines. Guardrails and example job flow.</desc>
 <defs><marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" fill="#FBBF24"/></marker></defs>
 <rect width="1400" height="1170" fill="#0F172A"/>
-<text x="30" y="38" font-size="24" fill="#F1F5F9" font-weight="700" text-anchor="start">Pro Cinematic Studio 1.0.0: layers, wiring and job flow</text>
-<text x="30" y="60" font-size="13" fill="#CBD5E1" font-weight="400" text-anchor="start">70 skills, 14 crew agents, 3 engines. A brief goes in, a graded, scored and delivered film comes out.</text>
+<text x="30" y="38" font-size="24" fill="#F1F5F9" font-weight="700" text-anchor="start">Pro Cinematic Studio 1.0.1: layers, wiring and job flow</text>
+<text x="30" y="60" font-size="13" fill="#CBD5E1" font-weight="400" text-anchor="start">71 skills, 14 crew agents, 3 engines. A brief goes in, a graded, scored and delivered film comes out.</text>
 <rect x="30" y="78" width="1060" height="66" rx="12" fill="#162033" stroke="#475569" stroke-width="1.2"/>
 <text x="48" y="100" font-size="12" fill="#FBBF24" font-weight="700" text-anchor="start">1  YOU (THE OWNER)</text>
 <text x="560" y="123" font-size="16" fill="#F1F5F9" font-weight="600" text-anchor="middle">Describe a scene, a brief, or upload images</text>
@@ -81,11 +81,12 @@
 <text x="880.0" y="550" font-size="11.5" fill="#CBD5E1" font-weight="400" text-anchor="start">voice-director, composer</text>
 <line x1="560" y1="596" x2="560" y2="622" stroke="#FBBF24" stroke-width="2" marker-end="url(#a)"/>
 <rect x="30" y="622" width="1060" height="320" rx="12" fill="#162033" stroke="#475569" stroke-width="1.2"/>
-<text x="48" y="644" font-size="12" fill="#FBBF24" font-weight="700" text-anchor="start">4  SKILL LIBRARY: 70 skills, loaded on demand by the router</text>
+<text x="48" y="644" font-size="12" fill="#FBBF24" font-weight="700" text-anchor="start">4  SKILL LIBRARY: 71 skills, loaded on demand by the router</text>
 <rect x="50" y="652" width="240" height="128" rx="8" fill="#1E293B" stroke="#475569" stroke-width="1.2"/>
 <text x="64" y="676" font-size="13" fill="#FBBF24" font-weight="700" text-anchor="start">Story &amp; film</text>
 <text x="64" y="698" font-size="12" fill="#F1F5F9" font-weight="400" text-anchor="start">film-studio</text>
 <text x="64" y="714" font-size="12" fill="#F1F5F9" font-weight="400" text-anchor="start">faceless-script-writer</text>
+<text x="64" y="730" font-size="12" fill="#F1F5F9" font-weight="400" text-anchor="start">story-and-screenplay</text>
 <rect x="310" y="652" width="240" height="128" rx="8" fill="#1E293B" stroke="#475569" stroke-width="1.2"/>
 <text x="324" y="676" font-size="13" fill="#FBBF24" font-weight="700" text-anchor="start">Camera</text>
 <text x="324" y="698" font-size="12" fill="#F1F5F9" font-weight="400" text-anchor="start">cinematography</text>
