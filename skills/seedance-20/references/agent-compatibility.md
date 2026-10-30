@@ -4,7 +4,7 @@ last_verified: 2026-08-01
 
 Use this file when reviewing whether this repository is shaped correctly as an Agent Skill package. This is about packaging and agent behavior, not Seedance model capability.
 
-Reviewed 2026-08-01: the packaging contract here is unchanged, and it is deliberately independent of the Seedance model line — a 2.5 launch changes platform facts, not skill-package structure. The install paths in this file are verified by `tests/test_install_payload.py` on every run rather than by this date stamp.
+Reviewed 2026-08-01: the packaging contract here is unchanged, and it is deliberately independent of the Seedance model line — a 2.5 launch changes platform facts, not skill-package structure. Offline tests keep the install wording internally consistent; they do not prove what a vendor currently scans. The client-specific sources below were re-read live on their stated verification date.
 
 ## Current Agent-Skill Shape
 
@@ -26,27 +26,43 @@ This repository follows that pattern:
 
 ## Compatibility Rules
 
+The offline-payload guarantee applies to the installer's allowlisted output. Use `scripts/install_codex_skill.py --dest` with the client's skills parent directory, or prepare that output in an external staging directory and transfer only its `seedance-20/` folder. Whole-checkout copies and client-managed GitHub imports can include network-capable source tools. A compatible directory name alone does not establish that those tools were excluded. Here, "copy the folder" means the prepared payload, not this entire source checkout.
+
 - Keep every active `description` in third-person activation wording so tools can match it from a shortened skill list.
 - Keep the root `SKILL.md` small. Route to sub-skills and references instead of copying long tables into the root.
 - Keep volatile facts in dated references such as `api-status.md` and `source-registry.md`.
 - Keep generated bitmap images inside `assets/` if they are referenced by README.
 - Keep `agents/openai.yaml` aligned with the root skill name and make the default prompt invoke `$seedance-20`.
-- Use `scripts/install_codex_skill.py --force` to install or refresh the local user-level Codex copy at `$CODEX_HOME/skills/seedance-20` or `~/.codex/skills/seedance-20`.
+- Use `scripts/install_codex_skill.py --client codex --scope user` for a fresh Codex user copy at `~/.agents/skills/seedance-20`, or `--client claude-code --scope user` for `${CLAUDE_PLUGIN_ROOT}/skills/seedance-20`. Project scope requires `--scope project --project-root /path/to/project`. With no destination options, the historical `$CODEX_HOME/skills` or `~/.codex/skills` default is preserved. Use `--force` only for an intentional replacement after reviewing and backing up the existing installation.
 - Keep scripts deterministic and local. They should validate structure, schema, design, and source metadata without requiring private credentials.
 - Do not store API keys, account cookies, or private prompt corpora in the skill package.
 
 ## Cross-Agent Matrix
 
-Verified 2026-06-12 from each agent's public docs; install paths are volatile - recheck the active client before promising behavior. Install this repository as ONE root skill (`seedance-20`); sub-skills and references load by relative path from the root.
+The general matrix was verified 2026-06-12 from each agent's public docs; the Antigravity and Hermes rows were reverified 2026-08-01. Install paths are volatile — recheck the active client before promising behavior. Install this repository as ONE root skill (`seedance-20`); sub-skills and references load by relative path from the root.
 
 | Agent | Skills location | Install route | Notes |
 |---|---|---|---|
 | Claude Code / claude.ai | `.claude/skills/` (workspace), managed skills | copy or marketplace | Origin platform of the SKILL.md shape. |
-| Codex | `.agents/skills/` upward scan + user/system dirs | `scripts/install_codex_skill.py --force` | `agents/openai.yaml` supplies UI metadata. |
-| Google Antigravity | `.agents/skills/` (workspace), `~/.gemini/antigravity-cli/skills/` (global) | copy the folder, restart the session | Same directory convention as Codex workspaces; SKILL.md + scripts/references/assets shape matches this repo. |
+| Codex | `.agents/skills/` upward scan + user/system dirs | `scripts/install_codex_skill.py --client codex --scope user` | `agents/openai.yaml` supplies UI metadata. |
+| Google Antigravity | `.agents/skills/` (workspace), `~/.gemini/config/skills/` (global across Antigravity products) | copy the folder, restart the session | Google's Antigravity skills codelab documents the directory-based `SKILL.md` package at both scopes. |
 | OpenClaw | workspace `skills/`, `~/.openclaw/skills/` (global) | `openclaw skills install` (git/local expect `SKILL.md` at source root - this repo qualifies) | ClawHub is the public registry (`clawhub` CLI to publish). Every skill here already carries `openclaw:` metadata. |
-| Hermes Agent (Nous Research) | project `skills/`, `~/.hermes/skills/` | `hermes skills install` (runs a security scan) | Activates on the frontmatter `description` - this repo's third-person activation wording is exactly what it matches. |
+| Hermes Agent (Nous Research) | `~/.hermes/skills/` (primary); project/shared folders via `skills.external_dirs` | `hermes skills install` (runs a security scan) | A project `skills/` directory is not an automatic scope; add that parent directory in `~/.hermes/config.yaml`. |
 | Gemini CLI / Cursor / Windsurf / Copilot | `.gemini/`, `.cursor/`, `.windsurf/`, `.github/` + `skills/` | copy the folder | Treat as installation targets, not separate source trees. |
+
+### Antigravity and Hermes install-path boundaries (verified 2026-08-01)
+
+Google's cross-product Antigravity skills codelab documents directory packages under `<project-root>/.agents/skills/` and `~/.gemini/config/skills/`. The current Antigravity CLI reference separately lists `~/.gemini/antigravity-cli/skills/` for global CLI markdown skills. That CLI page does not establish that this CLI-only location accepts this repository's directory-based `SKILL.md` package, nor does either page document migration or dual-scan behavior between the two global paths. Do not treat the CLI-only path as a fallback or as the global install target for this package; use the codelab's package-compatible scopes and verify discovery in the active client.
+
+Hermes documents `~/.hermes/skills/` as its primary directory and source of truth. A project-local or shared parent directory is scanned only when it is registered under `skills.external_dirs` in `~/.hermes/config.yaml`:
+
+```yaml
+skills:
+  external_dirs:
+    - /absolute/path/to/project/skills
+```
+
+The path above is the directory containing `seedance-20/`, not the skill directory itself. Hermes documents `~` expansion and `${VAR}` substitution for external paths, local-over-external precedence, and silent skipping of paths that do not exist. It does not document an automatic project `skills/` scope, so do not present one without the configuration step.
 
 ## Chinese-ecosystem agents (verified 2026-07-06)
 
@@ -83,9 +99,10 @@ Runway MCP is a separate agent connector surface. It can expose Seedance 2.0 thr
 - OpenAI Academy plugins and skills explainer: https://openai.com/academy/codex-plugins-and-skills/
 - OpenAI skills catalog: https://github.com/openai/skills
 - Agent Skills open standard overview: https://agentskills.io/
-- Google Antigravity skills docs: https://antigravity.google/docs/cli-plugins and https://codelabs.developers.google.com/getting-started-with-antigravity-skills
+- Google Antigravity cross-product skills codelab (verified 2026-08-01): https://codelabs.developers.google.com/getting-started-with-antigravity-skills
+- Google Antigravity CLI plugins and skills reference (verified 2026-08-01): https://antigravity.google/docs/cli/plugins
 - OpenClaw skills docs: https://docs.openclaw.ai/tools/skills
-- Hermes Agent skills docs: https://hermes-agent.nousresearch.com/docs/user-guide/features/skills
+- Hermes Agent skills docs (verified 2026-08-01): https://hermes-agent.nousresearch.com/docs/user-guide/features/skills
 - Runway MCP announcement: https://runwayml.com/news/mcp
 - Trae Agent Skills docs: https://docs.trae.ai/ide/agent
 - Qwen Code Agent Skills docs: https://qwenlm.github.io/qwen-code-docs/en/users/features/skills/ and https://github.com/QwenLM/qwen-code
@@ -120,6 +137,6 @@ This does not block a valid take review. `observed_end_state` stays populated �
 
 Note the honest limit of that arrangement: `observation_confidence` is a confidence axis, not a provenance one, so "I saw it, but the frame was ambiguous" and "I never saw it" both land on `low`. The pairing with `requires_user_confirmation` and `uncertainties` distinguishes them in practice. A dedicated provenance field would be cleaner and is worth considering, but it changes a shipped schema, its checker, and its fixtures, so it belongs in its own reviewed change rather than being smuggled in here.
 
-This is not a stylistic preference. Three of this repository's workflows consume observations as canon: `observed end state` in `[ref:continuation-handoff]`, take triage in `[ref:retake-protocol]`, and reference roles inferred from an attachment in `[ref:reference-workflow]`. A fabricated observation enters the project state as fact, and every later clip in the sequence inherits it. The error compounds silently, which is what makes it worse than admitting the limitation.
+This is not a stylistic preference. Three of this repository's workflows consume observations as canon: `observed end state` in [continuation-handoff](continuation-handoff.md), take triage in [retake-protocol](retake-protocol.md), and reference roles inferred from an attachment in [reference-workflow](reference-workflow.md). A fabricated observation enters the project state as fact, and every later clip in the sequence inherits it. The error compounds silently, which is what makes it worse than admitting the limitation.
 
 The same rule covers provider facts: if the current limits, syntax, or model IDs were not retrieved during this session, they are unverified — say which, rather than presenting a remembered value as current.

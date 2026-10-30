@@ -20,11 +20,15 @@ metadata:
 
 # seedance-vocab-ja
 
-Use Japanese cinematic vocabulary when the user asks for Japanese prompt wording, bilingual delivery, compact translation, or production vocabulary for camera, lighting, motion, VFX, and audio. Preserve reference tags exactly: `@Image1`, `@Video1`, and `@Audio1` remain in English brackets.
+Before producing prompt text, a prompt-ready block, a rewrite, an example, or a compiled clip, load the [Director's Read](../../references/directors-read.md), classify the brief, and complete its canonical narrative or non-narrative record. Translate that record into visible or audible carriers and keep its internal labels out of final generation prose.
+
+Use Japanese cinematic vocabulary when the user asks for Japanese prompt wording, bilingual delivery, compact translation, or production vocabulary for camera, lighting, motion, VFX, and audio. Preserve actual reference tags exactly; their spelling is independent of the prompt language.
+
+Before adapting a reference example below, load [Using Reference Examples](../../references/surface-prompt-profiles.md#using-reference-examples). Bind its placeholders to real assets by the requested role, then preserve the actual token, including its script, case, spacing and punctuation. A written example token does not attach a file.
 
 ## Intent
 
-The user working in Japanese often lives closest to the anime tradition this model loves to render. Serve both registers - the politeness-shaped natural sentence and the production term - and let the vocabulary feel native, never translated.
+Japanese prompt direction can combine concise clauses with established production loanwords. Choose one readable clause order, keep each term attached to a concrete shot instruction, and avoid literal English syntax where a shorter production construction is available. The shipped independent review artifact is empty, so treat these choices as working production wording pending locale-specialist review.
 
 ## Usage Rule
 
@@ -44,11 +48,11 @@ Prefer concise production Japanese over literal translation. Keep the structure 
 
 ## Register Rule
 
-The moment a prompt contains dialogue, load Register (文体) in `references/vocab/ja.md` and declare one register per speaker - 敬語, です・ます体, or 普通体 - with a first-person pronoun that matches it. An unstated register is a decision handed to the model, and the mora cost differs enough to break the sync budget (ありがとう 5 → ありがとうございます 10).
+Preserve user-supplied dialogue. When drafting or adapting speech, load Register (文体) in [the vocabulary guide](../../references/vocab/ja.md) and keep the relationship and intended tone explicit. Offer register choices only where they affect the brief. Measure the actual spoken line; do not use a fixed multiplier or change politeness to fit an invented sync budget. Record any unresolved locale-review need.
 
 ## De-Slop Rule
 
-When the prompt leans on `映画のような`, `エモい`, `雰囲気のある`, `壮大な`, or `高画質`, load the Slop Traps table in `references/vocab/ja.md` and decompose each into the physical elements that produce it - 動作動詞＋速度＋視点, 光源＋方向＋挙動.
+When an adjective leaves the intended shot unclear, load Slop Traps in [Japanese vocabulary](../../references/vocab/ja.md). Preserve a useful style or aesthetic term and add only the scene-specific action, framing, light, or sound needed to clarify it. The table offers authored options, not a default look or a proven model-performance rule. Keep the user's chosen energy, dialogue, reference tags, and settings. Offer distinct choices only when the ambiguity changes the scene; if the user delegated the choice, decide within that scope.
 
 ## Output Contract
 

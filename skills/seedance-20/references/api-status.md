@@ -1,19 +1,30 @@
 # Seedance 2.0 API and Platform Status
 
 last_verified: 2026-08-01
-confidence: public-source snapshot as of the verification date; per-section dates apply where noted (Seedance 2.5 and the 2.0 4K upgrade recorded 2026-08-01 from technology press and provider pages, Seedance 2.0 Mini / additional provider-router / China-facing search recorded 2026-06-20, platform safeguards and resolution recorded 2026-06-14, overseas-API status and Replicate recorded 2026-06-13, fal section re-verified 2026-06-11, earlier surface sections verified 2026-05-30); not a guarantee of access, pricing, model IDs, upload limits, authorization behavior, or regional availability on every surface
+confidence: public-source snapshot as of the verification date; per-section dates apply where noted (the Seedance 2.5 model-line boundary and Dreamina availability recorded 2026-08-01 from official ByteDance and Dreamina pages, with the exact launch date and API or other-surface availability left unconfirmed; 2.0 4K reports recorded 2026-08-01 from technology press and provider pages; Seedance 2.0 Mini / additional provider-router / China-facing search recorded 2026-06-20, platform safeguards and resolution recorded 2026-06-14, overseas-API status and Replicate recorded 2026-06-13, fal section re-verified 2026-06-11, earlier surface sections verified 2026-05-30); not a guarantee of access, pricing, model IDs, upload limits, authorization behavior, or regional availability on every surface
+
+## Scoped update: 2026-09-07
+
+The August header still dates the broader inventory; it is not a claim that every provider was rechecked. See the [September source review](source-registry.md#claims-rechecked-on-2026-09-07) for exact coverage and the incomplete BytePlus retrieval. That review separates the model card's native-resolution claim from Runway's current creator-UI output options. Runway's API catalog now documents `seedance2_5` separately, so the historical “other-surface availability unconfirmed” wording below must not be read as a current claim that no other provider lists it. Catalog naming does not establish account entitlement, and this skill still covers 2.0 only.
 
 ## Scope: This Is a Seedance 2.0 Skill *(recorded 2026-08-01)*
 
-**Everything in this repository describes Seedance 2.0.** A separate, newer line — Seedance 2.5 — launched on consumer surfaces on 2026-07-31 *(tech-press; the primary ByteDance and Volcengine pages were not reachable in this pass)*. This repository does not cover it, does not document its capabilities, and makes no claim about it.
+**Everything in this repository describes Seedance 2.0.** ByteDance's [official Seedance 2.5 model page](https://seed.bytedance.com/en/seedance2_5) confirms a separate newer line, and [Dreamina's official product page](https://dreamina.capcut.com/seedance/seedance-2-5) says it is live on Dreamina. Neither primary page gives an exact launch date; API and other-surface availability were unconfirmed in this pass. This repository does not cover the newer line and does not document its capabilities.
 
 The only rule that matters here is a boundary, and it exists because a user can be on the newer line without saying so:
 
 - **Establish which line the surface runs before quoting any number.** Durations, reference ceilings, resolutions, model IDs, and mode availability in this file are 2.0 values. They are not 2.5 values, and restating them as such would be inventing platform facts.
 - **Craft transfers; platform numbers never do.** Direction, shot contracts, reference-role discipline, continuity, and anti-slop are model-independent and stay correct.
-- **Never normalize "2.5" to "2.0"** — that is exactly how 2.0 numbers get silently applied to a different model. See `[ref:model-name-map]`.
+- **Never normalize "2.5" to "2.0"** — that is exactly how 2.0 numbers get silently applied to a different model. See [model-name-map](model-name-map.md).
 
 If the user is working on 2.5, say plainly that this skill is built and verified for 2.0, keep the craft guidance, and withhold the platform numbers.
+
+## Time structure inside a prompt *(recorded 2026-09-26 from mirrors; recheck live)*
+
+- Volcengine's Seedance 2.0 prompt guide (document 82379/2222480) organizes multi-shot prompts by shot order, 镜头1 / 镜头2 / 镜头3 in event order, without a forced duration per shot, and says support for precise time ranges such as 0–3 秒 is unstable, with forced durations able to produce abnormal output. ByteDance's `agentkit-samples` troubleshooting file repeats the warning.
+- ByteDance's Seedance 2.5 prompt guide (document 82379/2607689, dated 2026-08-07) lists the version difference: Seedance 2.0 responds to shot numbers, not timestamps; the newer line responds to integer-second timestamps. That is a newer-line capability and does not transfer to 2.0.
+- The Ark create-task document (82379/1520757, mirror) gives `duration` as an integer in 4–15 or -1 for model-chosen length, default 5, and notes that `camera_fixed` is not supported on the 2.0 series. It recommends the prose echo 时长：X秒, written with the Chinese 秒 at the start or end of the prompt, as reinforcement rather than control.
+- These statements were read from hash-recorded mirrors of the official PDFs and from ByteDance's GitHub organisation because the first-party hosts were unreachable from the review environment. `docs/EVIDENCE_NOTES_2026-09-26.md` records the quotes and locators. Recheck the live pages before quoting them as current.
 
 ## Confirmed From Public Sources
 
@@ -40,7 +51,7 @@ If the user is working on 2.5, say plainly that this skill is built and verified
 
 ## Copyright Dispute — Still Unresolved *(re-checked 2026-08-01)*
 
-The 2026-06-13 record below stands, with one update: reporting through July 2026 indicates the studio cease-and-desist letters remain **unanswered and unresolved in court**, and ByteDance shipped Seedance 2.5 and its API while the dispute was open. Nothing has been settled that would relax this repository's IP posture — the safety gates are not provisional, and the safeguards below are still the live enforcement path.
+The 2026-06-13 record below stands: reporting through July 2026 indicates the studio cease-and-desist letters remain **unanswered and unresolved in court**. Nothing has been settled that would relax this repository's IP posture — the safety gates are not provisional, and the safeguards below are still the live enforcement path.
 
 ## Overseas API Status — Copyright Suspension *(recorded 2026-06-13)*
 
@@ -54,8 +65,8 @@ Authoritative reporting (Variety and CNBC, Feb–Mar 2026) documents that after 
 
 Authoritative reporting (SCMP, CNBC, The Next Web, Feb–Apr 2026) documents safeguards ByteDance added to Seedance 2.0 in response to the dispute. These are no longer hypothetical — treat them as current platform behavior on official surfaces, and design prompts to work *with* them:
 
-- **Real-face input blocking:** generation from images or videos containing real human faces is restricted (anti-deepfake). Do not assume a real-person reference will be accepted; route likeness work through `[skill:seedance-copyright]`.
-- **Copyrighted-character blocking:** generation of recognizable protected characters (e.g. Shrek, SpongeBob, Darth Vader) is blocked. This is enforcement, not just policy — `[skill:seedance-filter]`'s original-character rewrites are the working path.
+- **Real-face input blocking:** generation from images or videos containing real human faces is restricted (anti-deepfake). Do not assume a real-person reference will be accepted; route likeness work through [seedance-copyright](../skills/seedance-copyright/SKILL.md).
+- **Copyrighted-character blocking:** generation of recognizable protected characters (e.g. Shrek, SpongeBob, Darth Vader) is blocked. This is enforcement, not just policy — [seedance-filter](../skills/seedance-filter/SKILL.md)'s original-character rewrites are the working path.
 - **Visible watermark + C2PA Content Credentials** on output, and **invisible watermarking** with proactive IP monitoring (ByteDance states it can identify and act on model output even after it is shared or altered).
 
 Implication for the skill: false-positive repair and IP-safe rewriting are not optional polish — they are how a prompt clears live guardrails. Surface-specific behavior still varies; verify on the active surface.
@@ -149,6 +160,8 @@ Real-person face, portrait, and voice workflows require authorization, legal/eth
 
 - https://seed.bytedance.com/en/seedance2_0
 - https://seed.bytedance.com/en/blog/seedance-2-0-official-launch
+- https://seed.bytedance.com/en/seedance2_5
+- https://dreamina.capcut.com/seedance/seedance-2-5
 - https://replicate.com/bytedance/seedance-2.0
 - https://variety.com/2026/film/news/paramount-disney-bytedance-cease-and-desist-seedance-ai-infringement-ip-1236663663/
 - https://www.cnbc.com/2026/02/16/bytedance-safeguards-seedance-ai-copyright-disney-mpa-netflix-paramount-sony-universal.html

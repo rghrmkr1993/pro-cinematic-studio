@@ -4,7 +4,7 @@ These are original, safety-screened examples distilled from public multilingual 
 
 ## Boundary
 
-Language mixing can reduce false positives only when it clarifies a benign creative intent. Do not use another language to hide unsafe content, protected identity copying, real-person imitation, graphic harm, or platform-rule evasion.
+Use language mixing only when it clarifies the user's benign creative intent. This guide does not establish a measured reduction in moderation errors or guarantee acceptance. Do not use another language to hide unsafe content, protected identity copying, real-person imitation, graphic harm, or platform-rule evasion.
 
 Safe language mixing means:
 
@@ -35,7 +35,7 @@ Safe language mixing means:
 
 ## Chinese-English Patterns
 
-Native Chinese readers can start from the role of each reference, then write one visible action and one camera move. Keep imported reference tags literal even inside Chinese sentences.
+Chinese-language readers can start from the role of each reference, then write one visible action and one camera move. Keep imported reference tags literal even inside Chinese sentences.
 
 **Official-style role formula**
 
@@ -51,7 +51,7 @@ Native Chinese readers can start from the role of each reference, then write one
 
 ## Japanese-English Patterns
 
-Native Japanese readers should keep identity, costume, frame layout, motion endpoint, and post-production text handling explicit. Avoid vague quality words unless they are decomposed into camera, light, material, and action.
+Japanese-language readers should keep identity, costume, frame layout, motion endpoint, and post-production text handling explicit. Avoid vague quality words unless they are decomposed into camera, light, material, and action.
 
 **Portrait micro-performance**
 
@@ -67,7 +67,7 @@ Native Japanese readers should keep identity, costume, frame layout, motion endp
 
 ## Korean-English Patterns
 
-Native Korean readers should separate subject lock, camera movement, lighting, audio, and textless delivery. Short dialogue works best when the camera is locked and the head movement stays minimal.
+Korean-language readers should separate subject lock, camera movement, lighting, audio, and textless delivery. Short dialogue works best when the camera is locked and the head movement stays minimal.
 
 **Melodrama micro-expression**
 

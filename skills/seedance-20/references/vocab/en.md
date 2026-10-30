@@ -1,6 +1,6 @@
 # English Vocabulary
 
-Use this reference for precise English Seedance prompt wording. English is the default prompting language and the most heavily moderated surface, and it fails in two ways at once: empty quality words ("cinematic, stunning, 8K") add zero signal, and vague threat-adjacent wording trips false-positive filters. Precision fixes both - concrete production English reads better to the model and to the filter. Keep reference tags unchanged: `@Image1`, `@Video1`, and `@Audio1` stay literal.
+Use this reference when the user chooses English Seedance prompt wording. The examples support editorial clarity; they do not establish a language-wide moderation ranking or guarantee that a revised prompt will be accepted. Keep reference tags unchanged when translating surrounding prose. The tokens in these tables and templates are examples, not attached assets or universal syntax. Before adapting them, follow [Using Reference Examples](../surface-prompt-profiles.md#using-reference-examples) and preserve the actual binding token, whatever its script or format.
 
 | Function | English wording | What it decides |
 |---|---|---|
@@ -52,51 +52,46 @@ Use this reference for precise English Seedance prompt wording. English is the d
 | Constraint | `no identity change, no object redesign` | drift guard |
 | Constraint | `one action, one camera move` | the budget rule in six words |
 | Constraint | `nothing else moves` | isolates the hero motion |
-| Safety | `staged confrontation, no graphic injury` | action without harm reading |
-| Safety | `original character with broad archetype traits` | identity without likeness |
-| Safety | `prop object handled safely` | objects without threat reading |
+| Safety | `staged confrontation, no graphic injury` | requests non-graphic staging; context still needs assessment |
+| Safety | `original character with broad archetype traits` | requests an original character; a label does not establish permission |
+| Safety | `prop object handled safely` | requests safe handling of a confirmed prop; not an approval guarantee |
 
 ## Dialogue Notes
 
-Field-observed from 2026 community testing; test per surface, never promise results. English has the second-strongest lip-sync after Mandarin.
-
-- Reliable-sync budget is roughly 16-20 words in a ~15s clip; longer lines compress the mix. Keep each line to 5-10 words.
-- The acoustic budget (~35-40 words in 15s at natural pace) is higher than the reliable-sync budget - stay under the sync budget, not the acoustic one.
-- A written beat between sentences is field-reported to act as a re-sync anchor: `She pauses, then continues:` - test it rather than assume it.
+No validated English word ceiling or universal second-place language ranking is established here. Preserve quoted dialogue and time the actual delivery with pauses. A short speaker turn and stable framing are starting heuristics, not limits. Evaluate words, performance, and sync separately using [audio-guide](../audio-guide.md); a written pause is direction, not a guaranteed re-sync mechanism.
 
 ## Slop Traps
 
-English prompts attract empty evaluation words. Each adds tokens and zero signal; replace with something a camera, microphone, light meter, or stopwatch could detect.
+Review these phrases in context. They can communicate useful style or mood; this repository has no measured basis for calling them universally zero-signal. Keep the intended energy and clarify only a material ambiguity. These are possible decisions, not required replacements. Follow [anti-slop-lexicon](../anti-slop-lexicon.md) for shared preservation and delivery rules.
 
-| Slop | Say instead |
+| Phrase to review | Preserve or clarify |
 |---|---|
-| cinematic | name the shot scale, camera move, and light source |
-| epic | physical scale: crowd size, lens distance, structure height |
-| stunning / breathtaking | the one visible contrast or reveal that earns it |
-| beautiful | color, texture, material, light behavior |
-| masterpiece / award-winning | delete; quality is not a request |
-| 8K / ultra-HD / hyper-detailed | delete; resolution is a render setting, not prose |
-| dynamic | the specific movement, its speed, and its endpoint |
-| dramatic | blocking, shadow, silence, or camera pressure |
-| atmosphere of mystery | what is hidden, by what: doorway, shadow, fog |
-| ultra-realistic | material behavior, skin texture, natural motion |
-| insanely detailed | the two details that matter, named |
-| trending / viral style | the actual format: vertical, fast hook, caption-safe framing |
+| cinematic | Keep the intended film language; clarify framing, pacing or light where needed, without imposing a stock look |
+| epic | Preserve the ambition; clarify whether scale, emotional stakes or another intensity matters |
+| stunning / breathtaking | Clarify the intended impact or reveal without inventing a new event |
+| beautiful | Keep the aesthetic preference; clarify relevant color, texture, material or performance |
+| masterpiece / award-winning | Remove unsupported praise when redundant; retain any actual reference role or concrete requirement |
+| 8K / ultra-HD | Retain the delivery target in supported settings; state unknown support or a mismatch instead of silently deleting or lowering it |
+| hyper-detailed / insanely detailed | Name the important details if needed; do not invent an output resolution or an arbitrary two-detail limit |
+| dynamic | Clarify what moves, its speed and endpoint; an energetic scene can keep a locked camera |
+| dramatic | Preserve the intended tension or acting; shadows, silence and camera pressure are choices |
+| atmosphere of mystery | Preserve the intended uncertainty; use the existing scene before adding fog, darkness or concealment |
+| ultra-realistic | Keep the realism direction; add relevant material or motion detail without promising a rendered result |
+| trending / viral style | Clarify the intended format or reference; do not assume vertical framing, a fast hook or engagement results |
 
-## Filter-Trip Repairs
+## Wording in Context
 
-English carries the heaviest moderation. Use this only for safe prompts being misunderstood - the repair is clarity, not evasion. Genuinely prohibited content routes to a plain refusal via the filter skill.
+A blocked result alone does not establish a false positive or reveal a trigger word. These are conditional editorial examples for known benign meanings, not measured filter behavior. Keep exact quoted dialogue unchanged unless the user asks to edit it.
 
-| Trigger-prone English | Professional clarification |
+| Known intended meaning | Faithful clarification |
 |---|---|
-| shoot the scene / shooting | film the scene, capture the take |
-| kill the lights | cut the lights to black |
-| gun it / shot after shot | accelerate hard / take after take |
-| execution of the move | the move performed cleanly |
-| dead silence | held silence, room tone only |
-| blow up the image | enlarge the image to full frame |
-| fight breaks out | choreographed action beat begins, no graphic injury |
+| `shoot the scene` means recording a take | `film the scene` |
+| `kill the lights` means switching the room lights off | `switch off the room lights` |
+| `gun it` means increasing a vehicle's speed | `accelerate the vehicle` |
+| `execution of the move` refers to performance | `performance of the move` |
+| `blow up the image` means increasing its display size | `enlarge the image`; do not invent a new framing or output resolution |
+| `dead silence` refers to sound | Preserve the requested sound state. Ask only if it matters whether the user means a muted track or quiet ambience; do not automatically add room tone |
 
-Anything genuinely risky - minors, real-person likeness, sexual or graphic content - is not a wording problem; route it to the filter skill's boundary for a plain refusal.
+Assess identity, consent, age, harm and other relevant context through [seedance-filter](../../skills/seedance-filter/SKILL.md) or the applicable rights route. A topic label is a reason to assess context, not proof that the request is prohibited or that a synonym will make it permissible. If the underlying request is prohibited, refuse it and offer a legitimate alternative only where appropriate.
 
-Load `filter-vocab.md` for the full false-positive repair table and `anti-slop-lexicon.md` for the core replacement rule.
+Load [filter-vocab](../filter-vocab.md) to distinguish clarification from content changes, and [anti-slop-lexicon](../anti-slop-lexicon.md) for editorial vocabulary guidance. No rewrite promises acceptance or authorizes another generation attempt.

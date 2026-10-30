@@ -1,6 +1,6 @@
 ---
 name: seedance-vocab-en
-description: "This skill should be used when an English Seedance 2.0 prompt is slop-heavy, generic, padded with empty quality words, tripping false-positive filters, or needs precise English production vocabulary for camera, lighting, motion, VFX, audio, and constraints."
+description: "This skill should be used when an English Seedance 2.0 prompt needs clearer production wording, less generic prose, or precise vocabulary for camera, lighting, motion, VFX, audio, and constraints. Route blocked prompts through seedance-filter for context and boundary review."
 license: MIT
 user-invocable: true
 tags:
@@ -21,15 +21,19 @@ metadata:
 
 # seedance-vocab-en
 
-English is the default prompting language and fails in two ways at once: slop (empty evaluation words that add tokens and no signal) and false positives (vague threat-adjacent wording that trips the heaviest moderation surface). The cure for both is the same: concrete production English. Preserve reference tags exactly: `@Image1`, `@Video1`, `@Audio1` must never be reworded.
+Before producing prompt text, a prompt-ready block, a rewrite, an example, or a compiled clip, load the [Director's Read](../../references/directors-read.md), classify the brief, and complete its canonical narrative or non-narrative record. Translate that record into visible or audible carriers and keep its internal labels out of final generation prose.
+
+Use this skill when the user chooses English prompt wording. Concrete production language can make the intended scene easier to review; it is not a demonstrated cure for moderation errors. This repository has no matched evidence that English receives heavier moderation than other languages. Preserve actual reference tags exactly; their spelling is independent of the prompt language.
+
+Before adapting a reference example below, load [Using Reference Examples](../../references/surface-prompt-profiles.md#using-reference-examples). Bind its placeholders to real assets by the requested role, then preserve the actual token, including its script, case, spacing and punctuation. A written example token does not attach a file.
 
 ## Intent
 
-English is where most users think, and where most prompts quietly rot. The soul of this vocabulary is precision as kindness: give people exact words so their excitement survives contact with the model, and so honest prompts stop being mistaken for dangerous ones.
+Help the user express the intended action, camera, light and sound clearly. Preserve their chosen language, exact dialogue, reference bindings and creative constraints. Separate a wording clarification from a proposal to change what happens in the scene.
 
 ## Usage Rule
 
-If a camera, microphone, light meter, or stopwatch cannot detect it, rewrite it. Every sentence should name something visible, audible, or measurable: subject, visible action, camera, light source, sound, constraint.
+Use visible or audible detail when a phrase leaves a relevant production choice unclear. Keep useful genre, style and mood labels. The examples below are optional vocabulary, not required camera moves, lighting setups or limits on scene complexity.
 
 | Function | English wording |
 |---|---|
@@ -41,18 +45,18 @@ If a camera, microphone, light meter, or stopwatch cannot detect it, rewrite it.
 
 ## De-Slop Pass
 
-Strip quality adjectives before adding anything: `cinematic`, `epic`, `stunning`, `masterpiece`, `8K`, `ultra-realistic`, `award-winning`, `hyper-detailed` all delete or convert to one observable detail each. A prompt that earns "epic" names the crowd size, the lens distance, or the structure height instead of the word.
+Preserve the intended energy and useful style choices; clarify ambiguity and remove redundant praise in context. Do not turn every "cinematic" into a slow push-in or every "epic" into a crowd. Follow the [anti-slop lexicon](../../references/anti-slop-lexicon.md) for conditional repairs. Keep an explicit resolution target as a delivery requirement, using a supported setting when available and stating any gap. Prompt wording alone cannot guarantee output dimensions. Preserve exact dialogue, actual reference tokens, safety boundaries and chosen settings; respect decisions already delegated by the user.
 
 ## Filter-Aware Wording
 
-English homonyms read as threats to filters: `shoot the scene`, `kill the lights`, `gun it`, `dead silence`, `blow up the image`. Use the production synonym (`film the take`, `cut the lights to black`, `accelerate hard`, `held silence`, `enlarge to full frame`). This is clarity for safe prompts only — never evasion. Anything genuinely risky (minors, real-person likeness, sexual or graphic content) routes to `[skill:seedance-filter]` for its boundary rule, not to a rewording.
+For a blocked prompt, load [seedance-filter](../seedance-filter/SKILL.md) and assess the actual request before rewriting. A rejection alone does not establish a false positive or identify a trigger word. The examples in [filter-vocab](../../references/filter-vocab.md) clarify known benign meanings; they are not a tested trigger list or an approval guarantee. Do not invent ownership, consent, prop status or harmless intent. If an alternative changes the content, state that change and offer it as a choice; never disguise prohibited intent.
 
 ## Compact Pattern
 
 `@Image1 is the reference; keep identity, color, and shape unchanged. Only [motion/light/camera] changes. Camera: [one move]. Sound: [one cue]. Constraints: [lock].`
 
-Load `references/vocab/en.md` for the full function-organized vocabulary, slop traps, and filter-trip repairs. Load `[ref:anti-slop-lexicon]` for the core replacement rule and `[ref:filter-vocab]` for the full false-positive repair table.
+Load [English vocabulary](../../references/vocab/en.md) for the full function-organized vocabulary, slop traps, and context-dependent wording examples. Load [anti-slop-lexicon](../../references/anti-slop-lexicon.md) for intent-preserving editorial guidance and [filter-vocab](../../references/filter-vocab.md) for the distinction between faithful clarification and a different content proposal.
 
 ## Output Contract
 
-Return the de-slopped English prompt, each replacement made (slop → observable detail), any filter-trip repair applied, and unchanged reference tags.
+Return the English prompt with unchanged reference tags and a brief explanation of material edits. Identify any proposed content change separately. Do not label the result filter-approved or imply that a rewrite authorizes another submission.

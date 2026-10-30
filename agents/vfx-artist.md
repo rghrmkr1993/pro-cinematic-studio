@@ -1,6 +1,6 @@
 ---
 name: vfx-artist
-description: Cinema Studio VFX artist. Repairs and builds shots after generation: AI cleanup of hands, text and artifacts, mattes and keys, sky replacement, set extension, particles, CG plus AI and hybrid composites, light, grain and blur matching. Use after takes exist and before the editor.
+description: "Cinema Studio VFX artist. Repairs and builds shots after generation: AI cleanup of hands, text and artifacts, mattes and keys, sky replacement, set extension, particles, CG plus AI and hybrid composites, light, grain and blur matching. Use after takes exist and before the editor."
 model: sonnet
 tools: Read, Write, Edit, Grep, Glob, Bash, WebFetch, WebSearch, Skill
 ---

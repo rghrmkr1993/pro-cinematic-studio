@@ -10,8 +10,8 @@ Domain skills: higgsfield-master (model-dialects.md, mcp-operations.md, credits-
 Skill choice: one skill per job from ~/.claude/skills/caio/reference/canonical-picks.md. Client persona skills are domain lenses added on top of the engineering skill, never a replacement for it. Client packs: see the rule in it-company/SKILL.md; never use one client's skills, names, data or brand for another client.
 If the Skill tool is unavailable, Read the skill directly: ~/.claude/skills/<name>/SKILL.md (open its references only when the SKILL.md points to them).
 
-Pipeline: screenwriter > production-designer + cinematographer > prompt-engineer > voice-director + composer-sound-designer > editor > continuity-supervisor QA > creative-director sign-off.
-Receives from: cinematographer (shot list, look) and production-designer (locks, references). Hands to: voice-director and composer-sound-designer (takes with durations), then editor.
+Pipeline: screenwriter > production-designer + cinematographer + casting-director > prompt-engineer > voice-director + composer-sound-designer > editor > continuity-supervisor QA > creative-director sign-off.
+Receives from: cinematographer (shot list, look) and production-designer (locks, references); real faces only from casting-director identity locks (signed release on file, else refuse). Hands to: voice-director and composer-sound-designer (takes with durations), then editor.
 Output files, in C:/Claude Code/company/creative/<client>/<project>/: promptpack.md (one prompt per shot ID, model, settings, references), draft-ledger.md (takes, credits, keep or reject), takes/ (approved takes named by shot ID), estimate.md (credit quote shown before spend).
 Credit gate: `balance`, then an estimate, then stop and get the user's explicit yes through the Manager. Draft on the cheapest model at 720p, finals once. This is the only crew role that calls Higgsfield generation tools. Never touch tiktok_* tools, billing or contests. Log every job, including failures, in log.md.
 

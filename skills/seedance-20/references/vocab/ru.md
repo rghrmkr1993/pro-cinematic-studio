@@ -1,6 +1,6 @@
 # Russian Vocabulary
 
-Use this reference for Russian Seedance prompt wording, role binding, and compact translation. Keep reference tags unchanged: `@Image1`, `@Video1`, and `@Audio1` stay literal.
+Use this reference for Russian Seedance prompt wording, role binding, and compact translation. Keep reference tags unchanged when translating surrounding prose. The tokens in these tables and templates are examples, not attached assets or universal syntax. Before adapting them, follow [Using Reference Examples](../surface-prompt-profiles.md#using-reference-examples) and preserve the actual binding token, whatever its script or format.
 
 | Function | Russian | English meaning |
 |---|---|---|
@@ -65,25 +65,17 @@ Use this reference for Russian Seedance prompt wording, role binding, and compac
 
 ## Russian Dialogue Notes
 
-Field-observed from Russian community testing (Habr, vc.ru); test per surface, never promise results. Russian-language coverage reports multi-language dialogue support including Russian, but the official ByteDance pages in the source registry do not enumerate dialogue languages - treat Russian dialogue as field-observed, and long Russian phrases as a reported weak spot.
+Russian is not included in the model card's Table 20; that absence establishes neither poor performance nor a word limit. Preserve the user's Cyrillic dialogue and intended register. Do not transliterate or shorten it without agreement. Time the actual spoken line and review the returned speech with a Russian speaker; mark naturalness unreviewed if that review is unavailable.
 
-| Rule | Practice |
-|---|---|
-| Короткие реплики | Split monologues into lines of a few words: `Она тихо говорит: «Я нашла его»` - long phrases drift into noise |
-| Кириллица vs транслит | The community tested pure Cyrillic, transliteration (`Ya nashla yego`), and hybrids - results vary by surface; try Cyrillic first, transliteration as the field-reported fallback when Cyrillic degrades |
-| Один говорящий | One speaker per generation for reliable lip-sync; locked medium close-up during the line |
-| Полная озвучка | A fully voiced Russian piece is not reliably achievable in-model: generate with room tone or short lines, then dub and lip-sync in post (see `audio-post-delivery.md`) |
-| Доступ из РФ | Access from Russia typically runs through third-party wrappers - treat their model names, prices, and limits as wrapper-specific, never official |
-| Бюджет реплики | ~10-15 words maximum per phrase, fewer is safer; long phrases drift into noise |
-| Аудио-референс | On surfaces that accept a voice clip, attach your own recorded or licensed Russian voice so the model lip-syncs to it instead of synthesizing - the field-reported fix for English-accented articulation |
+Stable framing and one speaker turn are useful test conditions. Offer native generation, a supported rights-cleared voice-reference workflow, or post dubbing according to the brief. Do not promise reference playback or declare an entire Russian production impossible. See [audio-guide](../audio-guide.md) and [calibration protocol](../sync-budget-protocol.md).
 
 ## Slop Traps
 
-Общий вывод сообщества: абстрактные оценочные слова дестабилизируют генерацию — модель не понимает, какой элемент подчеркнуть. Каждое слово-ощущение разбирается на физические элементы, которые его создают (глагол камеры + скорость + точка зрения, источник света + направление + поведение).
+Редакторский приём: заменяйте расплывчатое прилагательное, если из него непонятно, что должно быть видно или слышно. Назовите действие, кадрирование, источник света или звук, нужные именно этой сцене. Это помогает проверить замысел, но не доказывает, как модель обрабатывает прилагательные, и не гарантирует улучшения видео.
 
 | Штамп | Пишите вместо него |
 |---|---|
-| `кинематографичный` | крупность, движение камеры, источник света и цветокор: `широкий общий план, медленный наезд, низкое теплое солнце, тил-энд-оранж` |
+| `кинематографичный` | решения для конкретной сцены: `камера неподвижна на уровне её глаз; тиканье предшествует улыбке; в финале выражение лица сохраняется` |
 | `эпичный` | физический масштаб: размер толпы, расстояние до объекта, высота сооружения |
 | `потрясающий / захватывающий` | тот единственный контраст или момент раскрытия, который это оправдывает |
 | `красивый` | цвет, фактура, материал, поведение света |

@@ -1,6 +1,6 @@
 # Korean Vocabulary
 
-Use this reference for Korean Seedance prompt wording, role binding, and compact prompt compression. Keep reference tags unchanged: `@Image1`, `@Video1`, and `@Audio1` stay literal.
+Use this reference for Korean Seedance prompt wording, role binding, and compact prompt compression. Keep reference tags unchanged when translating surrounding prose. The tokens in these tables and templates are examples, not attached assets or universal syntax. Before adapting them, follow [Using Reference Examples](../surface-prompt-profiles.md#using-reference-examples) and preserve the actual binding token, whatever its script or format.
 
 | Function | Korean | English meaning |
 |---|---|---|
@@ -75,14 +75,17 @@ Use this reference for Korean Seedance prompt wording, role binding, and compact
 
 `@Image1은 오리지널 인물을 고정한다. @Video1은 카메라 움직임만 참고하고 인물, 장소, 브랜드는 복사하지 않는다. @Audio1은 템포와 분위기만 참고한다.`
 
-## Timeline Template
+## Shot Order Template
 
-The bracket-timeline skeleton is the Chinese community's long-prompt pattern (`vocab/zh` Timeline Template, field-observed on 即梦/Dreamina). Below is the same structure in Korean: the *structure* is what is field-observed, a Korean-specific version is not independently reported, so treat it as a starting scaffold rather than a community guarantee.
+The official Seedance 2.0 prompt guide (Volcengine document 82379/2222480) organizes multi-shot content as 镜头1, 镜头2, 镜头3 in event order without forcing a duration on each shot, and says the model's support for precise time ranges such as 0–3 seconds is unstable, so forced durations can produce abnormal output (recorded from a mirror on 2026-09-26; recheck the live page before quoting). The Chinese community's bracket-timeline skeleton with second ranges is a field-observed convention that this official statement contradicts. On 2.0, write no absolute seconds; the duration belongs to the surface setting. Korean can use 샷 1 as the same device; a Korean-specific format is not independently reported, so treat this as a scaffold. Inside each shot, lead with the camera move or cut, then the subject's action and expression, then any change of position or space, then that shot's sound. Keep reference tags unchanged:
 
 ```
 [스타일] [매체·질감·색조를 한 문장으로]
-[타임라인] 0-3s: [화면+카메라+사운드]; 3-6s: [화면+카메라+사운드]; 6-10s: [화면+카메라+사운드]
+샷 1: [카메라 움직임 또는 전환 방식], [주체의 동작과 표정], [위치나 공간 변화], [이 샷의 사운드]
+샷 2: [새 앵글로 컷], [주체의 동작과 표정], [위치나 공간 변화], [이 샷의 사운드]
+샷 3: [카메라 움직임 또는 전환 방식], [완료된 끝 상태], [이 샷의 사운드]
 [사운드] [대사/환경음/효과음/음악 없음]
+[제약] 자막 없음, 로고 없음, 워터마크 없음
 [참조] @Image1 로 인물 동일성 고정; @Video1 은 카메라 움직임만 참조; @Audio1 은 템포만 참조
 ```
 
@@ -111,43 +114,19 @@ Use these when the Korean prompt is part of a v6 sequence project, continuation,
 
 ## Dialogue Notes
 
-Field-observed and under-tested as of 2026; test per surface, never promise results. Korean dialogue is supported but quantitatively under-reported - do not assume parity with Mandarin or English.
-
-- Keep to one short line, about one breath; treat Korean as the weaker tier until tested on the active surface.
-- 대사 형식: 화자 이름 + 동작 + 큰따옴표 대사, with the speech level already decided (see below). Example: `남자: 고개를 들며 "다시 한 번만요."` (해요체). Quotation marks separate the words to be spoken from the performance direction.
-- Reference tags stay Latin inside a Korean prompt: `@Image1`, never `@이미지1`. No surface documents translated Korean tags; the localized `@图片1` family belongs to Chinese-UI surfaces only.
-- For reliable Korean voice, prefer a voice reference (attach the spoken line so the model lip-syncs to it) or plan a post-dub.
+No validated language-wide line ceiling is established here. Preserve the user's exact dialogue and intended register. Time the spoken performance rather than treating written counts as seconds. A short speaker turn and stable framing are useful starting conditions; review pronunciation, performance, and visible sync separately. See [audio-guide](../audio-guide.md) for task-scoped benchmark evidence. Voice references and post dubbing are options, not mandatory remedies for this language. Reference tags such as `@Image1` stay unchanged.
 
 ## Speech Level (말투)
 
-Korean has no neutral register. Every spoken line commits to a speech level, so leaving it unstated does not avoid the decision - it hands it to the model. Declare one.
+Preserve the user's wording and characterization. For newly drafted speech, choose 합니다체, 해요체, or an appropriate informal form from the relationship, situation, and intended tone. These examples are not an exhaustive account of Korean speech levels, and no register has a fixed syllable multiplier. A deliberate shift can express a change in relationship; do not automatically flatten it.
 
-This is a budget decision as well as a characterization one. The reliable-sync budget in `[ref:audio-guide]` is counted in syllables, and the same sentence costs a different number of them at each level:
-
-| 같은 뜻 (same meaning) | 반말 → 해요체 → 합니다체, 음절 수 (syllable count) |
-|---|---|
-| thank you | 고마워 (3) → 고마워요 (4) → 감사합니다 (5) |
-| it's done | 끝났어 (3) → 끝났어요 (4) → 끝났습니다 (5) |
-| I don't know | 몰라 (2) → 몰라요 (3) → 모릅니다 (4) |
-| come here | 이리 와 (3) → 이리 오세요 (5) → 이리 오십시오 (6) |
-
-합니다체 runs roughly 1.5-2x the syllables of 반말 for identical content. On a language already flagged as the weaker sync tier, an unconsidered formal register can spend the whole budget on politeness endings.
-
-Choosing:
-
-- **합니다체** - news, announcements, corporate and public-facing VO, a subordinate addressing a superior. Most formal, most syllables.
-- **해요체** - the safe default for a single-line commercial or a stranger-to-stranger exchange. Polite without the full formal cost.
-- **반말** - close friends, family, a character speaking to a child, internal monologue. Shortest, and wrong to a Korean viewer if the relationship does not license it.
-
-With two speakers, the pair of levels *is* the relationship: senior to junior in 반말 answered in 해요체 reads as a hierarchy, both in 해요체 reads as peers or strangers. Keep each character's level consistent across a sequence - drifting between levels mid-project reads as a translation error, not a character choice, and it is the kind of continuity that no frame-level QC catches.
-
-If the user has not stated a level and the relationship does not imply one, ask once rather than defaulting silently; it is one question and it changes both the performance and the syllable budget.
+고마워, 고마워요, and 감사합니다 illustrate different wording and social use. Their lengths do not establish a universal cost ratio. Measure the actual delivery with pauses, and do not choose casual speech merely to save syllables. If the relationship is unclear and materially changes the line, ask one focused question or offer labeled alternatives. Naturalness remains pending a qualified Korean-language review.
 
 ## Aesthetic Registers (미학)
 
-Korean carries aesthetic concepts with no one-word English equivalent. They are legitimate intent words — but they are intent, not instruction: alone in a prompt they behave like any feel-word and destabilize the output. Name the register, then spend the words on the physical elements that produce it, exactly as the Slop Traps table repairs feel-words.
+Korean aesthetic terms can carry useful creative intent. Preserve the user's chosen term; when the intended shot is unclear, ask what matters or propose a scene-specific visible or audible detail. The examples below are authored possibilities, not definitions of a culture or mandatory ingredients. This is editorial guidance for making direction reviewable, not evidence that these terms destabilize Seedance output. Independent language and production-language review remains pending.
 
-| Register | Decompose into |
+| Term | One possible scene treatment |
 |---|---|
 | 한 (han — grief that stays) | stillness and weight, not tears: `움직임을 멈춘 인물, 긴 그림자, 식은 밥상, 빗소리만` |
 | 정 (jeong — accumulated closeness) | small physical care between people: `말없이 반찬을 옮겨 주는 손, 어깨에 걸쳐 주는 외투` |
@@ -157,18 +136,18 @@ Korean carries aesthetic concepts with no one-word English equivalent. They are 
 
 ## Slop Traps
 
-커뮤니티 공통 결론: 추상적인 품질 단어는 모델이 어떤 요소를 강조해야 할지 판단하지 못하게 만들어 출력을 불안정하게 한다. 느낌 단어는 그 느낌을 만드는 물리 요소(카메라 동사+속도+시점, 광원+방향+행동)로 분해한다.
+편집 지침: 의도가 불분명할 때 추상적인 형용사에 보이는 동작이나 들리는 소리를 덧붙인다. 의도를 전달하는 스타일 이름은 남겨도 된다. 이는 제작 의도를 확인하기 위한 방법이며, 모델이 형용사를 이해하지 못한다는 실증이나 영상 안정성·생성 비용 개선의 보장이 아니다. 아래 예시는 공통 처방이 아니다. 느린 돌리 인, 안개, 틸 앤 오렌지를 자동으로 추가하지 않는다. 사용자가 정한 스타일, 표현의 강도, 대사, 참조 태그, 설정을 유지한다. 해석에 따라 장면이 크게 달라질 때만 차이가 분명한 선택지를 소수 제시한다. 선택을 위임받았다면 그 범위에서 결정한다.
 
-| 상투어 | 바꿔 쓰기 |
+| 상투어 | 장면에 맞춰 덧붙일 지시 |
 |---|---|
-| `영화 같은 / 시네마틱한` | 샷 크기·카메라 움직임·광원·색보정으로 쓴다: `넓은 설정 샷, 느린 돌리 인, 낮은 노을빛, 틸 앤 오렌지` |
-| `감성적인 / 감성` | 감성을 만드는 물리 요소로 쓴다: `해질녘 역광, 긴 그림자, 멀리서 들리는 기차 소리` |
-| `분위기 있는` | 분위기를 만드는 요소를 지목한다: `얇은 안개, 젖은 노면 반사, 낮은 환경음` |
-| `아름다운` | 색·질감·구도·빛의 움직임으로 쓴다 |
-| `웅장한` | 물리적 규모로 쓴다: 군중 수, 렌즈 거리, 구조물 높이 |
-| `고퀄리티 / 고화질 / 8K` | 삭제한다. 해상도는 설정이지 문장이 아니다 |
-| `압도적인` | 압도하는 한 가지 대비나 드러남을 쓴다 |
-| `몽환적인`(단독) | 몽환을 만드는 요소로 쓴다: `떠다니는 먼지, 볼류메트릭 라이트, 느린 부유` |
-| `미친 퀄리티` | 삭제한다. 품질은 요청하는 것이 아니다 |
-| `멋있는` | 구체적인 포즈·움직임·카메라로 쓴다 |
-| `다이내믹한` | 움직임의 종류·속도·끝점으로 쓴다 |
+| `영화 같은 / 시네마틱한` | 시계 수리공이 째깍 소리를 듣고 미소 짓는 장면이라면: `눈높이에 카메라를 고정한다. 시계 소리가 난 뒤 그녀가 미소 짓는다. 마지막에는 그 표정을 유지한다`. 이 장면의 한 가지 선택이며, 모든 연기를 조용하고 절제되게 만드는 규칙이 아니다 |
+| `감성적인 / 감성` | 어떤 반응을 보여 줄지 정하고 동작이나 소리로 쓴다. 기쁨이라면 웃음소리나 큰 몸짓도 선택할 수 있다. 노을이나 쓸쓸함을 자동으로 더하지 않는다 |
+| `분위기 있는` | 필요한 분위기를 확인하고 그 장소의 소리나 빛을 고른다. 작업실이라면 `공구를 내려놓은 뒤에도 시계 소리가 들린다`. 안개나 젖은 노면은 필수가 아니다 |
+| `아름다운` | 선택한 스타일에 맞춰 색·질감·구도·빛의 움직임을 구체화한다. 부드러운 빛만으로 제한하지 않는다 |
+| `웅장한` | 규모가 목적이면 인물과 공간의 크기 관계를 쓴다. 다른 뜻이라면 확인하고 군중을 자동으로 늘리지 않는다 |
+| `고퀄리티 / 고화질 / 8K` | 실제 납품 해상도와 확인 항목을 기록하고 지원되는 설정을 확인한다. 프롬프트의 숫자만으로 출력 해상도가 보장되지는 않는다 |
+| `압도적인` | 인상을 만드는 대비·동작·드러나는 순간을 쓴다. 요청된 강한 표현을 약화하지 않는다 |
+| `몽환적인`(단독) | 무엇이 평소와 다른지 정하고 그 움직임이나 소리를 쓴다. 입자나 안개를 자동으로 더하지 않는다 |
+| `미친 퀄리티` | 이 장면에서 확인할 항목을 쓴다. 예를 들어 시계 눈금의 가독성이나 동작의 연결이다. 이는 요구 사항이며 이미 확인된 결과가 아니다 |
+| `멋있는` | 그 인물에게 맞는 자세·동작·보여 주는 방식을 고른다 |
+| `다이내믹한` | 움직임의 종류·속도·끝점을 쓴다. 피사체의 움직임과 카메라의 움직임을 구분한다 |

@@ -35,7 +35,7 @@ Roles (Cinema Studio crew): creative-director = director and sign-off; screenwri
 ### Phase 2 Pre-production
 - Owners: production-designer (bibles, references), cinematographer (shot list, boards), performance-director (performance bible and per-shot briefs, performer consent), creative-director (look), producer (schedule), continuity-supervisor (bible audit, ledger).
 - Artifacts: character, world, style, wardrobe, prop and location bibles with reference sheets; shot list with IDs; storyboard; animatic with temp voice and temp music; voice cast list; production folder; schedule by sequence.
-- Pipeline owners: cinematography (shot design), photoreal-humans + asian-human-reference (people), performance-direction (acting, motion transfer).
+- Pipeline owners: cinematography (shot design), photoreal-humans + asian-human-reference (people), performance-direction (acting, motion transfer), cast-real-people (real consented faces: signed release and identity lock before any generation; owner casting-director).
 - Method: bibles-and-continuity.md, previs-storyboard.md; period research per genres-and-styles.md.
 - Gate G2: every recurring character, location and prop has an approved reference set; animatic runtime within 5 percent of target; consents on file; the user's yes on the credit quote.
 

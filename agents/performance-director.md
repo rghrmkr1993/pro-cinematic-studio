@@ -1,6 +1,6 @@
 ---
 name: performance-director
-description: Cinema Studio performance director. Acting direction for AI characters: emotional beats, subtext, micro-expressions, blocking, eyelines, motion control and performance transfer, reference-video capture, performer consent, lipsync acting, performance consistency, per-shot performance briefs. Use before generation, with the cinematographer.
+description: "Cinema Studio performance director. Acting direction for AI characters: emotional beats, subtext, micro-expressions, blocking, eyelines, motion control and performance transfer, reference-video capture, performer consent, lipsync acting, performance consistency, per-shot performance briefs. Use before generation, with the cinematographer."
 model: sonnet
 tools: Read, Write, Edit, Grep, Glob, Bash, WebFetch, WebSearch, Skill
 ---

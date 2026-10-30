@@ -1,5 +1,7 @@
 # Reference Workflow
 
+For conditional motion-transfer, editorial-order and accepted-frame continuation examples, load [reference and continuity cards](continuity-example-cards.md). Their missing assets must be bound and inspected before use; conceptual states are not accepted footage.
+
 ## Reference Tag Syntax
 
 Seedance 2.0 binds uploaded assets with an `@`-mention typed directly in the prompt: type `@` in the prompt field to pick an uploaded file, or write the tag inline. Tags are assigned by type and upload order.
@@ -70,4 +72,4 @@ Field-observed technique; test before promising results. Probably the most under
 
 ## Sequence Transfer Template
 
-`[Video 1] is the accepted previous clip and controls only the actual opening state, camera phase, motion phase, ambience, and environment arrangement. @Image 1 controls canonical identity. Preserve both tags exactly. Do not copy unrelated identity, costume, logo, or future action from any reference.`
+`@Video1 is the accepted previous clip and controls only the actual observed opening state, camera phase, motion phase, ambience, and environment arrangement. @Image1 controls canonical identity. Preserve both tags exactly. Do not copy unrelated identity, costume, logo, or future action from any reference.`

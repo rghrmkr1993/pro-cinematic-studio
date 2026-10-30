@@ -1,8 +1,8 @@
-# Pro Cinematic Studio 1.0.1
+# Pro Cinematic Studio 1.1.0
 
 > **Third-party licences:** this repo is public, so the components that came with no licence file (HyperFrames, the edit studio, Adil's skills, the Seedance packs), and Remotion with its company-size rule, are visible to anyone. If any of their owners object, the repo can be made private in GitHub settings. See THIRD_PARTY.md for every component and its source.
 
-A Claude Code plugin that bundles a full AI film and video studio: 71 skills and 14 crew agents, wired together so a brief becomes a finished, graded, scored and delivered film or ad. Generation runs on Higgsfield (Seedance, Kling, Cinema Studio and others); voice runs on ElevenLabs; editing runs locally in Python and ffmpeg.
+A Claude Code plugin that bundles a full AI film and video studio: 72 skills and 15 crew agents, wired together so a brief becomes a finished, graded, scored and delivered film or ad. Generation runs on Higgsfield (Seedance, Kling, Cinema Studio and others); voice runs on ElevenLabs; editing runs locally in Python and ffmpeg.
 
 Licence: proprietary, owner licensed. Third-party components keep their own licences, see THIRD_PARTY.md.
 
@@ -10,7 +10,7 @@ Licence: proprietary, owner licensed. Third-party components keep their own lice
 
 **How it works**
 1. You describe a scene, a brief or upload images; the `creative-studio` skill does intake, routing, the quality bar (85 drafts, 90 finals) and the credit gate.
-2. The creative-director leads 13 crew agents in pipeline order, each pulling from the 71-skill library; only prompt-engineer, voice-director and composer-sound-designer can spend credits, and only after your yes.
+2. The creative-director leads 14 crew agents in pipeline order, each pulling from the 72-skill library; only prompt-engineer, voice-director and composer-sound-designer can spend credits, and only after your yes.
 3. Higgsfield MCP makes image and video, ElevenLabs MCP makes voice, music and SFX, and local ffmpeg + Python edits, grades and captions.
 
 ## Entry point
@@ -23,7 +23,7 @@ Org chart: the creative-director leads; every other agent reports to it.
 
 1. producer: schedule, credit budget, tracking, legal and delivery checklists.
 2. screenwriter: script and scene breakdown.
-3. production-designer + cinematographer + performance-director (in parallel): world and look; shots, lenses and light; acting and blocking.
+3. production-designer + cinematographer + performance-director + casting-director (in parallel): world and look; shots, lenses and light; acting and blocking; real consented faces (consent files, identity locks). The casting-director works with the production-designer and hands approved identity locks to the prompt-engineer.
 4. prompt-engineer: turns the above into model-ready prompts.
 5. vfx-artist + voice-director + composer-sound-designer (in parallel): VFX and compositing; voices and languages; music and sound.
 6. editor: assembly and edit.
@@ -33,8 +33,8 @@ Org chart: the creative-director leads; every other agent reports to it.
 
 ## Contents
 
-- 71 skills in `skills/`: creative-studio, film-studio, cinematography, the Higgsfield and Seedance 2.0 packs (15 style folders, 01-cinematic to 15-real-estate), human realism and Indic-language skills, voice, music and sound, the edit trio (edit-director, edit-gen, edit-voice), color, VFX, performance, titles, legal, production tracking, motion, HyperFrames (hyperframes plus 13 hyperframes-* skills), Remotion (10 remotion-* skills, licence condition below), graphics, ads and faceless-video skills.
-- 14 agents in `agents/`.
+- 72 skills in `skills/`: creative-studio, film-studio, cinematography, the Higgsfield and Seedance 2.0 packs (15 style folders, 01-cinematic to 15-real-estate), human realism, real-face casting (cast-real-people) and Indic-language skills, voice, music and sound, the edit trio (edit-director, edit-gen, edit-voice), color, VFX, performance, titles, legal, production tracking, motion, HyperFrames (hyperframes plus 13 hyperframes-* skills), Remotion (10 remotion-* skills, licence condition below), graphics, ads and faceless-video skills.
+- 15 agents in `agents/`.
 
 ## Required connectors
 
@@ -57,6 +57,7 @@ Connect these in Claude Code yourself. No credentials are stored in this package
 - Credits are spent only after an explicit yes to a stated price.
 - Originals only: no copying existing films, characters, brands or artists.
 - Consent: no real person's face, voice or likeness without documented consent.
+- Real faces require a signed likeness release; not legal advice.
 - Nothing is published, uploaded or sent without an explicit yes.
 
 ## Install and uninstall
@@ -73,7 +74,7 @@ Install on a clean machine (or after you remove or rename the personal copies):
 
 One-step install once the package is in a marketplace (Claude Code 2.1.275 or later): `/plugin install pro-cinematic-studio --marketplace <owner>/<repo>`
 
-1. Unzip `pro-cinematic-studio-1.0.1.zip` to a folder, for example `C:/plugins/pro-cinematic-studio`.
+1. Unzip `pro-cinematic-studio-1.1.0.zip` to a folder, for example `C:/plugins/pro-cinematic-studio`.
 2. Wrap it in a local marketplace (a folder holding `.claude-plugin/marketplace.json` that lists the plugin with `"source": "./pro-cinematic-studio"`), then:
 
        claude plugin marketplace add <marketplace-folder>
@@ -109,7 +110,7 @@ Plain English words that matched skill names in the scan (image, qa, spec, start
 
 ## Changelog
 
-- Planned for next release: 1.1.0: cast-real-people skill and casting-director agent (consented real faces).
+- 1.1.0: cast-real-people skill and casting-director agent (consented real faces only). 72 skills, 15 agents. All bundled skills and agents refreshed from source. Real faces require a signed likeness release; not legal advice.
 - 1.0.1: adds story-and-screenplay (71 skills); refreshed creative-studio, film-studio and the crew agents from source; bundled-skill paths use ${CLAUDE_PLUGIN_ROOT}.
 - 1.0.0: first release. 70 skills, 14 agents, wired internally; third-party notices preserved; `${CLAUDE_PLUGIN_ROOT}` paths for bundled-skill references.
 

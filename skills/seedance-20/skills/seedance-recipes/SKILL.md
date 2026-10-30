@@ -21,9 +21,11 @@ metadata:
 
 # seedance-recipes
 
+Before producing prompt text, a prompt-ready block, a rewrite, an example, or a compiled clip, load the [Director's Read](../../references/directors-read.md), classify the brief, and complete its canonical narrative or non-narrative record. Translate that record into visible or audible carriers and keep its internal labels out of final generation prose.
+
 Use recipes as starting patterns, not rigid prompt templates. Pick the recipe that matches the user's outcome, then customize subject, action, camera, lighting, audio, and constraints. Recipes should preserve the one-beat discipline of a short clip.
 
-Load `[ref:genre-guides]` for genre patterns, `[ref:examples-by-mode]` when the user needs copy-ready examples, `[ref:shot-list-continuity]` for professional multi-shot sequences or commercials, and `[ref:multilingual-community-examples]` when the recipe should reflect Chinese/Russian/Japanese/Korean/Spanish community-style structures.
+Load [genre-guides](../../references/genre-guides.md) for genre patterns, [examples-by-mode](../../references/examples-by-mode.md) when the user needs copy-ready examples, [shot-list-continuity](../../references/shot-list-continuity.md) for professional multi-shot sequences or commercials, and [multilingual-community-examples](../../references/multilingual-community-examples.md) when the recipe should reflect Chinese/Russian/Japanese/Korean/Spanish community-style structures.
 
 ## Intent
 
@@ -70,3 +72,5 @@ When sequence state is present, recipes must inherit the story spine, current cl
 ## Output Contract
 
 Return one selected recipe, why it fits, the customized prompt skeleton, compact final prompt, and campaign/delivery notes when relevant.
+
+For worked examples with a chosen approach, copyable prompt, evidence boundary and failure checks, load [product and process cards](../../references/product-example-cards.md). These are authored concepts, not observed generation results.

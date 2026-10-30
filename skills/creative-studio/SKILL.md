@@ -83,7 +83,7 @@ One chain; each stage has one owner, so there is never a doubt. Default named fi
 1. Brief and intake: creative-studio (section 2); owner creative-director.
 2. Story and script: story-and-screenplay (default, casual scene to prompt), then film-studio (story-and-script.md) for long-form, plus indic-languages for Indian-language scripts; owner screenwriter.
 3. Shot design (camera, lens, light, colour): cinematography, following cinematography/references/scene-to-shot-reasoning.md and the fps rules in cinematography/references/frame-rates-deep.md; owner cinematographer.; works with performance-director on blocking and eyelines
-4. People realism and bibles: photoreal-humans + asian-human-reference; owner production-designer.
+4. People realism and bibles: photoreal-humans + asian-human-reference; owner production-designer. Real consented faces (actors, owner, clients, models): cast-real-people, signed release first, identity lock handed to prompt-engineer; owner casting-director, with the production-designer, before prompt writing.
 5. Performance direction: performance-direction (beats, subtext, eyelines, Kling motion control or Runway Act-Two transfer, performer consent, lipsync acting; asian-human-reference expressions, indic-languages for lipsync); owner performance-director, with the cinematographer, before generation.
 6. Prompt writing: higgsfield-master dialects; higgsfield-timed-prompts for multi-shot timecoded Seedance (style packs 01 to 15 and seedance-20 as needed); run the 512 check from cinematography/references/prompt-compression.md before any generation; owner prompt-engineer.
 7. Generation: higgsfield-master, via edit-gen (Elements consistency) or direct; owner prompt-engineer (user's yes first).

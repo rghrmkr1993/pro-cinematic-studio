@@ -20,11 +20,15 @@ metadata:
 
 # seedance-vocab-ko
 
-Use Korean cinematic vocabulary when the user asks for Korean prompt wording, bilingual delivery, compact translation, or production vocabulary for camera, lighting, action, VFX, audio, and constraints. Preserve reference tags exactly: `@Image1`, `@Video1`, and `@Audio1` must not be translated.
+Before producing prompt text, a prompt-ready block, a rewrite, an example, or a compiled clip, load the [Director's Read](../../references/directors-read.md), classify the brief, and complete its canonical narrative or non-narrative record. Translate that record into visible or audible carriers and keep its internal labels out of final generation prose.
+
+Use Korean cinematic vocabulary when the user asks for Korean prompt wording, bilingual delivery, compact translation, or production vocabulary for camera, lighting, action, VFX, audio, and constraints. Preserve actual reference tags exactly; their spelling is independent of the prompt language.
+
+Before adapting a reference example below, load [Using Reference Examples](../../references/surface-prompt-profiles.md#using-reference-examples). Bind its placeholders to real assets by the requested role, then preserve the actual token, including its script, case, spacing and punctuation. A written example token does not attach a file.
 
 ## Intent
 
-Korean users bring 감성 - a feeling-culture with exacting visual taste. The soul here is making 감성 physical: every mood word the user offers returns as light, framing, and timing they can recognize as exactly what they felt.
+Korean prompt direction should preserve useful mood or style terms and clarify ambiguous intent through observable light, framing, blocking, or timing. Keep the relationship and speech level explicit whenever dialogue is added. The shipped independent review artifact is empty, so treat these choices as working production wording pending locale-specialist review.
 
 ## Usage Rule
 
@@ -44,11 +48,11 @@ Translate the production intention rather than every English word. Keep the Kore
 
 ## Speech Level Rule
 
-The moment a prompt contains dialogue, load Speech Level (말투) in `references/vocab/ko.md` and declare one level per speaker - 합니다체, 해요체, or 반말. Korean has no neutral register, and the syllable cost differs enough to break the sync budget (고마워 3 → 감사합니다 5).
+Preserve user-supplied dialogue. When drafting or adapting speech, load Speech Level (말투) in [the vocabulary guide](../../references/vocab/ko.md) and keep the relationship and intended tone explicit. Offer register choices only where they affect the brief. Measure the actual spoken line; do not use a fixed multiplier or change politeness to fit an invented sync budget. Record any unresolved locale-review need.
 
 ## De-Slop Rule
 
-When the prompt leans on `영화 같은`, `감성적인`, `분위기 있는`, `웅장한`, or `고퀄리티`, load the Slop Traps table in `references/vocab/ko.md` and decompose each into the physical elements that produce it - 카메라 동사+속도+시점, 광원+방향+행동.
+When an adjective leaves the intended shot unclear, load Slop Traps in [Korean vocabulary](../../references/vocab/ko.md). Preserve a useful style or aesthetic term and add only the scene-specific action, framing, light, or sound needed to clarify it. The table offers authored options, not a default look or a proven model-performance rule. Keep the user's chosen energy, dialogue, reference tags, and settings. Offer distinct choices only when the ambiguity changes the scene; if the user delegated the choice, decide within that scope.
 
 ## Output Contract
 

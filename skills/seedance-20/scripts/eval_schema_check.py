@@ -2,8 +2,12 @@
 from __future__ import annotations
 
 import argparse
-import json
 from pathlib import Path
+
+if __package__:
+    from .strict_json import diagnostic_text, load_json
+else:
+    from strict_json import diagnostic_text, load_json
 
 REQUIRED = ["id", "prompt", "expected_output", "assertions", "skills_expected_to_activate", "failure_mode"]
 REQUIRED_IDS = {
@@ -133,24 +137,35 @@ REQUIRED_IDS = {
     "felt_intent_survives_compression",
     "observed_state_from_attached_frame",
     "capsule_compaction_long_project",
+    "continuous_shape_gets_one_paragraph",
+    "dialogue_storyboard_offers_ladder_with_split",
+    "zh_storyboard_uses_shot_order_not_second_ranges",
+    "newer_line_timestamp_request_stays_in_boundary",
+    "domestic_thriller_prescreened_before_delivery",
+    "named_legal_scene_prescreened_documents_unnamed",
+    "accident_endpoint_rewritten_as_deliberate_action",
+    "short_drama_hook_states_premise_by_shot_two",
+    "figurative_reaction_directed_as_muscles_with_lock_line",
+    "storyboard_prompt_is_rendered_from_a_shot_table",
+    "reaction_shot_is_a_reverse_from_the_landmark_side",
 }
 
 
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("repo", nargs="?", default=".")
-    parser.add_argument("--strict", action="store_true")
     args = parser.parse_args()
 
-    path = Path(args.repo) / "evals" / "evals.json"
+    root = Path(args.repo).resolve()
+    path = root / "evals" / "evals.json"
     if not path.exists():
         print("Missing evals/evals.json")
         return 1
 
     try:
-        data = json.loads(path.read_text(encoding="utf-8"))
+        data = load_json(path, expected_type=dict, root=root)
     except Exception as exc:
-        print(f"Invalid JSON: {exc}")
+        print(diagnostic_text(f"Invalid JSON: {exc}"))
         return 1
 
     cases = data.get("cases")
@@ -183,10 +198,10 @@ def main() -> int:
     if errors:
         print("Eval schema errors:")
         for error in errors:
-            print(f"- {error}")
+            print(diagnostic_text(f"- {error}"))
         return 1
 
-    print(f"Eval schema passed: {len(cases)} cases.")
+    print(diagnostic_text(f"Eval schema passed: {len(cases)} cases."))
     return 0
 
 

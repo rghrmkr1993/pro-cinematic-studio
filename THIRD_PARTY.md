@@ -39,7 +39,7 @@ The owner states they hold the licence for this package as a whole. All third-pa
 
 ## Owner-authored skills with `license: MIT` frontmatter
 
-color-grading, creative-studio, film-legal-distribution, film-studio, higgsfield-master, indic-languages, music-and-sound, performance-direction, photoreal-humans, production-tracking, title-and-key-art, vfx-compositing, voice-studio declare `license: MIT` in SKILL.md. This differs from the plugin's proprietary licence. Left unchanged.
+cast-real-people, color-grading, creative-studio, film-legal-distribution, film-studio, higgsfield-master, indic-languages, music-and-sound, performance-direction, photoreal-humans, production-tracking, title-and-key-art, vfx-compositing, voice-studio declare `license: MIT` in SKILL.md. This differs from the plugin's proprietary licence. Left unchanged.
 
 ## Flag summary
 

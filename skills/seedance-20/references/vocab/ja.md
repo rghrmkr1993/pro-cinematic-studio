@@ -1,6 +1,6 @@
 # Japanese Vocabulary
 
-Use this reference for Japanese Seedance prompt wording, role binding, and compact prompt compression. Keep reference tags unchanged: `@Image1`, `@Video1`, and `@Audio1` stay literal.
+Use this reference for Japanese Seedance prompt wording, role binding, and compact prompt compression. Keep reference tags unchanged when translating surrounding prose. The tokens in these tables and templates are examples, not attached assets or universal syntax. Before adapting them, follow [Using Reference Examples](../surface-prompt-profiles.md#using-reference-examples) and preserve the actual binding token, whatever its script or format.
 
 | Function | Japanese | English meaning |
 |---|---|---|
@@ -76,14 +76,17 @@ Use this reference for Japanese Seedance prompt wording, role binding, and compa
 
 `@Image1でオリジナル人物を固定する。@Video1はカメラの動きのみ参照し、人物・場所・ブランドはコピーしない。@Audio1はテンポと雰囲気のみ参照する。`
 
-## Timeline Template
+## Shot Order Template
 
-The bracket-timeline skeleton is the Chinese community's long-prompt pattern (`vocab/zh` Timeline Template, field-observed on 即梦/Dreamina). Below is the same structure in Japanese: the *structure* is what is field-observed, a Japanese-specific version is not independently reported, so treat it as a starting scaffold rather than a community guarantee.
+The official Seedance 2.0 prompt guide (Volcengine document 82379/2222480) organizes multi-shot content as 镜头1, 镜头2, 镜头3 in event order without forcing a duration on each shot, and says the model's support for precise time ranges such as 0–3 seconds is unstable, so forced durations can produce abnormal output (recorded from a mirror on 2026-09-26; recheck the live page before quoting). The Chinese community's bracket-timeline skeleton with second ranges is a field-observed convention that this official statement contradicts. On 2.0, write no absolute seconds; the duration belongs to the surface setting. Japanese can use ショット1 as the same device; a Japanese-specific format is not independently reported, so treat this as a scaffold. Inside each shot, lead with the camera move or cut, then the subject's action and expression, then any change of position or space, then that shot's sound. Keep reference tags unchanged:
 
 ```
 【スタイル】[媒介・質感・色調を一文で]
-【タイムライン】0-3s：[画面＋カメラ＋音]；3-6s：[画面＋カメラ＋音]；6-10s：[画面＋カメラ＋音]
+ショット1：[カメラの動きまたは切り替え方]、[主体の動作と表情]、[位置や空間の変化]、[このショットの音]
+ショット2：[新しいアングルへカット]、[主体の動作と表情]、[位置や空間の変化]、[このショットの音]
+ショット3：[カメラの動きまたは切り替え方]、[完了した終点]、[このショットの音]
 【音】[台詞／環境音／効果音／音楽なし]
+【制約】字幕なし、ロゴなし、透かしなし
 【参照】@Image1で人物の同一性を固定；@Video1はカメラの動きのみ参照；@Audio1はテンポのみ参照
 ```
 
@@ -112,46 +115,19 @@ Use these when the Japanese prompt is part of a v6 sequence project, continuatio
 
 ## Dialogue Notes
 
-Field-observed from 2026 community testing (note.com, Qiita); test per surface, never promise results. Japanese lip-sync is weaker than Mandarin and English.
-
-- No separate word-count is documented; treat Japanese as the weaker tier. Keep to one short line (一言), about one breath.
-- Japanese is mora-timed, so "word count" misleads - judge by sentence length and clarity, not word number.
-- 台詞の書式: 話者名＋動作＋「台詞」. Example: `男：ゆっくり顔を上げて「もう一度だけ」`. Keep the spoken line inside 「 」 so the model can separate performance direction from the words to be spoken.
-- Reference tags stay Latin inside a Japanese prompt: `@Image1`, never `@画像1`. No surface documents translated Japanese tags; the localized `@图片1` family belongs to Chinese-UI surfaces only.
-- For reliable Japanese voice, prefer a voice reference (attach the spoken line so the model lip-syncs to it) or plan a post-dub.
+No validated language-wide line ceiling is established here. Preserve the user's exact dialogue and intended register. Time the spoken performance rather than treating written counts as seconds. A short speaker turn and stable framing are useful starting conditions; review pronunciation, performance, and visible sync separately. See [audio-guide](../audio-guide.md) for task-scoped benchmark evidence. Voice references and post dubbing are options, not mandatory remedies for this language. Reference tags such as `@Image1` stay unchanged.
 
 ## Register (文体)
 
-Japanese dialogue commits to a register the same way Korean commits to a speech level: leaving it unstated does not avoid the decision, it hands the decision to the model. Declare one per speaker.
+Preserve the user's wording and characterization. For newly drafted speech, choose politeness, honorific or humble forms, and pronouns from the relationship, scene, and speaker's voice. These choices can overlap; they are not three mutually exclusive levels or fixed cost multipliers. Pronouns may be omitted when natural. A change in register can be intentional characterization, so flag unexplained changes without automatically correcting them.
 
-This is a budget decision as well as a characterization one. Japanese is mora-timed, the sync budget in `[ref:audio-guide]` is spent per mora, and the same sentence costs a different number of them at each register:
-
-| 同じ意味 (same meaning) | 普通体 → です・ます体 → 敬語, モーラ数 (mora count) |
-|---|---|
-| thank you | ありがとう (5) → ありがとうございます (10) |
-| understood | 分かった (4) → 分かりました (6) → かしこまりました (8) |
-| please come | 来て (2) → 来てください (6) → お越しください (7) |
-| I'll do it | やる (2) → やります (4) → いたします (5) |
-
-です・ます体 runs roughly 1.5x the morae of 普通体 for identical content, and full 敬語 can double it. On a language already flagged as the weaker sync tier, an unconsidered formal register can spend the whole budget on politeness endings.
-
-Choosing:
-
-- **敬語 (尊敬語・謙譲語)** - service staff to customers, corporate and public-facing VO, formal announcements, a subordinate addressing a superior. Most morae.
-- **です・ます体** - the safe default for a single-line commercial, presenter-to-camera, or a stranger-to-stranger exchange. Polite without the full honorific cost.
-- **普通体 (だ体)** - close friends, family, internal monologue, an older speaker to a younger one. Shortest, and too blunt for a Japanese viewer where the relationship does not license it.
-
-One axis is unique to Japanese: the first-person pronoun is itself register. 私 / 僕 / 俺 / わたくし each cast a different speaker, and a pronoun that contradicts the declared register (俺 inside 敬語, わたくし inside 普通体) reads as a dubbing error, not a character choice.
-
-With two speakers, the pair of registers *is* the relationship: a boss in 普通体 answered in です・ます体 reads as hierarchy, both in です・ます体 reads as peers or strangers. Keep each character's register and pronoun consistent across a sequence - drifting mid-project reads as a translation error, and it is the kind of continuity that no frame-level QC catches.
-
-If the user has not stated a register and the relationship does not imply one, ask once rather than defaulting silently; it is one question and it changes both the performance and the mora budget.
+Examples such as ありがとう and ありがとうございます illustrate different wording and social use, not a general doubling law. Measure the actual delivery, including pauses. Do not choose casual speech simply to save morae. If the relationship is unclear and materially changes the line, ask one focused question or offer labeled alternatives. Naturalness remains pending a qualified Japanese-language review.
 
 ## Aesthetic Registers (美学)
 
-Japanese carries aesthetic concepts with no one-word English equivalent. They are legitimate intent words — but they are intent, not instruction: alone in a prompt they behave like any feel-word and destabilize the output. Use them the way the Slop Traps table repairs feel-words — name the register, then spend the words on the physical elements that produce it.
+Japanese aesthetic terms can carry useful creative intent. Preserve the user's chosen term; when the intended shot is unclear, ask what matters or propose a scene-specific visible or audible detail. The examples below are authored possibilities, not definitions of a culture or mandatory ingredients. This is editorial guidance for making direction reviewable, not evidence that these terms destabilize Seedance output. Independent language and production-language review remains pending.
 
-| Register | Decompose into |
+| Term | One possible scene treatment |
 |---|---|
 | 間 (ma — the charged pause) | a held frame, an action that stops before the cut, one beat of room tone with no dialogue: `動作が止まり、二拍の沈黙、その後カットせずに保持` |
 | 侘び寂び (imperfect, weathered beauty) | material and age, not mood: `欠けた陶器、古い木の質感、苔、曇天の柔らかい光` |
@@ -162,18 +138,18 @@ Japanese carries aesthetic concepts with no one-word English equivalent. They ar
 
 ## Slop Traps
 
-コミュニティの共通認識：抽象的な形容詞は、モデルがどの要素を強調すべきか判断できないため、出力を不安定にする。感覚語は、その感覚を生む物理要素（動作動詞＋速度＋視点、光源＋方向＋挙動）に分解する。
+編集上の目安：意図が曖昧なときに、抽象的な形容詞を見える動きや聞こえる音で補う。役立つスタイル名は残してよい。これは制作意図を確認しやすくするための方法であり、モデルが形容詞を理解できないという実証でも、映像の安定性や生成費用の改善保証でもない。下の例を共通の処方箋にせず、スローなドリーイン、霧、ティール＆オレンジを自動で加えない。ユーザーが選んだスタイル、表現の強さ、台詞、参照タグ、設定を保つ。解釈によって場面が大きく変わる場合だけ、違いのある少数の選択肢を示す。選択を任されていれば、その範囲で決める。
 
-| 決まり文句 | 書き換え |
+| 決まり文句 | 場面に応じて補う指示 |
 |---|---|
-| `映画のような / 映画的` | ショットサイズ・カメラの動き・光源・色調で書く：`広い導入ショット、ゆっくりドリーイン、低い夕陽、ティール＆オレンジ` |
-| `エモい` | 感情を生む物理要素で書く：`夕暮れの逆光、長い影、遠くの電車の音` |
-| `雰囲気のある` | 雰囲気を作る要素を名指しする：`薄い霧、濡れた路面の反射、低い環境音` |
-| `美しい` | 色・質感・構図・光の挙動で書く |
-| `壮大な` | 物理的スケールで書く：群衆の人数、被写体との距離、建物の高さ |
-| `高品質 / 高画質 / 8K` | 削除する。解像度は設定であり、文章ではない |
-| `圧倒的な` | 圧倒する一つの対比か種明かし（リビール）を書く |
-| `幻想的な`（単独） | 幻想を作る要素を書く：`漂う塵、ボリュームライト、ゆっくりした浮遊` |
-| `神作画` | 動きで書く：`滑らかなフルアニメーションの一連の動き、そのあと静止` |
-| `かっこいい` | 具体的なポーズ・動き・カメラで書く |
-| `ダイナミック` | 動きの種類・速度・終点で書く |
+| `映画のような / 映画的` | 時計職人が時を刻む音を聞いてほほ笑む場面なら：`目の高さでカメラを固定。時計の音がしてから、彼女がほほ笑む。最後はその表情を保つ`。この場面の一案であり、すべての演技を静かに抑える規則ではない |
+| `エモい` | どんな反応を見せたいかを決め、その動作や音を書く。喜びなら笑い声や大きな身振りも選べる。夕暮れや寂しさを自動で足さない |
+| `雰囲気のある` | 必要な雰囲気を確かめ、その場の音や光を選ぶ。工房なら`工具を置いた後も、時計の音が聞こえる`。霧や濡れた路面は必須ではない |
+| `美しい` | 選んだスタイルに沿って色・質感・構図・光の挙動を具体化する。柔らかい光だけに限定しない |
+| `壮大な` | 規模を示したいなら人物と空間の比率を書く。別の意図なら確認し、群衆を自動で増やさない |
+| `高品質 / 高画質 / 8K` | 実際の納品解像度や確認項目を記録し、対応する設定を確認する。プロンプト中の数値だけで出力解像度は保証されない |
+| `圧倒的な` | 印象を生む対比・動作・見せる瞬間を書く。求められた強い表現を弱めない |
+| `幻想的な`（単独） | 何が通常と異なるかを決め、その振る舞いを書く。粒子や霧を自動で足さない |
+| `神作画` | この動きで確認する点を書く：`踏み出して着地するまで足の軌道がつながる`。希望するアニメーション様式を勝手に変更しない |
+| `かっこいい` | その人物らしいポーズ・動き・見せ方を選ぶ |
+| `ダイナミック` | 動きの種類・速度・終点を書く。被写体の動きとカメラの動きを区別する |

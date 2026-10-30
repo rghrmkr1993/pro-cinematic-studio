@@ -1,8 +1,8 @@
 # Chinese Vocabulary
 
-**Script variant: Simplified Chinese (简体中文, zh-Hans), mainland terminology.** Every phrase below is written for the mainland surfaces this skill targets. See Script Variant before using any of it in a Traditional-script deliverable.
+**Guide convention: primarily Simplified Chinese (简体中文, zh-Hans), with some Traditional-script examples.** This is the guide's writing convention, not a required prompt script or provider restriction. See Script Variant when choosing or adapting prompt or delivery text.
 
-Use this reference for Chinese Seedance prompt wording, role binding, and compact prompt compression. Keep reference tags unchanged: `@Image1`, `@Video1`, and `@Audio1` stay literal.
+Use this reference for Chinese Seedance prompt wording, role binding, and compact prompt compression. Keep reference tags unchanged when translating surrounding prose. The tokens in these tables and templates are examples, not attached assets or universal syntax. Before adapting them, follow [Using Reference Examples](../surface-prompt-profiles.md#using-reference-examples) and preserve the actual binding token, whatever its script or format.
 
 | Function | Chinese | English meaning |
 |---|---|---|
@@ -80,16 +80,19 @@ Use this reference for Chinese Seedance prompt wording, role binding, and compac
 
 `@图片1锁定原创人物身份与服装。@视频1仅参考运镜，不复制人物、地点或品牌。@音频1仅参考节奏与氛围。`
 
-On a Latin-tag surface, the same template with unchanged tags: `@Image1锁定原创人物身份。@Video1仅参考运镜。@Audio1仅参考节奏。` Never mix the two tag families in one prompt.
+Alternative illustration using Latin tokens: `@Image1锁定原创人物身份。@Video1仅参考运镜。@Audio1仅参考节奏。` These spellings are not interchangeable bindings. Use the active operation's verified asset mapping; do not translate, renumber or combine example tokens to make a prompt appear consistent.
 
-## Timeline Template
+## Shot Order Template
 
-社区常用的长提示词骨架（即梦/Dreamina 平台，约 8 秒以上时使用；field-observed）。保持 `@Image1` 等引用标签不变：
+官方《Doubao Seedance 2.0 系列提示词指南》（火山引擎文档 82379/2222480）要求多镜头内容按事件先后使用 镜头1、镜头2、镜头3 组织，不强制限定每段时长；同一指南说明模型对精确时间（如 0–3 秒）的支持不稳定，强行限制时长可能导致生成结果异常（2026-09-26 经镜像记录，引用前请核对原页）。社区流传的 `【时间轴】` 加秒数区间的骨架属于 field-observed 写法，与官方说明相抵触；在 2.0 上不要写绝对秒数，时长交给平台参数，可在提示词首尾附一句 `时长：12秒`（用中文“秒”）作为提醒。每个镜头内先写运镜或切镜，再写主体动作与表情、位置或空间变化、该镜头的声音。保持 `@Image1` 等引用标签不变：
 
 ```
 【风格】[媒介、质感、色调，一句话]
-【时间轴】0-3s：[画面+镜头+音效]；3-6s：[画面+镜头+音效]；6-10s：[画面+镜头+音效]
+镜头1：[运镜或切镜方式]，[主体动作与表情]，[位置或空间变化]，[本镜头声音]
+镜头2：镜头切至[新机位]，[主体动作与表情]，[位置或空间变化]，[本镜头声音]
+镜头3：[运镜或切镜方式]，[完成态终点]，[本镜头声音]
 【声音】[对白/环境声/音效/无配乐]
+【约束】保持无字幕，不要生成Logo，不要生成水印
 【参考】@Image1 锁定主体身份；@Video1 仅参考运镜；@Audio1 仅参考节奏
 ```
 
@@ -118,17 +121,17 @@ Use these when the Chinese prompt is part of a v6 sequence project, continuation
 
 ## Dialogue Notes (对白注意事项)
 
-Field-observed from 2026 community testing (即梦官方手册解读、知乎、36氪实测); test per surface, never promise results. Mandarin has the strongest lip-sync, yet hands-on tests still report 语音错乱 / 字幕乱码 - budget retakes.
+No universal Mandarin-first ranking or character ceiling is established here. Keep the user's quoted dialogue, script, and intended voice. Measure spoken duration with pauses, and review words, performance, and sync separately. The model card's Chinese-voice tasks are not a matched language ranking; see [audio-guide](../audio-guide.md).
 
-- 台词格式：角色名 + 动作 + 冒号 + 引号内台词。Count characters/syllables, not "words"; keep to one short clause.
-- 唇形同步在部分界面默认关闭（如即梦需勾选“启用唇形同步”）- confirm it is enabled before blaming the prompt.
-- Inline audio tags are field-reported on some surfaces: 在台词末尾加方括号提示音色与音效，例如 `"领旨" [低沉男声][编钟余音]`。Surface-specific; verify before relying on it.
+- 台词格式：角色名 + 动作 + 冒号 + 引号内台词。Character counts describe a line; they do not certify timing or sync.
+- Check the active surface's documented audio settings; do not assume a named lip-sync toggle or its default.
+- Inline bracketed audio cues are a prompting convention unless the active operation documents a parser. Keep spoken words separate from performance direction.
 
 ## Aesthetic Registers (美学语域)
 
-Chinese carries genre-aesthetic registers with no one-word English equivalent. They are legitimate intent words — but they are intent, not instruction: alone in a prompt they behave like feel-words and destabilize the output. Name the register, then spend the words on the physical elements that produce it, exactly as the Slop Traps table repairs feel-words.
+Chinese genre and aesthetic terms can carry useful creative intent. Preserve the user's chosen term; when the intended shot is unclear, ask what matters or propose a scene-specific visible or audible detail. The examples below are authored possibilities, not definitions of a culture or mandatory ingredients. This is editorial guidance for making direction reviewable, not evidence that these terms destabilize Seedance output. Independent language and production-language review remains pending.
 
-| Register | Decompose into |
+| Term | One possible scene treatment |
 |---|---|
 | 武侠 (wuxia) | physical craft, not the label: `竹林间的剑客、衣袂随步伐摆动、足尖点地的轻功起跳、竹叶纷落` |
 | 仙侠 (xianxia) | one supernatural element grounded in physics: `御剑离地三尺悬停、云海在脚下流动、法器发出的冷光映在脸上` |
@@ -138,13 +141,20 @@ Chinese carries genre-aesthetic registers with no one-word English equivalent. T
 
 ## Script Variant (简繁)
 
-"Chinese" is not one script. This file is Simplified (zh-Hans); a deliverable for 台灣, 香港, or 澳門 needs Traditional (zh-Hant). Leaving it undeclared means the mainland variant ships to a Traditional-script audience by default, which reads as a foreign cut rather than a localized one.
+**Record prompt script, subtitle script, audience locale and intended voice separately when relevant.** Preserve choices already supplied; a location alone does not override the user's script choice. A Traditional-script audience does not require changing the prompt to Simplified. Written script does not specify the spoken language, accent or character's register. A no-dialogue request does not need a voice decision.
 
-**Prompt script and delivery script are separate decisions.** The surfaces this skill targets (即梦/Dreamina、豆包、火山方舟) are mainland-trained, and Simplified is the safer prompt language — `[ref:audio-guide]` ranks Mandarin the strongest lip-sync tier on that basis. The audience-facing text is a different question. Prompting in Simplified while delivering Traditional subtitles is a legitimate and common combination; conflating the two either weakens the prompt or ships the wrong script to the viewer.
+If a missing choice materially affects the requested text, ask one focused question. If the user delegated that choice, state a brief-based assumption and proceed; do not impose an intake form on a complete brief. For a prompt-only draft with no script preference, use the script of the user's supplied Chinese wording and label that assumption. Do not choose a script based on an assumed model advantage: this repository has no controlled evidence that Simplified prompting improves lip-sync or that training geography explains language performance.
 
-Where it bites hardest is exactly where this repo is already weakest. Hands-on tests report 字幕乱码 (garbled subtitles), and every vocab file's standing advice is to keep the frame textless and add subtitles in post - so the variant is primarily a **delivery** parameter, set on the post/subtitle path rather than requested from the model.
+**Adapt only the requested text.** A request to localize subtitles is not permission to rewrite exact dialogue, change the prompt script, transliterate speech, alter reference tags or add lettering to the generated scene. If subtitles intentionally differ from the spoken transcript, keep them as a separate deliverable and retain the exact dialogue. For an exact-text requirement, discuss adding text in post; do not treat a prompt as proof that generated lettering will be correct. The delivery path does not determine the prompt script.
 
-**Do not convert by find-and-replace.** Several Simplified characters map to more than one Traditional character by meaning, and a naive pass produces text that is wrong rather than merely foreign:
+| User choice | Keep separate |
+|---|---|
+| Traditional prompt; Simplified subtitles | Keep the prompt in Traditional and adapt only the subtitle copy. Preserve exact spoken dialogue and reference tags |
+| Simplified prompt; Traditional subtitles for a named audience | Keep the prompt in Simplified. Adapt subtitle wording for that audience instead of treating character conversion as complete localization |
+| Existing exact dialogue; localize the subtitle copy | Retain the dialogue verbatim and label the localized subtitle text separately. Do not change voice or pronunciation instructions automatically |
+| Prompt only; no dialogue or subtitles requested | Draft the prompt in the chosen script. Do not add a subtitle track, voice choice or localization interview |
+
+**Do not convert by find-and-replace.** When conversion is requested, resolve characters by meaning and review vocabulary for the target locale. These examples illustrate why character substitution alone is insufficient:
 
 | 简体 | 繁體 — 按意思分化 |
 |---|---|
@@ -154,36 +164,34 @@ Where it bites hardest is exactly where this repo is already weakest. Hands-on t
 | 里面 (inside) / 三里 (li, distance) | 裡面 / 三里 |
 | 松开 (loosen) / 松树 (pine) | 鬆開 / 松樹 |
 
-头发 → 頭髮 matters here specifically: hair is a named continuity anchor in the reference workflow, so it turns up in prompts and in take notes.
+Vocabulary choices also need context. The candidates below are working examples to review for the requested audience, not a shared Taiwan/Hong Kong terminology standard or a complete locale glossary:
 
-Vocabulary also differs beyond the characters, so a correct script conversion can still read as the wrong region:
-
-| 简体（中国大陆） | 繁體（台灣 / 香港） |
+| Source wording | Candidate wording to review |
 |---|---|
-| 视频 | 影片（台）／影片、短片（港） |
+| 视频 | 影片／短片 |
 | 屏幕 | 螢幕 |
 | 质量 | 品質 |
 | 信息 | 資訊 |
-| 网络 | 網路（台）／網絡（港） |
+| 网络 | 網路／網絡 |
 | 摄像机 | 攝影機 |
 
-Record the variant with the delivery target, not the prompt, and keep it fixed for the life of a project - a sequence that switches variants between clips has the same continuity problem as one that switches wardrobe.
+Carry the chosen prompt and delivery scripts forward independently. If the user requests a later change, update only that scope and identify which existing text needs revision; do not silently convert prior clips or unrelated outputs. Independent language and production-language review of these working examples remains pending.
 
 ## Slop Traps
 
-社区共识：抽象的“感觉词”会让模型无法判断该强调哪个元素。把感觉词拆解成制造这种感觉的物理元素——材质、光线、色彩、空气——画面立即变稳。
+编辑建议：只有在意图不清时，才把抽象形容词补充为能看见或听见的指令；有用的风格词可以保留。这有助于核对创作要求，不代表模型必然无法理解形容词，也不保证画面更稳定或节省生成额度。以下是写法示例，不是通用配方；不要自动加入慢推镜、雾气或青橙调色。保留用户选定的风格、情绪强度、对白、参考标签和设置；若不同理解会明显改变场景，给出少量有区别的选项，或按用户授权代选。
 
-| 套话 | 改写为 |
+| 套话 | 可按场景补充的指令 |
 |---|---|
-| `电影感` | 写出景别、运镜、光源和调色：`宽幅远景，缓慢推镜，低角度暖阳，低饱和青橙调` |
-| `氛围感` | 写出制造氛围的物理元素：`薄雾、逆光轮廓、湿润地面反光、低环境声` |
-| `高级感` | 写出光线与材质行为：`柔和侧光、受控反光、干净背景、金属拉丝纹理` |
-| `大片感` | 写出物理规模：人群数量、镜头距离、建筑高度 |
-| `质感`（单独使用） | 指明哪种质感：`磨砂玻璃、丝绒吸光、纸张纤维` |
-| `震撼` | 写出造成震撼的那一个画面对比或揭示 |
-| `唯美` | 写出色彩、构图与光的具体行为 |
-| `史诗级` | 删除，或换成具体的空间尺度与人数 |
-| `超高清 / 8K / 4K` | 删除；分辨率是参数，不是描述 |
-| `杰作 / 顶级品质` | 删除；质量不是请求出来的 |
-| `绝美` | 写出最重要的那一个视觉细节 |
-| `酷炫转场` | 写出转场名称：`匹配剪辑、硬切、甩镜` |
+| `电影感` | 例如钟表匠听见滴答声后微笑的片段：`固定镜头与她的眼睛同高；滴答声响起，她才微笑；结尾停留在这个表情上`。这是该片段的一种选择，不要求其他场景也静止克制 |
+| `氛围感` | 先明确场景需要哪种氛围，再选择相关声画细节；工作室可写`停下工具后，钟的滴答声仍清晰可闻`，不必添加雾或湿地反光 |
+| `高级感` | 明确要展示哪种工艺或材质，例如`侧光扫过表盘上的拉丝纹理，刻度保持可读`；不要默认换成空白背景或金色装饰 |
+| `大片感` | 若意图是规模，说明人物与空间的关系；若意图是紧张或惊喜，说明造成它的动作，不自动增加人群 |
+| `质感`（单独使用） | 指明哪个物体、哪种表面，以及镜头需要看见什么：`近处纸张边缘露出纤维` |
+| `震撼` | 指明造成冲击的对比、动作或揭示；保留用户要求的强烈表现 |
+| `唯美` | 按选定风格明确构图、色彩或光的行为，不强制柔光或低饱和 |
+| `史诗级` | 若指空间尺度，写出主体与环境的比例；若指风格，保留该意图并补充本场景的表现方式 |
+| `超高清 / 8K / 4K` | 记录实际交付分辨率要求，在当前操作支持的设置中处理；不要把提示词里的数字当作输出分辨率保证 |
+| `杰作 / 顶级品质` | 明确本片段的验收项，如表盘刻度可读、动作衔接连续；这些是要求，不是已达到的结果 |
+| `绝美` | 明确最重要的视觉细节，并保留用户选定的审美方向 |
+| `酷炫转场` | 明确从什么画面切到什么画面、靠哪个动作衔接；只有需要该效果时才选择匹配剪辑、硬切或甩镜 |

@@ -20,11 +20,15 @@ metadata:
 
 # seedance-vocab-es
 
-Use Spanish cinematic vocabulary when the user asks for Spanish prompts, bilingual delivery, or compact translation of camera, lighting, action, VFX, audio, and production constraints. Preserve reference tags exactly: `@Image1`, `@Video1`, `@Audio1` must never be translated.
+Before producing prompt text, a prompt-ready block, a rewrite, an example, or a compiled clip, load the [Director's Read](../../references/directors-read.md), classify the brief, and complete its canonical narrative or non-narrative record. Translate that record into visible or audible carriers and keep its internal labels out of final generation prose.
+
+Use Spanish cinematic vocabulary when the user asks for Spanish prompts, bilingual delivery, or compact translation of camera, lighting, action, VFX, audio, and production constraints. Preserve actual reference tags exactly; their spelling is independent of the prompt language.
+
+Before adapting a reference example below, load [Using Reference Examples](../../references/surface-prompt-profiles.md#using-reference-examples). Bind its placeholders to real assets by the requested role, then preserve the actual token, including its script, case, spacing and punctuation. A written example token does not attach a file.
 
 ## Intent
 
-Spanish carries rhythm even in technical direction. Serve users who think in Spanish with vocabulary that keeps its musicality while staying camera-precise - they should never feel that directing in their language is a downgrade.
+Spanish prompt direction should preserve production meaning and clause clarity before stylistic cadence. Keep the subject, visible action, camera endpoint, light, sound, and constraint unambiguous. The shipped independent review artifact is empty, so treat these choices as working production wording pending locale-specialist review.
 
 ## Usage Rule
 
@@ -44,8 +48,17 @@ Translate production meaning, not word-for-word English. Keep the prompt concret
 
 ## De-Slop Rule
 
-When the prompt leans on `cinematográfico`, `épico`, `impresionante`, `mágico`, or `de alta calidad`, load the Slop Traps table in `references/vocab/es.md` and decompose each into the physical elements that produce it - movimiento de cámara, fuente de luz, material, sonido.
+When the prompt leans on `cinematográfico`, `épico`, `impresionante`, `mágico`, or `de alta calidad`, load the Slop Traps table in [Spanish vocabulary](../../references/vocab/es.md) and decompose each into the physical elements that produce it - movimiento de cámara, fuente de luz, material, sonido.
 
 ## Output Contract
 
-Return Spanish prompt wording, optional English gloss when useful, and unchanged reference tags.
+Return Spanish prompt wording and unchanged reference tags; add an English gloss only when requested or needed to resolve a specific ambiguity.
+
+For a first prompt or retake:
+
+- Use the user's supplied decisions immediately. Do not restart an interview or impose a language lesson on a complete brief.
+- When directions are requested, distinguish their visible performance, staging or information tradeoffs. Keep the chosen and rejected options across revisions; do not force a menu on a specified scene.
+- Put the copyable prompt apart from settings, reference requirements and review notes. A written token does not attach an asset; never invent a binding.
+- Preserve exact quoted dialogue even when it is in another language, unless translation is requested. Ask about region or relationship only when it changes the requested wording.
+- For a reported failure, name the criterion, propose one concrete change and retain duration, tier and remaining budget. Attribute an unseen result to the user's description. A text revision does not authorize submission; at zero budget offer an acceptable edit or stop.
+- Treat authored examples as unrendered and independent language review as pending. Do not promise fluency, voice reliability or credit savings from a static check.

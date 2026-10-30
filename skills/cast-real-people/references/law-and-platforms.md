@@ -1,0 +1,43 @@
+# Law and platforms (cast-real-people)
+NOT LEGAL ADVICE. Summaries paraphrased from search results and law-firm or news pages read on 2026-10-14. Every item is labelled: fact (confirmed by 2 or more sources), estimate (reasoned from sources), assumption (needs a lawyer). Recommend an entertainment or IP lawyer for any commercial release. Rules move monthly.
+
+## 1. India: DPDP Act 2023 and DPDP Rules 2025
+- Fact: the Rules were notified 13 November 2025 and commence in phases. The Data Protection Board and the first rules took effect immediately; Consent Manager registration (Rule 4) from 13 November 2026; the main data fiduciary duties, notice, consent, security, breach notice, data principal rights, retention and children's data from 13 May 2027 (sources conflict by one day on 14 May; use 13 May 2027 and recheck).
+- Fact: a photo or video of an identifiable person is personal data. Estimate: the Act has no separate "biometric" or "sensitive" tier (sources read did not show one), so a face dataset is treated as ordinary personal data with a high-risk practice. Assumption: a face template used for identity matching may attract extra scrutiny; ask the lawyer.
+- Consent (s.6, fact): free, specific, informed, unconditional and unambiguous, by clear affirmative action, limited to the stated purpose, in plain language; withdrawal must be as easy as giving it (estimate from sources). The release must name the purposes separately (photos, training, generation, voice).
+- Erasure (s.8, fact): erase personal data when the purpose is served or consent is withdrawn, unless law requires keeping it. Rule 8 sets retention periods for very large platforms; small studios follow the purpose rule. Studio rule: delete within 30 days after term, within 7 days after withdrawal.
+- Security and breach (fact): reasonable safeguards; breach notice to the Board and to affected persons (72 hours for the detailed report, 3P). Studio rule: encrypt, private folders, access log.
+- Children (s.9, fact): under 18 means a child; verifiable parental or guardian consent before processing; no tracking, behavioural monitoring or targeted advertising of children; penalties up to Rs 200 crore for children's data failures (3P).
+- Estimate: before 13 May 2027 most duties are not yet enforceable, but the studio treats them as binding now.
+- Estimate: a studio that processes a client's cast data may be a "data processor" for the client (the "data fiduciary"). Put the roles in the client contract.
+
+## 2. India: personality rights and deepfakes (courts, 2023 to 2026)
+Fact (news and law-firm summaries; confirm each order's text):
+- 2023: Anil Kapoor (Delhi HC, September) obtained an injunction against misuse of name, image, voice and likeness, including AI; courts treated this as personality and publicity rights, passing off and privacy.
+- 2024: Arijit Singh (Bombay HC) restrained AI voice cloning; Jackie Shroff (Delhi HC) restrained use of name, image and voice, including AI chatbots; Amitabh Bachchan and others got similar orders.
+- 2025 to 2026: a stream of Delhi HC orders for film, sport and business figures. 2026 examples: Akira Nandan (January), Baba Ramdev and Vivek Oberoi (February), Allu Arjun and Aman Gupta (May), Ravi Kishan (July), Dr Devi Prasad Shetty (permanent restraint, judgment dated 5 October 2026), Kangana Ranaut and Vijay Deverakonda (October 2026; platform takedown in about 72 hours, links blocked, compliance affidavits). Manoj Bajpayee filed suit on 22 September 2026 against AI voice tools and deepfakes. Suits by Janhvi Kapoor, Aaradhya Bachchan and others are pending and may refine the scope.
+- Limit (fact): in a CLAT topper case (April 2026) the court said one achievement alone does not create personality rights, but still restrained misuse on defamation and trademark grounds.
+- Estimate: courts grant ex parte ad interim injunctions fast; a studio that uses a real face without release risks takedown, damages and costs. Parody, news and criticism have some defences; do not rely on them.
+- Assumption: no single Indian statute on personality rights exists; protection comes from common law, privacy (Article 21), passing off, copyright/moral rights and IT Rules. Ask the lawyer.
+- Fact: the India IT Rules amendments in force from February 2026 require platforms to label AI-generated or significantly altered content (3P); a proposed continuous on-screen label was not final (U). ASCI final AI guidelines announced 29 September 2026, effective about three months later (3P, U on date): label AI-generated influencers and digital likenesses; fabricated testimonials and unauthorised likeness remain prohibited.
+
+## 3. United States
+- NO FAKES Act of 2026 (S. 4591, House companion H.R. 8915) (fact): Senate Judiciary advanced it by unanimous voice vote on 18 June 2026; placed on the calendar 2 July; Senator Ted Cruz blocked an attempt to pass it on 30 September 2026, citing missing satire and political-commentary exceptions. Not enacted as of 14 October 2026. It would create a federal right over voice and visual likeness digital replicas, with notice and takedown, and preempt some state laws.
+- State laws (fact): Tennessee ELVIS Act (in force 1 July 2024; voice and likeness, liability for tool providers whose primary purpose is replicas); California AB 2602 (Labor Code 927; contract clauses for replicas of performers unenforceable unless specific and represented, for performances fixed from 1 January 2025) and AB 1836 (deceased performers; sources differ on date); New York Gen. Oblig. Law s.5-302 (similar contract rule); other states (Illinois, Montana, Arkansas, Washington) extended rights; Pennsylvania has a criminal digital forgery offence.
+- Estimate: for US talent or US audiences, use a specific written licence with defined term, media and uses, and legal representation or a plain offer to obtain it. SAG-AFTRA or other union rules may apply to union members (assumption; check).
+
+## 4. European Union
+- EU AI Act Article 50 (fact): deployers that generate or manipulate deepfake image, audio or video must disclose that it is artificial, clearly and no later than first exposure. Obligations apply from 2 August 2026; Digital Omnibus defers machine-readable marking for generative systems already on the market to 2 December 2026 and watermark-detection interoperability to 2 February 2027 (3P). Final Code of Practice on marking and labelling published 10 June 2026, found adequate 8 and 9 July 2026; Commission guidelines dated 20 July 2026. Evidently artistic, creative, satirical or fictional works still disclose, in a way that does not spoil the work. Content published before 2 August 2026 need not be relabelled. Estimate: global web posting may bring EU duties.
+- GDPR (fact): a face image is personal data; biometric data used to identify a person is special-category data needing explicit consent. Assumption: training an identity model on a face can count; get explicit written consent and ask the lawyer for EU talent.
+
+## 5. Platform rules (3P unless noted; verify on official pages before each campaign)
+| Platform | Disclosure / impersonation rule |
+|---|---|
+| YouTube | Disclose meaningfully altered or synthetic realistic content, including a real person saying or doing what they did not. Since 27 May 2026 a single label for photorealistic AI content; YouTube may add the label itself. Likeness Detection opened to adult channel owners from 17 May 2026 (faces only); voice goes through the privacy complaint route. Removal possible even when disclosed. |
+| Meta (Instagram, Facebook) | "AI info" label from C2PA/IPTC signals and classifiers; creators use the disclosure tool for photorealistic video and realistic audio; ad creatives made or altered with AI are disclosed in Ads Manager and shown with a visible label; impersonation is reportable. (U: exact current wording, confirm.) |
+| Higgsfield | Terms ban harmful outputs involving minors and inference of sensitive attributes of identifiable people; face tools framed as consented creative use (see face-dataset-and-training.md section 8). Paid plans have commercial rights. The vendor may use content to improve models; Enterprise excluded (V help-center-facts.md). |
+| TikTok | Not used for Indian-client work (house rule). Elsewhere requires AI labels (U). |
+| LinkedIn, X | Their own labels and impersonation policies; check before posting (U). |
+
+## 6. Studio rules that follow
+1. Release first (consent-and-release.md). 2. Store privately, delete on schedule. 3. Label per platform, keep C2PA. 4. Refuse the list in SKILL.md section 8. 5. Lawyer review for commercial releases, minors, celebrities, EU and US talent. 6. Never publish without the user's yes.
